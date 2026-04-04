@@ -1,0 +1,53 @@
+{
+  "SC-01": {
+    "red": {
+      "1": {
+        "L1": "Before actively probing, consider what the server volunteers about itself in every HTTP response. Headers, cookies, and even error pages contain metadata.",
+        "L2": "There is a tool designed specifically to fingerprint web technologies from a single HTTP response — it reads headers, cookie names, HTML comments, and script paths simultaneously.",
+        "L3": "Run `whatweb http://app.novamed.local` and examine every field. Then check `curl -I http://app.novamed.local` for raw headers. Also fetch `/robots.txt` and `/sitemap.xml` — these often disclose hidden paths."
+      },
+      "2": {
+        "L1": "You know the application has pages linked in its HTML — but web applications typically have many more paths that are not linked anywhere. How would you systematically discover them?",
+        "L2": "Directory brute-forcing uses a wordlist to probe for common paths. The tool you need accepts a target URL and a wordlist and reports which paths return non-404 responses. Choose a wordlist relevant to PHP applications.",
+        "L3": "Run `gobuster dir -u http://app.novamed.local -w /usr/share/wordlists/dirb/common.txt -x php,txt,bak -t 30`. Pay attention to 200 and 403 responses equally — both confirm the path exists."
+      },
+      "3": {
+        "L1": "The login form accepts user input that is likely passed to a database query. There is a specific character that, if included in the input, will cause a syntax error in the query — and that error is often displayed back to you.",
+        "L2": "SQL injection testing starts manually — one character, observe the response. Once you confirm the injection point, there is a tool that automates extraction of the entire database. But automation before manual confirmation is noisy and teaches nothing.",
+        "L3": "Type `'` (single quote) into the username field and submit. If you see a MySQL error, injection is confirmed. Then run `sqlmap -u 'http://app.novamed.local/login' --data='username=admin&password=test' --level=2 --risk=1 --dbs` to enumerate databases."
+      },
+      "4": {
+        "L1": "You have confirmed path traversal is possible. Before you try to read arbitrary files, think about what your objective is. What file would give you the most useful information about this application's internals?",
+        "L2": "Application configuration files often contain database credentials. For a PHP application running on Apache, think about where the application would store its database connection string — typically in a config file in the web root.",
+        "L3": "Try `/records?file=../../../../etc/passwd` first to confirm traversal depth. Then target `/records?file=../../../../var/www/html/admin/config.php` for application credentials. Check `/records?file=../../../../etc/apache2/sites-enabled/000-default.conf` for the document root path."
+      },
+      "5": {
+        "L1": "You have found significant vulnerabilities. Before moving to reporting, ensure your evidence is complete. What does a professional pentest finding require beyond just 'this is vulnerable'?",
+        "L2": "Each finding needs: the exact HTTP request that triggers the vulnerability, the exact response showing it worked, the CVSS score and vector string, the business impact in plain language, and a specific remediation step.",
+        "L3": "Log each finding in your notebook with tag #finding. Add the curl command or HTTP request as #evidence. Calculate CVSS using the vector: AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H for SQLi = 9.8 Critical. Add #remediation for each: SQLi → parameterized queries; LFI → whitelist file names; IDOR → server-side authorization checks."
+      },
+      "6": {
+        "L1": "Your report has two audiences: executives who need to understand business risk, and developers who need to fix the code. What language does each audience need?",
+        "L2": "The executive summary should avoid technical jargon entirely — talk about patient data exposure, compliance risk (HIPAA), and potential financial penalties. The technical section should include reproduction steps a developer can follow without needing to run the test themselves.",
+        "L3": "Structure: Executive Summary (1 page, business language, risk rating) → Scope → Methodology → Findings Table (sorted by CVSS) → Finding Detail pages (description, evidence screenshot, CVSS, remediation) → Conclusion. Export your notes using the 'Generate report' button."
+      }
+    },
+    "blue": {
+      "1": {
+        "L1": "You are seeing a spike in 404 responses from a single source IP. What type of activity generates this pattern, and what is the next thing that typically follows it?",
+        "L2": "High-frequency 404s from a single IP indicate directory brute-forcing. Check if the same IP has also made requests to your sensitive paths — /admin/, /backup/. Cross-reference the Apache access log with the WAF alert timestamps.",
+        "L3": "In Splunk: `index=apache sourcetype=access_combined status=404 | stats count by clientip | where count > 50 | sort -count`. Then check if that IP also hit any 200 or 403 responses: `index=apache clientip=<SUSPICIOUS_IP> status!=404 | table _time, uri, status`."
+      },
+      "2": {
+        "L1": "WAF Rule 942100 fired for a POST to /login. Before you escalate, you need to determine if this is a true positive. What information would confirm that the injection attempt actually succeeded?",
+        "L2": "A SQL injection attempt is concerning but a blocked one (WAF returned 403) is contained. The critical question is whether any request with the injection pattern received a 200 response from the application — that indicates the WAF was bypassed.",
+        "L3": "Splunk query: `index=apache uri=/login method=POST | where status=200 | table _time, clientip, request_body`. Any 200 response to a login POST after WAF alerts fired is a confirmed bypass. This immediately escalates to CRITICAL and requires containment."
+      },
+      "3": {
+        "L1": "You have confirmed SQLi success (200 response to injection payload). Before you block the attacker's IP, think about what evidence you need to preserve first and what containment steps would be most effective.",
+        "L2": "IP blocking is the right containment action, but sequence matters. First determine scope: what did they access? Did they reach /backup/? /admin/? The API? Then block at the WAF level — a ModSecurity rule is better than a firewall rule because it blocks the specific attack pattern, not just the IP.",
+        "L3": "Sequence: (1) Export all Apache logs for this session to preserve evidence. (2) Splunk: find all URIs this IP accessed with 200 status. (3) ModSecurity: `SecRule REMOTE_ADDR \"@ipMatch <ATTACKER_IP>\" \"id:9001,phase:1,deny,status:403,msg:'Attacker IP blocked'\"`. (4) Document IOCs: attacker IP, timestamp range, attack techniques confirmed."
+      }
+    }
+  }
+}

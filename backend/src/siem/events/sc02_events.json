@@ -1,0 +1,70 @@
+{
+  "nmap": [
+    {
+      "severity": "INFO",
+      "message": "Network scan detected — SYN sweep across 172.20.2.0/24",
+      "raw_log": "[DC01] Windows Security Event 4625 — Failed logon attempt from {src_ip} — Reason: Unknown user",
+      "mitre_technique": "T1046"
+    }
+  ],
+  "bloodhound": [
+    {
+      "severity": "MED",
+      "message": "LDAP enumeration detected — BloodHound-style ACL queries from {src_ip}",
+      "raw_log": "[DC01] Windows Security Event 4662 — Object Operation: ms-DS-AllowedToActOnBehalfOfOtherIdentity on domain\\Domain Admins",
+      "mitre_technique": "T1069"
+    },
+    {
+      "severity": "MED",
+      "message": "Service account enumeration via LDAP — GetUserSPNs pattern detected",
+      "raw_log": "[DC01] Windows Security Event 4768 — Kerberos Authentication Service — Account: svc_backup — IP: {src_ip}",
+      "mitre_technique": "T1087"
+    }
+  ],
+  "crackmapexec": [
+    {
+      "severity": "HIGH",
+      "message": "SMB authentication brute force — crackmapexec pattern detected",
+      "raw_log": "[WS01] Windows Security Event 4625 x47 — Failed logon — Account: jsmith — {src_ip} — Logon Type 3",
+      "mitre_technique": "T1110"
+    }
+  ],
+  "impacket": [
+    {
+      "severity": "HIGH",
+      "message": "Kerberoasting detected — TGS-REQ for RC4-HMAC encrypted service ticket",
+      "raw_log": "[DC01] Windows Security Event 4769 — Kerberos Service Ticket — svc_backup — Encryption: 0x17 (RC4) — {src_ip}",
+      "mitre_technique": "T1558.003"
+    }
+  ],
+  "mimikatz": [
+    {
+      "severity": "CRITICAL",
+      "message": "Credential dumping attempt — LSASS memory access pattern",
+      "raw_log": "[WS01] Windows Defender Alert — Suspicious process injection: lsass.exe accessed from unknown parent at {src_ip}",
+      "mitre_technique": "T1003.001"
+    },
+    {
+      "severity": "CRITICAL",
+      "message": "DCSync attack detected — Directory replication request from non-DC host",
+      "raw_log": "[DC01] Windows Security Event 4662 — MS-DRSR replication request from {src_ip} — NOT a domain controller",
+      "mitre_technique": "T1003.006"
+    }
+  ],
+  "hashcat": [
+    {
+      "severity": "INFO",
+      "message": "Local password cracking activity — no network event generated",
+      "raw_log": "No network event — offline cracking activity detected by endpoint sensor",
+      "mitre_technique": "T1110.002"
+    }
+  ],
+  "shell": [
+    {
+      "severity": "INFO",
+      "message": "Interactive session on domain workstation",
+      "raw_log": "[WS01] Windows Security Event 4624 — Logon Type 3 — jsmith — {src_ip}",
+      "mitre_technique": null
+    }
+  ]
+}

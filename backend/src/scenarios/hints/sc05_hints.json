@@ -1,0 +1,28 @@
+{
+  "SC-05": {
+    "red": {
+      "1": {
+        "L1": "You have initial access on victim-ws. LockBit follows a specific TTP order before encryption. What two things does LockBit do before encrypting files that are also important indicators for the blue team to detect?",
+        "L2": "LockBit kills specific processes (backups, AV, shadow copies) and clears event logs before encrypting. These pre-encryption actions are actually more detectable than the encryption itself — document them in your notes as you execute.",
+        "L3": "Execute in order: (1) Stop backup services: `net stop vss`, `net stop swprv`. (2) Delete shadow copies: `vssadmin delete shadows /all /quiet`. (3) Clear event logs: `wevtutil cl Security`, `wevtutil cl System`. (4) Kill AV processes. (5) Begin simulated encryption (create dummy encrypted file markers in /home/student/loot/)."
+      },
+      "2": {
+        "L1": "You've compromised the workstation. LockBit spreads via SMB to mapped drives and network shares. What credential material do you have available to move laterally to the file server at 172.20.5.40?",
+        "L2": "Pass-the-hash via SMB doesn't require the plaintext password — the NTLM hash is enough for authentication. CrackMapExec or impacket's psexec can authenticate using the hash you extracted from LSASS.",
+        "L3": "From your LSASS dump, extract the machine account or local admin hash. Then: `crackmapexec smb 172.20.5.40 -u Administrator -H <NTLM_HASH>`. If successful, enumerate shares and drop the simulated payload marker: `crackmapexec smb 172.20.5.40 -u Administrator -H <HASH> -x 'echo ENCRYPTED > C:\\encrypted.txt'`."
+      }
+    },
+    "blue": {
+      "1": {
+        "L1": "Event 1102 (audit log cleared) is in your Splunk feed. This is one of the most reliable ransomware pre-encryption indicators. What volatile evidence must you collect from the affected host BEFORE you isolate it from the network?",
+        "L2": "Memory contains: running processes (including the ransomware process), network connections (C2 IP), and loaded modules. Once you isolate or power off, this is gone. Velociraptor can capture memory remotely while the host is still online.",
+        "L3": "Velociraptor at 172.20.5.101: Run hunt `Windows.Memory.Acquisition` on victim-ws before isolation. Also collect `Windows.System.Pslist` and `Windows.Network.Netstat`. Then check Splunk for Event 4688 (new process) in the 30 minutes before Event 1102 to find the execution chain."
+      },
+      "2": {
+        "L1": "You've contained the initial infected host. Before you declare the incident contained, what question must you answer about the scope of compromise?",
+        "L2": "Ransomware typically spreads before encrypting. Check if the attacker's NTLM hash or lateral movement reached other hosts. Look for Event 4624 Type 3 logons from the victim workstation IP in your SIEM within the last 2 hours.",
+        "L3": "Splunk: `index=winevent EventCode=4624 LogonType=3 | where IpAddress=\"172.20.5.30\" OR SubjectUserName=\"victim-machine-account$\" | stats count by ComputerName | sort -count`. Any host with a successful logon from the compromised IP is potentially infected. Check each with Velociraptor before declaring contained."
+      }
+    }
+  }
+}

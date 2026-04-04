@@ -1,0 +1,26 @@
+{
+  "curl": [
+    {
+      "severity": "INFO",
+      "message": "OSINT request — HTTP probe to mail server",
+      "raw_log": "[SMTP] 172.20.3.20 — Connection from {src_ip} — EHLO probe",
+      "mitre_technique": "T1596"
+    }
+  ],
+  "nmap": [
+    {
+      "severity": "MED",
+      "message": "Port scan against mail infrastructure — SMTP/IMAP ports enumerated",
+      "raw_log": "[SMTP] Rate limit triggered — {src_ip} — 5+ connection attempts in 10s",
+      "mitre_technique": "T1046"
+    }
+  ],
+  "shell": [
+    {
+      "severity": "INFO",
+      "message": "GoPhish campaign activity detected — tracking pixel loaded",
+      "raw_log": "[GOPHISH] Email opened by target-ws-sc03 — Campaign: Orion_Q4_Invoice — Time: {ts}",
+      "mitre_technique": "T1566"
+    }
+  ]
+}

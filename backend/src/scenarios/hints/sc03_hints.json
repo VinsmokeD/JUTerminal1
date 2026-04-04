@@ -1,0 +1,23 @@
+{
+  "SC-03": {
+    "red": {
+      "1": {
+        "L1": "Effective phishing starts before you send anything. What publicly available information about Orion Logistics employees and their communication patterns would make your pretext more convincing?",
+        "L2": "OSINT for phishing targets: LinkedIn job titles, company domain naming conventions, recent press releases (project names, executive names), and email format guessing. The more specific your pretext, the higher the click rate.",
+        "L3": "Use `theHarvester -d orion-logistics.local -b all` for email enumeration. Check GoPhish at 172.20.3.40 for pre-configured Orion Logistics targets. Look for a recent invoice or shipment pretext — Orion is a logistics company."
+      },
+      "2": {
+        "L1": "You have a pretext and targets. What makes a phishing payload actually execute when the target opens it? Think about the difference between a payload that looks dangerous and one that gets past defenses.",
+        "L2": "For document-based payloads: macros require user interaction (Enable Content click). HTA files execute directly. The GoPhish landing page can capture credentials without any payload at all if the pretext is convincing enough.",
+        "L3": "Configure GoPhish: Landing page at 172.20.3.40:3333. Set your sending profile to use the Postfix server at 172.20.3.20. Use the 'Orion_Q4_Invoice' template already in GoPhish. Set tracking pixel to confirm email opens before analyzing click data."
+      }
+    },
+    "blue": {
+      "1": {
+        "L1": "You've received a report of a suspicious email. What header fields tell you whether the sending domain is legitimately authorized to send email on behalf of Orion Logistics?",
+        "L2": "Check SPF (Return-Path domain vs sending IP), DKIM (signature validation), and DMARC (policy and alignment). A spoofed email will typically fail at least one of these checks if the domain has proper email security configured.",
+        "L3": "In the email headers: look for `Authentication-Results` header. Splunk: `index=mail sourcetype=postfix | search subject=invoice | table _time, from, to, authentication_results`. A fail on SPF + DKIM = likely spoofed. Then check if the same message reached multiple recipients."
+      }
+    }
+  }
+}

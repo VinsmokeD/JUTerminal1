@@ -1,0 +1,205 @@
+version: '3.9'
+
+services:
+
+  # ── Core infrastructure ──────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cybersim}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cybersim}
+      POSTGRES_DB: ${POSTGRES_DB:-cybersim}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cybersim"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - internal
+
+  # ── Application ──────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - POSTGRES_URL=postgresql://${POSTGRES_USER:-cybersim}:${POSTGRES_PASSWORD:-cybersim}@postgres:5432/${POSTGRES_DB:-cybersim}
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=${JWT_SECRET}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DOCKER_SOCKET=/var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./backend/src:/app/src
+      - ./ai-monitor:/app/ai-monitor:ro
+      - ./docs/scenarios:/app/scenarios:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=${ENVIRONMENT:-development}
+    volumes:
+      - ./frontend/src:/app/src
+    environment:
+      - VITE_API_URL=http://localhost/api
+      - VITE_WS_URL=ws://localhost/ws
+    networks:
+      - internal
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # ── Scenario networks (created on demand by backend, defined here for reference) ──
+  # SC-01 — NovaMed Web App
+  sc01-webapp:
+    build:
+      context: ./infrastructure/docker/scenarios/sc01
+      dockerfile: Dockerfile.webapp
+    networks:
+      sc01-net:
+        ipv4_address: 172.20.1.20
+    profiles: ["sc01"]
+    restart: unless-stopped
+
+  sc01-waf:
+    image: owasp/modsecurity-crs:nginx
+    networks:
+      sc01-net:
+        ipv4_address: 172.20.1.1
+    profiles: ["sc01"]
+    restart: unless-stopped
+
+  # SC-02 — Nexora AD
+  sc02-dc:
+    build:
+      context: ./infrastructure/docker/scenarios/sc02
+      dockerfile: Dockerfile.dc
+    networks:
+      sc02-net:
+        ipv4_address: 172.20.2.20
+    profiles: ["sc02"]
+    restart: unless-stopped
+
+  sc02-fileserver:
+    build:
+      context: ./infrastructure/docker/scenarios/sc02
+      dockerfile: Dockerfile.fileserver
+    networks:
+      sc02-net:
+        ipv4_address: 172.20.2.40
+    profiles: ["sc02"]
+    restart: unless-stopped
+
+  # SC-04 — LocalStack (AWS sim)
+  sc04-localstack:
+    image: localstack/localstack:3
+    environment:
+      - SERVICES=s3,iam,sts,ec2,lambda,cloudtrail,guardduty
+      - DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
+    networks:
+      sc04-net:
+        ipv4_address: 172.20.4.20
+    profiles: ["sc04"]
+    restart: unless-stopped
+
+  # SC-05 — Splunk (Blue team)
+  sc05-splunk:
+    image: splunk/splunk:latest
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=${SPLUNK_PASSWORD:-cybersim123}
+    volumes:
+      - ./infrastructure/docker/scenarios/sc05/splunk-apps:/opt/splunk/etc/apps
+      - ./infrastructure/docker/scenarios/sc05/logs:/var/log/scenario:ro
+    networks:
+      sc05-net:
+        ipv4_address: 172.20.5.100
+    profiles: ["sc05"]
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  internal:
+    driver: bridge
+
+  sc01-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.1.0/24
+          gateway: 172.20.1.254
+
+  sc02-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.2.0/24
+          gateway: 172.20.2.254
+
+  sc03-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.3.0/24
+          gateway: 172.20.3.254
+
+  sc04-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.4.0/24
+          gateway: 172.20.4.254
+
+  sc05-net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.5.0/24
+          gateway: 172.20.5.254

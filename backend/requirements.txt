@@ -1,0 +1,29 @@
+# FastAPI core
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+
+# Database
+sqlalchemy[asyncio]==2.0.30
+asyncpg==0.29.0
+alembic==1.13.1
+
+# Redis
+redis[hiredis]==5.0.4
+
+# Auth
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Settings
+pydantic-settings==2.2.1
+
+# AI
+google-generativeai==0.5.4
+
+# Docker SDK
+docker==7.0.0
+
+# Formatting / type checking (dev)
+black==24.4.2
+mypy==1.10.0

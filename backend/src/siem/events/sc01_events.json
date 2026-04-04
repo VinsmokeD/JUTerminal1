@@ -1,0 +1,104 @@
+{
+  "nmap": [
+    {
+      "severity": "MED",
+      "message": "Port scan detected — src {src_ip} — SYN packets to 1024+ ports in <10s",
+      "raw_log": "[2024-01-15 14:03:44] FIREWALL DROP IN — src={src_ip} dst=172.20.1.20 proto=TCP flags=SYN count=1247 interval=8s",
+      "mitre_technique": "T1046"
+    },
+    {
+      "severity": "INFO",
+      "message": "Service version probe detected — src {src_ip} — -sV scan fingerprinting",
+      "raw_log": "[2024-01-15 14:03:52] Apache access.log: {src_ip} - - [15/Jan/2024:14:03:52] \"GET / HTTP/1.1\" 200 - nmap-service-probe",
+      "mitre_technique": "T1046"
+    }
+  ],
+  "nikto": [
+    {
+      "severity": "MED",
+      "message": "Web vulnerability scanner detected — Nikto UA in Apache access log",
+      "raw_log": "[2024-01-15 14:05:01] Apache access.log: {src_ip} - - [15/Jan/2024] \"GET /robots.txt HTTP/1.1\" 200 nikto/2.1.6",
+      "mitre_technique": "T1595"
+    }
+  ],
+  "gobuster": [
+    {
+      "severity": "MED",
+      "message": "Directory brute-force detected — 400+ 404 responses in 30s from single source",
+      "raw_log": "[2024-01-15 14:06:11] ModSecurity: Rule 913100 — Server-Side Include Injection. {src_ip} -> /admin/config.php [404]",
+      "mitre_technique": "T1083"
+    },
+    {
+      "severity": "INFO",
+      "message": "Sensitive path probed — /backup/ returned 200 (directory listing enabled)",
+      "raw_log": "[2024-01-15 14:06:44] Apache access.log: {src_ip} - - \"GET /backup/ HTTP/1.1\" 200 3842",
+      "mitre_technique": "T1083"
+    }
+  ],
+  "ffuf": [
+    {
+      "severity": "MED",
+      "message": "Parameter fuzzing detected — high-rate POST requests to /api/v1/",
+      "raw_log": "[2024-01-15 14:07:20] ModSecurity: Anomaly score exceeded. {src_ip} -> /api/v1/ score=15",
+      "mitre_technique": "T1595"
+    }
+  ],
+  "sqlmap": [
+    {
+      "severity": "HIGH",
+      "message": "SQL injection attempt — ModSecurity Rule 942100 fired — POST /login",
+      "raw_log": "[2024-01-15 14:09:03] ModSecurity: Rule 942100 — SQL Injection Attack Detected via libinjection. {src_ip} POST /login [BLOCKED]",
+      "mitre_technique": "T1190"
+    },
+    {
+      "severity": "HIGH",
+      "message": "SQL injection pattern in request body — OR/UNION keywords detected",
+      "raw_log": "[2024-01-15 14:09:04] ModSecurity: Rule 942270 — UNION-based SQL injection. Payload: ' UNION SELECT NULL,NULL-- . {src_ip}",
+      "mitre_technique": "T1190"
+    },
+    {
+      "severity": "CRITICAL",
+      "message": "Possible SQL injection success — HTTP 200 response to known SQLi payload",
+      "raw_log": "[2024-01-15 14:09:31] Apache: {src_ip} POST /login 200 4821 — anomalous response size after injection pattern",
+      "mitre_technique": "T1190"
+    }
+  ],
+  "curl": [
+    {
+      "severity": "INFO",
+      "message": "Manual HTTP request from curl UA — single probe",
+      "raw_log": "[2024-01-15 14:04:10] Apache: {src_ip} - - \"GET /records HTTP/1.1\" 302 - curl/7.81.0",
+      "mitre_technique": "T1595"
+    }
+  ],
+  "hydra": [
+    {
+      "severity": "HIGH",
+      "message": "Brute-force attack detected — 200+ failed login attempts in 60s",
+      "raw_log": "[2024-01-15 14:11:44] AUTH FAILURE: username=admin src={src_ip} — attempt 1 of 200+",
+      "mitre_technique": "T1110"
+    },
+    {
+      "severity": "HIGH",
+      "message": "Account lockout triggered — admin account locked after 5 failures",
+      "raw_log": "[2024-01-15 14:11:50] PHP app: Account admin LOCKED — too many failed attempts from {src_ip}",
+      "mitre_technique": "T1110"
+    }
+  ],
+  "wfuzz": [
+    {
+      "severity": "MED",
+      "message": "Parameter fuzzing — high-frequency requests with varied payloads",
+      "raw_log": "[2024-01-15 14:08:15] ModSecurity: Anomaly threshold exceeded from {src_ip} — wfuzz pattern detected",
+      "mitre_technique": "T1595"
+    }
+  ],
+  "shell": [
+    {
+      "severity": "INFO",
+      "message": "Shell command executed — manual activity logged",
+      "raw_log": "[2024-01-15 14:12:00] Session activity: manual command from {src_ip}",
+      "mitre_technique": null
+    }
+  ]
+}

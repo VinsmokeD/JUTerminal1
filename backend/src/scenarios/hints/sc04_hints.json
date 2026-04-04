@@ -1,0 +1,28 @@
+{
+  "SC-04": {
+    "red": {
+      "1": {
+        "L1": "You have AWS credentials. What is the very first thing you should do with them — before enumerating anything that creates CloudTrail events? Think about what the credentials are before you use them.",
+        "L2": "GetCallerIdentity is the AWS equivalent of 'whoami'. It tells you the ARN, account ID, and user ID without triggering any sensitive CloudTrail alerts. Always run this first before any enumeration.",
+        "L3": "Run `aws sts get-caller-identity --endpoint-url http://172.20.4.20:4566`. Then enumerate what you can do: `aws iam list-attached-user-policies --user-name dev-deploy`. Build a picture of your current permissions before taking any action."
+      },
+      "2": {
+        "L1": "You've enumerated your IAM permissions. One combination of permissions is particularly dangerous for privilege escalation. Think about which AWS service lets you run arbitrary code under any IAM role.",
+        "L2": "The iam:PassRole + lambda:CreateFunction + lambda:InvokeFunction combo is a classic IAM privilege escalation path. You can create a Lambda function that runs under a more privileged role, then invoke it to perform actions as that role.",
+        "L3": "Check your permissions for: `iam:PassRole`, `lambda:CreateFunction`, `lambda:InvokeFunction`. If you have all three: create a Lambda using Python with boto3, assign the `StratoStack-Admin` role, invoke it with a command to create an IAM user or dump credentials."
+      },
+      "3": {
+        "L1": "There's a web application at 172.20.4.30 that makes server-side HTTP requests. What vulnerability class allows you to make the server request an internal URL that you couldn't reach directly from your Kali container?",
+        "L2": "SSRF (Server-Side Request Forgery) lets you proxy requests through the vulnerable server. The AWS Instance Metadata Service at 169.254.169.254 is only reachable from inside the instance — making the server request it gives you temporary IAM credentials.",
+        "L3": "Test with: `curl 'http://172.20.4.30/fetch?url=http://169.254.169.254/latest/meta-data/'`. If it returns metadata, try: `curl 'http://172.20.4.30/fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/'` to get the role name, then append the role name to get the credentials."
+      }
+    },
+    "blue": {
+      "1": {
+        "L1": "CloudTrail logged a GetCallerIdentity from an unexpected IP. What is significant about this event, and what should your next query look for?",
+        "L2": "GetCallerIdentity is the first action an attacker takes with new credentials — it's reconnaissance. The key question is: what actions followed from this same identity in the next 60 minutes?",
+        "L3": "Splunk: `index=cloudtrail userIdentity.arn=<SUSPICIOUS_ARN> | table _time, eventName, sourceIPAddress, requestParameters | sort _time`. Look for the sequence: GetCallerIdentity → ListBuckets → GetObject. Any GetObject on sensitive buckets = confirmed data access."
+      }
+    }
+  }
+}

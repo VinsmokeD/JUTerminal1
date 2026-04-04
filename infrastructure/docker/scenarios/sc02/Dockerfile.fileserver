@@ -1,0 +1,16 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    samba \
+    winbind \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY smb.conf /etc/samba/smb.conf
+COPY setup-shares.sh /setup-shares.sh
+RUN chmod +x /setup-shares.sh
+
+EXPOSE 445 139
+
+CMD ["/setup-shares.sh"]
