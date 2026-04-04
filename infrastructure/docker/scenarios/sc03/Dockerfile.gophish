@@ -1,0 +1,8 @@
+FROM gophish/gophish:latest
+
+# Basic configuration can be handled via environment or admin panel
+# This is used for the Orion Logistics Phishing scenario (SC-03)
+
+EXPOSE 3333 80 443
+
+CMD ["./gophish"]

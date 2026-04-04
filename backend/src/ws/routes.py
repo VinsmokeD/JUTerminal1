@@ -56,7 +56,12 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             "role": session.role,
             "phase": session.phase,
             "methodology": session.methodology,
+            "container_id": session.container_id,
         }
+
+    # Start streaming terminal output from Docker to Redis (idempotent thread launch)
+    if session.container_id:
+        await stream_terminal_output(session_id, session.container_id)
 
     # Subscribe to SIEM + terminal output channels via Redis pub/sub
     redis = get_redis_client()

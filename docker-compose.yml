@@ -128,6 +128,17 @@ services:
     profiles: ["sc02"]
     restart: unless-stopped
 
+  # SC-03 — Orion Logistics Phishing
+  sc03-phish:
+    build:
+      context: ./infrastructure/docker/scenarios/sc03
+      dockerfile: Dockerfile.gophish
+    networks:
+      sc03-net:
+        ipv4_address: 172.20.3.10
+    profiles: ["sc03"]
+    restart: unless-stopped
+
   # SC-04 — LocalStack (AWS sim)
   sc04-localstack:
     image: localstack/localstack:3
