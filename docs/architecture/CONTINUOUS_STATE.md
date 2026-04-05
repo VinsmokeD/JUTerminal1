@@ -476,3 +476,18 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
   - **Methodology Gating (Phase 15)**: Integrated `gatekeeper.py` without DB/async overhead into `ws/routes.py`. It prefix-matches tool execution against the active PTES phase and deducts 5 points from the score upon violation with styled terminal output (`[-5 pts]`).
   - **Noise Daemon (Phase 14)**: Created `daemon_noise.py` using `httpx.AsyncClient` which runs as a background task spanning active sessions, generating random SIEM noise events. Integrated into `main.py` lifespan after redis initialization.
   - **Instructor Dashboard (Phase 17)**: Added `role` to DB. Exposed `/api/instructor/sessions` and `/api/instructor/metrics`. Created frontend dashboard pulling session states directly with auto-refresh and role validation. Seeded an `admin` instructor profile during database initialization.
+
+---
+
+### [2026-04-05 16:00:00] - Antigravity (Infrastructure Unblocking & Phase 16/17 Planning)
+* **Status**: In Progress — Infrastructure unblocked, Planning complete.
+* **Why**: The `backend` Docker build was failing due to `apt-get` mirror instability. Phase 16 (Terminal Re-attach) and Phase 17 (Kill Chain Timeline) are the final "commercial-grade" v2.0 features required for MVP.
+* **Where**:
+  - `backend/Dockerfile` (updated)
+  - `docs/architecture/phases.md` (updated)
+  - `docs/architecture/CONTINUOUS_STATE.md` (this file)
+* **What & How**:
+  - **Docker Unblocking**: Added `--fix-missing` to `backend/Dockerfile` `apt-get update` to resolve solve failures in restricted network environments.
+  - **Phases Status**: Marked Phase 15 (Noise), 16 (Gating), and 18 (Instructor) as ✅ Done.
+  - **Architectural Refresh**: Evaluated `MASTER_BLUEPRINT.md` and synthesized a consolidated implementation plan for Terminal Persistence (Redis history replay) and the Kill Chain SVG Timeline.
+  - **Git Sync**: Multi-stage `git add`, `commit`, and `push` executed to ensure local state matches remote repository.
