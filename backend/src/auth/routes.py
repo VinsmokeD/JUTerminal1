@@ -80,6 +80,12 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     return Token(access_token=create_token(user.id, user.username), token_type="bearer", username=user.username)
 
 
+async def require_instructor(user: User = Depends(get_current_user)) -> User:
+    if user.role != "instructor":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Instructor access required")
+    return user
+
+
 @router.get("/me")
 async def me(user: User = Depends(get_current_user)):
-    return {"id": user.id, "username": user.username}
+    return {"id": user.id, "username": user.username, "role": user.role}

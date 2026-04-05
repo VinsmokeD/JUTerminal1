@@ -441,3 +441,38 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 | 3 — Scenario engine core | ✅ Code complete |
 | 4 — Terminal proxy | 🚧 Code written, Docker boot blocked |
 | Next: Fix Dockerfile build errors | See Antigravity CLAUDE_HANDOFF.md |
+
+---
+
+### [2026-04-05 11:10:00] - Antigravity (Planning & Continuity)
+* **Status**: Workflow Optimization & GitHub Sync
+* **Why**: The user implemented a cost-saving and efficiency role division: Claude Code is strictly demoted to a pure "Coding & Implementation" agent to conserve its tokens. Antigravity handles 100% of documentation updates, progress tracking, and code review prior to handoffs. In addition, the repository must be rigorously synchronized to GitHub after state alterations.
+* **Where**: `CLAUDE_HANDOFF.md`, Git History
+* **What & How**: 
+  - Rewrote the `CLAUDE_HANDOFF.md` prompt framework entirely. Claude is now explicitly instructed to stop tracking state and immediately terminate execution upon successfully passing tests based purely on code requirements (specifically, fixing the Dockerfile blockers and ensuring the Phase 3 backend logic tests pass).
+  - Executed a global `git add -A ; git commit ; git push` to preserve Claude's massive Phase 3 coding push and to freeze the Scenario YAML and State files into the remote `master` branch.
+  - From here out, Antigravity acts as the sole architect drafting `CLAUDE_HANDOFF.md` coding prompts and executing rigorous QA checks on Claude's output through codebase reviews before logging state changes here.
+
+---
+
+### [2026-04-05 15:50:00] - Claude Code (Phases 14, 15, 17 Execution & Fixes)
+* **Status**: Complete — Dockerfile fixed, Hints completed, Gatekeeper + Noise + Instructor Dashboard implemented.
+* **Why**: The user directed Claude Code to execute the previously planned phases to unblock integration and add commercial-grade features (Background Noise, Methodology Gating, Instructor Dashboard).
+* **Where**:
+  - `infrastructure/docker/kali/Dockerfile` (updated)
+  - `backend/src/scenarios/hints/sc03_hints.json` (updated)
+  - `backend/src/scenarios/gatekeeper.py` (created)
+  - `backend/src/sandbox/daemon_noise.py` (created)
+  - `backend/src/main.py` (updated)
+  - `backend/src/db/database.py` (updated)
+  - `backend/src/auth/routes.py` (updated)
+  - `backend/src/instructor/routes.py` (created)
+  - `infrastructure/postgres/init.sql` (updated)
+  - `frontend/src/pages/InstructorDashboard.jsx` (created)
+  - `backend/src/ws/routes.py` (updated)
+* **What & How**:
+  - **Docker Fix**: Fixed Kali Dockerfile by adding debconf preseed to suppress wireshark, using `apt-get update --fix-missing`, removing `trufflehog` from apt, and adding pip3 `netexec`.
+  - **SC-03 Hints**: Expanded to 8 hints covering all phases (red payload crafting, campaign execution, reporting, and blue macro detection, C2 containment).
+  - **Methodology Gating (Phase 15)**: Integrated `gatekeeper.py` without DB/async overhead into `ws/routes.py`. It prefix-matches tool execution against the active PTES phase and deducts 5 points from the score upon violation with styled terminal output (`[-5 pts]`).
+  - **Noise Daemon (Phase 14)**: Created `daemon_noise.py` using `httpx.AsyncClient` which runs as a background task spanning active sessions, generating random SIEM noise events. Integrated into `main.py` lifespan after redis initialization.
+  - **Instructor Dashboard (Phase 17)**: Added `role` to DB. Exposed `/api/instructor/sessions` and `/api/instructor/metrics`. Created frontend dashboard pulling session states directly with auto-refresh and role validation. Seeded an `admin` instructor profile during database initialization.

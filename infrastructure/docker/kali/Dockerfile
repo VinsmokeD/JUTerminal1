@@ -2,8 +2,11 @@ FROM kalilinux/kali-rolling:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Suppress tshark/wireshark interactive install prompts
+RUN echo "wireshark-common wireshark-common/install-setuid boolean false" | debconf-set-selections
+
 # Core tools for all scenarios — installed in one layer to minimise image size
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     # Recon
     nmap nikto whatweb dnsutils whois curl wget \
     # Web assessment
@@ -17,14 +20,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # AWS
     awscli \
     # Misc pentest
-    medusa \
+    medusa crackmapexec impacket-scripts \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Python tools
-RUN pip3 install --no-cache-dir \
-    impacket \
-    trufflehog \
-    crackmapexec \
+# Python tooling — impacket suite + netexec (crackmapexec successor)
+RUN pip3 install --break-system-packages --no-cache-dir \
+    netexec \
     && rm -rf /root/.cache
 
 # Create non-root student user — containers never run as root

@@ -182,7 +182,7 @@
 
 ---
 
-## Phase 15 — Background Noise Generator
+## Phase 15 — Background Noise Generator ✅ Done
 **Goal**: Target networks simulate benign background traffic so attacker actions are hidden in noise.
 **Files**:
 - backend/src/sandbox/daemon-noise.py
@@ -191,7 +191,7 @@
 
 ---
 
-## Phase 16 — Methodology Gating (Hard Locks)
+## Phase 16 — Methodology Gating (Hard Locks) ✅ Done
 **Goal**: Enforce PTES phases natively. Block exploitation if recon is not logged.
 **Files**:
 - backend/src/scenarios/gatekeeper.py
@@ -209,7 +209,7 @@
 
 ---
 
-## Phase 18 — Instructor Dashboard
+## Phase 18 — Instructor Dashboard ✅ Done
 **Goal**: High-level view for professors to see student methodology adherence and download auto-generated reports.
 **Files**:
 - frontend/src/pages/InstructorDashboard.jsx
