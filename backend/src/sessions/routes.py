@@ -1,4 +1,3 @@
-import json
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -33,7 +32,7 @@ async def start_session(
         raise HTTPException(status_code=400, detail="role must be 'red' or 'blue'")
 
     scenario_id = body.scenario_id.upper()
-    valid = {"SC-01", "SC-02", "SC-03", "SC-04", "SC-05"}
+    valid = {"SC-01", "SC-02", "SC-03"}
     if scenario_id not in valid:
         raise HTTPException(status_code=400, detail="Unknown scenario")
 

@@ -9,8 +9,6 @@ import AiHintPanel from '../components/hints/AiHintPanel'
 import PhaseTrail from '../components/methodology/PhaseTrail'
 import api from '../lib/api'
 
-const IR_PHASES = ['Identify', 'Detect & analyze', 'Contain', 'Eradicate', 'Recover', 'Post-incident']
-
 const PLAYBOOKS = {
   'SC-01': [
     '1. Identify source IP of all HIGH/CRITICAL WAF alerts',
@@ -22,18 +20,29 @@ const PLAYBOOKS = {
     '7. Reset any credentials that may have been exposed via SQLi',
     '8. Write IR report: timeline, IOCs, affected data, RCA',
   ],
-  'SC-05': [
-    '1. Receive user report → open IR ticket with timestamp',
-    '2. Identify suspicious process tree (Event 4688)',
-    '3. Check for log clearing (Event 1102) — critical ransomware indicator',
-    '4. Run Velociraptor hunt: Windows.System.Pslist on affected host',
-    '5. Capture memory image BEFORE isolating the host',
-    '6. Isolate compromised workstation from network',
-    '7. Block C2 IP at perimeter firewall',
-    '8. Hunt for lateral movement: check SMB connections to file server',
-    '9. Identify persistence mechanisms (registry, scheduled tasks)',
-    '10. Restore from clean backup — verify integrity before reconnecting',
-    '11. Write full IR report with IOC list and RCA',
+  'SC-02': [
+    '1. Identify Event 4769 with RC4 encryption type (TicketEncryptionType=0x17)',
+    '2. Determine which account was Kerberoasted — check TargetUserName field',
+    '3. Correlate 4769 with 4768 (TGT) to confirm Kerberoasting chain',
+    '4. Identify lateral movement: Event 4624 Type 3 from non-standard source IPs',
+    '5. Alert on Event 4625 bursts from single IP — credential spray pattern',
+    '6. CRITICAL: Event 4662 with replication rights = DCSync — escalate immediately',
+    '7. Disable the compromised svc_backup account',
+    '8. Force Kerberos ticket expiry (purge all TGTs)',
+    '9. Document lateral movement path: source host → destination → technique used',
+    '10. Write IR report with full attack chain and AD hardening recommendations',
+  ],
+  'SC-03': [
+    '1. Review email headers: check SPF, DKIM, DMARC authentication results',
+    '2. Identify if sending IP is authorized in the domain SPF record',
+    '3. Check for DMARC alignment failure — From domain vs envelope sender',
+    '4. Identify which recipients opened the email (tracking pixel fires)',
+    '5. Check for macro execution: Event 4688 with Office process spawning cmd.exe',
+    '6. Identify PowerShell download cradle: Event 4104 (script block logging)',
+    '7. Look for scheduled task creation — attacker persistence mechanism',
+    '8. Block external C2 IP at perimeter firewall',
+    '9. Isolate any endpoints that executed the payload',
+    '10. Write phishing IR report with IOC list and email security recommendations',
   ],
 }
 
@@ -200,7 +209,6 @@ function PlaybookPanel({ steps }) {
 }
 
 function InvestigationPanel() {
-  const events = useSessionStore(s => s.siemEvents)
   const [iocs, setIocs] = useState([])
   const [input, setInput] = useState('')
 

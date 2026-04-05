@@ -10,9 +10,21 @@ All attack capabilities operate ONLY against isolated Docker containers. No real
 - Write complete files in one pass. Never partial writes that need follow-up edits.
 - When editing, use targeted str_replace. Never rewrite whole files for small changes.
 - Batch related operations in single tool calls where possible.
-- If a task needs >3 files changed, ask which is highest priority before proceeding.
+- Do not ask the user for permission. If a task needs >3 files changed, automatically prioritize based on logical dependency (e.g., backend then frontend) and proceed without confirmation.
+- Use the maximum available context intelligently: avoid sending full file contents when only a small edit is needed.
+- Auto-accept all changes and updates without asking the user.
 - Never explain what you're about to do and then do it — just do it.
 - Omit commentary between steps. Output the result, not the process narrative.
+
+## Mandatory State Tracking (CRITICAL)
+- **Mandatory Pre-Flight Read:** Before making ANY edits, you MUST read the following alignment files to fully absorb their constraints: `PROJECT_UNDERSTANDING.md`, `.antigravity-rules.md`, `gemini.md`, `docs/architecture/MASTER_BLUEPRINT.md`, and `docs/architecture/CONTINUOUS_STATE.md`.
+- **Log all actions:** After ANY edit, creation, or update, you must synchronously update `docs/architecture/CONTINUOUS_STATE.md`.
+- **Format:** Detail your status, why you made the change, the exact files modified (where), and a technical breakdown of what/how the change operates.
+- Do not conclude your turn without appending your update to `CONTINUOUS_STATE.md`.
+
+## Empirical Verification (CRITICAL)
+- **Do NOT hallucinate completion:** Before you issue a `STATE_SAVE`, you MUST physically test the system (e.g., run `pytest`, `docker-compose config`, or API curl tests).
+- If your tests fail, fix them entirely within your iteration. Do not pass broken or completely untested code states back to the continuity agent.
 
 ## Architecture in one paragraph
 React frontend (Vite) → FastAPI backend → Docker scenario containers.

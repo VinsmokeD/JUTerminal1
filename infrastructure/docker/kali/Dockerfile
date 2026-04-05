@@ -16,10 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 python3-pip git vim less jq \
     # AWS
     awscli \
-    # Impacket deps
-    python3-impacket \
     # Misc pentest
-    medusa crunch \
+    medusa \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Python tools

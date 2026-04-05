@@ -1,0 +1,159 @@
+id: SC-02
+title: "Active Directory Compromise: Nexora Financial"
+difficulty: Advanced
+estimated_duration_minutes: 300
+frameworks: 
+  - PTES
+  - "NIST CSF"
+tactics:
+  - TA0007 Discovery
+  - TA0006 Credential Access
+  - TA0008 Lateral Movement
+  - TA0004 Privilege Escalation
+network: 172.20.2.0/24
+containers:
+  - ip: 172.20.2.20
+    role: "Samba4 AD DC"
+  - ip: 172.20.2.30
+    role: "jsmith workstation"
+  - ip: 172.20.2.31
+    role: "helpdesk workstation"
+  - ip: 172.20.2.40
+    role: "File Server"
+
+briefing: |
+  Client: Nexora Financial Services
+  Type: Internal Network Penetration Test (Gray Box)
+  Starting position: Valid domain credentials provided (jsmith / Welcome1!)
+  Goal: Demonstrate path from low-privilege user to Domain Admin
+
+  1. You have been given credentials for a standard domain user: jsmith / Welcome1!
+  2. You may NOT create new domain admin accounts permanently — document the path only.
+  3. DCSync attack is permitted ONLY against the simulated DC container.
+  4. Stop condition: Once you have DA hash or Golden Ticket material, the engagement ends.
+
+flags:
+  - id: FLAG-SC02-1
+    description: "svc_backup plain text password via Kerberoasting"
+    value: "Backup2023"
+  - id: FLAG-SC02-2
+    description: "Domain Administrator NTLM Hash"
+
+methodology_gates:
+  impacket-getuserspns:
+    min_phase: 2
+    block_message: "Map the domain and document service accounts (Phase 1) before requesting TGS tickets."
+  hashcat:
+    min_phase: 2
+    block_message: "You need to extract a Kerberoastable hash before you can crack it."
+  crackmapexec:
+    min_phase: 3
+    block_message: "Perform Recon (Phase 1) and Kerberoasting (Phase 2) to acquire credentials before password spraying."
+  impacket-secretsdump:
+    min_phase: 4
+    block_message: "DCSync requires Domain Admin level privileges. You must complete Lateral Movement (Phase 3) first."
+
+phases:
+  1:
+    name: "Domain Reconnaissance"
+    ptes_phase: "Intelligence Gathering"
+    mitre: ["T1087", "T1069", "T1482"]
+    objectives:
+      - "Enumerate all domain users and groups"
+      - "Identify Kerberoastable service accounts"
+      - "Map computer accounts and roles"
+      - "Find unconstrained delegation objects"
+    completion_signals:
+      tools_used: ["bloodhound", "ldapsearch", "crackmapexec", "GetUserSPNs.py"]
+      min_notes_tagged: { "#finding": 2 }
+
+  2:
+    name: "Kerberoasting"
+    ptes_phase: "Exploitation"
+    mitre: ["T1558.003"]
+    objectives:
+      - "Request TGS for svc_backup SPN"
+      - "Extract RC4-HMAC hash"
+      - "Crack hash offline to obtain plaintext"
+    completion_signals:
+      flags_captured: ["FLAG-SC02-1"]
+      tools_used: ["GetUserSPNs.py", "hashcat"]
+
+  3:
+    name: "Lateral Movement"
+    ptes_phase: "Post-Exploitation"
+    mitre: ["T1550.002", "T1021.002"]
+    objectives:
+      - "Verify svc_backup access to FS01"
+      - "Spray credentials across subnet"
+      - "Identify local admin access paths"
+    completion_signals:
+      tools_used: ["crackmapexec", "smbclient"]
+      min_notes_tagged: { "#finding": 3 }
+
+  4:
+    name: "Privilege Escalation to Domain Admin"
+    ptes_phase: "Post-Exploitation"
+    mitre: ["T1003.006", "T1558.001"]
+    objectives:
+      - "Exploit unconstrained delegation on FS01"
+      - "Extract Domain Admin TGT from memory"
+      - "Execute DCSync to dump NTDS.dit"
+    completion_signals:
+      flags_captured: ["FLAG-SC02-2"]
+
+  5:
+    name: "Reporting"
+    ptes_phase: "Reporting"
+    objectives:
+      - "Document full lateral movement path"
+      - "Map attack path in BloodHound"
+      - "Generate AD compromise report"
+    completion_signals:
+      report_generated: true
+
+soc_detection:
+  - trigger_regex: "GetUserSPNs|kerberoast|TGS"
+    severity: high
+    event_template: "EventID 4769 — Kerberos TGS Request (RC4) for {target_user} from {source_ip}. Possible Kerberoasting."
+    mitre: "T1558.003"
+    detection_window_seconds: 60
+    source: attacker
+  - trigger_regex: "crackmapexec|cme .*smb"
+    severity: medium
+    event_template: "EventID 4625 — Multiple failed logon attempts from {source_ip} across subnet. Credential spray pattern."
+    mitre: "T1110.003"
+    detection_window_seconds: 120
+    source: attacker
+  - trigger_regex: "secretsdump|dcsync|drsuapi"
+    severity: critical
+    event_template: "CRITICAL — EventID 4662 — Replication request from non-DC host {source_ip}. DCSync attack detected."
+    mitre: "T1003.006"
+    detection_window_seconds: 30
+    source: attacker
+  - trigger_regex: "smbclient|impacket.*smb|psexec"
+    severity: medium
+    event_template: "EventID 4624 Type 3 — Network logon as {target_user} from {source_ip} to {target_host}"
+    mitre: "T1021.002"
+    detection_window_seconds: 60
+    source: attacker
+
+scoring:
+  red:
+    base: 100
+    flag_bonuses:
+      FLAG-SC02-1: 30
+      FLAG-SC02-2: 40
+    time_bonus_threshold_minutes: 150
+    time_bonus_points: 15
+  blue:
+    base: 100
+    detection_bonuses:
+      - condition: "kerberoast_detected_within_2min"
+        points: 20
+      - condition: "4769_rc4_alert_triaged_correctly"
+        points: 20
+      - condition: "dcsync_blocked_before_completion"
+        points: 30
+      - condition: "lateral_movement_timeline_documented"
+        points: 15

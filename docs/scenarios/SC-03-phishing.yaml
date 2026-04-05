@@ -1,0 +1,143 @@
+id: SC-03
+title: "Phishing Campaign & Initial Access: Orion Logistics"
+difficulty: Beginner
+estimated_duration_minutes: 180
+frameworks: 
+  - PTES
+  - "NIST CSF"
+tactics:
+  - TA0043 Reconnaissance
+  - TA0001 Initial Access
+  - TA0002 Execution
+network: 172.20.3.0/24
+containers:
+  - ip: 172.20.3.40
+    role: "GoPhish Server"
+  - ip: 172.20.3.20
+    role: "Postfix Mail Server"
+  - ip: 172.20.3.30
+    role: "Python Windows Endpoint Sim"
+
+briefing: |
+  Client: Orion Logistics International
+  Type: Phishing Simulation + Initial Access Assessment
+  Goal: Determine susceptibility of IT helpdesk staff to targeted phishing; demonstrate initial access and post-access enumeration.
+
+  1. Phishing targets are SIMULATED employees only — no real email addresses.
+  2. You must submit your pretext narrative for approval before sending (platform gate).
+  3. Payload must be a simulated reverse shell.
+  4. Credential harvesting pages must use the .novamed.sim domain only.
+  5. Once shell obtained, enumerate host only — no lateral movement in this scenario.
+
+flags:
+  - id: FLAG-SC03-1
+    description: "Reverse shell callback received from simulated endpoint"
+
+methodology_gates:
+  msfvenom:
+    min_phase: 3
+    block_message: "Complete Target Research (Phase 1) and Pretext Design (Phase 2) before generating payloads."
+  gophish:
+    min_phase: 4
+    block_message: "Payload creation (Phase 3) must be finished before launching the campaign."
+
+phases:
+  1:
+    name: "Target Research (OSINT)"
+    ptes_phase: "Intelligence Gathering"
+    mitre: ["T1597", "T1593"]
+    objectives:
+      - "Enumerate employee names and email format from OSINT sources"
+      - "Identify high-value targets (helpdesk, finance, IT)"
+      - "Collect pretext material (recent invoices, shipment events)"
+    completion_signals:
+      tools_used: ["theHarvester", "curl"]
+      min_notes_tagged: { "#finding": 1 }
+
+  2:
+    name: "Pretext Design"
+    ptes_phase: "Pre-engagement"
+    mitre: ["T1566"]
+    objectives:
+      - "Design convincing email pretext based on OSINT"
+      - "Build GoPhish landing page and email template"
+      - "Configure sending profile via Postfix relay"
+    completion_signals:
+      tools_used: ["gophish"]
+      min_notes_tagged: { "#finding": 1 }
+
+  3:
+    name: "Payload Crafting"
+    ptes_phase: "Exploitation"
+    mitre: ["T1566.001", "T1204.002"]
+    objectives:
+      - "Generate document-based payload (macro or HTA)"
+      - "Test payload against simulated endpoint"
+      - "Configure C2 listener"
+    completion_signals:
+      tools_used: ["msfvenom", "netcat"]
+
+  4:
+    name: "Campaign Execution"
+    ptes_phase: "Exploitation"
+    mitre: ["T1566", "T1204"]
+    objectives:
+      - "Launch GoPhish campaign to simulated targets"
+      - "Achieve callback from simulated victim endpoint"
+      - "Enumerate victim host post-access"
+    completion_signals:
+      flags_captured: ["FLAG-SC03-1"]
+
+  5:
+    name: "Reporting"
+    ptes_phase: "Reporting"
+    objectives:
+      - "Document click rate, open rate, callback rate"
+      - "Write phishing risk assessment report"
+    completion_signals:
+      report_generated: true
+
+soc_detection:
+  - trigger_regex: "theHarvester|hunter\\.io|email.*harvest"
+    severity: low
+    event_template: "OSINT activity detected — external email harvesting for {target_domain}"
+    mitre: "T1597"
+    detection_window_seconds: 600
+    source: attacker
+  - trigger_regex: "gophish|phishing.*campaign|landing.*page"
+    severity: medium
+    event_template: "Email tracking pixel triggered — suspicious email open from internal user {target_user}"
+    mitre: "T1566"
+    detection_window_seconds: 300
+    source: attacker
+  - trigger_regex: "msfvenom|payload.*macro|hta.*payload"
+    severity: high
+    event_template: "Macro execution detected on endpoint {target_host} — suspicious document opened by {target_user}"
+    mitre: "T1204.002"
+    detection_window_seconds: 120
+    source: attacker
+  - trigger_regex: "nc .*-lvp|msfconsole.*handler|reverse.*shell"
+    severity: critical
+    event_template: "CRITICAL — Reverse shell callback from {target_host} to {source_ip}:{source_port}. C2 beacon established."
+    mitre: "T1571"
+    detection_window_seconds: 60
+    source: attacker
+
+scoring:
+  red:
+    base: 100
+    flag_bonuses:
+      FLAG-SC03-1: 50
+    time_bonus_threshold_minutes: 120
+    time_bonus_points: 10
+  blue:
+    base: 100
+    detection_bonuses:
+      - condition: "phishing_email_flagged_before_click"
+        points: 25
+      - condition: "spf_dkim_dmarc_failure_identified"
+        points: 20
+      - condition: "c2_callback_blocked_at_firewall"
+        points: 30
+      - condition: "ir_report_with_ioc_list"
+        points: 15

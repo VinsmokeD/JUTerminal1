@@ -5,7 +5,7 @@ set -e
 DOMAIN="NEXORA.LOCAL"
 REALM="NEXORA.LOCAL"
 NETBIOS_NAME="NEXORA"
-ADMIN_PASS="Welcome1!"
+ADMIN_PASS="NexoraAdmin2024!"
 
 # Provision the domain
 if [ ! -f /etc/samba/smb.conf.bak ]; then

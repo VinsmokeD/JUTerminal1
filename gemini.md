@@ -9,7 +9,11 @@ All processing begins with a defined schema. No coding in `tools/` until the "Pa
   - Layer 2: Navigation (LLM decision routing).
   - Layer 3: Atomic Python Tools in `tools/`.
 - **Deterministic Logic**: LLMs reason, scripts execute. Never trust the LLM with math or shell execution.
-- **Self-Healing**: Failures MUST update `architecture/` documents so they don't repeat.
+- **Self-Healing**: Failures MUST update `architecture/` documents so they don't repeat. Do this automatically without asking for user confirmation.
+- **Zero Human Intervention**: Auto-accept all updates and changes. Resolve contradictions internally without interrupting the user.
+- **Mandatory Pre-Flight Read**: Before planning or editing logic, you MUST read `PROJECT_UNDERSTANDING.md`, `.antigravity-rules.md`, `claude.md`, `docs/architecture/MASTER_BLUEPRINT.md`, and `docs/architecture/CONTINUOUS_STATE.md` to ensure your context is synchronized.
+- **Mandatory State Tracking**: You MUST synchronously append every change, planning output, or significant finding to `docs/architecture/CONTINUOUS_STATE.md` using the exact format specified in that file before concluding your processing.
+- **No Conceptual Drift**: All theoretical planning must firmly align with existing infrastructure (`docker-compose.yml` and `.env.example`). Never invent new ports, env variables, or services without formally updating those core foundation files first.
 - **CyberSim Compliance**:
   - Isolated Docker containers ONLY. No internet access from within containers.
   - No real exploit payloads in filenames or source code (use reference IDs).
