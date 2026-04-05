@@ -184,24 +184,17 @@ All agents enforce these on every change. No STATE_SAVE is valid if any guardrai
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 0 | Concept, architecture, documentation | ✅ Done |
-| 1 | Infrastructure skeleton (docker-compose, env, CI) | ✅ Code complete — pending Docker boot |
-| 2 | Backend foundation (auth, WS, session management) | ✅ Code complete — pending curl test |
-| 3 | Scenario engine core (state machine + YAML loader + 3 YAML specs) | 🚧 In Progress |
-| 4 | Terminal proxy end-to-end test | 🚧 Code written — pending Docker |
-| 5 | SIEM event engine (3 scenarios only) | 🟡 Event JSON done — engine untested |
-| 6 | Notes system | 🟡 Code done — untested |
-| 7 | Methodology tracker + gating (scope_enforcer.py) | ⏳ Not started |
-| 8 | AI monitor integration | 🟡 Code done — needs GEMINI_API_KEY |
-| 9 | Hint system (sc01–sc03 only) | 🟡 sc01+sc02 JSON done — sc03 missing |
-| 10 | ROE briefing | 🟡 Frontend done — untested |
-| 11 | Background noise generator (sc01–sc03) | ⏳ Not started |
-| 12 | Scoring system | 🟡 Code done — untested |
-| 13 | Dashboard + scenario selection (3 cards) | 🟡 Code done — untested |
-| 14 | Kill Chain Timeline (Debrief) | ⏳ Not started |
-| 15 | Instructor Dashboard | ⏳ Not started |
-| 16 | Terminal re-attach on refresh (Redis history replay) | ⏳ Not started |
-| 17 | Methodology gating hard locks | ⏳ Not started |
-| 18 | Final integration + SC-01 full end-to-end test | ⏳ Not started |
+| 1 | Infrastructure skeleton (docker-compose, env) | ✅ Fixed (backend/Dockerfile updated) |
+| 2 | Backend foundation (auth, WS, session) | ✅ Code complete |
+| 3 | Scenario engine core (state machine + YAML) | ✅ Done |
+| 4 | Terminal proxy end-to-end test | 🚧 Pending Docker boot |
+| 5 | SIEM event engine | 🟡 Event JSON done — engine untested |
+| 11 | Background noise generator (sc01–sc03) | ✅ Done (daemon_noise.py) |
+| 14 | Kill Chain Timeline (Debrief) | ⏳ Planning Phase 17 |
+| 15 | Instructor Dashboard | ✅ Done |
+| 16 | Terminal re-attach on refresh | ⏳ Planning Phase 16 |
+| 17 | Methodology gating hard locks | ✅ Done (gatekeeper.py) |
+| 18 | Final integration + SC-01 full test | ⏳ Not started |
 
 **Immediate blockers**:
 1. Docker Desktop not running — must be started manually
