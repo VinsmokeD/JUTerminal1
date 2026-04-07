@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import RedWorkspace from './pages/RedWorkspace'
 import BlueWorkspace from './pages/BlueWorkspace'
 import Debrief from './pages/Debrief'
+import InstructorDashboard from './pages/InstructorDashboard'
 
 function RequireAuth({ children }) {
   const token = useAuthStore((s) => s.token)
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/session/:sessionId/red" element={<RequireAuth><RedWorkspace /></RequireAuth>} />
         <Route path="/session/:sessionId/blue" element={<RequireAuth><BlueWorkspace /></RequireAuth>} />
         <Route path="/session/:sessionId/debrief" element={<RequireAuth><Debrief /></RequireAuth>} />
+        <Route path="/instructor" element={<RequireAuth><InstructorDashboard /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
+import KillChainTimeline from '../components/debrief/KillChainTimeline'
 
 export default function Debrief() {
   const { sessionId } = useParams()
@@ -93,6 +94,9 @@ export default function Debrief() {
         <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 text-xs text-gray-500">
           Your notes, commands, and SIEM events have been saved for this session. The report includes all #finding, #evidence, #ioc, and #remediation notes.
         </div>
+
+        {/* Phase 17 — Kill Chain Timeline */}
+        <KillChainTimeline sessionId={sessionId} />
       </div>
     </div>
   )

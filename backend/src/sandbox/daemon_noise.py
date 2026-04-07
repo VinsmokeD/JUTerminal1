@@ -145,15 +145,19 @@ async def _publish_noise_event(session_id: str, scenario_id: str) -> None:
         return
 
     event = random.choice(profile["siem_events"])
+    # Normalize severity to uppercase for consistent frontend rendering
+    raw_severity = event["severity"].upper()
+    severity = "MED" if raw_severity == "MEDIUM" else raw_severity
     payload = {
         "id": str(uuid.uuid4()),
         "type": "siem_event",
         "session_id": session_id,
-        "severity": event["severity"],
+        "severity": severity,
         "message": event["message"],
         "mitre_technique": event.get("mitre"),
         "source": event.get("source", "system"),
         "noise": True,  # flag so frontend can optionally dim noise events
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     try:

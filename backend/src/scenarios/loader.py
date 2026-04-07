@@ -52,6 +52,7 @@ def list_scenarios() -> list[dict[str, Any]]:
             result.append({
                 "id": spec["id"],
                 "title": spec["title"],
+                "description": spec.get("description", ""),
                 "difficulty": spec.get("difficulty", "intermediate"),
                 "duration_hours": round(spec.get("estimated_duration_minutes", 180) / 60, 1),
                 "frameworks": spec.get("frameworks", []),

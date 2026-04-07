@@ -37,13 +37,20 @@ async def process_command_for_siem(session_id: str, state: dict, command: str) -
 
     result = []
     for template in events:
+        # Normalize severity to uppercase for consistent frontend rendering
+        raw_severity = template.get("severity", "INFO").upper()
+        # Map 'MEDIUM' → 'MED' to match frontend styles
+        severity = "MED" if raw_severity == "MEDIUM" else raw_severity
+        now = datetime.now(timezone.utc).isoformat()
         event = {
             "id": str(uuid.uuid4()),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "severity": template.get("severity", "INFO"),
+            "timestamp": now,
+            "created_at": now,
+            "severity": severity,
             "message": template.get("message", ""),
             "raw_log": template.get("raw_log", "").replace("{src_ip}", "172.20.1.10"),
             "mitre_technique": template.get("mitre_technique"),
+            "source": template.get("source", "attacker"),
             "source_ip": "172.20.1.10",
             "tool_triggered": tool,
         }

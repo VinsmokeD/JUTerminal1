@@ -26,10 +26,12 @@ export default function Dashboard() {
   const [launchModal, setLaunchModal] = useState(null) // { scenario }
   const [role, setRole] = useState('red')
   const [methodology, setMethodology] = useState('ptes')
+  const [userRole, setUserRole] = useState(null)
 
   useEffect(() => {
     fetchScenarios()
     api.get('/sessions/').then(r => setMySessions(r.data)).catch(() => {})
+    api.get('/auth/me').then(r => setUserRole(r.data.role)).catch(() => {})
   }, [fetchScenarios])
 
   const launch = async () => {
@@ -56,6 +58,11 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-gray-400 text-sm">{username}</span>
+          {userRole === 'instructor' && (
+            <button onClick={() => navigate('/instructor')} className="text-blue-400 hover:text-blue-300 text-sm">
+              Instructor Dashboard
+            </button>
+          )}
           <button onClick={logout} className="text-gray-500 hover:text-gray-300 text-sm">Sign out</button>
         </div>
       </div>

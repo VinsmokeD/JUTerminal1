@@ -77,6 +77,7 @@ class SiemEvent(Base):
     raw_log: Mapped[str | None] = mapped_column(String, nullable=True)
     mitre_technique: Mapped[str | None] = mapped_column(String(20), nullable=True)
     source_ip: Mapped[str | None] = mapped_column(String(45), nullable=True)
+    source: Mapped[str] = mapped_column(String(50), default="attacker")  # attacker | background | system
     acknowledged: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     session: Mapped["Session"] = relationship(back_populates="siem_events")

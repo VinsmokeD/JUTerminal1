@@ -6,7 +6,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.db.database import AsyncSessionLocal, Session
+from src.db.database import AsyncSessionLocal, Session, CommandLog
 from src.sandbox.terminal import stream_terminal_output, send_terminal_input
 from src.siem.engine import process_command_for_siem
 from src.ai.monitor import get_ai_hint
@@ -132,6 +132,18 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 # Log command and trigger SIEM events
                 siem_events = await process_command_for_siem(session_id, session_state, command)
 
+                # Persist command to DB for timeline + reports
+                async with AsyncSessionLocal() as db:
+                    from src.scenarios.gatekeeper import _parse_tool as _gt
+                    tool_name = _gt(command)
+                    db.add(CommandLog(
+                        session_id=session_id,
+                        command=command,
+                        tool=tool_name or None,
+                        phase=session_state.get("phase", 1),
+                    ))
+                    await db.commit()
+
                 # Store command in Redis for AI context
                 await lpush_capped(f"session:{session_id}:commands", command, max_len=10)
 
@@ -148,8 +160,19 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
     except WebSocketDisconnect:
         pass
+    except Exception:
+        pass
     finally:
         redis_task.cancel()
-        await pubsub.unsubscribe()
-        await pubsub.aclose()
-        await redis.hdel(_ACTIVE_SESSIONS_KEY, session_id)
+        try:
+            await pubsub.unsubscribe()
+        except Exception:
+            pass
+        try:
+            await pubsub.reset()
+        except Exception:
+            pass
+        try:
+            await redis.hdel(_ACTIVE_SESSIONS_KEY, session_id)
+        except Exception:
+            pass
