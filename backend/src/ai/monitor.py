@@ -1,3 +1,4 @@
+import asyncio
 import time
 import google.generativeai as genai
 from pathlib import Path
@@ -79,12 +80,16 @@ async def get_ai_hint(
             system_instruction=_load_system_prompt(),
         )
         user_msg = _build_user_context(session_id, state, command, hint_level)
-        response = model.generate_content(
+        gen_config = genai.GenerationConfig(
+            max_output_tokens=settings.GEMINI_MAX_TOKENS,
+            temperature=0.4,
+        )
+        # generate_content is synchronous — run in a thread pool so we never
+        # block the FastAPI event loop during the Gemini network round-trip.
+        response = await asyncio.to_thread(
+            model.generate_content,
             user_msg,
-            generation_config=genai.GenerationConfig(
-                max_output_tokens=settings.GEMINI_MAX_TOKENS,
-                temperature=0.4,
-            ),
+            generation_config=gen_config,
         )
         hint_text = response.text.strip()
 

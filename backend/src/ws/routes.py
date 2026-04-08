@@ -13,6 +13,7 @@ from src.ai.monitor import get_ai_hint
 from src.cache.redis import cache_get, cache_set, lpush_capped, lrange, _get as get_redis_client
 from src.scenarios.gatekeeper import check_command
 from src.scenarios.loader import load_scenario
+from src.scenarios.hint_engine import _load_hints
 
 _GATE_PENALTY = 5  # points deducted per blocked command
 _ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → scenario_id
@@ -82,14 +83,19 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
     # Start streaming terminal output from Docker to Redis (idempotent thread launch)
     if session.container_id:
-        await stream_terminal_output(session_id, session.container_id)
+        await stream_terminal_output(session_id, session.container_id, session_state["scenario_id"])
 
     # Replay persisted history so browser refresh restores terminal context immediately.
     await _send_reconnect_history(websocket, session_id)
 
-    # Register session as active for noise daemon targeting
+    # Register session as active for noise daemon targeting ONLY when a real
+    # container is running — prevents spurious SIEM noise when Docker is unavailable.
     redis = get_redis_client()
-    await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, session_state["scenario_id"])
+    has_real_container = bool(
+        session.container_id and not session.container_id.startswith("mock-")
+    )
+    if has_real_container:
+        await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, session_state["scenario_id"])
 
     # Subscribe to SIEM + terminal output channels via Redis pub/sub
     pubsub = redis.pubsub()
@@ -173,9 +179,24 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
             elif msg_type == "request_hint":
                 level = msg.get("level", 1)
+                hint_text = None
+
+                # Try AI hint first
                 ai_hint = await get_ai_hint(session_id, session_state, None, level)
                 if ai_hint:
-                    await websocket.send_json({"type": "ai_hint", "data": {"text": ai_hint, "level": level}})
+                    hint_text = ai_hint
+                else:
+                    # Fall back to static hint JSON files
+                    hints_data = _load_hints(session_state["scenario_id"])
+                    sc_hints = hints_data.get(session_state["scenario_id"], {})
+                    role_hints = sc_hints.get(session_state.get("role", "red"), {})
+                    phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
+                    hint_text = phase_hints.get(f"L{level}")
+
+                if hint_text:
+                    await websocket.send_json({"type": "ai_hint", "data": {"text": hint_text, "level": level}})
+                else:
+                    await websocket.send_json({"type": "ai_hint", "data": {"text": "No hint available for this phase yet. Try progressing to the next step.", "level": level}})
 
     except WebSocketDisconnect:
         pass

@@ -170,13 +170,16 @@ async def _publish_noise_event(session_id: str, scenario_id: str) -> None:
 async def _run_noise_loop() -> None:
     """
     Main daemon loop.
-    - Every 8–20 seconds: publish a noise SIEM event to each active session
-    - Every 30–90 seconds: fire an HTTP probe to a random container target
+    - Every 30–60 seconds: publish one noise SIEM event per active session
+    - Every 90–180 seconds: fire an HTTP probe to a random container target
+
+    Interval is intentionally long so noise doesn't overwhelm students who
+    haven't typed any commands yet. Noise events are also dimmed in the UI.
     """
     http_tick = 0
 
     while True:
-        sleep_secs = random.uniform(8.0, 20.0)
+        sleep_secs = random.uniform(30.0, 60.0)
         await asyncio.sleep(sleep_secs)
         http_tick += sleep_secs
 
@@ -195,14 +198,14 @@ async def _run_noise_loop() -> None:
 
             await _publish_noise_event(session_id, scenario_id)
 
-            # HTTP probes: run less frequently than SIEM events
-            if http_tick >= random.uniform(30.0, 90.0):
+            # HTTP probes: run much less frequently than SIEM events
+            if http_tick >= random.uniform(90.0, 180.0):
                 profile = _NOISE_PROFILES.get(scenario_id, {})
                 targets = profile.get("http_targets", [])
                 if targets:
                     asyncio.create_task(_probe_http(random.choice(targets)))
 
-        if http_tick >= 90.0:
+        if http_tick >= 180.0:
             http_tick = 0
 
 

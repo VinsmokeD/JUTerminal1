@@ -14,6 +14,46 @@ Every update must follow this strict format. Do not skip any fields.
 ---
 ## Change Log
 
+### [2026-04-08 23:05:00] - Claude Code (Review + Hotfix: Mock Terminal Command Flow)
+* **Status**: Code Review + Coding Complete
+* **Why**: User requested full review, run, and GitHub update. Review identified a high-severity regression in mock terminal behavior that blocked command responses in non-Docker sessions, plus a string interpolation defect in simulated `hydra` output.
+* **Where**: `backend/src/sandbox/terminal.py`, `docs/architecture/CONTINUOUS_STATE.md`.
+* **What & How**:
+  - Fixed mock listener command gate: removed newline-dependent condition and switched to processing non-empty command payloads directly (`cmd = text.strip(); if not cmd: continue`). This aligns with the frontend flow where complete commands are sent after Enter, not keystroke streams with trailing newlines.
+  - Fixed hydra simulated output to interpolate the target host correctly using an f-string.
+  - Result: mock terminal now responds to submitted commands consistently and reconnect history remains intact.
+
+### [2026-04-08 22:30:00] - Claude Code (Terminal UX Overhaul + AI Hints Fallback + Learning Context)
+* **Status**: Coding + Verified (syntax clean on all 3 backend modules)
+* **Why**: User reported: (1) Kali terminal non-functional — mock mode emits a single dead prompt with no command responses, (2) AI hint buttons produce no output when Gemini API key is missing, (3) Learning Context panel only has SC-01 data — SC-02/SC-03 empty, (4) Terminal doesn't show target info or scenario network, (5) Terminal lacks real Kali aesthetic.
+* **Where**:
+  - `backend/src/sandbox/terminal.py` — added SCENARIO_TARGETS dict, `_build_banner()`, `_mock_command_output()` (simulates 25+ commands), `_mock_listener` thread, updated `stream_terminal_output()` + `_terminal_proxy_thread()` signatures to accept `scenario_id`
+  - `backend/src/ws/routes.py` — passes `scenario_id` to `stream_terminal_output()`, added static hint JSON fallback in `request_hint` handler, imported `_load_hints` from hint_engine
+  - `frontend/src/hooks/useTerminal.js` — new Kali-authentic xterm theme (darker bg, green cursor, 14px JetBrains Mono), command history (up/down arrows), Ctrl+C/Ctrl+L, tab completion for 25+ pentesting tools, improved color scheme with bright variants
+  - `frontend/src/components/hints/AiHintPanel.jsx` — onboarding card explaining L1/L2/L3 hint levels, timeout fallback message instead of silent failure, improved hint card styling with level-colored backgrounds
+  - `frontend/src/pages/RedWorkspace.jsx` — added full CONTEXT entries for SC-02 (4 phases: AD recon → Kerberoast → lateral movement → DCSync) and SC-03 (5 phases: OSINT → campaign setup → payload → execution → reporting), each with MITRE technique IDs, suggested tools, and CWE references. Added SCENARIO_TARGETS card in LearningContext showing network, IPs, domain, credentials.
+* **What & How**:
+  - **MOCK TERMINAL**: Complete interactive mock terminal. When Docker is unavailable (`container_id` starts with `mock-`), a background thread subscribes to `terminal:{session_id}:input` and responds with simulated output for 25+ commands: nmap (scenario-specific port scans), gobuster, sqlmap, bloodhound, crackmapexec, impacket-*, hashcat, nikto, whatweb, hydra, msfconsole, curl, plus system commands (whoami, id, ls, cat, ip addr, ping). Each command output is tailored to the active scenario's targets. Unknown commands return `bash: command not found` with `help` suggestion. Responses stored in Redis history for reconnect replay.
+  - **SCENARIO BANNER**: On both real Docker and mock terminal connect, a colored ASCII banner displays: scenario name, network CIDR, all target IPs with descriptions, domain/creds (if applicable), red/blue objectives, and available tools hint.
+  - **HINT FALLBACK**: WS `request_hint` handler now tries Gemini AI first, then falls back to static hints from `sc{XX}_hints.json` files (which have L1/L2/L3 hints for every phase of every scenario). If both fail, sends a "no hint available" message instead of silence.
+  - **TERMINAL UX**: xterm.js reconfigured with Kali-style prompt (`┌──(student㉿kali)-[~]\n└─$`), command history navigation (up/down arrows with circular buffer), Ctrl+C (cancel), Ctrl+L (clear), tab completion for pentesting tools, block cursor, 5000-line scrollback.
+  - **LEARNING CONTEXT**: LearningContext component now renders a target environment card (network, IPs, domain, credentials) + phase-specific guidance with suggested tool chips for all 3 scenarios.
+  - **Verification**: `python -m py_compile` clean on terminal.py, routes.py, monitor.py.
+
+### [2026-04-08 12:00:00] - Claude Code (3-Bug Fix: Terminal / AI Hints / SIEM Noise)
+* **Status**: Coding + Verified (syntax clean)
+* **Why**: User reported three runtime failures: (1) Kali terminal not working, (2) AI hints not working, (3) SIEM logs appearing with no user activity.
+* **Where**:
+  - `backend/src/sandbox/terminal.py` — complete rewrite of proxy thread
+  - `backend/src/ai/monitor.py` — wrapped blocking Gemini call
+  - `backend/src/ws/routes.py` — guarded noise-daemon registration
+  - `backend/src/sandbox/daemon_noise.py` — increased noise interval
+* **What & How**:
+  - **BUG 1 (CRITICAL — Terminal)**: `_terminal_proxy_thread` created `asyncio.new_event_loop()` then called `get_redis_client()` which returns the singleton `aioredis.Redis` client **bound to the main FastAPI event loop**. Using that client's coroutines from a different loop raises `RuntimeError: Task attached to a different loop` — silently swallowed by `except Exception`, so the thread exited immediately with no I/O ever proxied. **Fix**: Full rewrite — two child threads (`_docker_to_redis`, `_redis_to_docker`) now use the synchronous `redis.Redis` client via `_make_sync_redis()` (from `redis[hiredis]` v7.3.0). Docker socket reads use blocking `select()` with 1-second timeout. A `threading.Event` coordinates shutdown between both threads.
+  - **BUG 2 (CRITICAL — AI Hints)**: `model.generate_content()` is a synchronous blocking call inside `async def get_ai_hint()`. It blocked the entire FastAPI event loop for each Gemini API call (1–5 s), freezing all WS messages and HTTP requests — hints silently timed out. **Fix**: Added `import asyncio`; wrapped: `response = await asyncio.to_thread(model.generate_content, user_msg, generation_config=gen_config)`.
+  - **BUG 3 (MEDIUM — SIEM noise)**: Sessions were registered in the noise daemon Redis hash unconditionally even when `container_id` started with `mock-`. Noise SIEM events fired immediately after WS connect with no real terminal activity. **Fix**: Added `has_real_container` guard in `ws/routes.py` so noise-daemon registration only happens when a real Docker container is confirmed. Increased daemon sleep interval from 8–20 s → 30–60 s.
+  - **Verification**: `python -m py_compile` clean on all 4 modified files. `redis.Redis` sync client v7.3.0 confirmed importable.
+
 ### [2026-04-08 00:40:00] - Claude Code (Phase 16 Timeline + Terminal Re-attach Hardening)
 * **Status**: Coding Complete (No tests run per user instruction)
 * **Why**: User requested final offline sprint implementation for (1) Kill Chain Timeline UI, (2) backend terminal re-attach with reconnect history replay, and (3) frontend terminal restoration from history payload after browser refresh.
