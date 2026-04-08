@@ -8,6 +8,7 @@ export function useTerminal({ containerRef, onCommand }) {
   const termRef = useRef(null)
   const fitRef = useRef(null)
   const lineBufferRef = useRef('')
+  const historyRestoredRef = useRef(false)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -68,7 +69,26 @@ export function useTerminal({ containerRef, onCommand }) {
     const handleOutput = (evt) => {
       term.write(evt.detail?.data || '')
     }
+    const handleHistory = (evt) => {
+      if (historyRestoredRef.current) return
+      const payload = evt.detail || {}
+      const commands = Array.isArray(payload.commands) ? payload.commands : []
+      const terminalChunks = Array.isArray(payload.terminal) ? payload.terminal : []
+
+      if (commands.length > 0) {
+        commands.forEach((cmd) => {
+          term.write(`$ ${cmd}\r\n`)
+        })
+      }
+      if (terminalChunks.length > 0) {
+        terminalChunks.forEach((chunk) => {
+          term.write(chunk || '')
+        })
+      }
+      historyRestoredRef.current = true
+    }
     window.addEventListener('terminal:output', handleOutput)
+    window.addEventListener('terminal:history', handleHistory)
 
     // Resize observer
     const ro = new ResizeObserver(() => fitAddon.fit())
@@ -76,6 +96,7 @@ export function useTerminal({ containerRef, onCommand }) {
 
     return () => {
       window.removeEventListener('terminal:output', handleOutput)
+      window.removeEventListener('terminal:history', handleHistory)
       ro.disconnect()
       term.dispose()
     }

@@ -10,7 +10,7 @@ from src.db.database import AsyncSessionLocal, Session, CommandLog
 from src.sandbox.terminal import stream_terminal_output, send_terminal_input
 from src.siem.engine import process_command_for_siem
 from src.ai.monitor import get_ai_hint
-from src.cache.redis import cache_get, cache_set, lpush_capped, _get as get_redis_client
+from src.cache.redis import cache_get, cache_set, lpush_capped, lrange, _get as get_redis_client
 from src.scenarios.gatekeeper import check_command
 from src.scenarios.loader import load_scenario
 
@@ -27,6 +27,22 @@ async def _authenticate(token: str) -> str | None:
         return payload.get("sub")
     except JWTError:
         return None
+
+
+async def _send_reconnect_history(websocket: WebSocket, session_id: str) -> None:
+    """Send terminal and command history immediately after reconnect."""
+    terminal_chunks = await lrange(f"terminal:{session_id}:history", 0, 499)
+    command_history = await lrange(f"session:{session_id}:commands", 0, 49)
+
+    await websocket.send_json(
+        {
+            "type": "history",
+            "data": {
+                "commands": list(reversed([str(c) for c in command_history if c is not None])),
+                "terminal": list(reversed([str(c) for c in terminal_chunks if c is not None])),
+            },
+        }
+    )
 
 
 @router.websocket("/{session_id}")
@@ -67,6 +83,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     # Start streaming terminal output from Docker to Redis (idempotent thread launch)
     if session.container_id:
         await stream_terminal_output(session_id, session.container_id)
+
+    # Replay persisted history so browser refresh restores terminal context immediately.
+    await _send_reconnect_history(websocket, session_id)
 
     # Register session as active for noise daemon targeting
     redis = get_redis_client()

@@ -3,6 +3,45 @@ import { useParams, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 import KillChainTimeline from '../components/debrief/KillChainTimeline'
 
+const MOCK_KILL_CHAIN_EVENTS = [
+  {
+    team: 'red',
+    timestamp: '2026-04-08T10:01:20Z',
+    title: 'SQLi Recon Probe',
+    description: 'Red Team runs sqlmap against /login endpoint with low-risk fingerprinting.',
+  },
+  {
+    team: 'blue',
+    timestamp: '2026-04-08T10:01:34Z',
+    title: 'WAF Detects Injection Signature',
+    description: 'Blue Team receives ModSecurity alert for repeated UNION SELECT patterns.',
+  },
+  {
+    team: 'red',
+    timestamp: '2026-04-08T10:03:05Z',
+    title: 'Directory Enumeration',
+    description: 'Red Team executes gobuster to enumerate hidden admin paths.',
+  },
+  {
+    team: 'blue',
+    timestamp: '2026-04-08T10:03:18Z',
+    title: 'Anomalous Request Burst',
+    description: 'Blue Team identifies elevated 404 rates and rapid URL traversal attempts.',
+  },
+  {
+    team: 'red',
+    timestamp: '2026-04-08T10:06:42Z',
+    title: 'Web Shell Upload Attempt',
+    description: 'Red Team attempts multipart upload with obfuscated PHP extension.',
+  },
+  {
+    team: 'blue',
+    timestamp: '2026-04-08T10:07:01Z',
+    title: 'Endpoint Alert Raised',
+    description: 'Blue Team receives endpoint detection for suspicious shell process spawn.',
+  },
+]
+
 export default function Debrief() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
@@ -95,8 +134,8 @@ export default function Debrief() {
           Your notes, commands, and SIEM events have been saved for this session. The report includes all #finding, #evidence, #ioc, and #remediation notes.
         </div>
 
-        {/* Phase 17 — Kill Chain Timeline */}
-        <KillChainTimeline sessionId={sessionId} />
+        {/* Phase 16 — Kill Chain Timeline (mocked interleaved events for offline sprint) */}
+        <KillChainTimeline events={MOCK_KILL_CHAIN_EVENTS} />
       </div>
     </div>
   )

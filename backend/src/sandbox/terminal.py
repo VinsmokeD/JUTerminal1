@@ -10,7 +10,7 @@ except ImportError:
     _docker_available = False
 
 from src.config import settings
-from src.cache.redis import _get as get_redis_client, publish
+from src.cache.redis import _get as get_redis_client, lpush_capped, publish
 
 # Track active proxy threads to prevent duplicates per session
 _active_sessions = set()
@@ -83,10 +83,12 @@ def _terminal_proxy_thread(session_id: str, container_id: str) -> None:
                     data = await loop.sock_recv(raw_sock, 4096)
                     if not data:
                         break
+                    chunk = data.decode("utf-8", errors="replace")
                     await redis.publish(
                         f"terminal:{session_id}:output",
-                        json.dumps({"data": data.decode("utf-8", errors="replace")})
+                        json.dumps({"data": chunk})
                     )
+                    await lpush_capped(f"terminal:{session_id}:history", chunk, max_len=500)
                 except (OSError, socket.error):
                     break
 

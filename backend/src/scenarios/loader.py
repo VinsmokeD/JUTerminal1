@@ -12,7 +12,21 @@ from typing import Any
 
 import yaml
 
-_SCENARIOS_DIR = Path(__file__).resolve().parents[4] / "docs" / "scenarios"
+
+def _resolve_scenarios_dir() -> Path:
+    """Resolve scenario specs directory for both Docker and local runs."""
+    candidates = [
+        Path("/app/scenarios"),
+        Path(__file__).resolve().parents[3] / "docs" / "scenarios",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    # Default to local-layout path even if missing; callers will raise clear FileNotFoundError.
+    return candidates[1]
+
+
+_SCENARIOS_DIR = _resolve_scenarios_dir()
 
 # Map scenario ID → YAML filename
 _YAML_FILES: dict[str, str] = {

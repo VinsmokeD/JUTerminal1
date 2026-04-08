@@ -14,6 +14,7 @@ redis[hiredis]==5.0.4
 # Auth
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==3.2.2
 
 # Settings
 pydantic-settings==2.2.1

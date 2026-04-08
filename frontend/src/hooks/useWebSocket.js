@@ -26,6 +26,8 @@ export function useWebSocket(sessionId) {
         } else if (msg.type === 'terminal_output') {
           // Dispatched via custom event so Terminal component can consume it
           window.dispatchEvent(new CustomEvent('terminal:output', { detail: msg.data }))
+        } else if (msg.type === 'history') {
+          window.dispatchEvent(new CustomEvent('terminal:history', { detail: msg.data }))
         } else if (msg.type === 'ai_hint') {
           window.dispatchEvent(new CustomEvent('ai:hint', { detail: msg.data }))
         } else if (msg.type === 'score_update') {
