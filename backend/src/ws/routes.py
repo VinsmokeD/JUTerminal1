@@ -10,6 +10,7 @@ from src.db.database import AsyncSessionLocal, Session, CommandLog
 from src.sandbox.terminal import stream_terminal_output, send_terminal_input
 from src.siem.engine import process_command_for_siem
 from src.ai.monitor import get_ai_hint
+from src.ai.discovery_tracker import track_command as track_discovery
 from src.cache.redis import cache_get, cache_set, lpush_capped, lrange, _get as get_redis_client
 from src.scenarios.gatekeeper import check_command
 from src.scenarios.loader import load_scenario
@@ -158,6 +159,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 siem_events = await process_command_for_siem(session_id, session_state, command)
 
                 # Persist command to DB for timeline + reports
+                first_word = command.strip().split()[0].lower() if command.strip() else ""
                 async with AsyncSessionLocal() as db:
                     from src.scenarios.gatekeeper import _parse_tool as _gt
                     tool_name = _gt(command)
@@ -171,11 +173,45 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
                 # Store command in Redis for AI context
                 await lpush_capped(f"session:{session_id}:commands", command, max_len=10)
+                await cache_set(f"session:{session_id}:last_cmd_time", str(__import__('time').time()), ttl=7200)
+
+                # Track discoveries from command output (non-blocking)
+                # Get recent terminal output from history for discovery parsing
+                recent_output = await lrange(f"terminal:{session_id}:history", 0, 0)
+                output_text = str(recent_output[0]) if recent_output else ""
+                discoveries = await track_discovery(session_id, command, output_text, session_state["scenario_id"])
+
+                # If something was newly discovered, notify the frontend for auto-evidence
+                if any(discoveries.values()):
+                    await websocket.send_json({
+                        "type": "auto_evidence",
+                        "data": {
+                            "command": command,
+                            "discoveries": discoveries,
+                            "tool": tool_name or first_word if command.strip() else "",
+                        },
+                    })
 
                 # Trigger AI hint if applicable
                 ai_hint = await get_ai_hint(session_id, session_state, command, None)
                 if ai_hint:
                     await websocket.send_json({"type": "ai_hint", "data": {"text": ai_hint}})
+
+            elif msg_type == "toggle_mode":
+                new_mode = msg.get("mode", "learn")
+                if new_mode in ("learn", "challenge"):
+                    async with AsyncSessionLocal() as db:
+                        await db.execute(
+                            update(Session)
+                            .where(Session.id == session_id)
+                            .values(ai_mode=new_mode)
+                        )
+                        await db.commit()
+                    session_state["ai_mode"] = new_mode
+                    await websocket.send_json({
+                        "type": "mode_changed",
+                        "data": {"mode": new_mode},
+                    })
 
             elif msg_type == "request_hint":
                 level = msg.get("level", 1)

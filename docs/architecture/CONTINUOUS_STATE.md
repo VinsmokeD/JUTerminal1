@@ -14,6 +14,45 @@ Every update must follow this strict format. Do not skip any fields.
 ---
 ## Change Log
 
+### [2026-04-10 11:30:00] - Claude Code (Full Platform Redesign — Layered Experience Implementation)
+* **Status**: Coding Complete + Integration Verified
+* **Why**: User requested comprehensive platform redesign to make CyberSim beginner-friendly, teach step-by-step with concept explanations, improve note-taking with guided templates, make AI fully context-aware with target knowledge, rework UI/UX to professional training platform standards, and support adaptive difficulty for all skill levels (beginner/intermediate/experienced). Approach C "Layered Experience" was selected after a multi-section design brainstorm.
+* **Where**:
+  - **Backend (AI Brain)**:
+    - `backend/src/ai/context_builder.py` — NEW: Full AI context assembly with SCENARIO_KNOWLEDGE dict (all hosts/services/vulns/attack paths for SC-01/02/03), discovery integration, command history, note summaries, behavioral signals
+    - `backend/src/ai/discovery_tracker.py` — NEW: Parses terminal output for nmap/gobuster/sqlmap/nikto/curl/whatweb/bloodhound/crackmapexec/impacket/hashcat/hydra to track services/paths/vulns/credentials in Redis sets
+    - `backend/src/ai/monitor.py` — REWRITTEN: Mode-aware prompt loading (LEARN_SYSTEM_PROMPT / CHALLENGE_SYSTEM_PROMPT), full context formatting, adaptive token limits (300/150/400), skill-level-aware fallback hints
+    - `ai-monitor/system_prompt.md` — REWRITTEN: Split into LEARN and CHALLENGE prompts. Learn mode uses [Concept]/[What to do]/[What to look for]/[Pro tip] format. Challenge mode uses Socratic questioning. Both have full scenario knowledge for SC-01/02/03/04/05, skill-level adaptation (beginner/intermediate/experienced), discovery awareness, note-coaching, Blue Team parity
+  - **Backend (Auth/DB)**:
+    - `backend/src/db/database.py` — MODIFIED: Added User.skill_level, User.onboarding_completed, Session.ai_mode; NEW tables: AutoEvidence, SiemTriage
+    - `backend/src/auth/routes.py` — MODIFIED: Added ProfileUpdate model, PUT /profile endpoint, updated /me to return skill_level and onboarding_completed
+  - **Backend (WebSocket)**:
+    - `backend/src/ws/routes.py` — MODIFIED: Integrated discovery tracking after command execution, auto_evidence WS message, toggle_mode handler updates Session.ai_mode in DB
+  - **Frontend (Stores)**:
+    - `frontend/src/store/authStore.js` — REWRITTEN: skillLevel/onboardingCompleted with localStorage persistence, setSkillLevel/completeOnboarding async methods
+    - `frontend/src/store/sessionStore.js` — REWRITTEN: aiMode/discoveries/pendingEvidence state, addDiscoveries/setPendingEvidence/clearPendingEvidence
+  - **Frontend (Hooks)**:
+    - `frontend/src/hooks/useWebSocket.js` — REWRITTEN: mode_changed/auto_evidence handlers, toggleMode callback, switch/case dispatch
+  - **Frontend (Pages)**:
+    - `frontend/src/pages/Onboarding.jsx` — NEW: Three-card skill selection with feature descriptions, gradient CyberSim branding
+    - `frontend/src/pages/Auth.jsx` — REWRITTEN: Split layout with branding left, form right, professional slate/cyan theme
+    - `frontend/src/pages/Dashboard.jsx` — REWRITTEN: Professional nav, scenario cards with gradients, "What you'll learn" for beginners, active sessions banner, mission briefing modal with network diagram, role/methodology selection
+    - `frontend/src/pages/RedWorkspace.jsx` — REWRITTEN: Terminal (60% left 2 rows), AI tutor (top right), SIEM peek (middle right), notebook (full bottom). Beginner welcome overlay, session timer, MITRE badges, PanelHeader/MitreBadge/LiveDot/LearningContextBadge components
+    - `frontend/src/pages/BlueWorkspace.jsx` — REWRITTEN: Interactive SIEM console with filter bar (severity:HIGH, source_ip:, free text), click-to-expand events with raw JSON, click-to-extract IOC, IR Playbook with beginner hints, IOC panel with type classification, GuidedNotebook for IR
+    - `frontend/src/pages/Debrief.jsx` — REWRITTEN: Score hero with grade system (Excellent/Satisfactory/Needs Improvement), stats cards, tabbed interface (Overview/Findings/Kill Chain/All Notes)
+    - `frontend/src/App.jsx` — MODIFIED: Added Onboarding route, RequireOnboarding guard
+  - **Frontend (Components)**:
+    - `frontend/src/components/notes/GuidedNotebook.jsx` — NEW: Phase-aware templates for red (6 phases) and blue (6 phases), auto-evidence toast, guided/freeform mode toggle, tag-based categorization
+    - `frontend/src/components/hints/AiHintPanel.jsx` — REWRITTEN: Learn/Challenge mode toggle, adaptive hint penalties by skill level (beginner -2/-5/-10, intermediate -5/-10/-20, experienced -10/-20/-40), mode descriptions, timeout fallback
+  - **Design Spec**: `docs/superpowers/specs/2026-04-10-cybersim-redesign-design.md` — Full 8-section design specification
+* **What & How**:
+  - **Layer 1 — AI Brain**: The AI now receives a complete context payload including full target knowledge (all hosts, services, vulnerabilities, attack paths), student discovery state (parsed from terminal output), command history, note summaries, and behavioral signals (phase duration, commands-per-phase, time since last command). Two separate system prompts (Learn and Challenge) provide fundamentally different teaching approaches. Learn mode uses structured [Concept/What to do/What to look for/Pro tip] format with detailed explanations. Challenge mode uses Socratic questioning that always ends with a question.
+  - **Layer 1 — Onboarding**: First-login skill assessment (beginner/intermediate/experienced) persisted to DB and localStorage. Affects hint penalties, AI verbosity, template behavior, welcome overlays, and documentation nudging across the entire platform.
+  - **Layer 2 — Smart Notes**: GuidedNotebook provides phase-aware markdown templates for both Red Team (recon→enum→vuln ID→exploit→post-exploit→reporting) and Blue Team (identification→detect & analyze→contain→eradicate→recover→post-incident). Auto-evidence toast appears when discovery tracker finds new items from terminal output.
+  - **Layer 2 — Blue Team Workspace**: Full SIEM console with structured query syntax, expandable event rows with raw JSON, one-click IOC extraction from source IPs, IR playbook with scenario-specific checklists and beginner hints, IOC panel with type classification (ip/hash/domain), NIST 800-61 phase indicator.
+  - **Layer 2 — Professional UI/UX**: Consistent slate-950/cyan-500 color system, gradient scenario cards, CyberSim branding, split-layout auth page, professional nav with skill badge, mission briefing modals with network diagrams and methodology selection.
+  - **Integration verified**: All imports resolve, store shapes match component usage, WebSocket message types align between backend and frontend, DB schema has all required columns, auth routes serve profile updates, AI prompt loading correctly parses the split Learn/Challenge format.
+
 ### [2026-04-08 23:05:00] - Claude Code (Review + Hotfix: Mock Terminal Command Flow)
 * **Status**: Code Review + Coding Complete
 * **Why**: User requested full review, run, and GitHub update. Review identified a high-severity regression in mock terminal behavior that blocked command responses in non-Docker sessions, plus a string interpolation defect in simulated `hydra` output.

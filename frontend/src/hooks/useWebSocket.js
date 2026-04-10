@@ -5,7 +5,7 @@ const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost/ws'
 
 export function useWebSocket(sessionId) {
   const wsRef = useRef(null)
-  const { addSiemEvent, setScore } = useSessionStore()
+  const { addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence } = useSessionStore()
 
   useEffect(() => {
     if (!sessionId) return
@@ -21,17 +21,33 @@ export function useWebSocket(sessionId) {
     ws.onmessage = (evt) => {
       try {
         const msg = JSON.parse(evt.data)
-        if (msg.type === 'siem_event') {
-          addSiemEvent(msg.data)
-        } else if (msg.type === 'terminal_output') {
-          // Dispatched via custom event so Terminal component can consume it
-          window.dispatchEvent(new CustomEvent('terminal:output', { detail: msg.data }))
-        } else if (msg.type === 'history') {
-          window.dispatchEvent(new CustomEvent('terminal:history', { detail: msg.data }))
-        } else if (msg.type === 'ai_hint') {
-          window.dispatchEvent(new CustomEvent('ai:hint', { detail: msg.data }))
-        } else if (msg.type === 'score_update') {
-          setScore(msg.data.score)
+        switch (msg.type) {
+          case 'siem_event':
+            addSiemEvent(msg.data)
+            break
+          case 'terminal_output':
+            window.dispatchEvent(new CustomEvent('terminal:output', { detail: msg.data }))
+            break
+          case 'history':
+            window.dispatchEvent(new CustomEvent('terminal:history', { detail: msg.data }))
+            break
+          case 'ai_hint':
+            window.dispatchEvent(new CustomEvent('ai:hint', { detail: msg.data }))
+            break
+          case 'score_update':
+            setScore(msg.data.score)
+            break
+          case 'mode_changed':
+            setAiMode(msg.data.mode)
+            break
+          case 'auto_evidence':
+            // Notify frontend about discovered items for auto-evidence capture
+            addDiscoveries(msg.data.discoveries)
+            if (Object.values(msg.data.discoveries).some(arr => arr.length > 0)) {
+              setPendingEvidence(msg.data)
+              window.dispatchEvent(new CustomEvent('evidence:discovered', { detail: msg.data }))
+            }
+            break
         }
       } catch {
         // ignore malformed
@@ -59,5 +75,11 @@ export function useWebSocket(sessionId) {
     }
   }, [])
 
-  return { sendCommand, requestHint }
+  const toggleMode = useCallback((mode) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'toggle_mode', mode }))
+    }
+  }, [])
+
+  return { sendCommand, requestHint, toggleMode }
 }

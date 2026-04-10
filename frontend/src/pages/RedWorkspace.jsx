@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../store/sessionStore'
+import { useAuthStore } from '../store/authStore'
 import { useWebSocket } from '../hooks/useWebSocket'
 import RoeBriefing from '../components/workspace/RoeBriefing'
 import Terminal from '../components/terminal/Terminal'
 import SiemFeed from '../components/siem/SiemFeed'
-import Notebook from '../components/notes/Notebook'
+import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
 import PhaseTrail from '../components/methodology/PhaseTrail'
 import api from '../lib/api'
@@ -13,13 +14,15 @@ import api from '../lib/api'
 export default function RedWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { currentSession, phase, score } = useSessionStore()
+  const { currentSession, phase, score, aiMode } = useSessionStore()
+  const { skillLevel } = useAuthStore()
   const [session, setSession] = useState(currentSession)
   const [roeAcked, setRoeAcked] = useState(currentSession?.roe_acknowledged ?? false)
-  const [activePanel, setActivePanel] = useState('notes') // notes | hints
+  const [showWelcome, setShowWelcome] = useState(skillLevel === 'beginner')
+  const [elapsed, setElapsed] = useState(0)
   const writeOutputRef = useRef(null)
 
-  const { sendCommand, requestHint } = useWebSocket(sessionId)
+  const { sendCommand, requestHint, toggleMode } = useWebSocket(sessionId)
 
   useEffect(() => {
     if (!session) {
@@ -29,214 +32,176 @@ export default function RedWorkspace() {
     }
   }, [session, sessionId, navigate])
 
-  const handleCommand = useCallback((cmd) => {
-    sendCommand(cmd)
-  }, [sendCommand])
-
-  const handleTerminalOutput = useCallback((text) => {
-    if (writeOutputRef.current) writeOutputRef.current(text)
+  // Session timer
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed(e => e + 1), 1000)
+    return () => clearInterval(interval)
   }, [])
 
-  if (!session) return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-500 text-sm">Loading session...</div>
+  const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
+
+  const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
+
+  if (!session) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500 text-sm">Loading session...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   return (
-    <div className="h-screen bg-gray-950 flex flex-col overflow-hidden">
-      {/* Top bar */}
-      <div className="flex items-center gap-3 px-3 py-1.5 bg-gray-900 border-b border-gray-800 flex-shrink-0">
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-red-400 text-xs font-semibold">RED TEAM</span>
+    <div className="h-screen bg-slate-950 flex flex-col overflow-hidden">
+      {/* Beginner welcome overlay */}
+      {showWelcome && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700/50 rounded-2xl max-w-lg p-6 shadow-2xl">
+            <h2 className="text-lg font-bold text-white mb-3">Welcome to your workspace</h2>
+            <div className="space-y-3 text-sm text-slate-300 mb-6">
+              <div className="flex gap-3">
+                <div className="w-3 h-3 rounded-full bg-rose-500 mt-1 flex-shrink-0" />
+                <div><strong className="text-white">Terminal</strong> (left) — Type commands here. This is your Kali Linux terminal where you'll run penetration testing tools.</div>
+              </div>
+              <div className="flex gap-3">
+                <div className="w-3 h-3 rounded-full bg-cyan-500 mt-1 flex-shrink-0" />
+                <div><strong className="text-white">AI Tutor</strong> (top right) — Your mentor. It watches what you do and gives guidance. Toggle between Learn and Challenge modes.</div>
+              </div>
+              <div className="flex gap-3">
+                <div className="w-3 h-3 rounded-full bg-teal-500 mt-1 flex-shrink-0" />
+                <div><strong className="text-white">SIEM Feed</strong> (middle right) — See what alerts your actions trigger. This is what the Blue Team sees.</div>
+              </div>
+              <div className="flex gap-3">
+                <div className="w-3 h-3 rounded-full bg-amber-500 mt-1 flex-shrink-0" />
+                <div><strong className="text-white">Notebook</strong> (bottom) — Document your findings. Good documentation is a critical professional skill.</div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">Tip: Start with a port scan to discover what's running on the target. Try typing <code className="text-emerald-400 bg-slate-800 px-1.5 py-0.5 rounded">nmap -sV {session.scenario_id === 'SC-01' ? '172.20.1.20' : session.scenario_id === 'SC-02' ? '172.20.2.20' : '172.20.3.40'}</code></p>
+            <button onClick={() => setShowWelcome(false)}
+              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-medium text-sm">
+              Start training
+            </button>
+          </div>
         </div>
-        <div className="h-4 w-px bg-gray-700" />
-        <span className="text-gray-400 text-xs font-mono">{session.scenario_id}</span>
-        <div className="h-4 w-px bg-gray-700" />
+      )}
+
+      {/* Top bar */}
+      <div className="flex items-center gap-3 px-4 py-2 bg-slate-900/80 border-b border-slate-800/50 flex-shrink-0 backdrop-blur-sm">
+        <button onClick={() => navigate('/')} className="text-slate-600 hover:text-slate-400 transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+          <span className="text-rose-400 text-xs font-bold tracking-wide">RED TEAM</span>
+        </div>
+        <div className="h-4 w-px bg-slate-800" />
+        <span className="text-slate-500 text-xs font-mono">{session.scenario_id}</span>
+        <div className="h-4 w-px bg-slate-800" />
         <div className="flex-1 overflow-hidden">
           <PhaseTrail methodology={session.methodology} role="red" currentPhase={phase} />
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="text-xs text-gray-400">Score: <span className={`font-semibold ${score >= 80 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>{score}</span></div>
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <span className={`text-xs px-2 py-0.5 rounded-md ${
+            aiMode === 'learn' ? 'text-cyan-400 bg-cyan-950/30 border border-cyan-800/30' : 'text-amber-400 bg-amber-950/30 border border-amber-800/30'
+          }`}>{aiMode === 'learn' ? 'Learn' : 'Challenge'}</span>
+          <span className="text-xs text-slate-500 font-mono">{formatTime(elapsed)}</span>
+          <div className="text-xs text-slate-400">
+            Score: <span className={`font-bold ${score >= 80 ? 'text-emerald-400' : score >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{score}</span>
+          </div>
           <button onClick={() => navigate(`/session/${sessionId}/debrief`)}
-            className="text-xs px-2 py-1 border border-gray-700 text-gray-400 hover:text-gray-200 rounded transition-colors">
-            End &amp; debrief →
+            className="text-xs px-3 py-1.5 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 rounded-lg transition-all">
+            End & debrief
           </button>
         </div>
       </div>
 
-      {/* Main workspace grid */}
-      <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: '1fr 320px', gridTemplateRows: '1fr 240px' }}>
+      {/* Main workspace */}
+      <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: '1fr 340px', gridTemplateRows: '1fr 1fr 200px' }}>
 
-        {/* Terminal — top left (large) */}
-        <div className="border-r border-b border-gray-800 flex flex-col overflow-hidden">
-          <div className="panel-header flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-red-500" />
-            <span>Kali terminal — attacker workspace</span>
-            <div className="ml-auto flex gap-1.5">
-              <MitreBadge label="TA0001 Initial Access" />
-            </div>
-          </div>
+        {/* Terminal — left, spans 2 rows */}
+        <div className="row-span-2 border-r border-slate-800/50 flex flex-col overflow-hidden">
+          <PanelHeader color="rose" title="Kali Terminal" subtitle="attacker workspace">
+            <MitreBadge phase={phase} scenario={session.scenario_id} />
+          </PanelHeader>
           <div className="flex-1 overflow-hidden">
-            <Terminal
-              onCommand={handleCommand}
-              pendingOutput={writeOutputRef}
-            />
+            <Terminal onCommand={handleCommand} pendingOutput={writeOutputRef} />
           </div>
         </div>
 
-        {/* SIEM — top right */}
-        <div className="border-b border-gray-800 flex flex-col overflow-hidden">
-          <div className="panel-header flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-teal-500" />
-            <span>SOC — live SIEM feed</span>
-            <LiveIndicator />
+        {/* AI Tutor — top right */}
+        <div className="border-b border-slate-800/50 flex flex-col overflow-hidden">
+          <PanelHeader color="cyan" title="AI Tutor" />
+          <div className="flex-1 overflow-hidden">
+            <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
           </div>
+        </div>
+
+        {/* SIEM Peek — middle right */}
+        <div className="border-b border-slate-800/50 flex flex-col overflow-hidden">
+          <PanelHeader color="teal" title="SIEM Feed" subtitle="alerts your actions trigger">
+            <LiveDot />
+          </PanelHeader>
           <div className="flex-1 overflow-hidden">
             <SiemFeed />
           </div>
         </div>
 
-        {/* Bottom left — notes */}
-        <div className="border-r border-gray-800 flex flex-col overflow-hidden">
-          <div className="panel-header flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-yellow-500" />
-            <span>Pentest notebook</span>
-            <div className="ml-auto flex gap-1">
-              {['notes', 'hints'].map(p => (
-                <button key={p} onClick={() => setActivePanel(p)}
-                  className={`text-xs px-2 py-0.5 rounded transition-colors ${activePanel === p ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
-                  {p === 'notes' ? 'Notes' : 'AI hints'}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Notebook — bottom, full width */}
+        <div className="col-span-2 border-t border-slate-800/50 flex flex-col overflow-hidden">
+          <PanelHeader color="amber" title="Pentest Notebook" subtitle={`Phase ${phase}`}>
+            <LearningContextBadge scenario={session.scenario_id} phase={phase} />
+          </PanelHeader>
           <div className="flex-1 overflow-hidden">
-            {activePanel === 'notes'
-              ? <Notebook sessionId={sessionId} />
-              : <AiHintPanel onRequestHint={requestHint} />
-            }
+            <GuidedNotebook sessionId={sessionId} role="red" phase={phase} />
           </div>
         </div>
-
-        {/* Bottom right — methodology context */}
-        <div className="flex flex-col overflow-hidden">
-          <div className="panel-header flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-purple-500" />
-            <span>Learning context</span>
-          </div>
-          <div className="flex-1 overflow-y-auto p-3">
-            <LearningContext scenario={session.scenario_id} phase={phase} methodology={session.methodology} />
-          </div>
-        </div>
-
       </div>
     </div>
   )
 }
 
-function MitreBadge({ label }) {
+function PanelHeader({ color, title, subtitle, children }) {
+  const colors = {
+    rose: 'bg-rose-500',
+    cyan: 'bg-cyan-500',
+    teal: 'bg-teal-500',
+    amber: 'bg-amber-500',
+    purple: 'bg-purple-500',
+    blue: 'bg-blue-500',
+  }
   return (
-    <span className="text-purple-400 bg-purple-950 border border-purple-800 text-xs px-1.5 py-px rounded">{label}</span>
-  )
-}
-
-function LiveIndicator() {
-  return (
-    <div className="ml-auto flex items-center gap-1">
-      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-      <span className="text-green-500 text-xs">live</span>
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-slate-800/30 flex-shrink-0">
+      <div className={`w-1.5 h-1.5 rounded-full ${colors[color] || colors.cyan}`} />
+      <span className="text-xs text-slate-300 font-medium">{title}</span>
+      {subtitle && <span className="text-xs text-slate-600">{subtitle}</span>}
+      <div className="ml-auto flex items-center gap-2">{children}</div>
     </div>
   )
 }
 
-const CONTEXT = {
-  'SC-01': [
-    { phase: 1, mitre: 'T1590', cwe: null, title: 'Passive reconnaissance', body: 'Gather information without touching the target. HTTP headers, robots.txt, and SSL certificates reveal the technology stack before you send a single probe.', tools: ['whatweb', 'curl -I'] },
-    { phase: 2, mitre: 'T1595', cwe: null, title: 'Active scanning & enumeration', body: 'Directory brute-forcing maps the attack surface. A 403 is as informative as a 200 — it confirms the path exists. robots.txt often discloses paths the developer wanted hidden.', tools: ['nmap', 'gobuster', 'nikto'] },
-    { phase: 3, mitre: 'T1190', cwe: 'CWE-89', title: 'SQL injection identification', body: "A single quote in a form field tests whether input reaches a SQL query without sanitization. An error message leaking database type is a critical finding on its own.", tools: ['sqlmap'] },
-    { phase: 4, mitre: 'T1552', cwe: 'CWE-22', title: 'Exploitation (LFI + RCE)', body: 'LFI (Local File Inclusion) allows reading arbitrary files. /etc/passwd, application configs, and log files are high-value targets. Chaining LFI with a file upload becomes RCE.', tools: ['curl'] },
-    { phase: 5, mitre: 'T1005', cwe: null, title: 'Post-exploitation & evidence', body: 'Professional pentests require evidence chains. Every finding needs: the exact request, the exact response, the CVSS score, and a remediation recommendation.', tools: [] },
-    { phase: 6, mitre: null, cwe: null, title: 'Reporting', body: 'The deliverable is the report, not the hack. Executive summary uses business language. Technical findings include reproduction steps any developer can follow.', tools: [] },
-  ],
-  'SC-02': [
-    { phase: 1, mitre: 'T1087', cwe: null, title: 'AD reconnaissance with BloodHound', body: 'Before attacking, map the entire Active Directory trust structure. BloodHound visualizes relationships between users, groups, and machines — revealing the shortest path to Domain Admin without firing a single exploit.', tools: ['bloodhound-python', 'crackmapexec'] },
-    { phase: 2, mitre: 'T1558.003', cwe: null, title: 'Kerberoasting', body: 'Service accounts with SPNs can have their TGS tickets requested by any domain user. The ticket is encrypted with the service account password hash — crack it offline. RC4 encryption (type 0x17) is the tell-tale sign.', tools: ['impacket-GetUserSPNs', 'hashcat'] },
-    { phase: 3, mitre: 'T1021', cwe: null, title: 'Lateral movement', body: 'With cracked credentials, verify access across the network. CrackMapExec tests SMB auth against all hosts — any "(Pwn3d!)" means local admin. Service accounts often have excessive privileges on servers they manage.', tools: ['crackmapexec', 'impacket-psexec'] },
-    { phase: 4, mitre: 'T1003.006', cwe: null, title: 'DCSync & domain dominance', body: 'DCSync mimics a domain controller replication request to extract all password hashes. This requires Domain Admin or Replication rights. With the krbtgt hash, you can forge Golden Tickets for persistent access.', tools: ['impacket-secretsdump'] },
-  ],
-  'SC-03': [
-    { phase: 1, mitre: 'T1598', cwe: null, title: 'OSINT & target profiling', body: 'Effective phishing starts with research. LinkedIn job titles, company domain naming conventions, recent press releases — the more specific your pretext, the higher the click rate.', tools: ['theHarvester'] },
-    { phase: 2, mitre: 'T1566.001', cwe: null, title: 'Phishing campaign setup', body: 'GoPhish orchestrates the full campaign: email templates, landing pages, and tracking. A logistics company invoice pretext is natural. The sending profile must use the Postfix relay to pass SPF checks.', tools: ['GoPhish (172.20.3.40:3333)'] },
-    { phase: 3, mitre: 'T1204.002', cwe: null, title: 'Payload creation & delivery', body: 'msfvenom generates payloads embedded in documents. A macro-enabled .docm disguised as an invoice is the classic initial access vector. The reverse shell phones home to your listener — that callback is your flag.', tools: ['msfvenom', 'msfconsole'] },
-    { phase: 4, mitre: 'T1071', cwe: null, title: 'Campaign execution & C2', body: 'Launch the campaign via GoPhish, monitor open/click rates in real-time. Watch your listener for the callback from 172.20.3.30 (simulated endpoint). A successful callback confirms code execution.', tools: ['GoPhish', 'nc -lvp 4444'] },
-    { phase: 5, mitre: null, cwe: null, title: 'Phishing simulation report', body: 'Quantify risk: click rate vs. industry benchmarks, SPF/DKIM/DMARC gap analysis, and specific recommendations for security awareness training and email gateway hardening.', tools: [] },
-  ],
+function MitreBadge({ phase, scenario }) {
+  const mitre = {
+    'SC-01': { 1: 'T1590', 2: 'T1595', 3: 'T1190', 4: 'T1552', 5: 'T1005', 6: null },
+    'SC-02': { 1: 'T1087', 2: 'T1558', 3: 'T1021', 4: 'T1003' },
+    'SC-03': { 1: 'T1598', 2: 'T1566', 3: 'T1204', 4: 'T1071', 5: null },
+  }
+  const tid = mitre[scenario]?.[phase]
+  if (!tid) return null
+  return <span className="text-purple-400 bg-purple-950/30 border border-purple-800/30 text-xs px-1.5 py-0.5 rounded font-mono">{tid}</span>
 }
 
-const SCENARIO_TARGETS = {
-  'SC-01': { name: 'NovaMed Healthcare', network: '172.20.1.0/24', targets: [{ ip: '172.20.1.20', role: 'PHP/Apache webapp' }, { ip: '172.20.1.21', role: 'MySQL DB' }, { ip: '172.20.1.1', role: 'ModSecurity WAF' }] },
-  'SC-02': { name: 'Nexora Financial', network: '172.20.2.0/24', targets: [{ ip: '172.20.2.20', role: 'AD Domain Controller' }, { ip: '172.20.2.40', role: 'File Server' }], domain: 'nexora.local', creds: 'jsmith : Welcome1!' },
-  'SC-03': { name: 'Orion Logistics', network: '172.20.3.0/24', targets: [{ ip: '172.20.3.40', role: 'GoPhish' }, { ip: '172.20.3.20', role: 'Postfix Mail' }, { ip: '172.20.3.30', role: 'Windows endpoint' }] },
-}
-
-function LearningContext({ scenario, phase, methodology }) {
-  const entries = CONTEXT[scenario] || []
-  const entry = entries.find(e => e.phase === phase) || entries[0]
-  const targetInfo = SCENARIO_TARGETS[scenario]
-
+function LiveDot() {
   return (
-    <div className="space-y-3 text-xs">
-      {/* Target info card */}
-      {targetInfo && (
-        <div className="border border-gray-800 rounded bg-gray-900/50 p-2.5">
-          <p className="text-gray-500 mb-1.5 font-semibold uppercase tracking-wider" style={{ fontSize: '10px' }}>Target Environment</p>
-          <p className="text-white font-medium mb-1">{targetInfo.name} <span className="text-gray-500 font-normal">({targetInfo.network})</span></p>
-          {targetInfo.domain && <p className="text-cyan-400 mb-1">Domain: {targetInfo.domain}</p>}
-          {targetInfo.creds && <p className="text-yellow-400 mb-1">Creds: <code className="bg-gray-800 px-1 rounded">{targetInfo.creds}</code></p>}
-          <div className="space-y-0.5 mt-1.5">
-            {targetInfo.targets.map(t => (
-              <div key={t.ip} className="flex gap-2">
-                <code className="text-green-400 font-mono">{t.ip}</code>
-                <span className="text-gray-400">{t.role}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Phase context */}
-      {entry ? (
-        <>
-          <div>
-            <p className="text-gray-500 mb-1">Phase {phase} — {methodology.toUpperCase()}</p>
-            <h3 className="text-sm font-medium text-white">{entry.title}</h3>
-          </div>
-          <p className="text-gray-300 leading-relaxed">{entry.body}</p>
-          {entry.tools && entry.tools.length > 0 && (
-            <div>
-              <p className="text-gray-500 mb-1">Suggested tools:</p>
-              <div className="flex gap-1.5 flex-wrap">
-                {entry.tools.map(t => (
-                  <code key={t} className="text-green-400 bg-green-950 border border-green-900 px-1.5 py-0.5 rounded">{t}</code>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="flex gap-2 flex-wrap">
-            {entry.mitre && (
-              <span className="text-purple-400 bg-purple-950 border border-purple-800 px-2 py-0.5 rounded">
-                MITRE {entry.mitre}
-              </span>
-            )}
-            {entry.cwe && (
-              <span className="text-orange-400 bg-orange-950 border border-orange-800 px-2 py-0.5 rounded">
-                {entry.cwe}
-              </span>
-            )}
-          </div>
-        </>
-      ) : (
-        <p className="text-gray-600">No context available for this phase.</p>
-      )}
+    <div className="flex items-center gap-1">
+      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      <span className="text-emerald-500 text-xs">live</span>
     </div>
   )
+}
+
+function LearningContextBadge({ scenario, phase }) {
+  const titles = {
+    'SC-01': { 1: 'Reconnaissance', 2: 'Enumeration', 3: 'Vulnerability ID', 4: 'Exploitation', 5: 'Post-exploitation', 6: 'Reporting' },
+    'SC-02': { 1: 'AD Recon', 2: 'Kerberoasting', 3: 'Lateral Movement', 4: 'DCSync' },
+    'SC-03': { 1: 'OSINT', 2: 'Campaign Setup', 3: 'Payload Delivery', 4: 'C2 Execution', 5: 'Reporting' },
+  }
+  const title = titles[scenario]?.[phase]
+  if (!title) return null
+  return <span className="text-slate-500 text-xs">{title}</span>
 }

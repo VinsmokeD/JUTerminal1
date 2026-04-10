@@ -1,61 +1,76 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../store/sessionStore'
+import { useAuthStore } from '../store/authStore'
 import { useWebSocket } from '../hooks/useWebSocket'
 import RoeBriefing from '../components/workspace/RoeBriefing'
 import SiemFeed from '../components/siem/SiemFeed'
-import Notebook from '../components/notes/Notebook'
+import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
 import PhaseTrail from '../components/methodology/PhaseTrail'
 import api from '../lib/api'
 
 const PLAYBOOKS = {
   'SC-01': [
-    '1. Identify source IP of all HIGH/CRITICAL WAF alerts',
-    '2. Correlate WAF events with Apache access log timestamps',
-    '3. Determine if SQLi attempt resulted in a 200 response (success indicator)',
-    '4. Check if any PHP files were uploaded to /var/www/html/uploads/',
-    '5. Identify affected patient record IDs via IDOR alerts',
-    '6. Block source IP at WAF level — document the firewall rule created',
-    '7. Reset any credentials that may have been exposed via SQLi',
-    '8. Write IR report: timeline, IOCs, affected data, RCA',
+    { step: 'Identify source IP of all HIGH/CRITICAL WAF alerts', hint: 'Look at the source_ip field in SIEM events' },
+    { step: 'Correlate WAF events with Apache access log timestamps', hint: 'Events within seconds of each other likely share a cause' },
+    { step: 'Determine if SQLi attempt resulted in a 200 response', hint: 'A 200 response to a SQL injection attempt means it succeeded' },
+    { step: 'Check if any PHP files were uploaded to /uploads/', hint: 'File upload + PHP = potential webshell' },
+    { step: 'Identify affected patient record IDs via IDOR alerts', hint: 'Sequential ID access patterns indicate IDOR exploitation' },
+    { step: 'Block source IP at WAF level', hint: 'Document the exact firewall rule you would create' },
+    { step: 'Reset any exposed credentials', hint: 'Any credentials visible in SQLi output are compromised' },
+    { step: 'Write IR report: timeline, IOCs, affected data, RCA', hint: 'The report is the deliverable — structure it with clear sections' },
   ],
   'SC-02': [
-    '1. Identify Event 4769 with RC4 encryption type (TicketEncryptionType=0x17)',
-    '2. Determine which account was Kerberoasted — check TargetUserName field',
-    '3. Correlate 4769 with 4768 (TGT) to confirm Kerberoasting chain',
-    '4. Identify lateral movement: Event 4624 Type 3 from non-standard source IPs',
-    '5. Alert on Event 4625 bursts from single IP — credential spray pattern',
-    '6. CRITICAL: Event 4662 with replication rights = DCSync — escalate immediately',
-    '7. Disable the compromised svc_backup account',
-    '8. Force Kerberos ticket expiry (purge all TGTs)',
-    '9. Document lateral movement path: source host → destination → technique used',
-    '10. Write IR report with full attack chain and AD hardening recommendations',
+    { step: 'Identify Event 4769 with RC4 encryption (0x17)', hint: 'RC4 in Kerberos TGS requests is the signature of Kerberoasting' },
+    { step: 'Determine which account was Kerberoasted', hint: 'Check the TargetUserName field in Event 4769' },
+    { step: 'Correlate 4769 with 4768 (TGT request) timestamps', hint: 'TGT request immediately before TGS request confirms the chain' },
+    { step: 'Identify lateral movement: Event 4624 Type 3', hint: 'Type 3 logons from non-standard IPs indicate lateral movement' },
+    { step: 'Alert on Event 4625 bursts (credential spray)', hint: 'Multiple 4625 events from one IP = credential spray/brute force' },
+    { step: 'CRITICAL: Event 4662 with replication rights = DCSync', hint: 'DCSync is the final stage — escalate immediately' },
+    { step: 'Disable compromised svc_backup account', hint: 'Any Kerberoasted account with cracked password must be disabled' },
+    { step: 'Force Kerberos ticket expiry (purge all TGTs)', hint: 'Prevents use of stolen tickets' },
+    { step: 'Document full lateral movement path', hint: 'Source host -> destination -> technique used for each hop' },
+    { step: 'Write IR report with AD hardening recommendations', hint: 'Include: disable RC4, SPN cleanup, tiered admin model' },
   ],
   'SC-03': [
-    '1. Review email headers: check SPF, DKIM, DMARC authentication results',
-    '2. Identify if sending IP is authorized in the domain SPF record',
-    '3. Check for DMARC alignment failure — From domain vs envelope sender',
-    '4. Identify which recipients opened the email (tracking pixel fires)',
-    '5. Check for macro execution: Event 4688 with Office process spawning cmd.exe',
-    '6. Identify PowerShell download cradle: Event 4104 (script block logging)',
-    '7. Look for scheduled task creation — attacker persistence mechanism',
-    '8. Block external C2 IP at perimeter firewall',
-    '9. Isolate any endpoints that executed the payload',
-    '10. Write phishing IR report with IOC list and email security recommendations',
+    { step: 'Review email headers: SPF, DKIM, DMARC results', hint: 'Headers reveal whether the email passed authentication checks' },
+    { step: 'Check if sending IP is in SPF record', hint: 'SPF failures mean the sender is unauthorized' },
+    { step: 'Check DMARC alignment', hint: 'From domain vs envelope sender mismatch = spoofing' },
+    { step: 'Identify which recipients opened the email', hint: 'Tracking pixel fires in SIEM events show who opened it' },
+    { step: 'Check for macro execution (Event 4688)', hint: 'Office process spawning cmd.exe is the indicator' },
+    { step: 'Identify PowerShell download cradle (Event 4104)', hint: 'Script block logging captures the actual PowerShell commands' },
+    { step: 'Look for scheduled task creation (persistence)', hint: 'Attackers create scheduled tasks to survive reboots' },
+    { step: 'Block external C2 IP at perimeter firewall', hint: 'The reverse shell destination IP is the C2 server' },
+    { step: 'Isolate endpoints that executed the payload', hint: 'Any host that ran the macro needs isolation' },
+    { step: 'Write phishing IR report with IOC list', hint: 'Include: sender domain, attachment hash, C2 IP, email security recommendations' },
   ],
+}
+
+const NIST_PHASES = {
+  1: { name: 'Identify', desc: 'Determine what assets are affected. Correlate source IPs across events. What systems were targeted? What data was at risk?' },
+  2: { name: 'Detect & Analyze', desc: 'Confirm the attack is real (true/false positive). Build the attack timeline. Identify the technique from event patterns.' },
+  3: { name: 'Contain', desc: 'Stop the bleeding without destroying evidence. Isolate hosts, block C2 IPs. Capture volatile evidence first.' },
+  4: { name: 'Eradicate', desc: 'Remove attacker presence. Hunt for persistence: registry keys, scheduled tasks, new accounts, webshells.' },
+  5: { name: 'Recover', desc: 'Restore from known-good backups. Verify integrity. Monitor for reinfection. Patch the initial vulnerability.' },
+  6: { name: 'Post-Incident', desc: 'Write IR report: timeline, IOC list, root cause, what controls failed, 3 specific prevention recommendations.' },
 }
 
 export default function BlueWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { currentSession, phase, score, siemEvents } = useSessionStore()
+  const { currentSession, phase, score, siemEvents, aiMode } = useSessionStore()
+  const { skillLevel } = useAuthStore()
   const [session, setSession] = useState(currentSession)
   const [roeAcked, setRoeAcked] = useState(currentSession?.roe_acknowledged ?? false)
-  const [activeRight, setActiveRight] = useState('playbook') // playbook | hints
-  const [activeBottom, setActiveBottom] = useState('notes') // notes | investigation
+  const [siemFilter, setSiemFilter] = useState('')
+  const [checkedSteps, setCheckedSteps] = useState({})
+  const [iocs, setIocs] = useState([])
+  const [iocInput, setIocInput] = useState('')
+  const [expandedEvent, setExpandedEvent] = useState(null)
+  const [elapsed, setElapsed] = useState(0)
 
-  const { requestHint } = useWebSocket(sessionId)
+  const { requestHint, toggleMode } = useWebSocket(sessionId)
 
   useEffect(() => {
     if (!session) {
@@ -65,206 +80,259 @@ export default function BlueWorkspace() {
     }
   }, [session, sessionId, navigate])
 
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed(e => e + 1), 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
+
   const criticalCount = siemEvents.filter(e => e.severity === 'CRITICAL').length
   const highCount = siemEvents.filter(e => e.severity === 'HIGH').length
 
-  if (!session) return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-500 text-sm">Loading...</div>
+  // SIEM filtering
+  const filteredEvents = siemEvents.filter(e => {
+    if (!siemFilter) return true
+    const q = siemFilter.toLowerCase()
+    // Support structured queries like severity:HIGH
+    if (q.includes(':')) {
+      const [field, val] = q.split(':')
+      if (field === 'severity') return e.severity?.toLowerCase() === val.toLowerCase()
+      if (field === 'source_ip' || field === 'ip') return e.source_ip?.includes(val)
+      if (field === 'source') return e.source?.toLowerCase() === val.toLowerCase()
+    }
+    // Free text search
+    return JSON.stringify(e).toLowerCase().includes(q)
+  })
+
+  const addIoc = () => {
+    if (!iocInput.trim()) return
+    setIocs(p => [...p, { value: iocInput.trim(), ts: new Date().toLocaleTimeString(), type: _classifyIoc(iocInput.trim()) }])
+    setIocInput('')
+  }
+
+  if (!session) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500 text-sm">Loading...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   const playbook = PLAYBOOKS[session.scenario_id] || PLAYBOOKS['SC-01']
+  const nist = NIST_PHASES[phase] || NIST_PHASES[1]
 
   return (
-    <div className="h-screen bg-gray-950 flex flex-col overflow-hidden">
+    <div className="h-screen bg-slate-950 flex flex-col overflow-hidden">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-3 py-1.5 bg-gray-900 border-b border-gray-800 flex-shrink-0">
+      <div className="flex items-center gap-3 px-4 py-2 bg-slate-900/80 border-b border-slate-800/50 flex-shrink-0 backdrop-blur-sm">
+        <button onClick={() => navigate('/')} className="text-slate-600 hover:text-slate-400 transition-colors">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-          <span className="text-teal-400 text-xs font-semibold">BLUE TEAM — SOC</span>
+          <span className="text-teal-400 text-xs font-bold tracking-wide">BLUE TEAM &mdash; SOC</span>
         </div>
-        <div className="h-4 w-px bg-gray-700" />
-        <span className="text-gray-400 text-xs font-mono">{session.scenario_id}</span>
-        <div className="h-4 w-px bg-gray-700" />
+        <div className="h-4 w-px bg-slate-800" />
+        <span className="text-slate-500 text-xs font-mono">{session.scenario_id}</span>
+        <div className="h-4 w-px bg-slate-800" />
         <div className="flex-1 overflow-hidden">
           <PhaseTrail methodology="nist" role="blue" currentPhase={phase} />
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           {criticalCount > 0 && (
-            <span className="text-xs text-red-400 bg-red-950 border border-red-800 px-2 py-0.5 rounded animate-pulse">
+            <span className="text-xs text-rose-400 bg-rose-950/30 border border-rose-800/30 px-2 py-0.5 rounded-md animate-pulse font-bold">
               {criticalCount} CRITICAL
             </span>
           )}
           {highCount > 0 && (
-            <span className="text-xs text-orange-400 bg-orange-950 border border-orange-800 px-2 py-0.5 rounded">
+            <span className="text-xs text-orange-400 bg-orange-950/30 border border-orange-800/30 px-2 py-0.5 rounded-md">
               {highCount} HIGH
             </span>
           )}
-          <div className="text-xs text-gray-400">Score: <span className={`font-semibold ${score >= 80 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>{score}</span></div>
+          <span className="text-xs text-slate-500 font-mono">{formatTime(elapsed)}</span>
+          <div className="text-xs text-slate-400">
+            Score: <span className={`font-bold ${score >= 80 ? 'text-emerald-400' : score >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{score}</span>
+          </div>
           <button onClick={() => navigate(`/session/${sessionId}/debrief`)}
-            className="text-xs px-2 py-1 border border-gray-700 text-gray-400 hover:text-gray-200 rounded transition-colors">
-            Close incident →
+            className="text-xs px-3 py-1.5 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 rounded-lg transition-all">
+            Close incident
           </button>
         </div>
       </div>
 
       {/* Main grid */}
-      <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: '1fr 320px', gridTemplateRows: '1fr 220px' }}>
+      <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: '1fr 340px', gridTemplateRows: '1fr 1fr 200px' }}>
 
-        {/* SIEM — top left */}
-        <div className="border-r border-b border-gray-800 flex flex-col overflow-hidden">
-          <div className="panel-header flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-teal-500" />
-            <span>SIEM — event correlation console</span>
-            <LiveDot />
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <SiemFeed />
-          </div>
-        </div>
-
-        {/* Right — playbook or AI */}
-        <div className="border-b border-gray-800 flex flex-col overflow-hidden">
-          <div className="panel-header flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-purple-500" />
-            <div className="flex gap-1 ml-1">
-              {['playbook', 'hints'].map(p => (
-                <button key={p} onClick={() => setActiveRight(p)}
-                  className={`text-xs px-2 py-0.5 rounded transition-colors ${activeRight === p ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
-                  {p === 'playbook' ? 'IR Playbook' : 'AI guide'}
-                </button>
-              ))}
+        {/* SIEM Console — left, spans 2 rows */}
+        <div className="row-span-2 border-r border-slate-800/50 flex flex-col overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-slate-800/30 flex-shrink-0">
+            <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+            <span className="text-xs text-slate-300 font-medium">SIEM Console</span>
+            <div className="flex-1 mx-2">
+              <input
+                value={siemFilter}
+                onChange={e => setSiemFilter(e.target.value)}
+                placeholder="Filter: severity:HIGH, source_ip:172.20.1.10, or free text..."
+                className="w-full bg-slate-800/50 border border-slate-700/50 rounded-md px-2.5 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-teal-600 font-mono"
+              />
             </div>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            {activeRight === 'playbook'
-              ? <PlaybookPanel steps={playbook} />
-              : <AiHintPanel onRequestHint={requestHint} />
-            }
-          </div>
-        </div>
-
-        {/* Bottom left — notes */}
-        <div className="border-r border-gray-800 flex flex-col overflow-hidden">
-          <div className="panel-header flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-yellow-500" />
-            <div className="flex gap-1 ml-1">
-              {['notes', 'investigation'].map(p => (
-                <button key={p} onClick={() => setActiveBottom(p)}
-                  className={`text-xs px-2 py-0.5 rounded transition-colors ${activeBottom === p ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
-                  {p === 'notes' ? 'IR notebook' : 'Investigation'}
-                </button>
-              ))}
+            <div className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-emerald-500 text-xs">live</span>
             </div>
+            <span className="text-xs text-slate-600">{filteredEvents.length} events</span>
           </div>
-          <div className="flex-1 overflow-hidden">
-            {activeBottom === 'notes'
-              ? <Notebook sessionId={sessionId} />
-              : <InvestigationPanel />
-            }
-          </div>
-        </div>
-
-        {/* Bottom right — NIST guidance */}
-        <div className="flex flex-col overflow-hidden">
-          <div className="panel-header flex-shrink-0">
-            <div className="w-2 h-2 rounded-full bg-blue-500" />
-            <span>NIST phase guidance</span>
-          </div>
-          <div className="flex-1 overflow-y-auto p-3">
-            <NistGuidance phase={phase} scenarioId={session.scenario_id} />
-          </div>
-        </div>
-
-      </div>
-    </div>
-  )
-}
-
-function LiveDot() {
-  return (
-    <div className="ml-auto flex items-center gap-1">
-      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-      <span className="text-green-500 text-xs">live</span>
-    </div>
-  )
-}
-
-function PlaybookPanel({ steps }) {
-  const [checked, setChecked] = useState({})
-  const toggle = (i) => setChecked(p => ({ ...p, [i]: !p[i] }))
-
-  return (
-    <div className="overflow-y-auto h-full p-3 space-y-1.5">
-      <p className="text-xs text-gray-600 mb-3">Work through each step. Check off as you complete.</p>
-      {steps.map((step, i) => (
-        <label key={i} className="flex items-start gap-2 cursor-pointer group">
-          <input type="checkbox" checked={!!checked[i]} onChange={() => toggle(i)}
-            className="mt-0.5 w-3.5 h-3.5 rounded border-gray-600 bg-gray-800 cursor-pointer flex-shrink-0" />
-          <span className={`text-xs leading-relaxed transition-colors ${checked[i] ? 'text-gray-600 line-through' : 'text-gray-300 group-hover:text-gray-200'}`}>
-            {step}
-          </span>
-        </label>
-      ))}
-    </div>
-  )
-}
-
-function InvestigationPanel() {
-  const [iocs, setIocs] = useState([])
-  const [input, setInput] = useState('')
-
-  const addIoc = () => {
-    if (!input.trim()) return
-    setIocs(p => [...p, { value: input.trim(), ts: new Date().toLocaleTimeString() }])
-    setInput('')
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-3">
-        <p className="text-xs text-gray-500 mb-2">Extracted IOCs ({iocs.length})</p>
-        {iocs.length === 0 ? (
-          <p className="text-gray-700 text-xs">No IOCs added yet. Extract IPs, hashes, domains from SIEM events.</p>
-        ) : (
-          <div className="space-y-1">
-            {iocs.map((ioc, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs font-mono">
-                <span className="text-purple-400">{ioc.value}</span>
-                <span className="text-gray-600">{ioc.ts}</span>
+          <div className="flex-1 overflow-y-auto">
+            {filteredEvents.length === 0 ? (
+              <div className="p-4 text-xs text-slate-600 text-center">
+                {siemFilter ? 'No events match your filter.' : 'Waiting for events...'}
               </div>
+            ) : (
+              <div className="divide-y divide-slate-800/30">
+                {filteredEvents.map((event, i) => (
+                  <SiemEventRow key={i} event={event} expanded={expandedEvent === i}
+                    onToggle={() => setExpandedEvent(expandedEvent === i ? null : i)}
+                    onExtractIoc={(val) => { setIocs(p => [...p, { value: val, ts: new Date().toLocaleTimeString(), type: _classifyIoc(val) }]) }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* IR Playbook — top right */}
+        <div className="border-b border-slate-800/50 flex flex-col overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-slate-800/30 flex-shrink-0">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+            <span className="text-xs text-slate-300 font-medium">IR Playbook</span>
+            <span className="text-xs text-slate-600 ml-auto">{Object.values(checkedSteps).filter(Boolean).length}/{playbook.length}</span>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+            {playbook.map((item, i) => (
+              <label key={i} className="flex items-start gap-2 cursor-pointer group">
+                <input type="checkbox" checked={!!checkedSteps[i]} onChange={() => setCheckedSteps(p => ({ ...p, [i]: !p[i] }))}
+                  className="mt-0.5 w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 cursor-pointer flex-shrink-0 accent-teal-500" />
+                <div className="flex-1">
+                  <span className={`text-xs leading-relaxed transition-colors ${checkedSteps[i] ? 'text-slate-600 line-through' : 'text-slate-300 group-hover:text-slate-200'}`}>
+                    {item.step}
+                  </span>
+                  {skillLevel === 'beginner' && !checkedSteps[i] && (
+                    <p className="text-xs text-slate-600 mt-0.5 italic">{item.hint}</p>
+                  )}
+                </div>
+              </label>
             ))}
           </div>
-        )}
-      </div>
-      <div className="border-t border-gray-800 p-2 flex gap-2">
-        <input value={input} onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && addIoc()}
-          placeholder="Add IOC (IP, hash, domain...)"
-          className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-gray-200 placeholder-gray-600 focus:outline-none focus:border-purple-600 font-mono" />
-        <button onClick={addIoc} className="px-3 text-xs bg-purple-800 hover:bg-purple-700 text-white rounded transition-colors">Add</button>
+        </div>
+
+        {/* AI Tutor + NIST — middle right */}
+        <div className="border-b border-slate-800/50 flex flex-col overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-slate-800/30 flex-shrink-0">
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+            <span className="text-xs text-slate-300 font-medium">AI Tutor</span>
+            <span className="text-xs text-teal-400 bg-teal-950/30 border border-teal-800/30 px-1.5 py-0.5 rounded ml-auto">
+              NIST: {nist.name}
+            </span>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
+          </div>
+        </div>
+
+        {/* Bottom — Notebook + IOCs */}
+        <div className="col-span-2 border-t border-slate-800/50 flex overflow-hidden">
+          {/* Notebook */}
+          <div className="flex-1 border-r border-slate-800/50 flex flex-col overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-slate-800/30 flex-shrink-0">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              <span className="text-xs text-slate-300 font-medium">IR Notebook</span>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <GuidedNotebook sessionId={sessionId} role="blue" phase={phase} />
+            </div>
+          </div>
+
+          {/* IOC Panel */}
+          <div className="w-72 flex flex-col overflow-hidden">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-slate-800/30 flex-shrink-0">
+              <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+              <span className="text-xs text-slate-300 font-medium">IOCs</span>
+              <span className="text-xs text-slate-600 ml-auto">{iocs.length}</span>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2">
+              {iocs.length === 0 ? (
+                <p className="text-xs text-slate-700 p-2">Click IPs, hashes, or domains in SIEM events to extract them here.</p>
+              ) : (
+                <div className="space-y-1">
+                  {iocs.map((ioc, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded border border-purple-800/30 bg-purple-950/10">
+                      <span className={`px-1 py-0.5 rounded text-xs ${
+                        ioc.type === 'ip' ? 'text-emerald-400 bg-emerald-950/30' :
+                        ioc.type === 'hash' ? 'text-amber-400 bg-amber-950/30' :
+                        'text-cyan-400 bg-cyan-950/30'
+                      }`}>{ioc.type}</span>
+                      <span className="font-mono text-purple-300 flex-1 truncate">{ioc.value}</span>
+                      <span className="text-slate-700">{ioc.ts}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="border-t border-slate-800 p-2 flex gap-1.5">
+              <input value={iocInput} onChange={e => setIocInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addIoc()}
+                placeholder="Add IOC..."
+                className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-md px-2 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-600 font-mono" />
+              <button onClick={addIoc} className="px-2.5 text-xs bg-purple-800/50 hover:bg-purple-700/50 text-purple-300 rounded-md transition-colors">Add</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-const NIST_GUIDANCE = {
-  1: { phase: 'Identify', text: 'Determine what assets are affected. Correlate source IPs across events. What systems were targeted? What data was potentially at risk? Build the initial scope before taking any action.' },
-  2: { phase: 'Detect & analyze', text: 'Confirm the attack is real (true positive vs false positive). Build the attack timeline: first event, progression, last observed activity. Identify the attack technique from event patterns.' },
-  3: { phase: 'Contain', text: 'Stop the bleeding without destroying evidence. Isolate affected hosts. Block C2 IPs. Consider: will isolating now cause the attacker to trigger a dead-man switch? Capture volatile evidence first.' },
-  4: { phase: 'Eradicate', text: "Remove the attacker's presence completely. Hunt for persistence: registry run keys, scheduled tasks, new user accounts, webshells. Verify every host — not just the first one identified." },
-  5: { phase: 'Recover', text: 'Restore from known-good backups. Verify backup integrity before use. Monitor for reinfection for 48h. Patch the initial vulnerability before bringing systems back online.' },
-  6: { phase: 'Post-incident', text: 'Write the IR report. Include: full timeline, IOC list, root cause, what data was at risk, what controls failed, and 3 specific recommendations to prevent recurrence.' },
-}
+function SiemEventRow({ event, expanded, onToggle, onExtractIoc }) {
+  const sevColor = {
+    CRITICAL: 'text-rose-400 bg-rose-950/30 border-rose-800/30',
+    HIGH: 'text-orange-400 bg-orange-950/30 border-orange-800/30',
+    MEDIUM: 'text-amber-400 bg-amber-950/30 border-amber-800/30',
+    LOW: 'text-slate-400 bg-slate-800/30 border-slate-700/30',
+    INFO: 'text-slate-500 bg-slate-800/20 border-slate-800/20',
+  }
+  const isBackground = event.source === 'background'
 
-function NistGuidance({ phase }) {
-  const g = NIST_GUIDANCE[phase] || NIST_GUIDANCE[1]
   return (
-    <div className="space-y-2.5">
-      <div>
-        <span className="text-xs text-teal-400 bg-teal-950 border border-teal-800 px-2 py-0.5 rounded">
-          NIST 800-61 — {g.phase}
+    <div className={`${isBackground ? 'opacity-40' : ''}`}>
+      <button onClick={onToggle} className="w-full text-left px-3 py-2 hover:bg-slate-800/20 transition-colors flex items-center gap-2">
+        <span className={`text-xs px-1.5 py-0.5 rounded border font-mono ${sevColor[event.severity] || sevColor.INFO}`} style={{ fontSize: '10px' }}>
+          {event.severity}
         </span>
-      </div>
-      <p className="text-xs text-gray-300 leading-relaxed">{g.text}</p>
+        <span className="text-xs text-slate-300 flex-1 truncate">{event.message}</span>
+        {event.source_ip && (
+          <button onClick={(e) => { e.stopPropagation(); onExtractIoc(event.source_ip) }}
+            className="text-xs text-emerald-600 hover:text-emerald-400 font-mono px-1 rounded hover:bg-emerald-950/30"
+            title="Extract as IOC">
+            {event.source_ip}
+          </button>
+        )}
+        {event.mitre_technique && (
+          <span className="text-xs text-purple-500 font-mono">{event.mitre_technique}</span>
+        )}
+        <span className="text-xs text-slate-700">{event.created_at ? new Date(event.created_at).toLocaleTimeString() : ''}</span>
+      </button>
+      {expanded && (
+        <div className="px-3 pb-3 bg-slate-800/10">
+          <pre className="text-xs text-slate-400 font-mono whitespace-pre-wrap bg-slate-900/50 rounded-lg p-3 border border-slate-800/30">
+            {event.raw_log || JSON.stringify(event, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   )
+}
+
+function _classifyIoc(val) {
+  if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(val)) return 'ip'
+  if (/^[a-f0-9]{32,}$/i.test(val)) return 'hash'
+  if (val.includes('.') && !val.includes(' ')) return 'domain'
+  return 'other'
 }

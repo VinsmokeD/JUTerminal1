@@ -86,6 +86,29 @@ async def require_instructor(user: User = Depends(get_current_user)) -> User:
     return user
 
 
+class ProfileUpdate(BaseModel):
+    skill_level: str | None = None
+    onboarding_completed: bool | None = None
+
+
 @router.get("/me")
 async def me(user: User = Depends(get_current_user)):
-    return {"id": user.id, "username": user.username, "role": user.role}
+    return {
+        "id": user.id,
+        "username": user.username,
+        "role": user.role,
+        "skill_level": user.skill_level,
+        "onboarding_completed": user.onboarding_completed,
+    }
+
+
+@router.put("/profile")
+async def update_profile(body: ProfileUpdate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    if body.skill_level and body.skill_level in ("beginner", "intermediate", "experienced"):
+        user.skill_level = body.skill_level
+    if body.onboarding_completed is not None:
+        user.onboarding_completed = body.onboarding_completed
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return {"id": user.id, "skill_level": user.skill_level, "onboarding_completed": user.onboarding_completed}
