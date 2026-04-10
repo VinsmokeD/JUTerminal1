@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import asyncio
+import subprocess
+from pathlib import Path
 from typing import Tuple
 
 try:
@@ -17,6 +19,18 @@ from src.config import settings
 _CPU_PERIOD = 100000
 _CPU_QUOTA = 50000   # 0.5 cores
 _MEM_LIMIT = "512m"
+
+# Scenario profile → target services that must be running
+_SCENARIO_TARGETS: dict[str, list[str]] = {
+    "sc01": ["sc01-webapp", "sc01-waf"],
+    "sc02": ["sc02-dc", "sc02-fileserver"],
+    "sc03": ["sc03-phish"],
+    "sc04": ["sc04-localstack"],
+    "sc05": ["sc05-splunk"],
+}
+
+# Locate docker-compose.yml relative to project root
+_COMPOSE_FILE = Path(__file__).resolve().parents[3] / "docker-compose.yml"
 
 
 def _client() -> "docker.DockerClient":
@@ -34,20 +48,26 @@ async def start_scenario_container(
     scenario_id: str,
 ) -> Tuple[str, str]:
     """
-    Provision a Kali container on the scenario network.
+    Provision a Kali container on the scenario network AND ensure the
+    scenario's target containers (webapp, DC, etc.) are running.
     If a container for this session_id already exists (browser refresh re-attach),
     returns its existing ID without creating a duplicate.
     Returns (container_id, network_name).
     """
     loop = asyncio.get_event_loop()
+    # Start target containers in parallel with the Kali container
+    await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id)
     return await loop.run_in_executor(None, _start_sync, session_id, scenario_id)
 
 
-async def stop_scenario_container(container_id: str) -> None:
+async def stop_scenario_container(container_id: str, scenario_id: str | None = None) -> None:
     if container_id.startswith("mock-"):
         return
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _stop_sync, container_id)
+    # Note: scenario targets are shared and long-lived — they are NOT stopped
+    # when individual sessions end. They are only stopped when the platform
+    # shuts down (docker-compose down) or via explicit admin action.
 
 
 async def exec_command(container_id: str, command: str) -> str:
@@ -61,6 +81,51 @@ async def exec_command(container_id: str, command: str) -> str:
 # ---------------------------------------------------------------------------
 # Sync implementations (run in thread pool to avoid blocking event loop)
 # ---------------------------------------------------------------------------
+
+def _ensure_scenario_targets(scenario_id: str) -> None:
+    """Bring up scenario-specific target containers using docker-compose profiles.
+
+    Idempotent — already-running containers are left untouched.  Falls back
+    silently in development mode so the platform works without Docker.
+    """
+    profile = scenario_id.lower().replace("-", "")  # SC-01 → sc01
+    targets = _SCENARIO_TARGETS.get(profile)
+    if not targets or not _COMPOSE_FILE.exists():
+        return
+
+    try:
+        client = _client()
+        # Check if targets are already running — skip compose if so
+        all_running = True
+        for svc in targets:
+            try:
+                c = client.containers.get(svc)
+                if c.status != "running":
+                    all_running = False
+                    break
+            except Exception:
+                all_running = False
+                break
+
+        if all_running:
+            return
+
+        # Use docker-compose with the scenario profile to start targets
+        subprocess.run(
+            [
+                "docker", "compose",
+                "-f", str(_COMPOSE_FILE),
+                "--profile", profile,
+                "up", "-d", "--no-recreate",
+            ],
+            capture_output=True,
+            timeout=60,
+        )
+    except Exception as exc:
+        if settings.ENVIRONMENT == "development":
+            print(f"[Sandbox] Scenario targets for {profile} unavailable: {exc}")
+        # Non-fatal — Kali container can still start without targets
+
 
 def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
     sc_num = scenario_id.lower().replace("-", "")  # sc01, sc02, sc03

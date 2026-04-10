@@ -14,6 +14,39 @@ Every update must follow this strict format. Do not skip any fields.
 ---
 ## Change Log
 
+### [2026-04-10 17:45:00] - Claude Code (Real PTY Terminal, Step-by-Step Hints, Scenario Target Integration)
+* **Status**: Coding Complete
+* **Why**: User requested: (1) real Kali shell via raw PTY passthrough instead of frontend-simulated terminal, (2) step-by-step progressive hints instead of single-string responses, (3) real Docker target machines for both Red and Blue teams, (4) full integration across all components. This session completes the remaining integration work from the platform redesign.
+* **Where**:
+  - **Frontend (Terminal — Raw PTY)**:
+    - `frontend/src/hooks/useTerminal.js` — REWRITTEN: Changed from line-buffered (frontend handles editing) to raw PTY passthrough. Every keystroke sent directly to Docker via `onData` callback. Local line buffer only tracks command text for AI/discovery extraction on Enter. Set `convertEol: false` for raw PTY mode.
+    - `frontend/src/components/terminal/Terminal.jsx` — MODIFIED: Updated props to accept `onData` (raw keystroke) + `onCommand` (complete command) callbacks instead of just `onCommand`.
+    - `frontend/src/hooks/useWebSocket.js` — REWRITTEN: Added `sendRawInput` (type: `terminal_raw` for character-by-character passthrough) and `sendCommand` (type: `terminal_command` for AI/SIEM tracking). Returns `{ sendRawInput, sendCommand, requestHint, toggleMode }`.
+    - `frontend/src/pages/RedWorkspace.jsx` — MODIFIED: Destructures `sendRawInput` from useWebSocket, passes `onData={handleRawInput}` to Terminal component.
+  - **Frontend (Blue Team Terminal Access)**:
+    - `frontend/src/pages/BlueWorkspace.jsx` — MAJOR UPDATE: Added SIEM/Terminal toggle panel in left column. Blue team now gets real Kali terminal for defensive investigation (tshark, log analysis, etc.). Added `activePanel` state ('siem' | 'terminal'), `writeOutputRef`, and full terminal integration with `sendRawInput`/`sendCommand`.
+  - **Frontend (Hint UI)**:
+    - `frontend/src/components/hints/AiHintPanel.jsx` — MODIFIED: Event handler captures `steps` array. HintCard renders numbered step-by-step UI when `hint.steps.length > 1` with circular step indicators. Strips "Step N:" prefixes from display text.
+  - **Backend (WebSocket — Raw PTY)**:
+    - `backend/src/ws/routes.py` — RESTRUCTURED: Three message types: `terminal_raw` (raw keystrokes → Docker PTY via `send_terminal_input`), `terminal_command` (complete commands → AI/SIEM/discovery pipeline), `terminal_input` (legacy mock fallback). Discovery output reading expanded to `lrange(..., 0, 2)`.
+  - **Backend (Container Manager — Scenario Targets)**:
+    - `backend/src/sandbox/manager.py` — ENHANCED: Added `_SCENARIO_TARGETS` mapping (sc01→[webapp, waf], sc02→[dc, fileserver], sc03→[phish], sc04→[localstack], sc05→[splunk]). New `_ensure_scenario_targets()` function uses `docker compose --profile <scXX> up -d --no-recreate` to bring up target containers idempotently before starting Kali. Falls back silently in dev mode. `start_scenario_container` now calls `_ensure_scenario_targets` first.
+  - **Backend (Session Routes)**:
+    - `backend/src/sessions/routes.py` — MODIFIED: Removed `if body.role == "red":` guard — both Red and Blue teams now get real Kali containers provisioned.
+  - **Backend (Hint Engine)**:
+    - `backend/src/scenarios/hint_engine.py` — MODIFIED: Detects array hints (`isinstance(static_hint, list)`) and returns `hint_steps` array alongside `hint_text`. WS routes also updated to pass `steps` array in `ai_hint` messages.
+  - **Hint Content (All Scenarios)**:
+    - `backend/src/scenarios/hints/sc01_hints.json` — REWRITTEN: All hints now arrays. Red: 6 phases × 3 levels, Blue: 3 phases × 3 levels. Each step builds progressively.
+    - `backend/src/scenarios/hints/sc02_hints.json` — REWRITTEN: Red: 4 phases (BloodHound → Kerberoast → Lateral Movement → DCSync), Blue: 2 phases (detection → tracking).
+    - `backend/src/scenarios/hints/sc03_hints.json` — REWRITTEN: Red: 5 phases (OSINT → Campaign → Payload → Launch → Reporting), Blue: 3 phases (email → macro → containment).
+    - `backend/src/scenarios/hints/sc04_hints.json` — REWRITTEN: Red: 3 phases (IAM recon → Lambda privesc → SSRF/IMDS), Blue: 1 phase (CloudTrail analysis). All converted from single strings to step-by-step arrays.
+    - `backend/src/scenarios/hints/sc05_hints.json` — REWRITTEN: Red: 2 phases (ransomware TTPs → lateral movement), Blue: 2 phases (volatile evidence → scope assessment). All converted from single strings to step-by-step arrays.
+* **What & How**:
+  - **Raw PTY**: The terminal no longer simulates a shell — bash inside Docker handles all line editing, tab completion, and history. Frontend captures keystrokes via xterm.js `onData`, sends each as `terminal_raw` over WebSocket. Backend forwards directly to Docker exec PTY via `send_terminal_input`. A local line buffer in the frontend tracks command text purely for AI/discovery extraction when Enter is pressed (sent as `terminal_command`).
+  - **Step-by-Step Hints**: All 5 scenario hint JSON files converted from single strings to arrays of progressive steps. Each level (L1 conceptual → L2 directional → L3 procedural) now has 3-5 steps that build on each other. The hint engine detects arrays and returns both `hint_text` (joined) and `hint_steps` (array). The frontend AiHintPanel renders numbered steps with circular indicators when `steps.length > 1`.
+  - **Scenario Targets**: `_ensure_scenario_targets` checks if target containers are running via Docker SDK, and if not, calls `docker compose --profile <scXX> up -d --no-recreate` to start them. This runs before Kali container creation, ensuring the attack/defense targets are available when the student connects. Targets are shared/long-lived — not stopped per session.
+  - **Blue Team Terminal**: Blue workspace now has a SIEM/Terminal toggle. Students can switch between SIEM event feed and a real Kali terminal for running investigation commands (tshark, log analysis, etc.) against the scenario network.
+
 ### [2026-04-10 11:30:00] - Claude Code (Full Platform Redesign — Layered Experience Implementation)
 * **Status**: Coding Complete + Integration Verified
 * **Why**: User requested comprehensive platform redesign to make CyberSim beginner-friendly, teach step-by-step with concept explanations, improve note-taking with guided templates, make AI fully context-aware with target knowledge, rework UI/UX to professional training platform standards, and support adaptive difficulty for all skill levels (beginner/intermediate/experienced). Approach C "Layered Experience" was selected after a multi-section design brainstorm.

@@ -1,9 +1,15 @@
 import { useRef } from 'react'
 import { useTerminal } from '../../hooks/useTerminal'
 
-export default function Terminal({ onCommand, pendingOutput }) {
+/**
+ * Real PTY terminal component.
+ *
+ * onData — raw keystrokes sent to backend (every character)
+ * onCommand — extracted command string sent on Enter (for AI/discovery)
+ */
+export default function Terminal({ onData, onCommand, pendingOutput }) {
   const containerRef = useRef(null)
-  const { writeOutput } = useTerminal({ containerRef, onCommand })
+  const { writeOutput } = useTerminal({ containerRef, onData, onCommand })
 
   // Expose writeOutput via ref so parent can push output
   if (pendingOutput) {

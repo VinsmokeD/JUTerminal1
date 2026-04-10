@@ -22,7 +22,7 @@ export default function RedWorkspace() {
   const [elapsed, setElapsed] = useState(0)
   const writeOutputRef = useRef(null)
 
-  const { sendCommand, requestHint, toggleMode } = useWebSocket(sessionId)
+  const { sendRawInput, sendCommand, requestHint, toggleMode } = useWebSocket(sessionId)
 
   useEffect(() => {
     if (!session) {
@@ -40,6 +40,9 @@ export default function RedWorkspace() {
 
   const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
 
+  // Raw keystrokes → Docker PTY
+  const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
+  // Complete command → AI/discovery tracking
   const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
 
   if (!session) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500 text-sm">Loading session...</div>
@@ -120,7 +123,7 @@ export default function RedWorkspace() {
             <MitreBadge phase={phase} scenario={session.scenario_id} />
           </PanelHeader>
           <div className="flex-1 overflow-hidden">
-            <Terminal onCommand={handleCommand} pendingOutput={writeOutputRef} />
+            <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} />
           </div>
         </div>
 

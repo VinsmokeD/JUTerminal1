@@ -63,7 +63,19 @@ async def request_hint(
     }
     ai_hint = await get_ai_hint(session.id, state, None, body.level)
 
-    hint_text = static_hint or ai_hint or "No hint available for this phase."
+    # Static hints can be arrays (step-by-step) or strings
+    if isinstance(static_hint, list):
+        hint_text = "\n".join(static_hint)
+        hint_steps = static_hint
+    elif static_hint:
+        hint_text = static_hint
+        hint_steps = [static_hint]
+    elif ai_hint:
+        hint_text = ai_hint
+        hint_steps = [ai_hint]
+    else:
+        hint_text = "No hint available for this phase."
+        hint_steps = [hint_text]
 
     # Apply score penalty and record usage
     session.score = max(0, session.score - penalty)
@@ -74,6 +86,7 @@ async def request_hint(
 
     return {
         "hint": hint_text,
+        "steps": hint_steps,
         "level": body.level,
         "penalty": penalty,
         "score": session.score,

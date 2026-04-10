@@ -2,26 +2,80 @@
   "SC-04": {
     "red": {
       "1": {
-        "L1": "You have AWS credentials. What is the very first thing you should do with them — before enumerating anything that creates CloudTrail events? Think about what the credentials are before you use them.",
-        "L2": "GetCallerIdentity is the AWS equivalent of 'whoami'. It tells you the ARN, account ID, and user ID without triggering any sensitive CloudTrail alerts. Always run this first before any enumeration.",
-        "L3": "Run `aws sts get-caller-identity --endpoint-url http://172.20.4.20:4566`. Then enumerate what you can do: `aws iam list-attached-user-policies --user-name dev-deploy`. Build a picture of your current permissions before taking any action."
+        "L1": [
+          "Step 1: You have AWS credentials. Before enumerating anything that creates CloudTrail events, you need to understand what the credentials represent.",
+          "Step 2: Think of it like finding a keycard — you check the label first, not start opening doors. What AWS call tells you who you are without triggering sensitive alerts?",
+          "Step 3: Always start with identity verification. This is the equivalent of 'whoami' in Linux — know your permissions before you act."
+        ],
+        "L2": [
+          "Step 1: GetCallerIdentity is the AWS 'whoami'. It returns your ARN, account ID, and user ID without triggering sensitive CloudTrail alerts.",
+          "Step 2: After identity, enumerate your IAM permissions. List attached policies and inline policies for your user to understand what you can and cannot do.",
+          "Step 3: Build a complete picture of your access: what services, what actions, what resources. This determines your entire attack path."
+        ],
+        "L3": [
+          "Step 1: Run `aws sts get-caller-identity --endpoint-url http://172.20.4.20:4566` to identify yourself.",
+          "Step 2: Enumerate your policies: `aws iam list-attached-user-policies --user-name dev-deploy --endpoint-url http://172.20.4.20:4566`",
+          "Step 3: For each policy, get the version and read it: `aws iam get-policy-version --policy-arn <ARN> --version-id v1 --endpoint-url http://172.20.4.20:4566`",
+          "Step 4: Document your identity, policies, and allowed actions as #finding entries. This is your attack surface."
+        ]
       },
       "2": {
-        "L1": "You've enumerated your IAM permissions. One combination of permissions is particularly dangerous for privilege escalation. Think about which AWS service lets you run arbitrary code under any IAM role.",
-        "L2": "The iam:PassRole + lambda:CreateFunction + lambda:InvokeFunction combo is a classic IAM privilege escalation path. You can create a Lambda function that runs under a more privileged role, then invoke it to perform actions as that role.",
-        "L3": "Check your permissions for: `iam:PassRole`, `lambda:CreateFunction`, `lambda:InvokeFunction`. If you have all three: create a Lambda using Python with boto3, assign the `StratoStack-Admin` role, invoke it with a command to create an IAM user or dump credentials."
+        "L1": [
+          "Step 1: You've mapped your IAM permissions. One specific combination of permissions is a well-known privilege escalation path in AWS.",
+          "Step 2: Think about which AWS service lets you run arbitrary code under any IAM role you can pass to it.",
+          "Step 3: The key insight: if you can create a compute resource AND assign it a more privileged role, you can escalate by running code as that role."
+        ],
+        "L2": [
+          "Step 1: The iam:PassRole + lambda:CreateFunction + lambda:InvokeFunction trio is a classic IAM privilege escalation path.",
+          "Step 2: You create a Lambda function that runs under a more privileged role (like StratoStack-Admin), then invoke it to perform actions you couldn't do directly.",
+          "Step 3: The Lambda function's code uses boto3 to call AWS APIs with the elevated role's permissions. Write a handler that creates an admin IAM user or dumps credentials."
+        ],
+        "L3": [
+          "Step 1: Verify you have the required permissions: `iam:PassRole`, `lambda:CreateFunction`, `lambda:InvokeFunction`.",
+          "Step 2: Create the escalation Lambda: write a Python handler that uses boto3 to create a new IAM user with AdministratorAccess.",
+          "Step 3: Deploy: `aws lambda create-function --function-name escalate --runtime python3.9 --role arn:aws:iam::<ACCOUNT>:role/StratoStack-Admin --handler index.handler --zip-file fileb://function.zip --endpoint-url http://172.20.4.20:4566`",
+          "Step 4: Invoke: `aws lambda invoke --function-name escalate output.json --endpoint-url http://172.20.4.20:4566`. Check output.json for the new admin credentials.",
+          "Step 5: Document the privilege escalation chain as #finding with CRITICAL severity."
+        ]
       },
       "3": {
-        "L1": "There's a web application at 172.20.4.30 that makes server-side HTTP requests. What vulnerability class allows you to make the server request an internal URL that you couldn't reach directly from your Kali container?",
-        "L2": "SSRF (Server-Side Request Forgery) lets you proxy requests through the vulnerable server. The AWS Instance Metadata Service at 169.254.169.254 is only reachable from inside the instance — making the server request it gives you temporary IAM credentials.",
-        "L3": "Test with: `curl 'http://172.20.4.30/fetch?url=http://169.254.169.254/latest/meta-data/'`. If it returns metadata, try: `curl 'http://172.20.4.30/fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/'` to get the role name, then append the role name to get the credentials."
+        "L1": [
+          "Step 1: There's a web application at 172.20.4.30 that makes server-side HTTP requests on your behalf.",
+          "Step 2: What vulnerability class allows you to make the server request an internal URL that you couldn't reach directly?",
+          "Step 3: The AWS Instance Metadata Service at 169.254.169.254 is only reachable from inside the instance — if you can make the server request it, you get temporary IAM credentials."
+        ],
+        "L2": [
+          "Step 1: SSRF (Server-Side Request Forgery) lets you proxy requests through the vulnerable server to internal services.",
+          "Step 2: The AWS IMDS at 169.254.169.254 returns instance metadata including temporary IAM credentials. It's only accessible from the instance itself.",
+          "Step 3: By making the web app fetch the IMDS URL, you get the server's IAM role credentials — potentially more privileged than your current user."
+        ],
+        "L3": [
+          "Step 1: Test for SSRF: `curl 'http://172.20.4.30/fetch?url=http://169.254.169.254/latest/meta-data/'`",
+          "Step 2: If metadata returns, get the role name: `curl 'http://172.20.4.30/fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/'`",
+          "Step 3: Fetch the credentials: `curl 'http://172.20.4.30/fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/<ROLE_NAME>'`",
+          "Step 4: Use the returned AccessKeyId, SecretAccessKey, and Token to configure a new AWS CLI profile and test access.",
+          "Step 5: Document: SSRF endpoint, IMDS credentials obtained, role name and permissions. Tag as #finding and #evidence."
+        ]
       }
     },
     "blue": {
       "1": {
-        "L1": "CloudTrail logged a GetCallerIdentity from an unexpected IP. What is significant about this event, and what should your next query look for?",
-        "L2": "GetCallerIdentity is the first action an attacker takes with new credentials — it's reconnaissance. The key question is: what actions followed from this same identity in the next 60 minutes?",
-        "L3": "Splunk: `index=cloudtrail userIdentity.arn=<SUSPICIOUS_ARN> | table _time, eventName, sourceIPAddress, requestParameters | sort _time`. Look for the sequence: GetCallerIdentity → ListBuckets → GetObject. Any GetObject on sensitive buckets = confirmed data access."
+        "L1": [
+          "Step 1: CloudTrail logged a GetCallerIdentity from an unexpected IP address. This is typically the first action an attacker takes with compromised credentials.",
+          "Step 2: The significance: GetCallerIdentity is reconnaissance. The attacker is confirming the credentials work before doing anything else.",
+          "Step 3: Your next query should answer: what actions followed from this same identity in the next 60 minutes? The sequence tells you the attack path."
+        ],
+        "L2": [
+          "Step 1: Filter CloudTrail for the suspicious ARN. Build a timeline of all API calls from this identity.",
+          "Step 2: Look for the pattern: GetCallerIdentity → ListBuckets/ListUsers → GetObject/CreateFunction. This shows recon → enumeration → exploitation.",
+          "Step 3: Any GetObject calls on sensitive S3 buckets or CreateFunction/InvokeFunction calls indicate active data exfiltration or privilege escalation."
+        ],
+        "L3": [
+          "Step 1: In Splunk: `index=cloudtrail userIdentity.arn=<SUSPICIOUS_ARN> | table _time, eventName, sourceIPAddress, requestParameters | sort _time`",
+          "Step 2: Identify the full attack timeline. Look for: GetCallerIdentity → ListAttachedUserPolicies → CreateFunction → InvokeFunction (privilege escalation path).",
+          "Step 3: Check for SSRF indicators: requests originating from the web server's internal IP to IMDS endpoints.",
+          "Step 4: Document: compromised ARN, source IP, full API call timeline, any data accessed. Create #ioc entries for the IP and ARN."
+        ]
       }
     }
   }

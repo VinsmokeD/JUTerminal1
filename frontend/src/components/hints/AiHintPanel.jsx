@@ -13,7 +13,12 @@ export default function AiHintPanel({ onRequestHint, onToggleMode }) {
 
   useEffect(() => {
     const handler = (evt) => {
-      setHints((p) => [{ text: evt.detail.text, level: evt.detail.level || null, ts: new Date().toLocaleTimeString() }, ...p].slice(0, 30))
+      setHints((p) => [{
+        text: evt.detail.text,
+        steps: evt.detail.steps || null,
+        level: evt.detail.level || null,
+        ts: new Date().toLocaleTimeString(),
+      }, ...p].slice(0, 30))
       setLoading(false)
     }
     window.addEventListener('ai:hint', handler)
@@ -132,6 +137,7 @@ function HintCard({ hint }) {
   const levelColor = { 1: 'border-amber-800/30 bg-amber-950/10', 2: 'border-orange-800/30 bg-orange-950/10', 3: 'border-rose-800/30 bg-rose-950/10' }
   const levelLabel = { 1: 'Conceptual', 2: 'Directional', 3: 'Procedural' }
   const style = hint.isError ? 'border-slate-800 bg-slate-900/30' : (hint.level ? levelColor[hint.level] : 'border-cyan-800/30 bg-cyan-950/10')
+  const hasSteps = hint.steps && hint.steps.length > 1
 
   return (
     <div className={`border ${style} rounded-lg p-3`}>
@@ -143,9 +149,27 @@ function HintCard({ hint }) {
         ) : (
           <span className="text-xs text-cyan-400 font-medium">AI Tutor</span>
         )}
+        {hasSteps && <span className="text-xs text-slate-600">{hint.steps.length} steps</span>}
         <span className="text-xs text-slate-700 ml-auto">{hint.ts}</span>
       </div>
-      <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">{hint.text}</p>
+      {hasSteps ? (
+        <div className="space-y-2">
+          {hint.steps.map((step, i) => {
+            // Strip "Step N: " prefix if present
+            const text = step.replace(/^Step \d+:\s*/i, '')
+            return (
+              <div key={i} className="flex gap-2">
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-800/50 border border-slate-700/50 flex items-center justify-center">
+                  <span className="text-xs text-slate-400 font-bold">{i + 1}</span>
+                </div>
+                <p className="text-xs text-slate-200 leading-relaxed flex-1">{text}</p>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">{hint.text}</p>
+      )}
     </div>
   )
 }

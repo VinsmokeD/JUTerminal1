@@ -41,7 +41,6 @@ export function useWebSocket(sessionId) {
             setAiMode(msg.data.mode)
             break
           case 'auto_evidence':
-            // Notify frontend about discovered items for auto-evidence capture
             addDiscoveries(msg.data.discoveries)
             if (Object.values(msg.data.discoveries).some(arr => arr.length > 0)) {
               setPendingEvidence(msg.data)
@@ -63,9 +62,17 @@ export function useWebSocket(sessionId) {
     }
   }, [sessionId])
 
+  // Send raw keystrokes to Docker PTY (character-by-character)
+  const sendRawInput = useCallback((data) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'terminal_raw', data }))
+    }
+  }, [])
+
+  // Send complete command string (for AI/discovery tracking after Enter)
   const sendCommand = useCallback((command) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'terminal_input', data: command }))
+      wsRef.current.send(JSON.stringify({ type: 'terminal_command', data: command }))
     }
   }, [])
 
@@ -81,5 +88,5 @@ export function useWebSocket(sessionId) {
     }
   }, [])
 
-  return { sendCommand, requestHint, toggleMode }
+  return { sendRawInput, sendCommand, requestHint, toggleMode }
 }

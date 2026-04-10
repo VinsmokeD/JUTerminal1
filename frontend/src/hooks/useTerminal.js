@@ -4,13 +4,22 @@ import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import 'xterm/css/xterm.css'
 
-export function useTerminal({ containerRef, onCommand }) {
+/**
+ * Real PTY terminal hook.
+ *
+ * Every keystroke is sent immediately to the backend (which forwards to
+ * Docker exec PTY). Every byte from Docker is written to xterm. Line
+ * editing, tab completion, and history are all handled by bash inside
+ * the container — NOT by the frontend.
+ *
+ * onData(data) — called for every keystroke/paste, sends raw to backend
+ * onCommand(cmd) — called when Enter is detected, for AI/discovery tracking
+ */
+export function useTerminal({ containerRef, onData, onCommand }) {
   const termRef = useRef(null)
   const fitRef = useRef(null)
-  const lineBufferRef = useRef('')
+  const lineBufferRef = useRef('')    // Track current line for onCommand extraction
   const historyRestoredRef = useRef(false)
-  const cmdHistoryRef = useRef([])
-  const cmdHistoryIndexRef = useRef(-1)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -51,7 +60,7 @@ export function useTerminal({ containerRef, onCommand }) {
       },
       scrollback: 5000,
       allowProposedApi: true,
-      convertEol: true,
+      convertEol: false, // Raw PTY — do NOT convert EOL
     })
 
     const fitAddon = new FitAddon()
@@ -65,75 +74,37 @@ export function useTerminal({ containerRef, onCommand }) {
     termRef.current = term
     fitRef.current = fitAddon
 
-    // Handle keyboard input — buffer until Enter, support history
+    // Raw PTY mode: send every keystroke directly to the backend.
+    // Bash inside Docker handles line editing, tab completion, history.
     term.onData((data) => {
-      if (data === '\r') {
-        const cmd = lineBufferRef.current
+      // Send raw keystrokes to backend → Docker PTY
+      if (onData) onData(data)
+
+      // Track line buffer for command extraction (AI/discovery)
+      if (data === '\r' || data === '\n') {
+        const cmd = lineBufferRef.current.trim()
+        if (cmd && onCommand) onCommand(cmd)
         lineBufferRef.current = ''
-        // Save to command history
-        if (cmd.trim()) {
-          cmdHistoryRef.current.unshift(cmd)
-          if (cmdHistoryRef.current.length > 50) cmdHistoryRef.current.pop()
-        }
-        cmdHistoryIndexRef.current = -1
-        term.write('\r\n')
-        if (cmd.trim() && onCommand) onCommand(cmd)
       } else if (data === '\x7f' || data === '\b') {
-        // Backspace
-        if (lineBufferRef.current.length > 0) {
-          lineBufferRef.current = lineBufferRef.current.slice(0, -1)
-          term.write('\b \b')
-        }
-      } else if (data === '\x1b[A') {
-        // Up arrow — previous command
-        if (cmdHistoryRef.current.length > 0) {
-          const newIdx = Math.min(cmdHistoryIndexRef.current + 1, cmdHistoryRef.current.length - 1)
-          if (newIdx !== cmdHistoryIndexRef.current) {
-            cmdHistoryIndexRef.current = newIdx
-            _replaceInput(term, lineBufferRef, cmdHistoryRef.current[newIdx])
-          }
-        }
-      } else if (data === '\x1b[B') {
-        // Down arrow — next command
-        if (cmdHistoryIndexRef.current > 0) {
-          cmdHistoryIndexRef.current -= 1
-          _replaceInput(term, lineBufferRef, cmdHistoryRef.current[cmdHistoryIndexRef.current])
-        } else if (cmdHistoryIndexRef.current === 0) {
-          cmdHistoryIndexRef.current = -1
-          _replaceInput(term, lineBufferRef, '')
-        }
+        lineBufferRef.current = lineBufferRef.current.slice(0, -1)
       } else if (data === '\x03') {
-        // Ctrl+C
+        // Ctrl+C — reset line buffer
         lineBufferRef.current = ''
-        cmdHistoryIndexRef.current = -1
-        term.write('^C\r\n')
-      } else if (data === '\x0c') {
-        // Ctrl+L — clear screen
-        term.clear()
-      } else if (data === '\t') {
-        // Tab — basic command completion
-        const partial = lineBufferRef.current
-        const match = _tabComplete(partial)
-        if (match && match !== partial) {
-          const extra = match.slice(partial.length)
-          lineBufferRef.current = match
-          term.write(extra)
-        }
-      } else if (data >= ' ') {
+      } else if (data.length === 1 && data >= ' ') {
         lineBufferRef.current += data
-        term.write(data)
       }
+      // Arrow keys, tab, etc. are sent raw — bash handles them
     })
 
-    // Listen for output from WebSocket
+    // Listen for output from WebSocket (Docker PTY output)
     const handleOutput = (evt) => {
       term.write(evt.detail?.data || '')
     }
     const handleHistory = (evt) => {
       if (historyRestoredRef.current) return
       const payload = evt.detail || {}
-      const commands = Array.isArray(payload.commands) ? payload.commands : []
       const terminalChunks = Array.isArray(payload.terminal) ? payload.terminal : []
+      const commands = Array.isArray(payload.commands) ? payload.commands : []
 
       if (terminalChunks.length > 0) {
         terminalChunks.forEach((chunk) => {
@@ -165,31 +136,5 @@ export function useTerminal({ containerRef, onCommand }) {
     termRef.current?.write(text)
   }
 
-  return { writeOutput }
-}
-
-/** Replace current input line with new text */
-function _replaceInput(term, bufRef, text) {
-  // Erase current line content
-  const oldLen = bufRef.current.length
-  if (oldLen > 0) {
-    term.write('\b'.repeat(oldLen) + ' '.repeat(oldLen) + '\b'.repeat(oldLen))
-  }
-  bufRef.current = text
-  term.write(text)
-}
-
-/** Basic tab completion for common pentesting tools */
-const _TOOLS = [
-  'nmap', 'gobuster', 'sqlmap', 'nikto', 'hydra', 'curl', 'whatweb',
-  'bloodhound', 'crackmapexec', 'netexec', 'hashcat',
-  'impacket-GetUserSPNs', 'impacket-secretsdump', 'impacket-psexec', 'impacket-wmiexec',
-  'msfconsole', 'msfvenom', 'theHarvester',
-  'whoami', 'hostname', 'ifconfig', 'ping', 'cat', 'ls', 'pwd', 'id', 'help', 'clear',
-]
-function _tabComplete(partial) {
-  if (!partial) return null
-  const matches = _TOOLS.filter(t => t.startsWith(partial.toLowerCase()))
-  if (matches.length === 1) return matches[0] + ' '
-  return null
+  return { writeOutput, termRef }
 }

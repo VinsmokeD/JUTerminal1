@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
 import { useWebSocket } from '../hooks/useWebSocket'
 import RoeBriefing from '../components/workspace/RoeBriefing'
+import Terminal from '../components/terminal/Terminal'
 import SiemFeed from '../components/siem/SiemFeed'
 import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
@@ -69,8 +70,13 @@ export default function BlueWorkspace() {
   const [iocInput, setIocInput] = useState('')
   const [expandedEvent, setExpandedEvent] = useState(null)
   const [elapsed, setElapsed] = useState(0)
+  const [activePanel, setActivePanel] = useState('siem') // siem | terminal
+  const writeOutputRef = useRef(null)
 
-  const { requestHint, toggleMode } = useWebSocket(sessionId)
+  const { sendRawInput, sendCommand, requestHint, toggleMode } = useWebSocket(sessionId)
+
+  const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
+  const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
 
   useEffect(() => {
     if (!session) {
@@ -161,39 +167,60 @@ export default function BlueWorkspace() {
       {/* Main grid */}
       <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: '1fr 340px', gridTemplateRows: '1fr 1fr 200px' }}>
 
-        {/* SIEM Console — left, spans 2 rows */}
+        {/* Left panel — SIEM Console / Investigation Terminal (toggle), spans 2 rows */}
         <div className="row-span-2 border-r border-slate-800/50 flex flex-col overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-slate-800/30 flex-shrink-0">
-            <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-            <span className="text-xs text-slate-300 font-medium">SIEM Console</span>
-            <div className="flex-1 mx-2">
-              <input
-                value={siemFilter}
-                onChange={e => setSiemFilter(e.target.value)}
-                placeholder="Filter: severity:HIGH, source_ip:172.20.1.10, or free text..."
-                className="w-full bg-slate-800/50 border border-slate-700/50 rounded-md px-2.5 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-teal-600 font-mono"
-              />
+            <div className="flex gap-1 bg-slate-800/50 rounded-lg p-0.5">
+              <button onClick={() => setActivePanel('siem')}
+                className={`text-xs px-3 py-1 rounded-md transition-all font-medium ${activePanel === 'siem' ? 'bg-teal-600/20 text-teal-400 shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}>
+                SIEM
+              </button>
+              <button onClick={() => setActivePanel('terminal')}
+                className={`text-xs px-3 py-1 rounded-md transition-all font-medium ${activePanel === 'terminal' ? 'bg-cyan-600/20 text-cyan-400 shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}>
+                Terminal
+              </button>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-emerald-500 text-xs">live</span>
-            </div>
-            <span className="text-xs text-slate-600">{filteredEvents.length} events</span>
+            {activePanel === 'siem' && (
+              <>
+                <div className="flex-1 mx-2">
+                  <input
+                    value={siemFilter}
+                    onChange={e => setSiemFilter(e.target.value)}
+                    placeholder="Filter: severity:HIGH, source_ip:172.20.1.10, or free text..."
+                    className="w-full bg-slate-800/50 border border-slate-700/50 rounded-md px-2.5 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-teal-600 font-mono"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-emerald-500 text-xs">live</span>
+                </div>
+                <span className="text-xs text-slate-600">{filteredEvents.length} events</span>
+              </>
+            )}
+            {activePanel === 'terminal' && (
+              <span className="text-xs text-slate-500 ml-2">Investigation shell — tshark, grep logs, check configs</span>
+            )}
           </div>
-          <div className="flex-1 overflow-y-auto">
-            {filteredEvents.length === 0 ? (
-              <div className="p-4 text-xs text-slate-600 text-center">
-                {siemFilter ? 'No events match your filter.' : 'Waiting for events...'}
+          <div className="flex-1 overflow-hidden">
+            {activePanel === 'siem' ? (
+              <div className="h-full overflow-y-auto">
+                {filteredEvents.length === 0 ? (
+                  <div className="p-4 text-xs text-slate-600 text-center">
+                    {siemFilter ? 'No events match your filter.' : 'Waiting for events...'}
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-800/30">
+                    {filteredEvents.map((event, i) => (
+                      <SiemEventRow key={i} event={event} expanded={expandedEvent === i}
+                        onToggle={() => setExpandedEvent(expandedEvent === i ? null : i)}
+                        onExtractIoc={(val) => { setIocs(p => [...p, { value: val, ts: new Date().toLocaleTimeString(), type: _classifyIoc(val) }]) }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="divide-y divide-slate-800/30">
-                {filteredEvents.map((event, i) => (
-                  <SiemEventRow key={i} event={event} expanded={expandedEvent === i}
-                    onToggle={() => setExpandedEvent(expandedEvent === i ? null : i)}
-                    onExtractIoc={(val) => { setIocs(p => [...p, { value: val, ts: new Date().toLocaleTimeString(), type: _classifyIoc(val) }]) }}
-                  />
-                ))}
-              </div>
+              <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} />
             )}
           </div>
         </div>

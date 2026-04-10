@@ -121,10 +121,19 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             msg = json.loads(raw)
             msg_type = msg.get("type")
 
-            if msg_type == "terminal_input":
-                command = msg.get("data", "")
+            if msg_type == "terminal_raw":
+                # ── Raw PTY passthrough: every keystroke → Docker ──────────
+                raw_data = msg.get("data", "")
+                if raw_data:
+                    await send_terminal_input(session_id, raw_data)
 
-                # ── Phase 15: Methodology gate check ────────────────────────
+            elif msg_type == "terminal_command":
+                # ── Complete command (sent on Enter): AI, SIEM, discovery ───
+                command = msg.get("data", "")
+                if not command.strip():
+                    continue
+
+                # Phase gate check
                 current_phase: int = session_state["phase"]
                 try:
                     spec = load_scenario(session_state["scenario_id"])
@@ -137,7 +146,6 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 if ptes_phase:
                     gate_result = check_command(command, ptes_phase)
                     if gate_result.blocked:
-                        # Deduct points and surface Socratic redirect in terminal
                         async with AsyncSessionLocal() as db:
                             await db.execute(
                                 update(Session)
@@ -145,15 +153,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                                 .values(score=Session.score - _GATE_PENALTY)
                             )
                             await db.commit()
-                        session_state["phase"] = current_phase  # keep state consistent
+                        session_state["phase"] = current_phase
                         warn = (
                             f"\r\n\x1b[31m[GATE BLOCKED] {gate_result.redirect_message}\x1b[0m"
                             f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
                         )
                         await websocket.send_json({"type": "terminal_output", "data": warn})
-                        continue  # do NOT forward to Docker
-
-                await send_terminal_input(session_id, command)
+                        continue
 
                 # Log command and trigger SIEM events
                 siem_events = await process_command_for_siem(session_id, session_state, command)
@@ -175,13 +181,12 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 await lpush_capped(f"session:{session_id}:commands", command, max_len=10)
                 await cache_set(f"session:{session_id}:last_cmd_time", str(__import__('time').time()), ttl=7200)
 
-                # Track discoveries from command output (non-blocking)
-                # Get recent terminal output from history for discovery parsing
-                recent_output = await lrange(f"terminal:{session_id}:history", 0, 0)
-                output_text = str(recent_output[0]) if recent_output else ""
+                # Track discoveries from terminal output
+                recent_output = await lrange(f"terminal:{session_id}:history", 0, 2)
+                output_text = " ".join(str(c) for c in recent_output if c) if recent_output else ""
                 discoveries = await track_discovery(session_id, command, output_text, session_state["scenario_id"])
 
-                # If something was newly discovered, notify the frontend for auto-evidence
+                # Notify frontend about new discoveries for auto-evidence
                 if any(discoveries.values()):
                     await websocket.send_json({
                         "type": "auto_evidence",
@@ -196,6 +201,12 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 ai_hint = await get_ai_hint(session_id, session_state, command, None)
                 if ai_hint:
                     await websocket.send_json({"type": "ai_hint", "data": {"text": ai_hint}})
+
+            elif msg_type == "terminal_input":
+                # ── Legacy: line-buffered input (mock terminal fallback) ────
+                command = msg.get("data", "")
+                if command:
+                    await send_terminal_input(session_id, command)
 
             elif msg_type == "toggle_mode":
                 new_mode = msg.get("mode", "learn")
@@ -216,23 +227,32 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             elif msg_type == "request_hint":
                 level = msg.get("level", 1)
                 hint_text = None
+                hint_steps = None
 
                 # Try AI hint first
                 ai_hint = await get_ai_hint(session_id, session_state, None, level)
                 if ai_hint:
                     hint_text = ai_hint
+                    hint_steps = [ai_hint]
                 else:
                     # Fall back to static hint JSON files
                     hints_data = _load_hints(session_state["scenario_id"])
                     sc_hints = hints_data.get(session_state["scenario_id"], {})
                     role_hints = sc_hints.get(session_state.get("role", "red"), {})
                     phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
-                    hint_text = phase_hints.get(f"L{level}")
+                    static_hint = phase_hints.get(f"L{level}")
+
+                    if isinstance(static_hint, list):
+                        hint_text = "\n".join(static_hint)
+                        hint_steps = static_hint
+                    elif static_hint:
+                        hint_text = static_hint
+                        hint_steps = [static_hint]
 
                 if hint_text:
-                    await websocket.send_json({"type": "ai_hint", "data": {"text": hint_text, "level": level}})
+                    await websocket.send_json({"type": "ai_hint", "data": {"text": hint_text, "steps": hint_steps, "level": level}})
                 else:
-                    await websocket.send_json({"type": "ai_hint", "data": {"text": "No hint available for this phase yet. Try progressing to the next step.", "level": level}})
+                    await websocket.send_json({"type": "ai_hint", "data": {"text": "No hint available for this phase yet. Try progressing to the next step.", "steps": [], "level": level}})
 
     except WebSocketDisconnect:
         pass
