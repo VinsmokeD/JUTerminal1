@@ -164,11 +164,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 # Log command and trigger SIEM events
                 siem_events = await process_command_for_siem(session_id, session_state, command)
 
-                # Persist command to DB for timeline + reports
-                first_word = command.strip().split()[0].lower() if command.strip() else ""
+                # Persist command to DB for timeline + reports (merged into single transaction)
+                from src.scenarios.gatekeeper import _parse_tool as _gt
+                tool_name = _gt(command)
                 async with AsyncSessionLocal() as db:
-                    from src.scenarios.gatekeeper import _parse_tool as _gt
-                    tool_name = _gt(command)
                     db.add(CommandLog(
                         session_id=session_id,
                         command=command,

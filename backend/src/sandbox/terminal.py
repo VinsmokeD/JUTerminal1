@@ -121,17 +121,23 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
         # ── Thread A: Docker stdout → Redis publish ──────────────────────
         def _docker_to_redis() -> None:
             r = _make_sync_redis()
+            max_chunk_size = 4096  # Max bytes per WebSocket frame
             while not stop_event.is_set():
                 try:
                     # 1-second select timeout lets us honour stop_event promptly
                     ready, _, _ = _select.select([raw_sock], [], [], 1.0)
                     if not ready:
                         continue
-                    data = raw_sock.recv(4096)
+                    data = raw_sock.recv(65536)  # Increased from 4096 to reduce publish calls
                     if not data:
                         break
                     chunk = data.decode("utf-8", errors="replace")
-                    r.publish(f"terminal:{session_id}:output", json.dumps({"data": chunk}))
+
+                    # Split into ≤4KB frames to prevent overwhelming frontend
+                    for i in range(0, len(chunk), max_chunk_size):
+                        frame = chunk[i:i+max_chunk_size]
+                        r.publish(f"terminal:{session_id}:output", json.dumps({"data": frame}))
+
                     # Rolling history (capped at 500 entries) for reconnect replay
                     pipe = r.pipeline()
                     pipe.lpush(f"terminal:{session_id}:history", chunk)

@@ -9,7 +9,14 @@ _client: aioredis.Redis | None = None
 
 async def init_redis() -> None:
     global _client
-    _client = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+    _client = aioredis.from_url(
+        settings.REDIS_URL,
+        decode_responses=True,
+        max_connections=50,
+        socket_timeout=5,
+        socket_connect_timeout=3,
+        health_check_interval=30,
+    )
 
 
 async def close_redis() -> None:

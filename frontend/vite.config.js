@@ -13,5 +13,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-xterm': ['xterm', 'xterm-addon-fit', 'xterm-addon-web-links'],
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['zustand', 'axios'],
+        },
+      },
+    },
   },
 })

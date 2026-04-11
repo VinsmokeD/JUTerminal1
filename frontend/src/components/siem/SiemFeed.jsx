@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useMemo } from 'react'
 import { useSessionStore } from '../../store/sessionStore'
 
 const SEVERITY_STYLE = {
@@ -13,6 +13,7 @@ const SEVERITY_STYLE = {
 export default function SiemFeed() {
   const events = useSessionStore((s) => s.siemEvents)
   const bottomRef = useRef(null)
+  const reversedEvents = useMemo(() => [...events].reverse(), [events])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -28,7 +29,7 @@ export default function SiemFeed() {
 
   return (
     <div className="h-full overflow-y-auto font-mono text-xs p-2 space-y-px">
-      {[...events].reverse().map((ev) => (
+      {reversedEvents.map((ev) => (
         <EventRow key={ev.id} event={ev} />
       ))}
       <div ref={bottomRef} />

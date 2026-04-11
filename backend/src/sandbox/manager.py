@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import subprocess
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
 
 try:
     import docker
@@ -32,11 +32,18 @@ _SCENARIO_TARGETS: dict[str, list[str]] = {
 # Locate docker-compose.yml relative to project root
 _COMPOSE_FILE = Path(__file__).resolve().parents[3] / "docker-compose.yml"
 
+# Singleton Docker client (avoids creating new connections per invocation)
+_docker_client: Optional["docker.DockerClient"] = None
 
-def _client() -> "docker.DockerClient":
+
+def _get_get_client() -> "docker.DockerClient":
+    """Get or create the module-level Docker client singleton."""
+    global _docker_client
     if not _docker_available:
         raise RuntimeError("docker SDK not installed")
-    return docker.from_env()
+    if _docker_client is None:
+        _docker_client = docker.from_env()
+    return _docker_client
 
 
 # ---------------------------------------------------------------------------
@@ -94,7 +101,7 @@ def _ensure_scenario_targets(scenario_id: str) -> None:
         return
 
     try:
-        client = _client()
+        client = _get_client()
         # Check if targets are already running — skip compose if so
         all_running = True
         for svc in targets:
@@ -133,7 +140,7 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
     container_name = f"kali-{session_id[:8]}"
 
     try:
-        client = _client()
+        client = _get_client()
 
         # v2.0 Rule 4 — re-attach if container already exists
         try:
@@ -173,7 +180,7 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
 
 def _stop_sync(container_id: str) -> None:
     try:
-        client = _client()
+        client = _get_client()
         container = client.containers.get(container_id)
         container.stop(timeout=5)
         container.remove(force=True)
@@ -186,7 +193,7 @@ def _stop_sync(container_id: str) -> None:
 
 def _exec_sync(container_id: str, command: str) -> str:
     try:
-        client = _client()
+        client = _get_client()
         container = client.containers.get(container_id)
         result = container.exec_run(command, demux=False)
         return (result.output or b"").decode("utf-8", errors="replace")

@@ -5,7 +5,14 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, JSON, Float
 from src.config import settings
 
-engine = create_async_engine(settings.POSTGRES_URL, echo=settings.ENVIRONMENT == "development")
+engine = create_async_engine(
+    settings.POSTGRES_URL,
+    echo=settings.ENVIRONMENT == "development",
+    pool_size=20,
+    max_overflow=5,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 

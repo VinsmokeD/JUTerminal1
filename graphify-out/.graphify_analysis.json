@@ -1,0 +1,248 @@
+{
+  "communities": {
+    "0": [
+      "context_builder_rationale_1",
+      "context_builder_rationale_132",
+      "context_builder_rationale_245",
+      "database",
+      "database_autoevidence",
+      "database_base",
+      "database_commandlog",
+      "database_get_db",
+      "database_init_db",
+      "database_note",
+      "database_session",
+      "database_siemevent",
+      "database_siemtriage",
+      "database_user",
+      "declarativebase",
+      "generator",
+      "generator_generate_report",
+      "generator_rationale_1",
+      "generator_rationale_10",
+      "routes_notecreate",
+      "routes_rationale_1",
+      "routes_rationale_28",
+      "routes_rationale_36",
+      "routes_rationale_62"
+    ],
+    "1": [
+      "basemodel",
+      "routes",
+      "routes_create_note",
+      "routes_create_token",
+      "routes_delete_note",
+      "routes_get_current_user",
+      "routes_get_metrics",
+      "routes_get_report",
+      "routes_get_timeline",
+      "routes_hash_password",
+      "routes_list_all_sessions",
+      "routes_list_notes",
+      "routes_login",
+      "routes_me",
+      "routes_note_dict",
+      "routes_profileupdate",
+      "routes_register",
+      "routes_require_instructor",
+      "routes_token",
+      "routes_update_profile",
+      "routes_usercreate",
+      "routes_verify_password"
+    ],
+    "2": [
+      "monitor",
+      "monitor_format_context_for_ai",
+      "monitor_get_ai_hint",
+      "monitor_get_fallback_hint",
+      "monitor_load_system_prompt",
+      "monitor_missing_findings",
+      "monitor_rationale_1",
+      "monitor_rationale_143",
+      "monitor_rationale_163",
+      "monitor_rationale_236",
+      "monitor_rationale_24",
+      "monitor_rationale_65"
+    ],
+    "3": [
+      "discovery_tracker",
+      "discovery_tracker_add_to_set",
+      "discovery_tracker_clear_discoveries",
+      "discovery_tracker_get_discoveries",
+      "discovery_tracker_key",
+      "discovery_tracker_rationale_1",
+      "discovery_tracker_rationale_141",
+      "discovery_tracker_rationale_151",
+      "discovery_tracker_rationale_160",
+      "discovery_tracker_rationale_25",
+      "discovery_tracker_track_command"
+    ],
+    "4": [
+      "redis",
+      "redis_cache_delete",
+      "redis_cache_get",
+      "redis_cache_set",
+      "redis_close_redis",
+      "redis_get",
+      "redis_init_redis",
+      "redis_lpush_capped",
+      "redis_lrange",
+      "redis_publish",
+      "redis_rationale_55"
+    ],
+    "5": [
+      "backend_fastapi",
+      "cybersim_platform",
+      "docker_sandbox",
+      "frontend_react",
+      "integration_tests",
+      "sc_01_novamed",
+      "sc_02_nexora",
+      "sc_03_orion",
+      "siem_feed",
+      "xterm_terminal"
+    ],
+    "6": [
+      "main",
+      "main_health",
+      "main_lifespan",
+      "main_rationale_22",
+      "main_seed_admin"
+    ],
+    "7": [
+      "basesettings",
+      "config",
+      "config_config",
+      "config_settings"
+    ],
+    "8": [
+      "context_builder",
+      "context_builder_build_ai_context",
+      "context_builder_summarize_notes"
+    ],
+    "9": [
+      "init"
+    ]
+  },
+  "cohesion": {
+    "0": 0.21,
+    "1": 0.13,
+    "2": 0.23,
+    "3": 0.25,
+    "4": 0.29,
+    "5": 0.22,
+    "6": 0.5,
+    "7": 0.5,
+    "8": 1.0,
+    "9": 1.0
+  },
+  "gods": [
+    {
+      "id": "database_user",
+      "label": "User",
+      "edges": 14
+    },
+    {
+      "id": "database_session",
+      "label": "Session",
+      "edges": 12
+    },
+    {
+      "id": "database_base",
+      "label": "Base",
+      "edges": 9
+    },
+    {
+      "id": "database_note",
+      "label": "Note",
+      "edges": 8
+    },
+    {
+      "id": "database_commandlog",
+      "label": "CommandLog",
+      "edges": 8
+    },
+    {
+      "id": "database_siemevent",
+      "label": "SiemEvent",
+      "edges": 8
+    },
+    {
+      "id": "redis_get",
+      "label": "_get()",
+      "edges": 7
+    },
+    {
+      "id": "context_builder_rationale_1",
+      "label": "Context builder: assembles the full AI context payload for a session.  This repl",
+      "edges": 5
+    },
+    {
+      "id": "context_builder_rationale_132",
+      "label": "Assemble the full AI context payload for a given session.     This is the brain'",
+      "edges": 5
+    },
+    {
+      "id": "context_builder_rationale_245",
+      "label": "Summarize notes into a compact representation for the AI.",
+      "edges": 5
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Create the default instructor account if it doesn't exist.",
+      "target": "User",
+      "source_files": [
+        "backend\\src\\main.py",
+        "backend\\src\\db\\database.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `Create the default instructor account if it doesn't exist.` unexpectedly reaches hub `User`"
+    },
+    {
+      "source": "UserCreate",
+      "target": "User",
+      "source_files": [
+        "backend\\src\\auth\\routes.py",
+        "backend\\src\\db\\database.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "Token",
+      "target": "User",
+      "source_files": [
+        "backend\\src\\auth\\routes.py",
+        "backend\\src\\db\\database.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "ProfileUpdate",
+      "target": "User",
+      "source_files": [
+        "backend\\src\\auth\\routes.py",
+        "backend\\src\\db\\database.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "Context builder: assembles the full AI context payload for a session.  This repl",
+      "target": "Session",
+      "source_files": [
+        "backend\\src\\ai\\context_builder.py",
+        "backend\\src\\db\\database.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    }
+  ]
+}

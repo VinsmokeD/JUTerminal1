@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from sqlalchemy import select
 
 from src.config import settings
 from src.db.database import init_db, AsyncSessionLocal, User
 from src.cache.redis import init_redis, close_redis
+from src.siem.engine import init_siem_batch, close_siem_batch
 from src.auth.routes import router as auth_router, hash_password
 from src.scenarios.routes import router as scenarios_router
 from src.scenarios.hint_engine import router as hints_router
@@ -37,8 +39,10 @@ async def lifespan(_app: FastAPI):
     await init_db()
     await _seed_admin()
     await init_redis()
+    await init_siem_batch()
     start_noise_daemon()
     yield
+    await close_siem_batch()
     await close_redis()
 
 
@@ -49,6 +53,7 @@ app = FastAPI(
     docs_url="/api/docs" if settings.ENVIRONMENT == "development" else None,
 )
 
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,

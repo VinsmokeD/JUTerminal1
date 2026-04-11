@@ -211,8 +211,8 @@ export default function BlueWorkspace() {
                 ) : (
                   <div className="divide-y divide-slate-800/30">
                     {filteredEvents.map((event, i) => (
-                      <SiemEventRow key={i} event={event} expanded={expandedEvent === i}
-                        onToggle={() => setExpandedEvent(expandedEvent === i ? null : i)}
+                      <SiemEventRow key={event.id} event={event} expanded={expandedEvent === event.id}
+                        onToggle={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)}
                         onExtractIoc={(val) => { setIocs(p => [...p, { value: val, ts: new Date().toLocaleTimeString(), type: _classifyIoc(val) }]) }}
                       />
                     ))}

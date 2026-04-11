@@ -106,16 +106,19 @@ export function useTerminal({ containerRef, onData, onCommand }) {
       const terminalChunks = Array.isArray(payload.terminal) ? payload.terminal : []
       const commands = Array.isArray(payload.commands) ? payload.commands : []
 
-      if (terminalChunks.length > 0) {
-        terminalChunks.forEach((chunk) => {
-          term.write(chunk || '')
-        })
-      } else if (commands.length > 0) {
-        commands.forEach((cmd) => {
-          term.write(`\x1b[0;33m$ ${cmd}\x1b[0m\r\n`)
-        })
-      }
-      historyRestoredRef.current = true
+      // Batch writes using requestAnimationFrame to prevent rendering jank
+      requestAnimationFrame(() => {
+        if (terminalChunks.length > 0) {
+          terminalChunks.forEach((chunk) => {
+            term.write(chunk || '')
+          })
+        } else if (commands.length > 0) {
+          commands.forEach((cmd) => {
+            term.write(`\x1b[0;33m$ ${cmd}\x1b[0m\r\n`)
+          })
+        }
+        historyRestoredRef.current = true
+      })
     }
     window.addEventListener('terminal:output', handleOutput)
     window.addEventListener('terminal:history', handleHistory)
