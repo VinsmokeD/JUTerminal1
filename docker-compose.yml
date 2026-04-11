@@ -36,6 +36,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - POSTGRES_URL=postgresql+asyncpg://${POSTGRES_USER:-cybersim}:${POSTGRES_PASSWORD:-cybersim}@postgres:5432/${POSTGRES_DB:-cybersim}
