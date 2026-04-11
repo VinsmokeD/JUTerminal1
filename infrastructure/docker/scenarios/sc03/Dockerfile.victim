@@ -1,0 +1,27 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Victim endpoint simulator for SC-03 phishing scenario
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-flask \
+    python3-requests \
+    postfix \
+    curl \
+    netcat \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Victim simulation scripts and SMTP config
+COPY init-victim.sh /init-victim.sh
+COPY victim-simulator.py /victim-simulator.py
+COPY postfix-victim.cf /etc/postfix/main.cf
+RUN chmod +x /init-victim.sh /victim-simulator.py
+
+# SMTP (25) and web callback (8080)
+EXPOSE 25 8080
+
+HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
+    CMD curl -f http://127.0.0.1:8080/health > /dev/null 2>&1 || exit 1
+
+CMD ["/init-victim.sh"]

@@ -1,0 +1,46 @@
+# Postfix Main Configuration for SC-03 Phishing Scenario
+# Simple relay configuration for internal SMTP delivery only
+
+# Network configuration
+inet_interfaces = all
+inet_protocols = ipv4
+mydomain = orion-logistics.sim
+myhostname = mail.orion-logistics.sim
+mynetworks = 127.0.0.0/8 172.20.3.0/24
+
+# Relay settings (allow internal network only)
+relay_domains = orion-logistics.sim
+relayhost =
+
+# TLS/SSL (disabled for simplicity in training environment)
+smtpd_use_tls = no
+smtp_use_tls = no
+
+# Logging
+maillog_file = /var/log/maillog
+debug_peer_level = 2
+
+# Queue and delivery
+queue_directory = /var/spool/postfix
+maximal_queue_lifetime = 5h
+bounce_queue_lifetime = 1h
+
+# Restrictions (minimal for training scenario)
+smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination
+
+# Message size limits
+message_size_limit = 51200000
+
+# Virtual alias maps (optional, for testing multiple recipients)
+virtual_alias_domains = orion-logistics.sim
+virtual_alias_maps = hash:/etc/postfix/virtual
+
+# Logging format for SIEM integration
+maillog_file_prefixes = [SMTP]
+
+# Transport maps for routing to victim simulator
+transport_maps = hash:/etc/postfix/transport
+
+# Process limits
+default_process_limit = 100
+smtpd_client_connection_count_limit = 20

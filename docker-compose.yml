@@ -110,32 +110,125 @@ services:
     build:
       context: ./infrastructure/docker/scenarios/sc02
       dockerfile: Dockerfile.dc
+    environment:
+      - DOMAIN=nexora.local
+      - REALM=NEXORA.LOCAL
+      - NETBIOS_NAME=NEXORA
+      - ADMINPASS=${SC02_ADMIN_PASS:-NexoraAdmin2024!}
     networks:
       sc02-net:
         ipv4_address: 172.20.2.20
     profiles: ["sc02"]
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "smbclient", "-L", "127.0.0.1", "-N"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
 
   sc02-fileserver:
     build:
       context: ./infrastructure/docker/scenarios/sc02
       dockerfile: Dockerfile.fileserver
+    environment:
+      - DC_IP=172.20.2.20
+      - DOMAIN=nexora.local
+      - REALM=NEXORA.LOCAL
+      - NETBIOS_NAME=NEXORA
+    depends_on:
+      sc02-dc:
+        condition: service_healthy
     networks:
       sc02-net:
         ipv4_address: 172.20.2.40
     profiles: ["sc02"]
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "smbclient", "-L", "127.0.0.1", "-N"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
 
   # SC-03 — Orion Logistics Phishing
   sc03-phish:
     build:
       context: ./infrastructure/docker/scenarios/sc03
       dockerfile: Dockerfile.gophish
+    environment:
+      - GOPHISH_ADMIN_PORT=3333
+      - GOPHISH_PHISH_PORT=80
+      - GOPHISH_PHISH_SSL_PORT=443
     networks:
       sc03-net:
         ipv4_address: 172.20.3.10
+    depends_on:
+      sc03-mailrelay:
+        condition: service_healthy
     profiles: ["sc03"]
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3333"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  sc03-mailrelay:
+    build:
+      context: ./infrastructure/docker/scenarios/sc03
+      dockerfile: Dockerfile.mailrelay
+    networks:
+      sc03-net:
+        ipv4_address: 172.20.3.20
+    profiles: ["sc03"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "127.0.0.1", "25"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  sc03-victim:
+    build:
+      context: ./infrastructure/docker/scenarios/sc03
+      dockerfile: Dockerfile.victim
+    networks:
+      sc03-net:
+        ipv4_address: 172.20.3.30
+    depends_on:
+      sc03-mailrelay:
+        condition: service_healthy
+    profiles: ["sc03"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
 
   # SC-04 — LocalStack (AWS sim)
   sc04-localstack:

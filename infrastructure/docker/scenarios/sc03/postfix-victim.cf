@@ -1,0 +1,31 @@
+# Postfix Configuration for Victim Endpoint (SC-03)
+# Receives emails from mail relay for victim simulation
+
+inet_interfaces = all
+inet_protocols = ipv4
+mydomain = localhost
+myhostname = target-ws-sc03.localhost
+mynetworks = 127.0.0.0/8 172.20.3.0/24
+
+# Receive-only configuration (no relaying)
+relayhost =
+relay_domains =
+local_recipient_maps =
+
+# Recipient restrictions - only accept for local users
+smtpd_recipient_restrictions = permit_mynetworks, reject
+
+# TLS disabled (training environment)
+smtpd_use_tls = no
+smtp_use_tls = no
+
+# Mail storage
+queue_directory = /var/spool/postfix
+mail_spool_directory = /var/mail
+
+# Logging
+maillog_file = /var/log/mail.log
+debug_peer_level = 2
+
+# Send logs to stdout for container logging
+maillog_file_prefixes = [VICTIM_SMTP]
