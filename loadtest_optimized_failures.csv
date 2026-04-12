@@ -1,0 +1,2 @@
+Method,Name,Error,Occurrences
+GET,/api/instructor/sessions,RemoteDisconnected('Remote end closed connection without response'),1
