@@ -17,6 +17,7 @@ from src.ws.routes import router as ws_router
 from src.scoring.routes import router as scoring_router
 from src.reports.routes import router as reports_router
 from src.instructor.routes import router as instructor_router
+from src.api.playbooks import router as playbooks_router
 from src.sandbox.daemon_noise import start_noise_daemon
 
 
@@ -71,6 +72,7 @@ app.include_router(ws_router, prefix="/ws", tags=["websocket"])
 app.include_router(scoring_router, prefix="/api/scoring", tags=["scoring"])
 app.include_router(reports_router, prefix="/api/reports", tags=["reports"])
 app.include_router(instructor_router, prefix="/api/instructor", tags=["instructor"])
+app.include_router(playbooks_router, tags=["playbooks"])
 
 
 @app.get("/health")
