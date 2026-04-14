@@ -458,6 +458,83 @@ DELIVERABLES:
 
 ---
 
+# PROMPT 7: Deploy Elastic Stack (Real SIEM)
+
+```
+MISSION: Replace simulated regex SIEM with a real Elasticsearch single-node cluster.
+
+CONTEXT:
+- Goal: Move CyberSim's Blue Team telemetry to a 100% real SIEM.
+- We are replacing Python's `siem/engine.py` (which parses user text) with actual ELK log matching.
+
+REQUIREMENTS:
+1. Create `infrastructure/docker/siem/docker-compose-siem.yml`.
+   - Setup a single-node Elasticsearch container and Kibana (optional, for debugging).
+2. Delete the legacy mock JSON files:
+   - `backend/src/siem/events/*.json`
+3. Refactor `backend/src/siem/engine.py`:
+   - It should now poll the Elasticsearch REST API (`GET /_search`) for alerts matching the active session's scenario.
+   - Stream resulting events to the frontend via WebSocket.
+
+DELIVERABLES:
+- ✅ docker-compose-siem.yml created.
+- ✅ Mock JSONs deleted.
+- ✅ `engine.py` refactored to poll Elastic.
+```
+
+---
+
+# PROMPT 8: Authentic Target Telemetry & Forwarding
+
+```
+MISSION: Configure target containers to generate real logs and forward them to Elastic via Filebeat.
+
+REQUIREMENTS:
+1. **SC-01**: `sc01/Dockerfile.waf` -> Install Filebeat. Configure Apache/ModSec logs to forward to Elastic.
+2. **SC-02**: `sc02/Dockerfile.dc` -> Enable Samba Audit logging and forward Windows Event Log patterns (using Filebeat/Syslog) to Elastic.
+3. **SC-03**: `sc03/Dockerfile.mailrelay` -> Forward Postfix logs to Elastic.
+
+DELIVERABLES:
+- ✅ Filebeat / syslog forwarders integrated into all 3 scenario Dockerfiles.
+- ✅ Elastic pipeline or Filebeat modules configured to parse incoming logs.
+```
+
+---
+
+# PROMPT 9: Strict Raw Mode for Kali Terminal
+
+```
+MISSION: Force the Kali terminal to act entirely as a real PTY without any fallback mocks.
+
+REQUIREMENTS:
+1. Edit `backend/src/sandbox/terminal.py`:
+   - Completely remove `_mock_command_output()` and `_mock_listener`.
+   - Ensure that if Docker is unreachable, the system elegantly fails rather than pretending.
+
+DELIVERABLES:
+- ✅ `terminal.py` stripped of mock code.
+```
+
+---
+
+# PROMPT 10: Two-Laptop Distributed Setup
+
+```
+MISSION: Break the infrastructure into a Platform Node and a Sandbox Node to distribute load across two laptops.
+
+REQUIREMENTS:
+1. Refactor `docker-compose.yml`:
+   - `docker-compose-platform.yml` (Laptop 1): Postgres, Redis, Backend, Frontend, Elastic SIEM.
+   - `docker-compose-sandbox.yml` (Laptop 2): Kali terminal container management, SC-01 through SC-03 target networks.
+2. Update backend configuration in `config.py` to target the remote Docker daemon on Laptop 2 via TCP or SSH.
+
+DELIVERABLES:
+- ✅ Composes split.
+- ✅ `config.py` handles remote Target Docker context.
+```
+
+---
+
 ## 📊 Progress Tracking
 
 After each prompt completion, mark here:
@@ -468,6 +545,10 @@ After each prompt completion, mark here:
 - [ ] Prompt 4: End-to-End Integration Testing (SC-01 to SC-03)
 - [ ] Prompt 5: Performance Optimization
 - [ ] Prompt 6: Blue Team Playbooks (SC-01 to SC-03)
+- [ ] Prompt 7: Deploy Elastic Stack (Real SIEM)
+- [ ] Prompt 8: Authentic Target Telemetry
+- [ ] Prompt 9: Kali Terminal Strict Raw Mode
+- [ ] Prompt 10: Two-Laptop Distributed Setup
 
 ---
 

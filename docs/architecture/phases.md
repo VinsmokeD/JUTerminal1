@@ -219,6 +219,45 @@
 
 ---
 
-## Total estimated phases: 18
-## Estimated total Claude Code sessions: 10–12
+## Phase 19 — Real SIEM Deployment (Elastic Stack)
+**Goal**: Deploy an Elasticsearch single-node cluster to act as the central SIEM, replacing the mocked Python SIEM engine.
+**Tasks**:
+- Create `infrastructure/docker/siem/docker-compose-siem.yml`.
+- Delete `backend/src/siem/events/*.json`.
+- Rewrite `backend/src/siem/engine.py` to poll the Elasticsearch REST API.
+**Acceptance**: Backend successfully connects to Elastic instance and retrieves simulated logs.
+
+---
+
+## Phase 20 — Authentic Target Telemetry
+**Goal**: Target containers generate real logs and forward them to the Elastic SIEM via Filebeat/Syslog.
+**Tasks**:
+- Install and configure Filebeat in `sc01/Dockerfile.waf` (ModSecurity).
+- Configure Samba audit logging in `sc02/Dockerfile.dc` (AD DC).
+- Configure Postfix logging in `sc03/Dockerfile.mailrelay`.
+**Acceptance**: Target actions (e.g. nmap scan, LDAP query) naturally generate Elastic Search logs.
+
+---
+
+## Phase 21 — Kali Terminal Strict Raw Mode
+**Goal**: Terminal must strictly be a raw PTY passthrough to the genuine Kali container, with no fallback mocks.
+**Tasks**:
+- Delete `_mock_command_output()` from `terminal.py`.
+- Enforce strict Docker raw PTY proxying.
+**Acceptance**: If Docker is unavailable, the system fails-fast rather than loading a simulated terminal.
+
+---
+
+## Phase 22 — Two-Laptop Distributed Setup
+**Goal**: Restructure deployment to run across a Platform Node and a Sandbox Node.
+**Tasks**:
+- Split `docker-compose.yml` into `docker-compose-platform.yml` and `docker-compose-sandbox.yml`.
+- Expose Docker daemon securely on Laptop 2.
+- Configure Laptop 1 backend `config.py` to target Laptop 2's Docker daemon.
+**Acceptance**: Backend on Laptop 1 successfully orchestrates and streams a Kali terminal hosted on Laptop 2.
+
+---
+
+## Total estimated phases: 22
+## Estimated total Claude Code sessions: +4 for Conversion
 ## GitHub push points: after every phase

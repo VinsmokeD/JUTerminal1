@@ -65,32 +65,21 @@ CyberSim is a dual-perspective cybersecurity training platform designed to bridg
 
 ### Real-time Data Flow
 ```
-Browser (xterm.js)
-    │ keystroke
-    ▼
-WebSocket /ws/{session_id}?token=JWT
-    │
-    ├──► Redis PUBLISH terminal:{session_id}:input
-    │         │
-    │         ▼
-    │    sandbox/terminal.py (TerminalProxy)
-    │         │ writes to Docker exec stdin
-    │         ▼
-    │    Kali container (docker exec stream)
-    │         │ stdout
-    │         ▼
-    │    Redis PUBLISH terminal:{session_id}:output
-    │         │
-    ◄──────────┘ forwarded to xterm.js
-    │
-    └──► Redis SUBSCRIBE siem:{session_id}:feed
-              │ JSON event frames
-              ▼
-         SiemFeed.jsx (Blue Team browser)
+Laptop 2 (Sandbox)                 Laptop 1 (Platform)
+Kali Container ◄── Docker API ───── backend/src/sandbox/manager.py
+    │                                  ▲
+    │ raw PTY proxy                    │ WebSocket /ws/{session_id}
+    ▼                                  ▼
+Target Containers ── Filebeat ────► Elastic SIEM (Elasticsearch)
+    (sc01, sc02)                       │
+                                       ▼ backend/src/siem/engine.py (Polling)
+                                       ▼
+Browser (xterm.js) ◄───────────────► React Frontend (Blue/Red Workspaces)
 ```
 
-### Sandbox Physics
-- Docker SDK (`docker` Python library) — `AsyncDockerManager` in `sandbox/manager.py`
+### Sandbox Physics & Hardware
+- **Topology**: Distributed directly across 2 laptops (Platform Node + Sandbox Node) for performance and realism.
+- Docker SDK (`docker` Python library) orchestrates Laptop 2 via remote TCP daemon.
 - `provision_container()` checks if container for `session_id` already exists before creating (supports terminal re-attach on browser refresh)
 - All containers: `cpus=0.5`, `mem_limit='512m'`, `cap_drop=['ALL']`, `security_opt=['no-new-privileges']`, no `--privileged`
 - Terminal output history: Redis capped list `terminal:{session_id}:history` — last 500 lines, replayed on re-attach

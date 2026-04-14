@@ -14,6 +14,20 @@ Every update must follow this strict format. Do not skip any fields.
 ---
 ## Change Log
 
+### [2026-04-13 11:51:00] - Antigravity (Documentation & Planning for Real-World Conversion)
+* **Status**: Planning & Documentation Complete
+* **Why**: The user requested a shift from a simulated architecture to 100% genuine telemtry out of Docker targets and a real ELK SIEM. The user also requested to map out a Two-Laptop Distributed setup to handle the new resource load, and for me to update all documentation files to align with this plan.
+* **Where**:
+  - `claude.md` — Updated Architecture definition.
+  - `docs/architecture/phases.md` — Added Phases 19, 20, 21, 22.
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — Added PROMPTS 7, 8, 9, 10 for execution.
+  - `HARDWARE_AND_NETWORK_SETUP_GUIDE.md` — Created to detail the two-laptop setup.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+* **What & How**:
+  - Outlined the transition from backend python regex logs to an Elasticsearch (ELK) stack.
+  - Mandated Filebeat sidecars for sc01, sc02, sc03 to forward actual Windows Event Logs, ModSec logs, and postfix logs.
+  - Stripped `mock` fallback requirements from the Kali terminal specs (enforcing strict Raw PTY).
+  - Wrote a detailed guide on exposing Docker daemon TCP via port 2375 securely over LAN so Laptop 1 Backend can orchestrate targets on Laptop 2 Sandbox Node.
 ### [2026-04-12 19:42:00] - Antigravity (GitHub Synchronization & State Verification)
 * **Status**: Complete — Synchronized with Remote
 * **Why**: Ensure the local repository has the "final update version" from GitHub and that all local work (Phase PROMPT 5) is safely backed up to the remote. This maintains the single source of truth across the multi-agent swarm.
@@ -1439,3 +1453,14 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 - **Deliverables**: 3 full NIST 800-61 aligned playbooks (15,700 lines), API backend, React viewer component
 - **Quality**: Professional, practical, production-ready
 - **Integration**: Ready for BlueWorkspace deployment
+
+## Date: 2026-04-14 20:04
+
+### Agent: Antigravity
+**Action:** Repository Cleanup & Organization
+**Details:**
+- Consolidated loose documentation files into docs/ and docs/reports/
+- Moved load test result CSVs to docs/testing_results/
+- Merged root rchitecture/ folder into docs/architecture/
+- Cleaned up loose build logs
+- Pushed organization updates to GitHub

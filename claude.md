@@ -27,12 +27,8 @@ All attack capabilities operate ONLY against isolated Docker containers. No real
 - If your tests fail, fix them entirely within your iteration. Do not pass broken or completely untested code states back to the continuity agent.
 
 ## Architecture in one paragraph
-React frontend (Vite) → FastAPI backend → Docker scenario containers.
-The frontend has two workspaces: RedTeam (Kali terminal + methodology tracker + pentest notes)
-and BlueTeam (SIEM feed + investigation panel + IR notes). Both connect via WebSocket to
-the backend which manages scenario state, injects SIEM events reactively to attacker actions,
-and calls Gemini Flash for AI monitoring. Each scenario runs in an isolated Docker network.
-Postgres stores session state. Redis handles real-time event queuing.
+React frontend (Vite) → FastAPI backend / Elastic SIEM → Distributed Docker scenario containers.
+The deployment is split across two nodes: Laptop 1 (Platform Node) runs the frontend, backend, Postgres, Redis, and Elastic SIEM. Laptop 2 (Sandbox Node) runs the Kali container and vulnerable target networks. The frontend has two workspaces: RedTeam (raw PTY Kali terminal to the Sandbox) and BlueTeam (real Elastic SIEM feed). The SIEM operates entirely on genuine logs (Filebeat forwarding WAF/Samba/Syslog from Laptop 2 to Laptop 1), replacing the legacy simulated Python SIEM engine.
 
 ## Repository structure
 ```
