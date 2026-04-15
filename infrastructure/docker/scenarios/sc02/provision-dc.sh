@@ -27,8 +27,8 @@ else
     echo "[*] Domain already provisioned, skipping provision step"
 fi
 
-# Configure Kerberos for RC4 (weaker, for educational context)
-echo "[+] Configuring Kerberos..."
+# Configure Kerberos for RC4 (weaker, for educational context - enables Kerberoasting)
+echo "[+] Configuring Kerberos with RC4 support for educational vulnerability testing..."
 cat > /etc/krb5.conf << 'EOF'
 [libdefaults]
     default_realm = NEXORA.LOCAL
@@ -37,15 +37,21 @@ cat > /etc/krb5.conf << 'EOF'
     dns_lookup_realm = false
     dns_lookup_kdc = false
     ignore_acceptor_hostname = true
+    # Enable RC4 for Kerberoasting vulnerability demonstration
     default_tkt_enctypes = aes256-cts rc4-hmac des-cbc-md5
     default_tgs_enctypes = aes256-cts rc4-hmac des-cbc-md5
-    preferred_enctypes = aes256-cts rc4-hmac des-cbc-md5
+    permitted_enctypes = aes256-cts rc4-hmac des-cbc-md5
+    # Allow weaker algorithms for testing
+    allow_weak_crypto = true
 
 [realms]
     NEXORA.LOCAL = {
         kdc = 127.0.0.1:88
         admin_server = 127.0.0.1:749
         master_kdc = 127.0.0.1:88
+        # Allow RC4 tickets for service requests
+        tkt_enctypes = aes256-cts rc4-hmac des-cbc-md5
+        tgs_enctypes = aes256-cts rc4-hmac des-cbc-md5
     }
 
 [domain_realm]

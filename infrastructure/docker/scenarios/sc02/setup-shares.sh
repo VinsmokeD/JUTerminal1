@@ -112,7 +112,7 @@ chmod 640 /srv/shares/backups/*
 chmod 640 /srv/shares/admin/*
 chmod 644 /srv/shares/public/*
 
-# Configure Kerberos client for domain join
+# Configure Kerberos client for domain join (with RC4 support for Kerberoasting)
 echo "[+] Configuring Kerberos..."
 cat > /etc/krb5.conf << EOF
 [libdefaults]
@@ -121,15 +121,19 @@ cat > /etc/krb5.conf << EOF
     dns_lookup_realm = false
     dns_lookup_kdc = false
     kdc_timesync = 1
-    default_tkt_enctypes = aes256-cts rc4-hmac
-    default_tgs_enctypes = aes256-cts rc4-hmac
+    # Match DC configuration for consistency
+    default_tkt_enctypes = aes256-cts rc4-hmac des-cbc-md5
+    default_tgs_enctypes = aes256-cts rc4-hmac des-cbc-md5
     permitted_enctypes = aes256-cts rc4-hmac des-cbc-md5
+    allow_weak_crypto = true
 
 [realms]
     $REALM = {
         kdc = $DC_IP:88
         admin_server = $DC_IP:749
         master_kdc = $DC_IP:88
+        tkt_enctypes = aes256-cts rc4-hmac des-cbc-md5
+        tgs_enctypes = aes256-cts rc4-hmac des-cbc-md5
     }
 
 [domain_realm]
