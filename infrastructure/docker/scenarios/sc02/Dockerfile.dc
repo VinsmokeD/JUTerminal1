@@ -9,14 +9,16 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Samba4 AD Domain Controller with Kerberos + Audit support
 RUN apt-get update && apt-get install -y --no-install-recommends \
     samba \
-    samba-ad-dc \
+    samba-common \
+    samba-common-bin \
+    samba-vfs-modules \
     winbind \
     krb5-user \
     krb5-config \
     dnsutils \
     net-tools \
+    netcat-openbsd \
     python3 \
-    python3-pip \
     openssl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
