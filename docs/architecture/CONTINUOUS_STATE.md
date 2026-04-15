@@ -13,6 +13,38 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-04-15 23:15:00] - Claude Code (Phase C: SC-02 Samba4 AD Infrastructure)
+* **Status**: Coding Complete — Samba4 DC & File Server Configuration Hardened, Build Verified
+* **Why**: Phase C requirements mandate functional Active Directory infrastructure for AD attack scenarios (Kerberoasting, BloodHound enumeration, lateral movement). Previous work created scripts but lacked proper Docker packaging and Kerberos tuning. This blocks SC-02 deployment and student AD attack exercises. Implementation prioritizes RC4-HMAC encryption (intentional weakness for Kerberoasting lab) and realistic share permissions.
+* **Where**:
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` — FIXED: Corrected Ubuntu 22.04 package names (removed non-existent samba-ad-dc)
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` — FIXED: Updated packages for domain join support
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` — ENHANCED: Improved Kerberos config with RC4/weak crypto settings
+  - `infrastructure/docker/scenarios/sc02/setup-shares.sh` — ENHANCED: Updated krb5.conf to match DC encryption types
+  - `infrastructure/docker/scenarios/sc02/smb.conf` — ENHANCED: Added detailed audit logging for SIEM detection
+  - `docs/scenarios/SC-02-SAMBA4-GUIDE.md` — NEW: Comprehensive guide (topology, users, attack paths, SIEM mapping, testing checklist)
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
+* **What & How**:
+  - **Docker Fixes**: Replaced non-existent `samba-ad-dc` package with `samba-common`, `samba-common-bin`, `samba-vfs-modules` available in Ubuntu 22.04. Added `netcat-openbsd` for health check prerequisites.
+  - **Kerberos Configuration**: Enabled RC4-HMAC (weak encryption) intentionally for Kerberoasting lab. Set `allow_weak_crypto = true` and specified `default_tgs_enctypes = aes256-cts rc4-hmac des-cbc-md5` in both DC and fileserver krb5.conf files. This allows students to extract and crack TGS tickets in lab time (AES would take days with brute force).
+  - **Domain Structure**:
+    - Domain: `nexora.local` / Realm: `NEXORA.LOCAL` / NetBIOS: `NEXORA`
+    - Admin: `Administrator` (password: NexoraAdmin2024!)
+    - Users: `jsmith` (finance), `svc_backup` (Kerberoasting target), `it.admin` (Domain Admin)
+    - **Key Vulnerability**: `svc_backup` assigned SPN `CIFS/NEXORA-FS01.nexora.local` — enables Kerberoasting attack path
+  - **File Server Setup** (172.20.2.40):
+    - **Public** share: Readable by everyone (no auth required)
+    - **Finance** share: Readable by `jsmith` and Domain Users (contains budget/salary data — information disclosure)
+    - **Backups** share: Accessible only to Domain Admins and `svc_backup` (production database backup simulation)
+    - **Admin** share: Read-only for `it.admin` (administrative audit logs)
+  - **Audit Logging**: Configured samba `full_audit` VFS module to log file operations (open, read, write, mkdir, rmdir, unlink, rename) to `/var/log/samba/log.*` for SIEM rule matching. Format: `%u|%I|%m|%S` (user|IP|machine|share) for easy parsing.
+  - **Build Verification**: Successfully built both `juterminal1-sc02-dc` and `juterminal1-sc02-fileserver` Docker images. Container startup sequence: DC provisions domain → waits for health check (smbclient) → FS joins domain → shares come online.
+  - **Attack Surface Documented**:
+    1. **Enumeration**: `enum4linux`, `ldapsearch`, BloodHound collection → triggers `sc02_enum_*` events
+    2. **Kerberoasting**: `GetUserSPNs.py` → `sc02_kerberos_roasting` (CRITICAL event for RC4 TGS)
+    3. **Lateral Movement**: psexec/WMI to FS with compromised creds → `sc02_lateral_*` events
+    4. **Share Access**: File access to Finance/Backups triggers audit log events correlating to SIEM feed
+
 ### [2026-04-15 22:30:00] - Claude Code (Phase B: SC-01 E2E Operationalization)
 * **Status**: Coding Complete — SIEM Event Mappings & Command-to-Event Pipeline Implemented
 * **Why**: Phase B requirements mandate real SIEM event generation for SC-01. Previous work created vulnerable PHP app and backend infrastructure but lacked event definitions and matching logic. This blocks end-to-end testing from terminal command → SIEM detection. Implementation prioritizes Redis-based SIEM over Elasticsearch per architectural assessment (lower resource overhead, sufficient for graduation demo).
