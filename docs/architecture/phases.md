@@ -219,17 +219,17 @@
 
 ---
 
-## Phase 19 — Real SIEM Deployment (Elastic Stack)
-**Goal**: Deploy an Elasticsearch single-node cluster to act as the central SIEM, replacing the mocked Python SIEM engine.
+## Phase 19 — Real SIEM Deployment (Unified Elastic Stack) ✅ Done
+**Goal**: Deploy an Elasticsearch single-node cluster to act as the central SIEM on the same platform machine, replacing the mocked Python SIEM engine.
 **Tasks**:
-- Create `infrastructure/docker/siem/docker-compose-siem.yml`.
-- Delete `backend/src/siem/events/*.json`.
-- Rewrite `backend/src/siem/engine.py` to poll the Elasticsearch REST API.
-**Acceptance**: Backend successfully connects to Elastic instance and retrieves simulated logs.
+- Integrate a highly-restricted Elasticsearch + Kibana combination into the main `docker-compose.yml`.
+- Delete the legacy mocked Python JSON files: `backend/src/siem/events/*.json`.
+- Rewrite `backend/src/siem/engine.py` to poll the live Elasticsearch REST API and map events dynamically to the BlueWorkspace.
+**Acceptance**: Blue Team workspace natively renders real Elasticsearch logs polled by the Backend.
 
 ---
 
-## Phase 20 — Authentic Target Telemetry
+## Phase 20 — Authentic Target Telemetry ✅ Done
 **Goal**: Target containers generate real logs and forward them to the Elastic SIEM via Filebeat/Syslog.
 **Tasks**:
 - Install and configure Filebeat in `sc01/Dockerfile.waf` (ModSecurity).
@@ -239,7 +239,7 @@
 
 ---
 
-## Phase 21 — Kali Terminal Strict Raw Mode
+## Phase 21 — Kali Terminal Strict Raw Mode ✅ Done
 **Goal**: Terminal must strictly be a raw PTY passthrough to the genuine Kali container, with no fallback mocks.
 **Tasks**:
 - Delete `_mock_command_output()` from `terminal.py`.
@@ -248,13 +248,13 @@
 
 ---
 
-## Phase 22 — Two-Laptop Distributed Setup
-**Goal**: Restructure deployment to run across a Platform Node and a Sandbox Node.
+## Phase 22 — Unified Single-Node Architecture & Integration ✅ Done
+**Goal**: Restructure all moving parts to operate seamlessly without crashing resources on a single user machine.
 **Tasks**:
-- Split `docker-compose.yml` into `docker-compose-platform.yml` and `docker-compose-sandbox.yml`.
-- Expose Docker daemon securely on Laptop 2.
-- Configure Laptop 1 backend `config.py` to target Laptop 2's Docker daemon.
-**Acceptance**: Backend on Laptop 1 successfully orchestrates and streams a Kali terminal hosted on Laptop 2.
+- Optimize ELK stack RAM consumption (`ES_JAVA_OPTS="-Xms1g -Xmx1g"`).
+- Implement dynamic Docker lifecycle (start SC-01 target containers only when SC-01 session begins, and teardown when ending).
+- Run load tests to ensure memory usage across all containers stays under the local host's threshold (<8GB footprint).
+**Acceptance**: A user can boot the entire CyberSim repository using a single `docker-compose up` flow and engage with all scenarios on one local computer.
 
 ---
 

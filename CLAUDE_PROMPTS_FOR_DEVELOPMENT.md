@@ -461,25 +461,25 @@ DELIVERABLES:
 # PROMPT 7: Deploy Elastic Stack (Real SIEM)
 
 ```
-MISSION: Replace simulated regex SIEM with a real Elasticsearch single-node cluster.
+MISSION: Replace simulated regex SIEM with a real Elasticsearch single-node cluster integrated seamlessly into the single platform.
 
 CONTEXT:
 - Goal: Move CyberSim's Blue Team telemetry to a 100% real SIEM.
-- We are replacing Python's `siem/engine.py` (which parses user text) with actual ELK log matching.
+- We are replacing Python's `siem/engine.py` (which parses user text) with actual ELK log matching, but polling it via FastAPI rather than forcing students to use Kibana.
 
 REQUIREMENTS:
-1. Create `infrastructure/docker/siem/docker-compose-siem.yml`.
-   - Setup a single-node Elasticsearch container and Kibana (optional, for debugging).
+1. Edit `docker-compose.yml`.
+   - Add a tightly constrained single-node Elasticsearch container (`mem_limit: 2g`, `ES_JAVA_OPTS="-Xms1g -Xmx1g"`).
 2. Delete the legacy mock JSON files:
    - `backend/src/siem/events/*.json`
 3. Refactor `backend/src/siem/engine.py`:
    - It should now poll the Elasticsearch REST API (`GET /_search`) for alerts matching the active session's scenario.
-   - Stream resulting events to the frontend via WebSocket.
+   - Stream resulting events to the frontend via WebSocket so the custom React `SiemFeed.jsx` can natively display authentic logs.
 
 DELIVERABLES:
-- ✅ docker-compose-siem.yml created.
+- ✅ docker-compose.yml updated with elasticsearch.
 - ✅ Mock JSONs deleted.
-- ✅ `engine.py` refactored to poll Elastic.
+- ✅ `engine.py` refactored to poll Elastic and stream via WebSocket.
 ```
 
 ---
@@ -517,20 +517,22 @@ DELIVERABLES:
 
 ---
 
-# PROMPT 10: Two-Laptop Distributed Setup
+# PROMPT 10: Unified Architecture & Memory Optimization
 
 ```
-MISSION: Break the infrastructure into a Platform Node and a Sandbox Node to distribute load across two laptops.
+MISSION: Ensure the entire unified architecture runs smoothly on a single laptop without resource exhaustion.
 
 REQUIREMENTS:
-1. Refactor `docker-compose.yml`:
-   - `docker-compose-platform.yml` (Laptop 1): Postgres, Redis, Backend, Frontend, Elastic SIEM.
-   - `docker-compose-sandbox.yml` (Laptop 2): Kali terminal container management, SC-01 through SC-03 target networks.
-2. Update backend configuration in `config.py` to target the remote Docker daemon on Laptop 2 via TCP or SSH.
+1. Refactor `docker-compose.yml` resource limits:
+   - Cap maximum memory utilization across all containers (Postgres, Redis, Backend, Frontend, Elastic) to strict limits.
+2. Update backend `sandbox/manager.py` lifecycle:
+   - Ensure targets are spinned down appropriately when sessions jump or terminate to prevent Zombie instances eating RAM.
+3. Validate performance:
+   - Confirm backend can successfully orchestrate and stream a Kali PTY while polling Elastic without introducing significant blocking delays.
 
 DELIVERABLES:
-- ✅ Composes split.
-- ✅ `config.py` handles remote Target Docker context.
+- ✅ Main `docker-compose.yml` heavily optimized with strict memory boundaries.
+- ✅ target lifecycle management hardened in `manager.py`.
 ```
 
 ---
@@ -545,10 +547,10 @@ After each prompt completion, mark here:
 - [ ] Prompt 4: End-to-End Integration Testing (SC-01 to SC-03)
 - [ ] Prompt 5: Performance Optimization
 - [ ] Prompt 6: Blue Team Playbooks (SC-01 to SC-03)
-- [ ] Prompt 7: Deploy Elastic Stack (Real SIEM)
-- [ ] Prompt 8: Authentic Target Telemetry
-- [ ] Prompt 9: Kali Terminal Strict Raw Mode
-- [ ] Prompt 10: Two-Laptop Distributed Setup
+- [x] Prompt 7: Deploy Elastic Stack (Real SIEM)
+- [x] Prompt 8: Authentic Target Telemetry
+- [x] Prompt 9: Kali Terminal Strict Raw Mode
+- [x] Prompt 10: Unified Architecture & Memory Optimization
 
 ---
 

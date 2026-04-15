@@ -36,7 +36,7 @@ _COMPOSE_FILE = Path(__file__).resolve().parents[3] / "docker-compose.yml"
 _docker_client: Optional["docker.DockerClient"] = None
 
 
-def _get_get_client() -> "docker.DockerClient":
+def _get_client() -> "docker.DockerClient":
     """Get or create the module-level Docker client singleton."""
     global _docker_client
     if not _docker_available:
@@ -68,13 +68,10 @@ async def start_scenario_container(
 
 
 async def stop_scenario_container(container_id: str, scenario_id: str | None = None) -> None:
-    if container_id.startswith("mock-"):
-        return
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _stop_sync, container_id)
-    # Note: scenario targets are shared and long-lived — they are NOT stopped
-    # when individual sessions end. They are only stopped when the platform
-    # shuts down (docker-compose down) or via explicit admin action.
+    if scenario_id:
+        await loop.run_in_executor(None, _teardown_scenario_targets, scenario_id)
 
 
 async def exec_command(container_id: str, command: str) -> str:
@@ -129,9 +126,28 @@ def _ensure_scenario_targets(scenario_id: str) -> None:
             timeout=60,
         )
     except Exception as exc:
-        if settings.ENVIRONMENT == "development":
-            print(f"[Sandbox] Scenario targets for {profile} unavailable: {exc}")
-        # Non-fatal — Kali container can still start without targets
+        print(f"[Sandbox] Scenario targets for {profile} unavailable: {exc}")
+
+def _teardown_scenario_targets(scenario_id: str) -> None:
+    """Tear down scenario-specific targets dynamically to save single-node RAM."""
+    profile = scenario_id.lower().replace("-", "")
+    targets = _SCENARIO_TARGETS.get(profile)
+    if not targets or not _COMPOSE_FILE.exists():
+        return
+
+    try:
+        subprocess.run(
+            [
+                "docker", "compose",
+                "-f", str(_COMPOSE_FILE),
+                "--profile", profile,
+                "stop",
+            ],
+            capture_output=True,
+            timeout=60,
+        )
+    except Exception as exc:
+        print(f"[Sandbox] Error stopping scenario targets for {profile}: {exc}")
 
 
 def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
@@ -172,9 +188,7 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
         return container.id, network_name
 
     except Exception as exc:
-        if settings.ENVIRONMENT == "development":
-            print(f"[Sandbox] Docker unavailable — mock container: {exc}")
-            return f"mock-{session_id[:8]}", network_name
+        print(f"[Sandbox] Expected error when spawning container: {exc}")
         raise
 
 

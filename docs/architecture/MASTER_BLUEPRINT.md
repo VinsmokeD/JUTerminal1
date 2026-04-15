@@ -65,7 +65,7 @@ CyberSim is a dual-perspective cybersecurity training platform designed to bridg
 
 ### Real-time Data Flow
 ```
-Laptop 2 (Sandbox)                 Laptop 1 (Platform)
+Unified Single Server Node
 Kali Container ◄── Docker API ───── backend/src/sandbox/manager.py
     │                                  ▲
     │ raw PTY proxy                    │ WebSocket /ws/{session_id}
@@ -78,8 +78,9 @@ Browser (xterm.js) ◄───────────────► React Fro
 ```
 
 ### Sandbox Physics & Hardware
-- **Topology**: Distributed directly across 2 laptops (Platform Node + Sandbox Node) for performance and realism.
-- Docker SDK (`docker` Python library) orchestrates Laptop 2 via remote TCP daemon.
+- **Topology**: Unified Single-Node platform. All infrastructure (Backend, Frontend, Databases, SIEM, Target Containers, Kali Containers) runs harmoniously on one local Docker machine.
+- **Resource Constraints**: High constraint priority. Elastic stack limited to 2GB RAM; scenario containers highly restrained (`cpus=0.5`, `mem_limit='512m'`).
+- Docker SDK (`docker` Python library) natively orchestrates the local Docker Unix socket (`/var/run/docker.sock`).
 - `provision_container()` checks if container for `session_id` already exists before creating (supports terminal re-attach on browser refresh)
 - All containers: `cpus=0.5`, `mem_limit='512m'`, `cap_drop=['ALL']`, `security_opt=['no-new-privileges']`, no `--privileged`
 - Terminal output history: Redis capped list `terminal:{session_id}:history` — last 500 lines, replayed on re-attach

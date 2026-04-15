@@ -1,45 +1,28 @@
 import asyncio
-import functools
 import json
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
+
+import httpx
 
 from src.cache.redis import _get as get_redis
-
-EVENTS_DIR = Path(__file__).parent / "events"
 
 # Global event batch queue and flush task
 _event_queue: Optional[asyncio.Queue] = None
 _batch_flush_task: Optional[asyncio.Task] = None
+_elk_poll_task: Optional[asyncio.Task] = None
 
+# Track last polled timestamp to avoid duplicate events
+_last_poll_time: str = "now-1m"
 
-@functools.lru_cache(maxsize=16)
-def _load_event_map(scenario_id: str) -> dict:
-    path = EVENTS_DIR / f"{scenario_id.lower().replace('-', '')}_events.json"
-    if path.exists():
-        return json.loads(path.read_text())
-    return {}
-
-
-# Parse which tool is being run from a command string
-def _detect_tool(command: str) -> str:
-    command = command.strip().lower()
-    tools = ["nmap", "nikto", "gobuster", "ffuf", "sqlmap", "wfuzz", "hydra",
-             "curl", "wget", "burpsuite", "msfconsole", "metasploit", "bloodhound",
-             "crackmapexec", "impacket", "rubeus", "mimikatz", "hashcat", "john",
-             "awscli", "aws", "pacu", "s3scanner", "trufflehog", "gobuster"]
-    for tool in tools:
-        if command.startswith(tool) or f" {tool}" in command:
-            return tool
-    return "shell"
+# Track active sessions for routing logs
+_active_sessions: Dict[str, str] = {}  # session_id -> scenario_id
 
 
 async def queue_event(session_id: str, event: dict) -> None:
     """Queue an event for batched publishing (reduces Redis round-trips)."""
     if _event_queue is None:
-        # Fallback to direct publish if batch system not initialized
         redis = get_redis()
         await redis.publish(f"siem:{session_id}:feed", json.dumps(event))
     else:
@@ -55,8 +38,7 @@ async def _batch_flush() -> None:
     batch: dict[str, list[dict]] = {}
     while True:
         try:
-            # Try to collect events for up to 100ms
-            while len(batch) < 10:  # Up to 10 events before flushing
+            while len(batch) < 10:
                 try:
                     session_id, event = _event_queue.get_nowait()
                     if session_id not in batch:
@@ -64,7 +46,6 @@ async def _batch_flush() -> None:
                     batch[session_id].append(event)
                 except asyncio.QueueEmpty:
                     if batch:
-                        # If we have events, wait up to 100ms for more
                         try:
                             session_id, event = await asyncio.wait_for(_event_queue.get(), timeout=0.1)
                             if session_id not in batch:
@@ -73,14 +54,12 @@ async def _batch_flush() -> None:
                         except asyncio.TimeoutError:
                             break
                     else:
-                        # No events, wait indefinitely for the next one
                         session_id, event = await _event_queue.get()
                         if session_id not in batch:
                             batch[session_id] = []
                         batch[session_id].append(event)
                         break
 
-            # Publish batch via pipeline
             if batch:
                 redis = get_redis()
                 pipe = redis.pipeline()
@@ -93,54 +72,112 @@ async def _batch_flush() -> None:
         except Exception as e:
             print(f"Error in SIEM batch flush: {e}")
             batch.clear()
-            await asyncio.sleep(0.1)  # Backoff on error
+            await asyncio.sleep(0.1)
+
+
+async def _poll_elasticsearch() -> None:
+    """Background daemon to poll the Elastic Stack for real target telemetry logs."""
+    global _last_poll_time, _active_sessions
+    
+    async with httpx.AsyncClient() as client:
+        while True:
+            await asyncio.sleep(2.0)  # Poll every 2 seconds
+            
+            if not _active_sessions:
+                continue
+                
+            try:
+                # Query Elasticsearch for any log events since last poll
+                query = {
+                    "query": {
+                        "range": {
+                            "@timestamp": {
+                                "gte": _last_poll_time
+                            }
+                        }
+                    },
+                    "sort": [{"@timestamp": "asc"}],
+                    "size": 100
+                }
+                
+                response = await client.post("http://elasticsearch:9200/_search", json=query, timeout=5.0)
+                if response.status_code == 200:
+                    data = response.json()
+                    hits = data.get("hits", {}).get("hits", [])
+                    
+                    if hits:
+                        # Update last poll time to the latest document timestamp
+                        _last_poll_time = hits[-1]["_source"]["@timestamp"]
+                        
+                        for hit in hits:
+                            source = hit["_source"]
+                            
+                            # Convert generic Elastic log to SIEM-friendly React format
+                            now = datetime.now(timezone.utc).isoformat()
+                            event = {
+                                "id": hit["_id"],
+                                "timestamp": source.get("@timestamp", now),
+                                "created_at": now,
+                                "severity": "MED",
+                                "message": source.get("message", "Log event detected"),
+                                "raw_log": json.dumps(source),
+                                "mitre_technique": "",
+                                "source": "elasticsearch",
+                                "source_ip": "172.20.0.0/16",
+                                "tool_triggered": "filebeat",
+                            }
+                            
+                            # Broadcast the authentic log to all active sessions!
+                            for session_id in _active_sessions.keys():
+                                await queue_event(session_id, event)
+
+            except httpx.RequestError as e:
+                # Elastic might be down or not ready yet, just back off
+                await asyncio.sleep(5.0)
+            except Exception as e:
+                print(f"Elasticsearch polling error: {e}")
+                await asyncio.sleep(5.0)
+
+
+async def register_session(session_id: str, scenario_id: str) -> None:
+    """Register a new session so its logs can be forwarded from Elastic"""
+    _active_sessions[session_id] = scenario_id
+
+
+async def unregister_session(session_id: str) -> None:
+    """Stop forwarding logs for a closed session"""
+    if session_id in _active_sessions:
+        del _active_sessions[session_id]
 
 
 async def init_siem_batch() -> None:
     """Initialize the SIEM batch system (call from main.py lifespan)."""
-    global _event_queue, _batch_flush_task
+    global _event_queue, _batch_flush_task, _elk_poll_task
     _event_queue = asyncio.Queue(maxsize=1000)
     _batch_flush_task = asyncio.create_task(_batch_flush())
+    _elk_poll_task = asyncio.create_task(_poll_elasticsearch())
 
 
 async def close_siem_batch() -> None:
     """Close the SIEM batch system (call from main.py lifespan)."""
-    global _batch_flush_task
+    global _batch_flush_task, _elk_poll_task
     if _batch_flush_task:
         _batch_flush_task.cancel()
-        try:
+    if _elk_poll_task:
+        _elk_poll_task.cancel()
+        
+    try:
+        if _batch_flush_task:
             await _batch_flush_task
-        except asyncio.CancelledError:
-            pass
+        if _elk_poll_task:
+            await _elk_poll_task
+    except asyncio.CancelledError:
+        pass
 
 
 async def process_command_for_siem(session_id: str, state: dict, command: str) -> list[dict]:
-    """Map a terminal command to SIEM events and queue them for publishing."""
-    scenario_id = state.get("scenario_id", "SC-01")
-    event_map = _load_event_map(scenario_id)
-    tool = _detect_tool(command)
-    events = event_map.get(tool, [])
-
-    result = []
-    for template in events:
-        # Normalize severity to uppercase for consistent frontend rendering
-        raw_severity = template.get("severity", "INFO").upper()
-        # Map 'MEDIUM' → 'MED' to match frontend styles
-        severity = "MED" if raw_severity == "MEDIUM" else raw_severity
-        now = datetime.now(timezone.utc).isoformat()
-        event = {
-            "id": str(uuid.uuid4()),
-            "timestamp": now,
-            "created_at": now,
-            "severity": severity,
-            "message": template.get("message", ""),
-            "raw_log": template.get("raw_log", "").replace("{src_ip}", "172.20.1.10"),
-            "mitre_technique": template.get("mitre_technique"),
-            "source": template.get("source", "attacker"),
-            "source_ip": "172.20.1.10",
-            "tool_triggered": tool,
-        }
-        result.append(event)
-        await queue_event(session_id, event)
-
-    return result
+    """
+    Deprecated: Commands no longer trigger SIEM directly in regex mode.
+    Elasticsearch agent handles actual target polling now.
+    """
+    return []

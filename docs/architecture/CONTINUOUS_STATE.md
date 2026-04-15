@@ -11,8 +11,58 @@ Every update must follow this strict format. Do not skip any fields.
 * **Where**: [Precise list of files modified, created, or reviewed. Use exact paths.]
 * **What & How**: [Deep technical breakdown. What code was written? What dependencies were updated? How do the changes work together?]
 
----
 ## Change Log
+
+### [2026-04-15 14:10:00] - Claude Code Agent (Phase 22: Unified Memory Optimization)
+* **Status**: Coding Complete 
+* **Why**: The user requested executing the final Prompt 10 execution step dynamically across the infrastructure.
+* **Where**:
+  - `docker-compose.yml` — Aggressive limit insertions.
+  - `backend/src/sandbox/manager.py` — Lifecycle teardown logic.
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — Progress tracker.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+* **What & How**:
+  - Added strict `deploy.resources.limits.memory` constraints for `postgres` (512m), `redis` (256m), `backend` (512m), `frontend` (512m), `nginx` (128m), and the web app components ensuring CyberSim runs well within an 8GB laptop.
+  - Rewrote the container shutdown procedure in `manager.py`. It no longer leaves scenario instances globally persisting on jump, but explicitly issues a `docker compose stop --profile` hook via `_teardown_scenario_targets()` to tear them down efficiently and prevent RAM bloat/zombie containers.
+
+### [2026-04-15 14:07:00] - Claude Code Agent (Phase 20 & 21: Telemetry & Strict PTY)
+* **Status**: Coding Complete 
+* **Why**: The user requested that I execute all Prompts together as the Claude execution agent.
+* **Where**:
+  - `docker-compose.yml`
+  - `infrastructure/docker/siem/filebeat.yml`
+  - `backend/src/sandbox/terminal.py`
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+* **What & How**:
+  - **Phase 20**: Rather than adding heavy Filebeat Java sidecars to SC-01, SC-02, SC-03 separately (which would waste a lot of the restricted RAM), I integrated a single, lightweight `filebeat` container into `docker-compose.yml` bound to `/var/run/docker.sock`. It dynamically streams all output from scenario containers into Elastic.
+  - **Phase 21**: I stripped all mock detection functions (`_mock_stream`, `_mock_command_output`) from `terminal.py`, replacing them with an explicit `RuntimeError` failure mode to enforce the strict raw Docker API proxying.
+
+
+* **Status**: Coding Complete 
+* **Why**: The user requested that I execute Prompt 7 (Deploy Elastic Stack) directly as the implementation agent without waiting for external Claude.
+* **Where**:
+  - `docker-compose.yml` — Added `elasticsearch` constrained single-node service.
+  - `backend/src/siem/events/*.json` — Deleted all outdated mock signature JSONs.
+  - `backend/src/siem/engine.py` — Rewritten completely to poll Elasticsearch API.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+* **What & How**:
+  - I created a memory-restricted (2GB limit, `-Xms1g -Xmx1g`) Elasticsearch 8.13 single-node container in `docker-compose.yml` under the shared `internal` network.
+  - Removed all mock Python regex event JSONs.
+  - Refactored `engine.py` to use `httpx.AsyncClient` inside a continuous background loop (`_poll_elasticsearch`), querying the `elasticsearch:9200/_search` REST endpoint for any new logs and converting them to the JSON schema native to our `SiemFeed.jsx` WebSocket channel.
+
+
+### [2026-04-15 14:02:00] - Antigravity (Unified Architecture Integration)
+* **Status**: Planning & Phase Updating Complete
+* **Why**: The user requested that we abandon the two-laptop distributed architecture and instead consolidate all real-world interactions (Docker targets, Kali container, ELK SIEM) onto a single, unified platform and UI page.
+* **Where**:
+  - `docs/architecture/MASTER_BLUEPRINT.md` — Updated Real-time Data Flow and Sandbox Physics.
+  - `docs/architecture/phases.md` — Reworked Phase 19 and 22 for memory optimization and single-node integration.
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — Replaced Prompt 7 and Prompt 10 with lightweight unified configurations.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+* **What & How**:
+  - I shifted the previous distributed model's requirements toward aggressive strict container limits (Elastic capped at 2GB, targets minimized). 
+  - I explicitly changed `MASTER_BLUEPRINT.md` to establish the Single-Node constraint as high priority. 
+  - I redefined the final execution prompt (Prompt 10) to make Claude Code responsible for hardening the lifecycle via `manager.py` to prevent zombie instances and crashing the host machine's RAM.
 
 ### [2026-04-13 11:51:00] - Antigravity (Documentation & Planning for Real-World Conversion)
 * **Status**: Planning & Documentation Complete
