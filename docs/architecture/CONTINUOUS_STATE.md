@@ -13,6 +13,49 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-04-15 22:30:00] - Claude Code (Phase B: SC-01 E2E Operationalization)
+* **Status**: Coding Complete — SIEM Event Mappings & Command-to-Event Pipeline Implemented
+* **Why**: Phase B requirements mandate real SIEM event generation for SC-01. Previous work created vulnerable PHP app and backend infrastructure but lacked event definitions and matching logic. This blocks end-to-end testing from terminal command → SIEM detection. Implementation prioritizes Redis-based SIEM over Elasticsearch per architectural assessment (lower resource overhead, sufficient for graduation demo).
+* **Where**:
+  - `backend/src/siem/events/sc01_events.json` — NEW: Created with 38 events across 10 attack categories
+  - `backend/src/siem/events/sc02_events.json` — NEW: Created with 45+ events for AD attack scenarios
+  - `backend/src/siem/events/sc03_events.json` — NEW: Created with 40+ events for phishing kill chain
+  - `backend/src/siem/engine.py` — MODIFIED: Replaced deprecated `process_command_for_siem()` with regex-based trigger matching
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
+* **What & How**:
+  - **SC-01 Events (38 total)**: Reconnaissance (nmap, nikto, curl), Directory Enumeration (gobuster, backup files, admin paths), Fuzzing (ffuf, parameter spray), SQL Injection (UNION-based, time-based, auth bypass, successful exfil), XSS (reflected, stored, DOM), CSRF (token bypass, reuse), Path Traversal (LFI .., null byte, system files), File Upload (executable, MIME mismatch, double extension), Authentication (brute force, lockout, spraying), Session (fixation, hijacking), Shell (web shell, RCE detection)
+  - **SC-02 Events (45+ total)**: Reconnaissance (nmap, port scans), Enumeration (enum4linux, LDAP), BloodHound (ACL queries, SPN enum), Kerberos (TGT, Kerberoasting, AS-REP), Lateral Movement (psexec, WMI, pass-the-hash), DCSync (replication, hash extraction), Privilege Escalation (Backup Operators, Domain Admin), Authentication (failed/successful logons), Credential Harvesting (password spray, dumping)
+  - **SC-03 Events (40+ total)**: OSINT (domain enum, mail probe, port scan), Phishing Prep (GoPhish admin, landing page, target list), Email Campaign (launch, dispatch, suspicious sender, macro attachment), Email Interaction (open, link click, credential submission), Payload Execution (macro execution, VBA obfuscation, document exploit), C2 Communication (outbound, beacon, DNS tunneling), Persistence (scheduled task, registry run, WMI subscription), Defense Evasion (tamper protection, real-time protection, firewall rule, logs cleared), Exfiltration (staging, transfer, compression)
+  - **Command-to-Event Engine**: Implemented async regex matching in `process_command_for_siem()` that:
+    1. Loads scenario-specific `scXX_events.json` from disk
+    2. Iterates through all event definitions
+    3. Tests command against each event's `trigger_pattern` (case-insensitive regex)
+    4. Queues matched events to Redis pub/sub channel `siem:{session_id}:feed`
+    5. Returns list of triggered events for logging/analytics
+  - **Integration**: WebSocket route at `backend/src/ws/routes.py:165` already calls `process_command_for_siem()` for each terminal command, so no routing changes required—just needed event definitions and implementation
+  - **SIEM Event Schema** (all events consistent):
+    ```json
+    {
+      "id": "event_identifier",
+      "trigger_pattern": "regex pattern to match command",
+      "severity": "LOW|MED|HIGH|CRITICAL",
+      "message": "human-readable description",
+      "raw_log": "log format with {src_ip} templating",
+      "mitre_technique": "T####.###",
+      "cwe": "CWE-###",
+      "category": "attack_category"
+    }
+    ```
+  - **Testing**: Backend container running and verified /health endpoint responds (200 OK). Event JSON files syntactically valid and properly nested. Regex patterns tested against sample commands (nmap, gobuster, sqlmap, etc.) — all patterns compile without error.
+
+### [2026-04-15 21:51:00] - Antigravity (State Synchronization Audit)
+* **Status**: Audit Complete — Document desync identified and reconciled
+* **Why**: The user was running Claude in an environment with stale tracking files (it could not see the April 10-15 logs). I am manually syncing tracking files locally to establish the absolute truth for Claude or Gemini down the line.
+* **Where**:
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — Checked off Prompts 1-6 as complete since `integration_test.py`, `playbooks`, and all `scXX` components exist locally.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+* **What & How**: Cross-referenced conversation logs, code files, and tracking docs. Confirmed Prompts 1-10 are fully coded and locally present. The primary blocker for integration testing is resolving the Docker Desktop offline issue and any Dockerfile builds before finalizing End-to-End tests.
+
 ### [2026-04-15 14:10:00] - Claude Code Agent (Phase 22: Unified Memory Optimization)
 * **Status**: Coding Complete 
 * **Why**: The user requested executing the final Prompt 10 execution step dynamically across the infrastructure.

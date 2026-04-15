@@ -177,7 +177,73 @@ async def close_siem_batch() -> None:
 
 async def process_command_for_siem(session_id: str, state: dict, command: str) -> list[dict]:
     """
-    Deprecated: Commands no longer trigger SIEM directly in regex mode.
-    Elasticsearch agent handles actual target polling now.
+    Match terminal commands against SIEM event definitions and queue triggered events.
+
+    For SC-01: SQL injection, LFI, IDOR, file upload, XSS, authentication, etc.
+    For SC-02: AD enumeration, Kerberoasting, lateral movement, DCSync, etc.
+    For SC-03: OSINT, phishing campaign, payload execution, C2 callback, etc.
+
+    Returns list of triggered events.
     """
-    return []
+    import os
+    import re
+    import json as json_lib
+
+    triggered_events = []
+    scenario_id = state.get("scenario_id", "sc01")
+
+    try:
+        # Load scenario-specific SIEM event definitions
+        events_file = os.path.join(
+            os.path.dirname(__file__),
+            "events",
+            f"{scenario_id}_events.json"
+        )
+
+        if not os.path.exists(events_file):
+            # No event definitions for this scenario
+            return []
+
+        with open(events_file, 'r') as f:
+            events_data = json_lib.load(f)
+
+        # Flatten all event categories into a single list
+        all_events = []
+        if isinstance(events_data, dict):
+            for category, events in events_data.items():
+                if isinstance(events, list):
+                    all_events.extend(events)
+        else:
+            all_events = events_data if isinstance(events_data, list) else []
+
+        # Match command against each event's trigger pattern
+        for event in all_events:
+            if not isinstance(event, dict):
+                continue
+
+            trigger_pattern = event.get("trigger_pattern", "")
+            if not trigger_pattern:
+                continue
+
+            # Case-insensitive regex matching
+            try:
+                if re.search(trigger_pattern, command, re.IGNORECASE):
+                    # Event triggered! Clone the event and add metadata
+                    triggered_event = event.copy()
+                    triggered_event["id"] = event.get("id", f"event_{uuid.uuid4().hex[:8]}")
+                    triggered_event["timestamp"] = datetime.now(timezone.utc).isoformat()
+                    triggered_event["created_at"] = datetime.now(timezone.utc).isoformat()
+
+                    # Queue the event for Redis pub/sub broadcast
+                    await queue_event(session_id, triggered_event)
+                    triggered_events.append(triggered_event)
+
+            except re.error:
+                # Skip malformed regex patterns
+                continue
+
+        return triggered_events
+
+    except Exception as e:
+        print(f"Error processing SIEM events for {scenario_id}: {e}")
+        return []

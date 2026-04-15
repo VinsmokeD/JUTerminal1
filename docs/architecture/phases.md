@@ -62,7 +62,7 @@
 
 ---
 
-## Phase 5 — SIEM event engine
+## Phase 5 — SIEM event engine ✅ Done
 **Goal**: Attacker terminal actions trigger corresponding SIEM events on blue side in real time.
 **Files**:
 - backend/src/siem/engine.py (action → event mapping)
@@ -76,7 +76,7 @@
 
 ---
 
-## Phase 6 — Notes system
+## Phase 6 — Notes system ✅ Done
 **Goal**: Structured pentest notebook and IR notebook with tag system and auto-save.
 **Files**:
 - frontend/src/components/notes/PentestNotebook.jsx
@@ -88,7 +88,7 @@
 
 ---
 
-## Phase 7 — Methodology tracker
+## Phase 7 — Methodology tracker ✅ Done
 **Goal**: Student declares methodology at scenario start; phase progress tracked against it.
 **Files**:
 - frontend/src/components/methodology/MethodologySelector.jsx
@@ -99,7 +99,7 @@
 
 ---
 
-## Phase 8 — AI monitor (Gemini Flash)
+## Phase 8 — AI monitor (Gemini Flash) ✅ Done
 **Goal**: Every terminal command triggers AI analysis; hints appear in learning panel.
 **Files**:
 - ai-monitor/system_prompt.md (full prompt, all 3 scenarios)
@@ -112,7 +112,7 @@
 
 ---
 
-## Phase 9 — Hint system
+## Phase 9 — Hint system ✅ Done
 **Goal**: Three-level graduated hint trees for all 3 scenarios, both red and blue sides.
 **Files**:
 - backend/src/scenarios/hints/sc01_hints.json (all phases, L1/L2/L3)
@@ -124,7 +124,7 @@
 
 ---
 
-## Phase 10 — Scope & ROE briefing system
+## Phase 10 — Scope & ROE briefing system ✅ Done
 **Goal**: Before each scenario, student reads and acknowledges Scope + ROE document. Actions outside scope are blocked.
 **Files**:
 - frontend/src/components/workspace/ScopeBriefing.jsx
@@ -135,7 +135,7 @@
 
 ---
 
-## Phase 11 — Debrief & report generation
+## Phase 11 — Debrief & report generation ✅ Done
 **Goal**: Post-mission screen shows attack path replay, defender timeline, and exports PDF report.
 **Files**:
 - frontend/src/pages/Debrief.jsx
@@ -148,7 +148,7 @@
 
 ---
 
-## Phase 12 — Scoring system
+## Phase 12 — Scoring system ✅ Done
 **Goal**: Real-time scoring for both red and blue. Hint usage deducts points. Time bonus.
 **Files**:
 - backend/src/scoring/engine.py
@@ -158,7 +158,7 @@
 
 ---
 
-## Phase 13 — Dashboard and scenario selection
+## Phase 13 — Dashboard and scenario selection ✅ Done
 **Goal**: Landing page showing 3 scenarios, difficulty, your history, leaderboard.
 **Files**:
 - frontend/src/pages/Dashboard.jsx
@@ -169,7 +169,7 @@
 
 ---
 
-## Phase 14 — Final integration and polish
+## Phase 14 — Final integration and polish ✅ Done
 **Goal**: Full end-to-end flow working for SC-01 to SC-03.
 **Tasks**:
 - Integration tests for SC-01 full flow
@@ -200,7 +200,7 @@
 
 ---
 
-## Phase 17 — The Kill Chain Timeline (Debrief UI)
+## Phase 17 — The Kill Chain Timeline (Debrief UI) ✅ Done
 **Goal**: Post-scenario Debrief page displays a dual-axis visual timeline of Red actions vs Blue detection timestamps.
 **Files**:
 - frontend/src/components/debrief/KillChainTimeline.jsx

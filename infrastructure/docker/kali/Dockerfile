@@ -23,10 +23,6 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     medusa crackmapexec impacket-scripts \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Python tooling — impacket suite + netexec (crackmapexec successor)
-RUN pip3 install --break-system-packages --no-cache-dir \
-    netexec \
-    && rm -rf /root/.cache
 
 # Create non-root student user — containers never run as root
 RUN useradd -m -s /bin/bash -u 1000 student \

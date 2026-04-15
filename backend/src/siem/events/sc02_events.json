@@ -1,0 +1,230 @@
+{
+  "reconnaissance": [
+    {
+      "id": "sc02_recon_nmap_syn",
+      "trigger_pattern": "nmap\\s+.*-sS|-sT|nmap\\s+172\\.20\\.2",
+      "severity": "LOW",
+      "message": "Network reconnaissance: nmap SYN scan detected on domain network",
+      "raw_log": "IDS Alert: SYN scan from {src_ip} to 172.20.2.0/24",
+      "mitre_technique": "T1046",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    },
+    {
+      "id": "sc02_recon_port_scan",
+      "trigger_pattern": "nmap\\s+.*-p|--ports",
+      "severity": "LOW",
+      "message": "Port scanning: specific port enumeration detected",
+      "raw_log": "IDS Alert: Port scan for domain services",
+      "mitre_technique": "T1046",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    }
+  ],
+  "enumeration": [
+    {
+      "id": "sc02_enum_enum4linux",
+      "trigger_pattern": "enum4linux|enum4linux\\.pl|smbclient|samba",
+      "severity": "MED",
+      "message": "Domain enumeration: enum4linux user/share enumeration detected",
+      "raw_log": "Event ID 5140: Network share access from {src_ip}",
+      "mitre_technique": "T1087",
+      "cwe": "CWE-200",
+      "category": "enumeration"
+    },
+    {
+      "id": "sc02_enum_ldap_query",
+      "trigger_pattern": "ldapsearch|ldap.*query|ADExplorer",
+      "severity": "MED",
+      "message": "Directory enumeration: LDAP queries detected",
+      "raw_log": "Event ID 4662: Directory Service object was modified",
+      "mitre_technique": "T1087",
+      "cwe": "CWE-200",
+      "category": "enumeration"
+    }
+  ],
+  "bloodhound": [
+    {
+      "id": "sc02_bloodhound_collection",
+      "trigger_pattern": "BloodHound|bloodhound|Invoke-BloodHound|SharpHound",
+      "severity": "HIGH",
+      "message": "AD enumeration: BloodHound collection detected",
+      "raw_log": "Event ID 5140: Sensitive LDAP queries from {src_ip}",
+      "mitre_technique": "T1087",
+      "cwe": "CWE-200",
+      "category": "bloodhound"
+    },
+    {
+      "id": "sc02_bloodhound_acl_query",
+      "trigger_pattern": "ACL.*query|AccessControlList|DACL",
+      "severity": "HIGH",
+      "message": "ACL enumeration: access control list queries detected",
+      "raw_log": "Event ID 4662: Multiple LDAP queries for object properties",
+      "mitre_technique": "T1087",
+      "cwe": "CWE-200",
+      "category": "bloodhound"
+    },
+    {
+      "id": "sc02_bloodhound_spn_query",
+      "trigger_pattern": "setspn|SPN|servicePrincipalName",
+      "severity": "HIGH",
+      "message": "SPN enumeration: service principal name queries detected",
+      "raw_log": "Event ID 5140: Directory Service object queries",
+      "mitre_technique": "T1087",
+      "cwe": "CWE-200",
+      "category": "bloodhound"
+    }
+  ],
+  "kerberos": [
+    {
+      "id": "sc02_kerberos_tgt_request",
+      "trigger_pattern": "krbtgt|TGT|AS-REQ",
+      "severity": "LOW",
+      "message": "Kerberos: TGT request detected",
+      "raw_log": "Event ID 4768: Kerberos authentication ticket was requested",
+      "mitre_technique": "T1558",
+      "cwe": "CWE-327",
+      "category": "kerberos"
+    },
+    {
+      "id": "sc02_kerberos_roasting",
+      "trigger_pattern": "GetUserSPNs|Invoke-Kerberoast|kerberoast",
+      "severity": "CRITICAL",
+      "message": "Kerberoasting: TGS ticket extraction attempt",
+      "raw_log": "Event ID 4769: Kerberos service ticket was requested (RC4 encryption)",
+      "mitre_technique": "T1558.003",
+      "cwe": "CWE-327",
+      "category": "kerberos"
+    },
+    {
+      "id": "sc02_kerberos_asreproast",
+      "trigger_pattern": "AS-REP|Invoke-ASREPRoast|asreproast",
+      "severity": "HIGH",
+      "message": "AS-REP roasting: pre-auth bypass attempt",
+      "raw_log": "Event ID 4768: AS-REP message without pre-authentication",
+      "mitre_technique": "T1558.004",
+      "cwe": "CWE-327",
+      "category": "kerberos"
+    }
+  ],
+  "lateral_movement": [
+    {
+      "id": "sc02_lateral_psexec",
+      "trigger_pattern": "psexec|Invoke-PSExec|paexec",
+      "severity": "CRITICAL",
+      "message": "Lateral movement: psexec remote code execution detected",
+      "raw_log": "Event ID 5145: Network share access for admin$ detected",
+      "mitre_technique": "T1021.002",
+      "cwe": "CWE-200",
+      "category": "lateral_movement"
+    },
+    {
+      "id": "sc02_lateral_wmi",
+      "trigger_pattern": "wmi|wmimgmt|Invoke-WMICommand",
+      "severity": "HIGH",
+      "message": "Lateral movement: WMI remote execution detected",
+      "raw_log": "Event ID 4688: Process creation via WMI from {src_ip}",
+      "mitre_technique": "T1047",
+      "cwe": "CWE-200",
+      "category": "lateral_movement"
+    },
+    {
+      "id": "sc02_lateral_pass_hash",
+      "trigger_pattern": "pass.*hash|pth|NTLM.*relay|secretsdump",
+      "severity": "CRITICAL",
+      "message": "Lateral movement: pass-the-hash detected",
+      "raw_log": "Event ID 4624: Logon with plaintext equivalent detected",
+      "mitre_technique": "T1550.002",
+      "cwe": "CWE-327",
+      "category": "lateral_movement"
+    }
+  ],
+  "dcsync": [
+    {
+      "id": "sc02_dcsync_replication",
+      "trigger_pattern": "dcsync|GetNCChanges|DCSync|DsGetNCChanges",
+      "severity": "CRITICAL",
+      "message": "Domain controller synchronization: DCSync attack detected",
+      "raw_log": "Event ID 4662: Directory Service object was accessed (replication request)",
+      "mitre_technique": "T1003.006",
+      "cwe": "CWE-327",
+      "category": "dcsync"
+    },
+    {
+      "id": "sc02_dcsync_krbtgt",
+      "trigger_pattern": "krbtgt|krbtgt.*hash|extract.*domain.*hash",
+      "severity": "CRITICAL",
+      "message": "Domain hash extraction: krbtgt password hash dumped",
+      "raw_log": "Event ID 4656: Handle requested for privileged object",
+      "mitre_technique": "T1003.006",
+      "cwe": "CWE-327",
+      "category": "dcsync"
+    }
+  ],
+  "privilege_escalation": [
+    {
+      "id": "sc02_privesc_backup_ops",
+      "trigger_pattern": "Backup.*Operator|SE_BACKUP_NAME",
+      "severity": "HIGH",
+      "message": "Privilege escalation: backup operator privilege assignment",
+      "raw_log": "Event ID 4728: Member was added to global security group (Backup Operators)",
+      "mitre_technique": "T1098.001",
+      "cwe": "CWE-269",
+      "category": "privilege_escalation"
+    },
+    {
+      "id": "sc02_privesc_domain_admin",
+      "trigger_pattern": "Domain.*Admin|domain.*admin.*group",
+      "severity": "CRITICAL",
+      "message": "Privilege escalation: domain admin group membership granted",
+      "raw_log": "Event ID 4728: Member added to Domain Admins global group",
+      "mitre_technique": "T1098.001",
+      "cwe": "CWE-269",
+      "category": "privilege_escalation"
+    }
+  ],
+  "authentication": [
+    {
+      "id": "sc02_auth_failed_logon",
+      "trigger_pattern": "failed.*login|logon.*failed|4625",
+      "severity": "MED",
+      "message": "Authentication failure: failed logon attempt",
+      "raw_log": "Event ID 4625: Account failed to log on",
+      "mitre_technique": "T1110",
+      "cwe": "CWE-307",
+      "category": "authentication"
+    },
+    {
+      "id": "sc02_auth_successful_logon",
+      "trigger_pattern": "successful.*login|logon.*successful|4624",
+      "severity": "LOW",
+      "message": "Authentication: successful logon",
+      "raw_log": "Event ID 4624: Account successfully logged on",
+      "mitre_technique": "T1078",
+      "cwe": "CWE-200",
+      "category": "authentication"
+    }
+  ],
+  "credential_harvesting": [
+    {
+      "id": "sc02_cred_spray",
+      "trigger_pattern": "spraying|spray.*password|DomainPasswordSpray",
+      "severity": "HIGH",
+      "message": "Credential attack: password spraying detected",
+      "raw_log": "Multiple Event ID 4625 (failed logons) from same source in short time",
+      "mitre_technique": "T1110.003",
+      "cwe": "CWE-307",
+      "category": "credential_harvesting"
+    },
+    {
+      "id": "sc02_cred_dumping",
+      "trigger_pattern": "dumping|mimikatz|secretsdump|dumpkeys",
+      "severity": "CRITICAL",
+      "message": "Credential harvesting: password hash dumping detected",
+      "raw_log": "Event ID 4656: Handle to privileged registry key requested",
+      "mitre_technique": "T1003",
+      "cwe": "CWE-327",
+      "category": "credential_harvesting"
+    }
+  ]
+}

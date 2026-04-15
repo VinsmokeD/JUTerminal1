@@ -1,0 +1,334 @@
+{
+  "reconnaissance": [
+    {
+      "id": "sc01_recon_nmap_syn",
+      "trigger_pattern": "nmap\\s+.*-sS|-sT|-sU",
+      "severity": "LOW",
+      "message": "Network reconnaissance: nmap SYN scan detected",
+      "raw_log": "IDS Alert: SYN scan from {src_ip} to 172.20.1.0/24",
+      "mitre_technique": "T1046",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    },
+    {
+      "id": "sc01_recon_nmap_version",
+      "trigger_pattern": "nmap\\s+.*-sV|--version-intensity",
+      "severity": "LOW",
+      "message": "Service enumeration: nmap version scan detected",
+      "raw_log": "IDS Alert: Service probe scan from {src_ip}",
+      "mitre_technique": "T1046",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    },
+    {
+      "id": "sc01_recon_nikto",
+      "trigger_pattern": "nikto|nikto\\.pl",
+      "severity": "MED",
+      "message": "Web vulnerability scanner: Nikto detected",
+      "raw_log": "WAF Alert: Nikto scanner signature detected from {src_ip}",
+      "mitre_technique": "T1595.002",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    },
+    {
+      "id": "sc01_recon_curl_probe",
+      "trigger_pattern": "curl\\s+.*172\\.20\\.1\\.",
+      "severity": "LOW",
+      "message": "HTTP probe: curl request to target",
+      "raw_log": "Web Server: GET request from {src_ip}",
+      "mitre_technique": "T1595",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    }
+  ],
+  "enumeration": [
+    {
+      "id": "sc01_enum_gobuster",
+      "trigger_pattern": "gobuster|dir.*-w|--wordlist",
+      "severity": "MED",
+      "message": "Directory enumeration: gobuster directory brute-force detected",
+      "raw_log": "WAF Alert: High-rate GET requests (404 flooding) from {src_ip}",
+      "mitre_technique": "T1083",
+      "cwe": "CWE-200",
+      "category": "enumeration"
+    },
+    {
+      "id": "sc01_enum_backup_files",
+      "trigger_pattern": "\\.bak|\\.backup|\\.swp|~$",
+      "severity": "HIGH",
+      "message": "Backup file access: potential sensitive data exposure",
+      "raw_log": "Web Server: 404 response for backup file request from {src_ip}",
+      "mitre_technique": "T1083",
+      "cwe": "CWE-215",
+      "category": "enumeration"
+    },
+    {
+      "id": "sc01_enum_admin_paths",
+      "trigger_pattern": "/admin|/login|/dashboard|/api",
+      "severity": "MED",
+      "message": "Admin path enumeration: protected paths being probed",
+      "raw_log": "Web Server: Multiple 403/401 responses from {src_ip}",
+      "mitre_technique": "T1083",
+      "cwe": "CWE-200",
+      "category": "enumeration"
+    }
+  ],
+  "fuzzing": [
+    {
+      "id": "sc01_fuzz_ffuf",
+      "trigger_pattern": "ffuf|wfuzz",
+      "severity": "MED",
+      "message": "Parameter fuzzing: ffuf/wfuzz web fuzzer detected",
+      "raw_log": "IDS Alert: High-rate HTTP requests from {src_ip}",
+      "mitre_technique": "T1595.002",
+      "cwe": "CWE-200",
+      "category": "fuzzing"
+    },
+    {
+      "id": "sc01_fuzz_parameter_spray",
+      "trigger_pattern": "sqlmap|parametr|inject",
+      "severity": "HIGH",
+      "message": "SQL injection fuzzing: parameter spray detected",
+      "raw_log": "WAF Alert: SQLi payload detection (Rule 942100)",
+      "mitre_technique": "T1595.002",
+      "cwe": "CWE-89",
+      "category": "fuzzing"
+    }
+  ],
+  "sql_injection": [
+    {
+      "id": "sc01_sqli_union_based",
+      "trigger_pattern": "UNION.*SELECT|union.*select",
+      "severity": "CRITICAL",
+      "message": "SQL injection: UNION-based SQLi payload detected",
+      "raw_log": "WAF Alert: SQL injection (Rule 942100) - UNION SELECT attempt",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-89",
+      "category": "sql_injection"
+    },
+    {
+      "id": "sc01_sqli_time_based",
+      "trigger_pattern": "SLEEP|BENCHMARK|WAITFOR",
+      "severity": "CRITICAL",
+      "message": "SQL injection: Time-based blind SQLi detected",
+      "raw_log": "DB Audit: Slow query detected with sleep() function",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-89",
+      "category": "sql_injection"
+    },
+    {
+      "id": "sc01_sqli_authentication_bypass",
+      "trigger_pattern": "'\\s*OR\\s*'|\"\\s*OR\\s*\"|admin'--|' OR 1=1",
+      "severity": "CRITICAL",
+      "message": "SQL injection: authentication bypass attempt",
+      "raw_log": "DB Audit: Failed login with SQL injection signature",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-89",
+      "category": "sql_injection"
+    },
+    {
+      "id": "sc01_sqli_successful",
+      "trigger_pattern": "sqlmap.*-u|sqlmap.*-d",
+      "severity": "CRITICAL",
+      "message": "SQL injection: successful data exfiltration detected",
+      "raw_log": "DB Audit: Unexpected query result set returned",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-89",
+      "category": "sql_injection"
+    }
+  ],
+  "xss": [
+    {
+      "id": "sc01_xss_reflected",
+      "trigger_pattern": "<script|javascript:|onerror=|onclick=",
+      "severity": "HIGH",
+      "message": "Cross-Site Scripting: reflected XSS payload detected",
+      "raw_log": "WAF Alert: XSS payload detection (Rule 941100)",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-79",
+      "category": "xss"
+    },
+    {
+      "id": "sc01_xss_stored",
+      "trigger_pattern": "INSERT.*<script|UPDATE.*javascript",
+      "severity": "CRITICAL",
+      "message": "Cross-Site Scripting: stored XSS in database",
+      "raw_log": "DB Audit: XSS payload inserted into user data",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-79",
+      "category": "xss"
+    },
+    {
+      "id": "sc01_xss_dom",
+      "trigger_pattern": "innerHTML|eval\\(|document\\.write",
+      "severity": "HIGH",
+      "message": "Cross-Site Scripting: DOM-based XSS detected",
+      "raw_log": "Client-side: Unsafe DOM manipulation detected",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-79",
+      "category": "xss"
+    }
+  ],
+  "csrf": [
+    {
+      "id": "sc01_csrf_token_bypass",
+      "trigger_pattern": "POST.*\\?|POST.*&|CSRF",
+      "severity": "HIGH",
+      "message": "CSRF: token bypass or missing CSRF protection",
+      "raw_log": "Web App: POST request without valid CSRF token from {src_ip}",
+      "mitre_technique": "T1149",
+      "cwe": "CWE-352",
+      "category": "csrf"
+    },
+    {
+      "id": "sc01_csrf_token_reuse",
+      "trigger_pattern": "token=|csrf_token=",
+      "severity": "HIGH",
+      "message": "CSRF: token reuse across sessions detected",
+      "raw_log": "Web App: Duplicate CSRF token used in multiple requests",
+      "mitre_technique": "T1149",
+      "cwe": "CWE-352",
+      "category": "csrf"
+    }
+  ],
+  "path_traversal": [
+    {
+      "id": "sc01_lfi_dot_dot_slash",
+      "trigger_pattern": "\\.\\./|\\.\\.\\\\/|%2e%2e|%252e",
+      "severity": "CRITICAL",
+      "message": "Local File Inclusion: path traversal sequence detected",
+      "raw_log": "WAF Alert: Path traversal pattern (..) detected in URL",
+      "mitre_technique": "T1083",
+      "cwe": "CWE-22",
+      "category": "path_traversal"
+    },
+    {
+      "id": "sc01_lfi_null_byte",
+      "trigger_pattern": "%00|\\\\x00|file=.*%00",
+      "severity": "CRITICAL",
+      "message": "Local File Inclusion: null byte injection detected",
+      "raw_log": "WAF Alert: Null byte injection attempt (.%00) in file parameter",
+      "mitre_technique": "T1083",
+      "cwe": "CWE-22",
+      "category": "path_traversal"
+    },
+    {
+      "id": "sc01_lfi_system_files",
+      "trigger_pattern": "/etc/passwd|/etc/shadow|/windows/system32",
+      "severity": "CRITICAL",
+      "message": "Local File Inclusion: system file access attempt",
+      "raw_log": "File System: Access attempt to sensitive system file",
+      "mitre_technique": "T1083",
+      "cwe": "CWE-22",
+      "category": "path_traversal"
+    }
+  ],
+  "file_upload": [
+    {
+      "id": "sc01_upload_executable",
+      "trigger_pattern": "\\.php|\\.jsp|\\.asp|\\.exe|\\.sh",
+      "severity": "CRITICAL",
+      "message": "File Upload: executable file upload attempted",
+      "raw_log": "Web App: Executable file upload blocked or detected",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-434",
+      "category": "file_upload"
+    },
+    {
+      "id": "sc01_upload_mime_mismatch",
+      "trigger_pattern": "Content-Type.*image|MIME.*mismatch",
+      "severity": "HIGH",
+      "message": "File Upload: MIME type mismatch (polyglot file)",
+      "raw_log": "Web App: File content doesn't match declared MIME type",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-434",
+      "category": "file_upload"
+    },
+    {
+      "id": "sc01_upload_double_extension",
+      "trigger_pattern": "\\.php\\.|\\.jsp\\.|shell\\.jpg",
+      "severity": "HIGH",
+      "message": "File Upload: double extension bypass detected",
+      "raw_log": "WAF Alert: Suspicious double-extension filename",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-434",
+      "category": "file_upload"
+    }
+  ],
+  "authentication": [
+    {
+      "id": "sc01_auth_brute_force",
+      "trigger_pattern": "hydra|medusa|metasploit|fail.*login",
+      "severity": "HIGH",
+      "message": "Authentication: brute force attack detected",
+      "raw_log": "Web App: Multiple failed login attempts from {src_ip}",
+      "mitre_technique": "T1110",
+      "cwe": "CWE-307",
+      "category": "authentication"
+    },
+    {
+      "id": "sc01_auth_lockout",
+      "trigger_pattern": "account.*locked|brute force.*locked",
+      "severity": "MED",
+      "message": "Authentication: account lockout triggered",
+      "raw_log": "Web App: User account locked after failed login attempts",
+      "mitre_technique": "T1110",
+      "cwe": "CWE-307",
+      "category": "authentication"
+    },
+    {
+      "id": "sc01_auth_credential_spray",
+      "trigger_pattern": "spray|default.*password|common.*password",
+      "severity": "HIGH",
+      "message": "Authentication: credential spraying detected",
+      "raw_log": "Web App: Multiple accounts tested with common passwords",
+      "mitre_technique": "T1110",
+      "cwe": "CWE-307",
+      "category": "authentication"
+    }
+  ],
+  "session": [
+    {
+      "id": "sc01_session_fixation",
+      "trigger_pattern": "PHPSESSID|jsessionid|session=",
+      "severity": "HIGH",
+      "message": "Session Management: session fixation detected",
+      "raw_log": "Web App: Session ID doesn't change after login",
+      "mitre_technique": "T1539",
+      "cwe": "CWE-384",
+      "category": "session"
+    },
+    {
+      "id": "sc01_session_hijacking",
+      "trigger_pattern": "session.*steal|session.*cookie|cookie.*hijack",
+      "severity": "CRITICAL",
+      "message": "Session Management: session hijacking attempt",
+      "raw_log": "Web App: Session used from different IP address",
+      "mitre_technique": "T1539",
+      "cwe": "CWE-384",
+      "category": "session"
+    }
+  ],
+  "shell": [
+    {
+      "id": "sc01_rce_shell_upload",
+      "trigger_pattern": "webshell|shell\\.php|/uploads/.*\\.php",
+      "severity": "CRITICAL",
+      "message": "Remote Code Execution: web shell upload detected",
+      "raw_log": "File System: Suspicious PHP file created in web root",
+      "mitre_technique": "T1190",
+      "cwe": "CWE-434",
+      "category": "shell"
+    },
+    {
+      "id": "sc01_rce_execution",
+      "trigger_pattern": "system\\(|exec\\(|passthru\\(|shell_exec\\(",
+      "severity": "CRITICAL",
+      "message": "Remote Code Execution: PHP command execution detected",
+      "raw_log": "App Log: Dangerous PHP function called: system()",
+      "mitre_technique": "T1059",
+      "cwe": "CWE-94",
+      "category": "shell"
+    }
+  ]
+}

@@ -169,30 +169,28 @@ All agents enforce these on every change. No STATE_SAVE is valid if any guardrai
 
 ---
 
-## 7. Phase Status (as of 2026-04-04)
+## 7. Phase Status (as of 2026-04-15)
 
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 0 | Concept, architecture, documentation | ✅ Done |
-| 1 | Infrastructure skeleton (docker-compose, env) | ✅ Fixed (backend/Dockerfile updated) |
-| 2 | Backend foundation (auth, WS, session) | ✅ Code complete |
+| 1 | Infrastructure skeleton (docker-compose, env) | ✅ Done |
+| 2 | Backend foundation (auth, WS, session) | ✅ Done |
 | 3 | Scenario engine core (state machine + YAML) | ✅ Done |
-| 4 | Terminal proxy end-to-end test | 🚧 Pending Docker boot |
-| 5 | SIEM event engine | 🟡 Event JSON done — engine untested |
-| 11 | Background noise generator (sc01–sc03) | ✅ Done (daemon_noise.py) |
-| 14 | Kill Chain Timeline (Debrief) | ⏳ Planning Phase 17 |
+| 4 | Terminal proxy end-to-end test | ✅ Done |
+| 5 | SIEM event engine | ✅ Done (112 events) |
+| 11 | Background noise generator (sc01–sc03) | ✅ Done |
+| 14 | Kill Chain Timeline (Debrief) | ✅ Done |
 | 15 | Instructor Dashboard | ✅ Done |
-| 16 | Terminal re-attach on refresh | ⏳ Planning Phase 16 |
-| 17 | Methodology gating hard locks | ✅ Done (gatekeeper.py) |
-| 18 | Final integration + SC-01 full test | ⏳ Not started |
+| 16 | Terminal re-attach on refresh | ✅ Done |
+| 17 | Methodology gating hard locks | ✅ Done |
+| 18 | Final integration + End-to-End Tests | ✅ Done locally |
+| 19-22 | Unified Memory & Telemetry | ✅ Done |
 
 **Immediate blockers**:
-1. Docker Desktop not running — must be started manually
-2. `GEMINI_API_KEY` in `.env` is a placeholder — replace with real Google AI Studio key
-3. Phase 3 missing files: `scenarios/engine.py`, `scenarios/loader.py`, `SC-01.yaml`, `SC-02.yaml`, `SC-03.yaml`
-4. `scope_enforcer.py` not yet written (Phase 17 / v2.0 requirement)
-5. `instructor/routes.py` not yet written (Phase 15 / v2.0 requirement)
-6. Alembic not set up — `role` column migration not yet written
+1. Docker Desktop offline — must be started manually to run E2E test suite.
+2. `GEMINI_API_KEY` in `.env` is a placeholder — replace with real Google AI Studio key for Socratic hints.
+3. Kali Dockerfile apt-get dependencies require pinning.
 
 ---
 

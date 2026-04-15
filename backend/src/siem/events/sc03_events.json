@@ -1,0 +1,310 @@
+{
+  "osint": [
+    {
+      "id": "sc03_osint_domain_enum",
+      "trigger_pattern": "whois|nslookup|dig\\s|host\\s|assetfinder",
+      "severity": "LOW",
+      "message": "OSINT: domain enumeration and DNS reconnaissance",
+      "raw_log": "DNS Log: Domain queries for orion-logistics.com",
+      "mitre_technique": "T1598",
+      "cwe": "CWE-200",
+      "category": "osint"
+    },
+    {
+      "id": "sc03_osint_mail_probe",
+      "trigger_pattern": "mail.*probe|smtp.*open|mx.*record",
+      "severity": "LOW",
+      "message": "OSINT: mail server probing",
+      "raw_log": "Network Log: SMTP port 25 connection attempt",
+      "mitre_technique": "T1598",
+      "cwe": "CWE-200",
+      "category": "osint"
+    },
+    {
+      "id": "sc03_osint_port_scan",
+      "trigger_pattern": "nmap|port.*scan|scanner",
+      "severity": "MED",
+      "message": "OSINT: port scanning of mail/web infrastructure",
+      "raw_log": "IDS Alert: Multiple port connection attempts",
+      "mitre_technique": "T1046",
+      "cwe": "CWE-200",
+      "category": "osint"
+    }
+  ],
+  "phishing_prep": [
+    {
+      "id": "sc03_phishing_gophish_admin",
+      "trigger_pattern": "gophish|phishing.*admin|campaign.*create",
+      "severity": "HIGH",
+      "message": "Phishing infrastructure: GoPhish admin panel access",
+      "raw_log": "Web Server Log: GoPhish admin interface accessed",
+      "mitre_technique": "T1583.006",
+      "cwe": "CWE-200",
+      "category": "phishing_prep"
+    },
+    {
+      "id": "sc03_phishing_landing_page",
+      "trigger_pattern": "landing.*page|phishing.*page|credentials.*form",
+      "severity": "HIGH",
+      "message": "Phishing infrastructure: phishing landing page created",
+      "raw_log": "GoPhish Log: Landing page deployed",
+      "mitre_technique": "T1583.006",
+      "cwe": "CWE-200",
+      "category": "phishing_prep"
+    },
+    {
+      "id": "sc03_phishing_target_list",
+      "trigger_pattern": "recipient|target.*list|email.*list",
+      "severity": "HIGH",
+      "message": "Phishing campaign: target email list compiled",
+      "raw_log": "GoPhish Log: Target list uploaded for campaign",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-200",
+      "category": "phishing_prep"
+    }
+  ],
+  "email_campaign": [
+    {
+      "id": "sc03_email_campaign_launch",
+      "trigger_pattern": "campaign.*launch|send.*email|campaign.*start",
+      "severity": "HIGH",
+      "message": "Phishing campaign: email campaign launched",
+      "raw_log": "Mail Server Log: Bulk email transmission started",
+      "mitre_technique": "T1566.002",
+      "cwe": "CWE-200",
+      "category": "email_campaign"
+    },
+    {
+      "id": "sc03_email_dispatch",
+      "trigger_pattern": "mail.*sent|smtp.*send|message.*dispatched",
+      "severity": "HIGH",
+      "message": "Email transmission: phishing emails dispatched",
+      "raw_log": "SMTP Log: Multiple emails sent to external addresses",
+      "mitre_technique": "T1566.002",
+      "cwe": "CWE-200",
+      "category": "email_campaign"
+    },
+    {
+      "id": "sc03_email_suspicious_sender",
+      "trigger_pattern": "spoofed.*sender|fake.*email|impersonat.*email",
+      "severity": "MED",
+      "message": "Email reputation: suspicious sender address detected",
+      "raw_log": "Email Gateway: SPF/DKIM validation failed for sender",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-640",
+      "category": "email_campaign"
+    },
+    {
+      "id": "sc03_email_macro_attachment",
+      "trigger_pattern": "attachment.*macro|doc.*macro|\\.docm|\\.xlsm",
+      "severity": "CRITICAL",
+      "message": "Email payload: macro-enabled document attachment detected",
+      "raw_log": "Email Gateway: Suspicious Office document attachment blocked",
+      "mitre_technique": "T1566.001",
+      "cwe": "CWE-94",
+      "category": "email_campaign"
+    }
+  ],
+  "email_interaction": [
+    {
+      "id": "sc03_email_opened",
+      "trigger_pattern": "email.*open|message.*read|tracking.*pixel",
+      "severity": "HIGH",
+      "message": "Email interaction: victim opened phishing email",
+      "raw_log": "Phishing Server Log: Email tracking pixel loaded",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-200",
+      "category": "email_interaction"
+    },
+    {
+      "id": "sc03_link_clicked",
+      "trigger_pattern": "link.*click|phishing.*link.*click|clicked",
+      "severity": "HIGH",
+      "message": "Email interaction: victim clicked phishing link",
+      "raw_log": "Web Server Log: Phishing link accessed from victim IP",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-200",
+      "category": "email_interaction"
+    },
+    {
+      "id": "sc03_credentials_submitted",
+      "trigger_pattern": "credential.*submit|password.*enter|form.*submit",
+      "severity": "CRITICAL",
+      "message": "Email interaction: victim submitted credentials to phishing site",
+      "raw_log": "Phishing Server Log: Credentials captured",
+      "mitre_technique": "T1598.003",
+      "cwe": "CWE-522",
+      "category": "email_interaction"
+    }
+  ],
+  "payload_execution": [
+    {
+      "id": "sc03_macro_execution",
+      "trigger_pattern": "macro.*exec|vba.*exec|document.*open",
+      "severity": "CRITICAL",
+      "message": "Payload execution: Office macro executed",
+      "raw_log": "Endpoint Log: Office application spawned unusual process",
+      "mitre_technique": "T1203",
+      "cwe": "CWE-94",
+      "category": "payload_execution"
+    },
+    {
+      "id": "sc03_vba_obfuscation",
+      "trigger_pattern": "obfuscat|encoded.*vba|scrambled.*macro",
+      "severity": "HIGH",
+      "message": "Payload evasion: obfuscated VBA macro detected",
+      "raw_log": "Endpoint Log: Office macro analysis detected obfuscation",
+      "mitre_technique": "T1027",
+      "cwe": "CWE-94",
+      "category": "payload_execution"
+    },
+    {
+      "id": "sc03_document_exploit",
+      "trigger_pattern": "exploit.*document|cve.*document|shellcode",
+      "severity": "CRITICAL",
+      "message": "Payload execution: document exploit triggered",
+      "raw_log": "Endpoint Log: Memory corruption detected in Office process",
+      "mitre_technique": "T1203",
+      "cwe": "CWE-94",
+      "category": "payload_execution"
+    }
+  ],
+  "c2_communication": [
+    {
+      "id": "sc03_c2_outbound",
+      "trigger_pattern": "outbound.*connect|callback.*connect|reverse.*shell",
+      "severity": "CRITICAL",
+      "message": "C2 communication: outbound connection detected",
+      "raw_log": "Network Log: Unusual outbound connection from victim host",
+      "mitre_technique": "T1071.001",
+      "cwe": "CWE-200",
+      "category": "c2_communication"
+    },
+    {
+      "id": "sc03_c2_beacon",
+      "trigger_pattern": "beacon|c2|command.*control|c&c",
+      "severity": "CRITICAL",
+      "message": "C2 communication: C2 beacon detected",
+      "raw_log": "IDS Alert: Known C2 traffic pattern detected",
+      "mitre_technique": "T1071.001",
+      "cwe": "CWE-200",
+      "category": "c2_communication"
+    },
+    {
+      "id": "sc03_dns_tunneling",
+      "trigger_pattern": "dns.*tunnel|dns.*exfil|dga|domain.*generation",
+      "severity": "HIGH",
+      "message": "C2 communication: DNS tunneling detected",
+      "raw_log": "DNS Log: Suspicious DNS query pattern (DGA)",
+      "mitre_technique": "T1568",
+      "cwe": "CWE-200",
+      "category": "c2_communication"
+    }
+  ],
+  "persistence": [
+    {
+      "id": "sc03_persistence_scheduled_task",
+      "trigger_pattern": "schtasks|scheduled.*task|task.*create",
+      "severity": "CRITICAL",
+      "message": "Persistence: scheduled task created",
+      "raw_log": "Endpoint Log: New scheduled task registered",
+      "mitre_technique": "T1053.005",
+      "cwe": "CWE-200",
+      "category": "persistence"
+    },
+    {
+      "id": "sc03_persistence_registry_run",
+      "trigger_pattern": "registry.*run|runkey|hklm.*software.*run",
+      "severity": "CRITICAL",
+      "message": "Persistence: Registry Run key modified",
+      "raw_log": "Endpoint Log: Registry HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run modified",
+      "mitre_technique": "T1547.001",
+      "cwe": "CWE-200",
+      "category": "persistence"
+    },
+    {
+      "id": "sc03_persistence_wmi",
+      "trigger_pattern": "wmi.*subscription|WMIEvent|event.*consumer",
+      "severity": "CRITICAL",
+      "message": "Persistence: WMI subscription created",
+      "raw_log": "Endpoint Log: WMI event subscription detected",
+      "mitre_technique": "T1547.020",
+      "cwe": "CWE-200",
+      "category": "persistence"
+    }
+  ],
+  "defense_evasion": [
+    {
+      "id": "sc03_evasion_tamper_protect",
+      "trigger_pattern": "tamper.*protect|disable.*protection",
+      "severity": "CRITICAL",
+      "message": "Defense evasion: tamper protection disabled",
+      "raw_log": "Endpoint Log: Windows Defender tamper protection disabled",
+      "mitre_technique": "T1562.001",
+      "cwe": "CWE-200",
+      "category": "defense_evasion"
+    },
+    {
+      "id": "sc03_evasion_realtime_protect",
+      "trigger_pattern": "real.*time.*protection|disable.*av|antivirus.*off",
+      "severity": "CRITICAL",
+      "message": "Defense evasion: real-time protection disabled",
+      "raw_log": "Endpoint Log: Real-time protection disabled in Windows Defender",
+      "mitre_technique": "T1562.004",
+      "cwe": "CWE-200",
+      "category": "defense_evasion"
+    },
+    {
+      "id": "sc03_evasion_firewall_rule",
+      "trigger_pattern": "firewall.*rule|netsh.*advfirewall|firewall.*add",
+      "severity": "HIGH",
+      "message": "Defense evasion: firewall rule added",
+      "raw_log": "Endpoint Log: Firewall rule modified to allow outbound traffic",
+      "mitre_technique": "T1562.001",
+      "cwe": "CWE-200",
+      "category": "defense_evasion"
+    },
+    {
+      "id": "sc03_evasion_logs_cleared",
+      "trigger_pattern": "clear.*log|event.*log.*clear|wevtutil",
+      "severity": "CRITICAL",
+      "message": "Defense evasion: event logs cleared",
+      "raw_log": "Endpoint Log: Security event logs cleared by administrator",
+      "mitre_technique": "T1070.001",
+      "cwe": "CWE-200",
+      "category": "defense_evasion"
+    }
+  ],
+  "exfiltration": [
+    {
+      "id": "sc03_exfil_staging",
+      "trigger_pattern": "staging.*data|compress.*file|archive",
+      "severity": "HIGH",
+      "message": "Exfiltration: data staging detected",
+      "raw_log": "Endpoint Log: Large file compression detected",
+      "mitre_technique": "T1074.001",
+      "cwe": "CWE-200",
+      "category": "exfiltration"
+    },
+    {
+      "id": "sc03_exfil_transfer",
+      "trigger_pattern": "large.*transfer|unusual.*outbound|transfer.*bytes",
+      "severity": "CRITICAL",
+      "message": "Exfiltration: unusual outbound data transfer detected",
+      "raw_log": "Network Log: Large volume of data transferred outbound",
+      "mitre_technique": "T1041",
+      "cwe": "CWE-200",
+      "category": "exfiltration"
+    },
+    {
+      "id": "sc03_exfil_compression",
+      "trigger_pattern": "zip.*file|rar.*file|compression|7z",
+      "severity": "HIGH",
+      "message": "Exfiltration: data compression detected",
+      "raw_log": "Endpoint Log: Archive file created for data transfer",
+      "mitre_technique": "T1560",
+      "cwe": "CWE-200",
+      "category": "exfiltration"
+    }
+  ]
+}
