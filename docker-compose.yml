@@ -95,6 +95,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - DOCKER_SOCKET=/var/run/docker.sock
+    group_add:
+      - "0"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./backend/src:/app/src
