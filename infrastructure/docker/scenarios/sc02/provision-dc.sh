@@ -12,9 +12,12 @@ echo "[*] Domain: $DOMAIN"
 echo "[*] Realm: $REALM"
 echo "[*] NetBIOS: $NETBIOS_NAME"
 
-# Provision the domain (idempotent)
-if [ ! -d /var/lib/samba/private ]; then
+# Provision the domain (idempotent - check for actual database file)
+if [ ! -f /var/lib/samba/private/sam.ldb ]; then
     echo "[+] Provisioning Samba4 AD DC..."
+    # Clean up partial/corrupted state if directory exists
+    [ -d /var/lib/samba/private ] && rm -rf /var/lib/samba/private
+
     samba-tool domain provision \
         --use-rfc2307 \
         --realm=$REALM \
@@ -24,7 +27,7 @@ if [ ! -d /var/lib/samba/private ]; then
         --adminpass="$ADMIN_PASS"
     echo "[+] Domain provisioned successfully"
 else
-    echo "[*] Domain already provisioned, skipping provision step"
+    echo "[*] Domain already provisioned (sam.ldb exists), skipping provision step"
 fi
 
 # Configure Kerberos for RC4 (weaker, for educational context - enables Kerberoasting)
