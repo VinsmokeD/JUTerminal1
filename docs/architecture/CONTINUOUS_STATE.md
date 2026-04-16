@@ -13,6 +13,19 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-04-16 14:45:00] - Antigravity (Phase F: Demo Document Polish)
+* **Status**: Planning & Documentation Complete
+* **Why**: The project needed a comprehensive, 1-page runbook to guide presenters during the academic evaluation and demonstration of CyberSim. The system requires structured methodology to showcase its defining feature (the Dual-Perspective SOC network) effectively in a 10-minute window.
+* **Where**:
+  - `docs/CYBERSIM_DEMO_RUNBOOK.md` — NEW: Step-by-step presentation script.
+  - `docs/architecture/MASTER_BLUEPRINT.md` — VERIFIED: Architecture topologies confirm accuracy of Single-Node integration.
+  - `ANTIGRAVITY_PROMPTS.md` — MODIFIED: Marked Phase F COMPLETE.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+* **What & How**:
+  - Synthesized the deployment logistics into an easy-to-read, minute-by-minute timeline structured around the "SOC Duality" hook.
+  - Provided direct, explicit fallback instructions to presenters regarding the Terminal Persistence (hitting refresh to effortlessly replay Redis logs).
+  - Validated that the ASCII-based architecture mapping inside the `MASTER_BLUEPRINT.md` still accurately reflects the final state of the network.
+
 ### [2026-04-16 11:32:00] - Claude Code (Infrastructure Integration & Full Stack Verification)
 * **Status**: Complete — All Docker Services Operational, Database Schema Verified, API Fully Functional
 * **Why**: User requested "docker should be up fix all and review and make sure its all integrated and tested and implemented". Prior work had implemented PROMPT 2-4 (SC-02 AD, SC-03 Phishing, Alembic Migrations, Container Cleanup), but the stack needed full integration verification and bug fixes to ensure everything runs together cohesively.
