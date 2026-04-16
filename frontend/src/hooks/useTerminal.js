@@ -20,6 +20,11 @@ export function useTerminal({ containerRef, onData, onCommand }) {
   const fitRef = useRef(null)
   const lineBufferRef = useRef('')    // Track current line for onCommand extraction
   const historyRestoredRef = useRef(false)
+  // Stable refs so the terminal doesn't need to remount when callbacks change
+  const onDataRef = useRef(onData)
+  const onCommandRef = useRef(onCommand)
+  useEffect(() => { onDataRef.current = onData }, [onData])
+  useEffect(() => { onCommandRef.current = onCommand }, [onCommand])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -79,12 +84,12 @@ export function useTerminal({ containerRef, onData, onCommand }) {
     // Bash inside Docker handles line editing, tab completion, history.
     term.onData((data) => {
       // Send raw keystrokes to backend → Docker PTY
-      if (onData) onData(data)
+      if (onDataRef.current) onDataRef.current(data)
 
       // Track line buffer for command extraction (AI/discovery)
       if (data === '\r' || data === '\n') {
         const cmd = lineBufferRef.current.trim()
-        if (cmd && onCommand) onCommand(cmd)
+        if (cmd && onCommandRef.current) onCommandRef.current(cmd)
         lineBufferRef.current = ''
       } else if (data === '\x7f' || data === '\b') {
         lineBufferRef.current = lineBufferRef.current.slice(0, -1)

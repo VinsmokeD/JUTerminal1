@@ -221,7 +221,7 @@ SCENARIO_TARGETS: dict[str, dict] = {
         "objective_red": "Kerberoast svc_backup, crack hash, DCSync as Domain Admin",
         "objective_blue": "Detect Event 4769 RC4 downgrades, track lateral movement",
         "domain": "nexora.local",
-        "creds": "jsmith : Welcome1!",
+        "creds": "jsmith : Password123",
     },
     "SC-03": {
         "name": "Orion Logistics",

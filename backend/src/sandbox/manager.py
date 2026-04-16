@@ -150,9 +150,30 @@ def _teardown_scenario_targets(scenario_id: str) -> None:
         print(f"[Sandbox] Error stopping scenario targets for {profile}: {exc}")
 
 
+def _get_scenario_network(sc_num: str) -> str:
+    """
+    Return the Docker network name for a scenario profile.
+
+    Docker Compose prefixes networks with the project name derived from the
+    directory (e.g. 'JUTerminal1' → 'juterminal1').  We discover the name
+    at runtime so the code works regardless of where the project is cloned.
+    """
+    try:
+        client = _get_client()
+        # Look for networks whose name contains the scenario suffix, e.g. sc01-net
+        for net in client.networks.list():
+            if sc_num + "-net" in net.name:
+                return net.name
+    except Exception:
+        pass
+    # Derive from compose file parent directory as a reliable fallback
+    project = _COMPOSE_FILE.parent.name.lower().replace(" ", "").replace("-", "")
+    return f"{project}_{sc_num}-net"
+
+
 def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
     sc_num = scenario_id.lower().replace("-", "")  # sc01, sc02, sc03
-    network_name = f"cybersim-{sc_num}"
+    network_name = _get_scenario_network(sc_num)
     container_name = f"kali-{session_id[:8]}"
 
     try:

@@ -141,7 +141,7 @@ async def end_session(
     await db.commit()
 
     if session.container_id:
-        await stop_scenario_container(session.container_id)
+        await stop_scenario_container(session.container_id, session.scenario_id)
 
     await cache_delete(f"session:{session_id}:state")
 

@@ -75,64 +75,102 @@ async def _batch_flush() -> None:
             await asyncio.sleep(0.1)
 
 
+def _infer_severity(source: dict) -> str:
+    """Derive a severity level from Elasticsearch log fields."""
+    # Filebeat/ECS fields that carry severity info
+    level = (
+        source.get("log", {}).get("level", "")
+        or source.get("log_level", "")
+        or source.get("level", "")
+        or ""
+    ).lower()
+    if level in ("critical", "emergency", "alert"):
+        return "CRITICAL"
+    if level in ("error", "err"):
+        return "HIGH"
+    if level in ("warning", "warn"):
+        return "MED"
+    # Heuristic: WAF block / auth failure keywords → HIGH
+    msg = (source.get("message", "") or "").lower()
+    if any(kw in msg for kw in ("denied", "blocked", "unauthorized", "failed", "attack", "exploit")):
+        return "HIGH"
+    if any(kw in msg for kw in ("warning", "suspicious", "anomaly", "brute")):
+        return "MED"
+    return "LOW"
+
+
+def _infer_scenario(source: dict) -> str | None:
+    """
+    Guess the scenario a log event belongs to from its content/index.
+
+    Returns a scenario ID string like 'SC-01', 'SC-02', 'SC-03', or None
+    if it cannot be determined (broadcast to all in that case).
+    """
+    fields = json.dumps(source).lower()
+    if any(kw in fields for kw in ("nexora", "samba", "kerberos", "ldap", "winbind", "domain")):
+        return "SC-02"
+    if any(kw in fields for kw in ("gophish", "phish", "postfix", "smtp", "orion")):
+        return "SC-03"
+    if any(kw in fields for kw in ("modsecurity", "novamed", "apache", "mysql", "owasp")):
+        return "SC-01"
+    return None
+
+
 async def _poll_elasticsearch() -> None:
     """Background daemon to poll the Elastic Stack for real target telemetry logs."""
     global _last_poll_time, _active_sessions
-    
+
     async with httpx.AsyncClient() as client:
         while True:
             await asyncio.sleep(2.0)  # Poll every 2 seconds
-            
+
             if not _active_sessions:
                 continue
-                
-            try:
-                # Query Elasticsearch for any log events since last poll
-                query = {
-                    "query": {
-                        "range": {
-                            "@timestamp": {
-                                "gte": _last_poll_time
-                            }
-                        }
-                    },
-                    "sort": [{"@timestamp": "asc"}],
-                    "size": 100
-                }
-                
-                response = await client.post("http://elasticsearch:9200/_search", json=query, timeout=5.0)
-                if response.status_code == 200:
-                    data = response.json()
-                    hits = data.get("hits", {}).get("hits", [])
-                    
-                    if hits:
-                        # Update last poll time to the latest document timestamp
-                        _last_poll_time = hits[-1]["_source"]["@timestamp"]
-                        
-                        for hit in hits:
-                            source = hit["_source"]
-                            
-                            # Convert generic Elastic log to SIEM-friendly React format
-                            now = datetime.now(timezone.utc).isoformat()
-                            event = {
-                                "id": hit["_id"],
-                                "timestamp": source.get("@timestamp", now),
-                                "created_at": now,
-                                "severity": "MED",
-                                "message": source.get("message", "Log event detected"),
-                                "raw_log": json.dumps(source),
-                                "mitre_technique": "",
-                                "source": "elasticsearch",
-                                "source_ip": "172.20.0.0/16",
-                                "tool_triggered": "filebeat",
-                            }
-                            
-                            # Broadcast the authentic log to all active sessions!
-                            for session_id in _active_sessions.keys():
-                                await queue_event(session_id, event)
 
-            except httpx.RequestError as e:
-                # Elastic might be down or not ready yet, just back off
+            try:
+                query = {
+                    "query": {"range": {"@timestamp": {"gte": _last_poll_time}}},
+                    "sort": [{"@timestamp": "asc"}],
+                    "size": 100,
+                }
+
+                response = await client.post(
+                    "http://elasticsearch:9200/_search", json=query, timeout=5.0
+                )
+                if response.status_code != 200:
+                    continue
+
+                data = response.json()
+                hits = data.get("hits", {}).get("hits", [])
+                if not hits:
+                    continue
+
+                _last_poll_time = hits[-1]["_source"]["@timestamp"]
+
+                for hit in hits:
+                    source = hit["_source"]
+                    now = datetime.now(timezone.utc).isoformat()
+                    event = {
+                        "id": hit["_id"],
+                        "timestamp": source.get("@timestamp", now),
+                        "created_at": now,
+                        "severity": _infer_severity(source),
+                        "message": source.get("message", "Log event detected"),
+                        "raw_log": json.dumps(source),
+                        "mitre_technique": source.get("mitre_technique", ""),
+                        "source": "elasticsearch",
+                        "source_ip": source.get("source", {}).get("ip", "172.20.0.0/16"),
+                        "tool_triggered": "filebeat",
+                    }
+
+                    # Route only to sessions running the matching scenario;
+                    # fall back to all sessions when scenario can't be inferred.
+                    target_scenario = _infer_scenario(source)
+                    for session_id, scenario_id in list(_active_sessions.items()):
+                        if target_scenario is None or scenario_id == target_scenario:
+                            await queue_event(session_id, event)
+
+            except httpx.RequestError:
                 await asyncio.sleep(5.0)
             except Exception as e:
                 print(f"Elasticsearch polling error: {e}")

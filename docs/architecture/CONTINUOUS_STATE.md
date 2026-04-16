@@ -13,6 +13,29 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-04-16 16:10:00] - Claude Code (Bug Fixes & Full Platform Hardening)
+* **Status**: Complete — 9 bugs fixed across backend and frontend, all services re-verified
+* **Why**: User requested "make sure everything is working, fix improve and enhance all aspects". Performed a systematic code audit across all modules and found 9 actionable bugs ranging from a crash-level NameError to stale React closures and wrong Docker network names.
+* **Where**:
+  - `backend/src/ws/routes.py` — FIXED: `first_word` NameError; improved exception logging
+  - `backend/src/sessions/routes.py` — FIXED: `stop_scenario_container` missing `scenario_id` arg (target containers not torn down)
+  - `backend/src/sandbox/manager.py` — FIXED: hardcoded wrong Docker network name → dynamic lookup returning correct `juterminal1_sc01-net`
+  - `backend/src/sandbox/terminal.py` — FIXED: SC-02 banner wrong creds (`Welcome1!` → `Password123`)
+  - `backend/src/siem/engine.py` — FIXED: Elasticsearch logs broadcast to all sessions; now routes by inferred scenario; severity now derived from log fields
+  - `backend/src/scoring/engine.py` — FIXED: `final_score()` never subtracted hint penalties; removed unused `timezone` import
+  - `frontend/src/hooks/useWebSocket.js` — FIXED: stale closures from missing useEffect dependency array
+  - `frontend/src/hooks/useTerminal.js` — FIXED: stale `onData`/`onCommand` refs via stable ref pattern
+  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
+* **What & How**:
+  - **NameError** (`ws/routes.py`): `tool_name or first_word` → `tool_name or (command.strip().split()[0] if command.strip() else "")`. Would crash auto-evidence notify on every command that triggered a discovery.
+  - **Scenario teardown** (`sessions/routes.py`): Added `scenario_id` arg so `_teardown_scenario_targets()` runs on session end — prevents RAM leak from zombie SC-01/02/03 containers.
+  - **Docker network** (`sandbox/manager.py`): Added `_get_scenario_network()` that enumerates live networks, finds `{sc_num}-net`, falls back to `{project}_{sc_num}-net`. Old `cybersim-sc01` never matched any real network.
+  - **SC-02 creds** (`terminal.py`): Banner showed wrong password for jsmith (`Welcome1!` vs actual `Password123` in provision-dc.sh).
+  - **SIEM routing** (`siem/engine.py`): `_infer_scenario()` classifies logs by keyword patterns to route per-scenario. `_infer_severity()` maps ECS log level fields to severity codes. Prevents SC-01 students seeing SC-02 AD events.
+  - **Scoring** (`scoring/engine.py`): `final_score = base + bonus - penalty` (penalty was silently ignored before).
+  - **React hooks**: `useWebSocket` dep array includes all store callbacks. `useTerminal` uses `onDataRef`/`onCommandRef` pattern so PTY handler sees latest callbacks without remounting xterm.
+* **Verification**: Backend restarted cleanly, no startup errors. Health/auth/scenarios endpoints all respond 200. DB has 8 tables, 5 performance indexes, admin user intact.
+
 ### [2026-04-16 14:45:00] - Antigravity (Phase F: Demo Document Polish)
 * **Status**: Planning & Documentation Complete
 * **Why**: The project needed a comprehensive, 1-page runbook to guide presenters during the academic evaluation and demonstration of CyberSim. The system requires structured methodology to showcase its defining feature (the Dual-Perspective SOC network) effectively in a 10-minute window.

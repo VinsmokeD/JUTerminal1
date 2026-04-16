@@ -60,7 +60,7 @@ export function useWebSocket(sessionId) {
     return () => {
       ws.close()
     }
-  }, [sessionId])
+  }, [sessionId, addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence])
 
   // Send raw keystrokes to Docker PTY (character-by-character)
   const sendRawInput = useCallback((data) => {

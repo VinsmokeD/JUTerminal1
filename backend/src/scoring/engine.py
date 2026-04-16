@@ -1,5 +1,5 @@
 """Scoring engine — computes final score adjustments and time bonuses."""
-from datetime import datetime, timezone
+from datetime import datetime
 
 from src.config import settings
 
@@ -24,5 +24,6 @@ def compute_hint_penalty(hints_used: list[dict]) -> int:
 
 def final_score(base: int, hints_used: list[dict], started_at: datetime, completed_at: datetime | None) -> int:
     bonus = compute_time_bonus(started_at, completed_at)
-    total = base + bonus
+    penalty = compute_hint_penalty(hints_used)
+    total = base + bonus - penalty
     return max(0, min(100, total))

@@ -192,7 +192,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         "data": {
                             "command": command,
                             "discoveries": discoveries,
-                            "tool": tool_name or first_word if command.strip() else "",
+                            "tool": tool_name or (command.strip().split()[0] if command.strip() else ""),
                         },
                     })
 
@@ -255,8 +255,11 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
     except WebSocketDisconnect:
         pass
-    except Exception:
-        pass
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning(
+            "[WS] Unhandled error for session %s: %s", session_id[:8], exc
+        )
     finally:
         redis_task.cancel()
         try:
