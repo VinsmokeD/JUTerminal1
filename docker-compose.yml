@@ -1,3 +1,4 @@
+name: cybersim
 services:
 
   # ── Core infrastructure ──────────────────────────────────────
@@ -99,6 +100,7 @@ services:
       - "0"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./:/project:ro
       - ./backend/src:/app/src
       - ./backend/alembic.ini:/app/alembic.ini:ro
       - ./backend/migrations:/app/migrations:ro
@@ -344,6 +346,10 @@ volumes:
 networks:
   internal:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.254
 
   sc01-net:
     driver: bridge
