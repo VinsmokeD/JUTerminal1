@@ -9,8 +9,8 @@
 ## 📋 Priority Queue (Claude's Tasks)
 
 1. ✅ **Phase B: SC-01 E2E SIEM Engine & Event Mapping** — COMPLETE
-2. ⏳ **Phase C: SC-02 Samba4 AD Environment**
-3. ⏳ **Phase C: SC-03 GoPhish + Victim Simulator**
+2. ✅ **Phase C: SC-02 Samba4 AD Environment** — COMPLETE (Verified via CONTINUOUS_STATE.md on 2026-04-15)
+3. ✅ **Phase C: SC-03 GoPhish + Victim Simulator** — COMPLETE (Verified via CONTINUOUS_STATE.md on 2026-04-10)
 4. ⏳ **Phase E: Alembic DB Migrations & Sandbox Hardening**
 
 ---
@@ -128,6 +128,6 @@ DELIVERABLES:
 ## 📊 Progress Tracker
 
 - [x] Phase B: SIEM Events (123 total) + engine.py regex matching
-- [ ] Phase C-1: SC-02 Samba4 AD environment
-- [ ] Phase C-2: SC-03 GoPhish victim simulation
+- [x] Phase C-1: SC-02 Samba4 AD environment
+- [x] Phase C-2: SC-03 GoPhish victim simulation
 - [ ] Phase E: Alembic migrations + container cleanup

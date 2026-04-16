@@ -19,6 +19,7 @@ from src.reports.routes import router as reports_router
 from src.instructor.routes import router as instructor_router
 from src.api.playbooks import router as playbooks_router
 from src.sandbox.daemon_noise import start_noise_daemon
+from src.sandbox.container_cleanup import start_cleanup_loop
 
 
 async def _seed_admin() -> None:
@@ -42,9 +43,16 @@ async def lifespan(_app: FastAPI):
     await init_redis()
     await init_siem_batch()
     start_noise_daemon()
+    cleanup_task = start_cleanup_loop()
     yield
     await close_siem_batch()
     await close_redis()
+    if cleanup_task:
+        cleanup_task.cancel()
+        try:
+            await cleanup_task
+        except:
+            pass
 
 
 app = FastAPI(

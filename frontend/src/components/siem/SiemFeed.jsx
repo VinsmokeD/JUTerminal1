@@ -1,44 +1,14 @@
 import { useRef, useEffect, useMemo, useState } from 'react'
 import { useSessionStore } from '../../store/sessionStore'
 
-// ── Severity configuration ─────────────────────────────────────────────────
+// ── Severity configuration — SOC aesthetic palette ──────────────────────────
 const SEV = {
-  CRITICAL: {
-    badge: 'badge-critical',
-    row: 'border-l-critical bg-red-500/5 hover:bg-red-500/10',
-    dot: 'bg-red-500',
-    label: 'CRIT',
-  },
-  HIGH: {
-    badge: 'badge-high',
-    row: 'border-l-high bg-orange-500/5 hover:bg-orange-500/10',
-    dot: 'bg-orange-500',
-    label: 'HIGH',
-  },
-  MED: {
-    badge: 'badge-medium',
-    row: 'border-l-medium bg-yellow-500/5 hover:bg-yellow-500/10',
-    dot: 'bg-yellow-500',
-    label: 'MED',
-  },
-  MEDIUM: {
-    badge: 'badge-medium',
-    row: 'border-l-medium bg-yellow-500/5 hover:bg-yellow-500/10',
-    dot: 'bg-yellow-500',
-    label: 'MED',
-  },
-  LOW: {
-    badge: 'badge-low',
-    row: 'border-l-low bg-blue-500/5 hover:bg-blue-500/10',
-    dot: 'bg-blue-500',
-    label: 'LOW',
-  },
-  INFO: {
-    badge: 'badge-info',
-    row: 'border-l-info bg-slate-800/30 hover:bg-slate-800/50',
-    dot: 'bg-slate-500',
-    label: 'INFO',
-  },
+  CRITICAL: { badge: 'sev-crit', row: 'border-l-critical', label: 'CRIT' },
+  HIGH:     { badge: 'sev-high', row: 'border-l-high', label: 'HIGH' },
+  MED:      { badge: 'sev-med',  row: 'border-l-medium', label: 'MED' },
+  MEDIUM:   { badge: 'sev-med',  row: 'border-l-medium', label: 'MED' },
+  LOW:      { badge: 'sev-low',  row: 'border-l-low', label: 'LOW' },
+  INFO:     { badge: 'sev-info', row: 'border-l-info', label: 'INFO' },
 }
 const getSev = (s) => SEV[(s || 'INFO').toUpperCase()] || SEV.INFO
 
@@ -85,28 +55,28 @@ export default function SiemFeed() {
   const highCount = events.filter((e) => (e.severity || '').toUpperCase() === 'HIGH').length
 
   return (
-    <div className="h-full flex flex-col bg-slate-950 overflow-hidden">
+    <div className="h-full flex flex-col bg-void overflow-hidden">
       {/* ── Toolbar ──────────────────────────────────────────── */}
-      <div className="flex-shrink-0 px-3 pt-3 pb-2 space-y-2 border-b border-slate-800/60">
+      <div className="flex-shrink-0 px-3 pt-3 pb-2 space-y-2 border-b border-cs-border/60">
         {/* Stats row */}
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-slate-500">{events.length} events</span>
+          <span className="text-txt-dim font-mono">{events.length} events</span>
           {critCount > 0 && (
-            <span className="badge-critical">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+            <span className="badge sev-crit">
+              <span className="w-1.5 h-1.5 rounded-full bg-critical animate-pulse" />
               {critCount} CRITICAL
             </span>
           )}
           {highCount > 0 && (
-            <span className="badge-high">{highCount} HIGH</span>
+            <span className="badge sev-high">{highCount} HIGH</span>
           )}
           <div className="ml-auto flex items-center gap-2">
             <button
               onClick={() => setHideNoise((v) => !v)}
-              className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+              className={`text-xs px-2 py-0.5 rounded-cs-sm border transition-colors font-mono ${
                 hideNoise
-                  ? 'text-cyan-400 border-cyan-700/50 bg-cyan-950/30'
-                  : 'text-slate-500 border-slate-700 hover:text-slate-300'
+                  ? 'text-cs-blue border-cs-blue/30 bg-cs-blue-dim'
+                  : 'text-txt-dim border-cs-border hover:text-txt-secondary'
               }`}
             >
               Hide noise
@@ -120,7 +90,7 @@ export default function SiemFeed() {
           placeholder="Filter events by message, technique, source..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="input text-xs py-1.5 font-mono-terminal"
+          className="input text-xs py-1.5 font-mono"
         />
 
         {/* Severity filter pills */}
@@ -129,10 +99,10 @@ export default function SiemFeed() {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`flex-shrink-0 text-xs px-2.5 py-0.5 rounded-full border font-medium transition-colors ${
+              className={`flex-shrink-0 text-xs px-2.5 py-0.5 rounded-full border font-mono font-medium transition-colors ${
                 filter === f
-                  ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-                  : 'text-slate-500 border-slate-800 hover:text-slate-300 hover:border-slate-600'
+                  ? 'bg-cs-blue/10 text-cs-blue border-cs-blue/30'
+                  : 'text-txt-dim border-cs-border hover:text-txt-secondary hover:border-cs-border-glow'
               }`}
             >
               {f}
@@ -146,7 +116,7 @@ export default function SiemFeed() {
         {events.length === 0 ? (
           <EmptyState />
         ) : filtered.length === 0 ? (
-          <div className="flex items-center justify-center h-32 text-slate-600 text-xs font-mono-terminal">
+          <div className="flex items-center justify-center h-32 text-txt-dim text-xs font-mono">
             No events match your filter
           </div>
         ) : (
@@ -162,19 +132,19 @@ export default function SiemFeed() {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-48 gap-3">
-      <div className="w-10 h-10 rounded-full bg-slate-800/60 flex items-center justify-center">
-        <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center">
+        <svg className="w-5 h-5 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round"
             d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
         </svg>
       </div>
       <div className="text-center">
-        <p className="text-slate-600 text-xs font-mono-terminal">Monitoring active</p>
-        <p className="text-slate-700 text-xs mt-0.5">Events will appear when the red team acts</p>
+        <p className="text-txt-dim text-xs font-mono">Monitoring active</p>
+        <p className="text-txt-dim/60 text-xs mt-0.5">Events will appear when the red team acts</p>
       </div>
       <div className="flex items-center gap-1.5">
         <span className="dot-live" />
-        <span className="text-xs text-slate-600 font-mono-terminal">SIEM connected</span>
+        <span className="text-xs text-green-signal font-mono">SIEM connected</span>
       </div>
     </div>
   )
@@ -191,8 +161,8 @@ function EventRow({ event }) {
 
   return (
     <div
-      className={`siem-event-enter rounded-r-lg transition-all cursor-pointer select-none
-        ${sev.row} ${isNoise ? 'opacity-40 hover:opacity-70' : ''}`}
+      className={`siem-event-row siem-event-enter select-none
+        ${isNoise ? 'opacity-35 hover:opacity-60' : 'hover:bg-white/[0.02]'}`}
       onClick={() => setExpanded((v) => !v)}
       role="button"
       tabIndex={0}
@@ -200,53 +170,28 @@ function EventRow({ event }) {
       aria-label={`${sev.label} severity event: ${event.message}`}
     >
       {/* ── Main row ── */}
-      <div className="flex items-center gap-2 px-2 py-1.5">
-        {/* Severity badge */}
-        <span className={`badge ${sev.badge} flex-shrink-0 font-mono-terminal w-14 justify-center`}>
-          {sev.label}
-        </span>
+      <span className="siem-time text-left">{ts}</span>
+      <span className={`badge ${sev.badge} justify-center mx-auto w-full`} style={{ display: 'flex' }}>
+        {sev.label}
+      </span>
 
-        {/* Timestamp */}
-        <span className="font-mono-terminal text-xs text-slate-600 flex-shrink-0 tabular-nums">
-          {ts}
-        </span>
-
-        {/* Message */}
-        <span className={`flex-1 text-xs leading-relaxed truncate ${isNoise ? 'text-slate-500' : 'text-slate-200'}`}>
-          {event.message}
-        </span>
-
-        {/* MITRE badge */}
+      <span className={`flex-1 text-xs leading-relaxed truncate ${isNoise ? 'text-txt-dim' : 'text-txt-secondary'}`}>
+        {event.message}
         {event.mitre_technique && !isNoise && (
-          <span className="mitre-badge flex-shrink-0" title={event.mitre_id}>
+          <span className="siem-mitre ml-1.5" title={event.mitre_id}>
             {event.mitre_technique}
           </span>
         )}
-
-        {/* Noise tag */}
-        {isNoise && (
-          <span className="text-slate-700 text-xs flex-shrink-0 font-mono-terminal">noise</span>
-        )}
-
-        {/* Expand chevron */}
-        {(event.raw_log || event.source || event.mitre_id) && !isNoise && (
-          <svg
-            className={`w-3.5 h-3.5 text-slate-600 flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-          </svg>
-        )}
-      </div>
+      </span>
 
       {/* ── Expanded details ── */}
       {expanded && (event.raw_log || event.source || event.mitre_id || event.cwe) && (
-        <div className="px-3 pb-2.5 pt-0 space-y-2 animate-slide-in-up">
+        <div className="col-start-1 col-end-4 px-1 pb-2 pt-2 space-y-2 animate-slide-in-up mt-1 border-t border-cs-border/30">
           {/* Source + IDs */}
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex flex-wrap gap-2 text-[10px] uppercase font-mono">
             {event.source && (
-              <span className="text-slate-500">
-                Source: <span className="text-slate-300 font-mono-terminal">{event.source}</span>
+              <span className="text-txt-dim">
+                Source: <span className="text-txt-secondary font-mono">{event.source}</span>
               </span>
             )}
             {event.mitre_id && (
@@ -255,22 +200,25 @@ function EventRow({ event }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="text-purple-400 hover:text-purple-300 underline font-mono-terminal"
+                className="siem-mitre hover:opacity-80 underline"
               >
                 {event.mitre_id}
               </a>
             )}
             {event.cwe && (
-              <span className="text-slate-500">
-                CWE: <span className="text-slate-400 font-mono-terminal">{event.cwe}</span>
+              <span className="text-txt-dim">
+                CWE: <span className="text-txt-secondary font-mono">{event.cwe}</span>
               </span>
+            )}
+            {isNoise && (
+              <span className="text-txt-dim/50 ml-auto">noise</span>
             )}
           </div>
 
           {/* Raw log */}
           {event.raw_log && (
-            <pre className="text-xs text-emerald-400 font-mono-terminal bg-slate-900/80
-              border border-slate-800 rounded px-2 py-1.5 overflow-x-auto whitespace-pre-wrap
+            <pre className="text-[10.5px] text-green-signal font-mono bg-surface-1
+              border border-cs-border rounded-cs-sm px-2 py-1.5 overflow-x-auto whitespace-pre-wrap
               leading-relaxed max-h-32 overflow-y-auto">
               {event.raw_log}
             </pre>

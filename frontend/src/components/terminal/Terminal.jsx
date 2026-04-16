@@ -19,8 +19,8 @@ export default function Terminal({ onData, onCommand, pendingOutput }) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full bg-gray-950"
-      style={{ padding: '4px' }}
+      className="w-full h-full terminal"
+      style={{ padding: '16px', background: 'transparent' }}
     />
   )
 }

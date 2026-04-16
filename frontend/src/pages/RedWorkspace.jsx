@@ -28,7 +28,7 @@ export default function RedWorkspace() {
     if (!session) {
       api.get(`/sessions/${sessionId}`)
         .then(r => { setSession(r.data); setRoeAcked(r.data.roe_acknowledged) })
-        .catch(() => navigate('/'))
+        .catch(() => navigate('/dashboard'))
     }
   }, [session, sessionId, navigate])
 
@@ -45,37 +45,36 @@ export default function RedWorkspace() {
   // Complete command → AI/discovery tracking
   const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
 
-  if (!session) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500 text-sm">Loading session...</div>
+  if (!session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading session...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   return (
-    <div className="h-screen bg-slate-950 flex flex-col overflow-hidden">
+    <div className="h-screen bg-void flex flex-col overflow-hidden font-display">
       {/* Beginner welcome overlay */}
       {showWelcome && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700/50 rounded-2xl max-w-lg p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-white mb-3">Welcome to your workspace</h2>
-            <div className="space-y-3 text-sm text-slate-300 mb-6">
+          <div className="bg-surface-1 border border-cs-border rounded-cs-lg max-w-lg p-6 shadow-2xl">
+            <h2 className="text-lg font-bold text-txt-primary mb-3 font-display">Welcome to your workspace</h2>
+            <div className="space-y-3 text-sm text-txt-secondary mb-6">
               <div className="flex gap-3">
-                <div className="w-3 h-3 rounded-full bg-rose-500 mt-1 flex-shrink-0" />
-                <div><strong className="text-white">Terminal</strong> (left) — Type commands here. This is your Kali Linux terminal where you'll run penetration testing tools.</div>
+                <div className="w-3 h-3 rounded-full bg-cs-red mt-1 flex-shrink-0 shadow-red-glow" />
+                <div><strong className="text-txt-primary">Terminal</strong> (left) — Type commands here. This is your Kali Linux terminal where you'll run penetration testing tools.</div>
               </div>
               <div className="flex gap-3">
-                <div className="w-3 h-3 rounded-full bg-cyan-500 mt-1 flex-shrink-0" />
-                <div><strong className="text-white">AI Tutor</strong> (top right) — Your mentor. It watches what you do and gives guidance. Toggle between Learn and Challenge modes.</div>
+                <div className="w-3 h-3 rounded-full bg-cs-blue mt-1 flex-shrink-0 shadow-blue-glow" />
+                <div><strong className="text-txt-primary">AI Tutor</strong> (top right) — Your mentor. It watches what you do and gives guidance. Toggle between Learn and Challenge modes.</div>
               </div>
               <div className="flex gap-3">
-                <div className="w-3 h-3 rounded-full bg-teal-500 mt-1 flex-shrink-0" />
-                <div><strong className="text-white">SIEM Feed</strong> (middle right) — See what alerts your actions trigger. This is what the Blue Team sees.</div>
+                <div className="w-3 h-3 rounded-full bg-green-signal mt-1 flex-shrink-0" />
+                <div><strong className="text-txt-primary">SIEM Feed</strong> (middle right) — See what alerts your actions trigger. This is what the Blue Team sees.</div>
               </div>
               <div className="flex gap-3">
-                <div className="w-3 h-3 rounded-full bg-amber-500 mt-1 flex-shrink-0" />
-                <div><strong className="text-white">Notebook</strong> (bottom) — Document your findings. Good documentation is a critical professional skill.</div>
+                <div className="w-3 h-3 rounded-full bg-amber-warn mt-1 flex-shrink-0" />
+                <div><strong className="text-txt-primary">Notebook</strong> (bottom) — Document your findings. Good documentation is a critical professional skill.</div>
               </div>
             </div>
-            <p className="text-xs text-slate-500 mb-4">Tip: Start with a port scan to discover what's running on the target. Try typing <code className="text-emerald-400 bg-slate-800 px-1.5 py-0.5 rounded">nmap -sV {session.scenario_id === 'SC-01' ? '172.20.1.20' : session.scenario_id === 'SC-02' ? '172.20.2.20' : '172.20.3.40'}</code></p>
-            <button onClick={() => setShowWelcome(false)}
-              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-medium text-sm">
+            <p className="text-xs text-txt-dim mb-4 font-mono">Tip: Start with a port scan. Try typing <code className="text-green-signal bg-surface-3 px-1.5 py-0.5 rounded-cs-sm">nmap -sV {session.scenario_id === 'SC-01' ? '172.20.1.20' : session.scenario_id === 'SC-02' ? '172.20.2.20' : '172.20.3.40'}</code></p>
+            <button onClick={() => setShowWelcome(false)} className="w-full btn btn-red justify-center text-sm">
               Start training
             </button>
           </div>
@@ -83,32 +82,32 @@ export default function RedWorkspace() {
       )}
 
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-2 bg-slate-900/80 border-b border-slate-800/50 flex-shrink-0 backdrop-blur-sm">
-        <button onClick={() => navigate('/')} className="text-slate-600 hover:text-slate-400 transition-colors">
+      <div className="flex items-center gap-3 px-4 py-2 bg-surface-1/80 border-b border-cs-border flex-shrink-0 backdrop-blur-sm">
+        <button onClick={() => navigate('/dashboard')} className="text-txt-dim hover:text-txt-secondary transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
           </svg>
         </button>
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-          <span className="text-rose-400 text-xs font-bold tracking-wide">RED TEAM</span>
+          <div className="w-2 h-2 rounded-full bg-cs-red animate-pulse" style={{ boxShadow: '0 0 8px rgba(255,59,59,0.5)' }} />
+          <span className="text-cs-red text-xs font-bold tracking-wider font-mono uppercase">RED TEAM</span>
         </div>
-        <div className="h-4 w-px bg-slate-800" />
-        <span className="text-slate-500 text-xs font-mono">{session.scenario_id}</span>
-        <div className="h-4 w-px bg-slate-800" />
+        <div className="h-4 w-px bg-cs-border" />
+        <span className="text-txt-dim text-xs font-mono">{session.scenario_id}</span>
+        <div className="h-4 w-px bg-cs-border" />
         <div className="flex-1 overflow-hidden">
           <PhaseTrail methodology={session.methodology} role="red" currentPhase={phase} />
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
-          <span className={`text-xs px-2 py-0.5 rounded-md ${
-            aiMode === 'learn' ? 'text-cyan-400 bg-cyan-950/30 border border-cyan-800/30' : 'text-amber-400 bg-amber-950/30 border border-amber-800/30'
+          <span className={`text-xs px-2 py-0.5 rounded-cs-sm font-mono font-medium ${
+            aiMode === 'learn' ? 'text-cs-blue bg-cs-blue-dim border border-cs-blue/20' : 'text-amber-warn bg-amber-warn/10 border border-amber-warn/20'
           }`}>{aiMode === 'learn' ? 'Learn' : 'Challenge'}</span>
-          <span className="text-xs text-slate-500 font-mono">{formatTime(elapsed)}</span>
-          <div className="text-xs text-slate-400">
-            Score: <span className={`font-bold ${score >= 80 ? 'text-emerald-400' : score >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{score}</span>
+          <span className="text-xs text-txt-dim font-mono tabular-nums">{formatTime(elapsed)}</span>
+          <div className="text-xs text-txt-secondary font-mono">
+            Score: <span className={`font-bold ${score >= 80 ? 'text-green-signal' : score >= 50 ? 'text-amber-warn' : 'text-cs-red'}`}>{score}</span>
           </div>
           <button onClick={() => navigate(`/session/${sessionId}/debrief`)}
-            className="text-xs px-3 py-1.5 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 rounded-lg transition-all">
+            className="btn btn-ghost btn-sm text-xs">
             End & debrief
           </button>
         </div>
@@ -118,35 +117,37 @@ export default function RedWorkspace() {
       <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: '1fr 340px', gridTemplateRows: '1fr 1fr 200px' }}>
 
         {/* Terminal — left, spans 2 rows */}
-        <div className="row-span-2 border-r border-slate-800/50 flex flex-col overflow-hidden">
-          <PanelHeader color="rose" title="Kali Terminal" subtitle="attacker workspace">
+        <div className="row-span-2 border-r border-cs-border flex flex-col overflow-hidden relative">
+          <div className="absolute inset-0 bg-red-surface opacity-50" />
+          <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
             <MitreBadge phase={phase} scenario={session.scenario_id} />
           </PanelHeader>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden relative z-10">
             <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} />
           </div>
         </div>
 
         {/* AI Tutor — top right */}
-        <div className="border-b border-slate-800/50 flex flex-col overflow-hidden">
-          <PanelHeader color="cyan" title="AI Tutor" />
+        <div className="border-b border-cs-border flex flex-col overflow-hidden">
+          <PanelHeader color="blue" title="AI Tutor" />
           <div className="flex-1 overflow-hidden">
             <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
           </div>
         </div>
 
         {/* SIEM Peek — middle right */}
-        <div className="border-b border-slate-800/50 flex flex-col overflow-hidden">
-          <PanelHeader color="teal" title="SIEM Feed" subtitle="alerts your actions trigger">
+        <div className="border-b border-cs-border flex flex-col overflow-hidden relative">
+          <div className="absolute inset-0 bg-blue-surface opacity-30" />
+          <PanelHeader color="green" title="SIEM Feed" subtitle="alerts your actions trigger">
             <LiveDot />
           </PanelHeader>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden relative z-10">
             <SiemFeed />
           </div>
         </div>
 
         {/* Notebook — bottom, full width */}
-        <div className="col-span-2 border-t border-slate-800/50 flex flex-col overflow-hidden">
+        <div className="col-span-2 border-t border-cs-border flex flex-col overflow-hidden">
           <PanelHeader color="amber" title="Pentest Notebook" subtitle={`Phase ${phase}`}>
             <LearningContextBadge scenario={session.scenario_id} phase={phase} />
           </PanelHeader>
@@ -160,19 +161,17 @@ export default function RedWorkspace() {
 }
 
 function PanelHeader({ color, title, subtitle, children }) {
-  const colors = {
-    rose: 'bg-rose-500',
-    cyan: 'bg-cyan-500',
-    teal: 'bg-teal-500',
-    amber: 'bg-amber-500',
-    purple: 'bg-purple-500',
-    blue: 'bg-blue-500',
-  }
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 border-b border-slate-800/30 flex-shrink-0">
-      <div className={`w-1.5 h-1.5 rounded-full ${colors[color] || colors.cyan}`} />
-      <span className="text-xs text-slate-300 font-medium">{title}</span>
-      {subtitle && <span className="text-xs text-slate-600">{subtitle}</span>}
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-2/50 border-b border-cs-border/30 flex-shrink-0 relative z-10">
+      <span className={`panel-header-dot ${color}`} />
+      <span className="text-xs font-mono font-semibold uppercase tracking-wider" style={{
+        color: color === 'red' ? 'var(--red-primary)' :
+               color === 'blue' ? 'var(--blue-primary)' :
+               color === 'green' ? 'var(--green-signal)' :
+               color === 'amber' ? 'var(--amber-warn)' :
+               color === 'purple' ? '#a855f7' : 'var(--text-dim)'
+      }}>{title}</span>
+      {subtitle && <span className="text-xs text-txt-dim font-mono">{subtitle}</span>}
       <div className="ml-auto flex items-center gap-2">{children}</div>
     </div>
   )
@@ -186,14 +185,14 @@ function MitreBadge({ phase, scenario }) {
   }
   const tid = mitre[scenario]?.[phase]
   if (!tid) return null
-  return <span className="text-purple-400 bg-purple-950/30 border border-purple-800/30 text-xs px-1.5 py-0.5 rounded font-mono">{tid}</span>
+  return <span className="siem-mitre font-mono">{tid}</span>
 }
 
 function LiveDot() {
   return (
     <div className="flex items-center gap-1">
-      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-      <span className="text-emerald-500 text-xs">live</span>
+      <span className="dot-live" />
+      <span className="text-green-signal text-xs font-mono">live</span>
     </div>
   )
 }
@@ -206,5 +205,5 @@ function LearningContextBadge({ scenario, phase }) {
   }
   const title = titles[scenario]?.[phase]
   if (!title) return null
-  return <span className="text-slate-500 text-xs">{title}</span>
+  return <span className="text-txt-dim text-xs font-mono">{title}</span>
 }

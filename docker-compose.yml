@@ -98,6 +98,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./backend/src:/app/src
+      - ./backend/alembic.ini:/app/alembic.ini:ro
+      - ./backend/migrations:/app/migrations:ro
       - ./ai-monitor:/app/ai-monitor:ro
       - ./docs/scenarios:/app/scenarios:ro
     depends_on:

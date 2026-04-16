@@ -61,21 +61,50 @@ EOF
 
 # Setup users and SPNs
 echo "[+] Setting up users and service accounts..."
-# Standard users
-samba-tool user create jsmith "Welcome1!" 2>/dev/null || echo "[*] jsmith already exists"
-samba-tool user create it.admin "Welcome1!" 2>/dev/null || echo "[*] it.admin already exists"
-samba-tool group addmembers "Domain Admins" it.admin 2>/dev/null || echo "[*] it.admin already in Domain Admins"
 
-# Service account for Kerberoasting (SPN-based vulnerability)
-samba-tool user create svc_backup "Backup2023" 2>/dev/null || echo "[*] svc_backup already exists"
-samba-tool user addspn svc_backup "CIFS/NEXORA-FS01.nexora.local" 2>/dev/null || echo "[*] SPN already assigned"
+# Create low-privilege user: jsmith
+if samba-tool user create jsmith "Password123" 2>/dev/null; then
+    echo "[+] Created user: jsmith (low-privilege)"
+else
+    echo "[*] User jsmith already exists"
+fi
 
-# Set password to never expire for reliable testing
-samba-tool user setexpiry svc_backup --noexpiry 2>/dev/null || echo "[*] Expiry setting may have failed"
+# Create service account for Kerberoasting (SPN-based vulnerability)
+if samba-tool user create svc_backup "Backup2023!" 2>/dev/null; then
+    echo "[+] Created user: svc_backup (service account)"
+else
+    echo "[*] User svc_backup already exists"
+fi
+
+# Add SPN (Service Principal Name) to svc_backup for Kerberoasting vulnerability
+if ! samba-tool user addspn svc_backup "CIFS/NEXORA-FS01.nexora.local" 2>/dev/null; then
+    echo "[*] SPN CIFS/NEXORA-FS01.nexora.local already exists for svc_backup"
+fi
+
+# Create domain admin user
+if samba-tool user create it.admin "DomainAdmin2024!" 2>/dev/null; then
+    echo "[+] Created user: it.admin"
+else
+    echo "[*] User it.admin already exists"
+fi
+
+# Add it.admin to Domain Admins group
+if ! samba-tool group addmembers "Domain Admins" it.admin 2>/dev/null; then
+    echo "[*] User it.admin already in Domain Admins"
+fi
+
+# Reset administrator account password (built-in, created during provision)
+echo "[+] Configuring Administrator account..."
+samba-tool user setpassword Administrator --newpassword="$ADMIN_PASS" 2>/dev/null || true
+samba-tool user setexpiry Administrator --noexpiry 2>/dev/null || true
+
+# Set password expiry policy for all users (never expire for testing)
+echo "[+] Setting password expiry policies..."
 samba-tool user setexpiry jsmith --noexpiry 2>/dev/null || true
+samba-tool user setexpiry svc_backup --noexpiry 2>/dev/null || true
 samba-tool user setexpiry it.admin --noexpiry 2>/dev/null || true
 
-echo "[+] Users configured:"
+echo "[+] Users configured successfully:"
 samba-tool user list | head -10
 
 # Enable audit logging for educational event tracking

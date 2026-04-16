@@ -2,10 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================================
-   CyberSim Design System
-   Premium dark theme for cybersecurity training platform
-   ============================================================ */
+/* ═══════════════════════════════════════════════════════
+   CYBERSIM DESIGN SYSTEM — SOC Aesthetic
+   
+   Identity: Military-grade SOC meets hacker terminal
+   Duality: Every element reflects Red ↔ Blue tension
+   Feel: You're inside a real security operations center
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* The Duality Palette */
+  --red-primary: #ff3b3b;
+  --red-glow: #ff3b3b40;
+  --red-dim: #ff3b3b15;
+  --red-surface: #1a0808;
+
+  --blue-primary: #3b8bff;
+  --blue-glow: #3b8bff40;
+  --blue-dim: #3b8bff15;
+  --blue-surface: #080d1a;
+
+  /* Neutrals */
+  --void: #08090c;
+  --surface-1: #0d0f14;
+  --surface-2: #13161d;
+  --surface-3: #1a1d26;
+  --surface-4: #22262f;
+  --border: #1e2230;
+  --border-glow: #2a2f40;
+
+  --text-primary: #e8eaf0;
+  --text-secondary: #8890a4;
+  --text-dim: #4a5068;
+
+  /* Accents */
+  --green-signal: #00ff88;
+  --amber-warn: #ffaa00;
+  --critical: #ff2244;
+
+  /* Typography */
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spatial */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
 
 @layer base {
   html, body, #root {
@@ -15,217 +58,578 @@
   }
 
   body {
-    @apply bg-slate-950 text-slate-100;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    background: var(--void);
+    color: var(--text-primary);
+    font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Scrollbar styling — fits the dark theme */
-  ::-webkit-scrollbar {
-    @apply w-1.5 h-1.5;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-slate-700 rounded-full;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-600;
+  /* ── Scan-line overlay — the SOC texture ──────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.008) 2px,
+        rgba(255,255,255,0.008) 4px
+      );
+    pointer-events: none;
+    z-index: 9999;
   }
 
-  /* Selection */
+  /* ── Ambient red/blue radial glow ─────────────────── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59,139,255,0.04), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255,59,59,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Scrollbar — fits the void theme ──────────────── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--surface-4);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-dim);
+  }
+
+  /* ── Selection ────────────────────────────────────── */
   ::selection {
-    @apply bg-cyan-500/30 text-cyan-50;
+    background: rgba(59,139,255,0.3);
+    color: #e8eaf0;
   }
 }
 
 @layer components {
 
-  /* ── Layout panels ─────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════
+     PANELS — Layout containers
+     ═══════════════════════════════════════════════════ */
   .panel {
-    @apply bg-slate-900/80 border border-slate-800/60 rounded-xl overflow-hidden backdrop-blur-sm;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
   }
 
   .panel-header {
-    @apply flex items-center gap-2 px-3 py-2 bg-slate-900 border-b border-slate-800/60 text-xs text-slate-400 font-medium;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+  }
+
+  .panel-header-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .panel-header-dot.red {
+    background: var(--red-primary);
+    box-shadow: 0 0 8px var(--red-glow);
+  }
+
+  .panel-header-dot.blue {
+    background: var(--blue-primary);
+    box-shadow: 0 0 8px var(--blue-glow);
+  }
+
+  .panel-header-dot.green {
+    background: var(--green-signal);
+    box-shadow: 0 0 8px rgba(0,255,136,0.4);
+  }
+
+  .panel-header-dot.amber {
+    background: var(--amber-warn);
+    box-shadow: 0 0 6px rgba(255,170,0,0.3);
+  }
+
+  .panel-header-dot.purple {
+    background: #a855f7;
+    box-shadow: 0 0 6px rgba(168,85,247,0.3);
   }
 
   .panel-body {
-    @apply p-4;
+    padding: 16px;
   }
 
-  /* ── Status dots ───────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════
+     STATUS DOTS
+     ═══════════════════════════════════════════════════ */
   .dot-live {
-    @apply inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green-signal);
+    box-shadow: 0 0 8px var(--green-signal);
+    animation: pulse 2s ease infinite;
   }
 
   .dot-idle {
-    @apply inline-block w-1.5 h-1.5 rounded-full bg-slate-600;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--surface-4);
   }
 
-  /* ── Severity badges ───────────────────────────────────── */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     SEVERITY BADGES — Matching SOC severity palette
+     ═══════════════════════════════════════════════════ */
   .badge {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide;
+    @apply inline-flex items-center gap-1 rounded font-mono;
+    padding: 2px 8px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-align: center;
   }
 
-  .badge-critical {
-    @apply badge bg-red-500/10 text-red-400 border border-red-500/20;
+  .badge-critical, .sev-crit {
+    background: rgba(255,34,68,0.15);
+    color: var(--critical);
   }
 
-  .badge-high {
-    @apply badge bg-orange-500/10 text-orange-400 border border-orange-500/20;
+  .badge-high, .sev-high {
+    background: rgba(255,59,59,0.12);
+    color: var(--red-primary);
   }
 
-  .badge-medium {
-    @apply badge bg-yellow-500/10 text-yellow-400 border border-yellow-500/20;
+  .badge-medium, .sev-med {
+    background: rgba(255,170,0,0.12);
+    color: var(--amber-warn);
   }
 
-  .badge-low {
-    @apply badge bg-blue-500/10 text-blue-400 border border-blue-500/20;
+  .badge-low, .sev-low {
+    background: rgba(59,139,255,0.1);
+    color: var(--blue-primary);
   }
 
-  .badge-info {
-    @apply badge bg-slate-500/10 text-slate-400 border border-slate-500/20;
+  .badge-info, .sev-info {
+    background: rgba(72,85,106,0.15);
+    color: var(--text-dim);
   }
 
-  /* ── Buttons ───────────────────────────────────────────── */
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-      bg-gradient-to-r from-cyan-600 to-blue-600
-      hover:from-cyan-500 hover:to-blue-500
-      disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed
-      text-white text-sm font-semibold
-      shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20
-      transition-all duration-200 active:scale-[0.98];
+  /* ═══════════════════════════════════════════════════
+     BUTTONS — Duality CTAs
+     ═══════════════════════════════════════════════════ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s;
   }
 
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-      border border-slate-700 bg-slate-800/50
-      hover:border-slate-600 hover:bg-slate-800
-      text-slate-300 hover:text-white text-sm font-medium
-      transition-all duration-200 active:scale-[0.98];
+  .btn-red {
+    background: var(--red-primary);
+    color: #fff;
+    box-shadow: 0 4px 24px var(--red-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .btn-red:hover {
+    box-shadow: 0 8px 40px rgba(255,59,59,0.5);
+    transform: translateY(-2px);
+  }
+
+  .btn-blue {
+    background: var(--blue-primary);
+    color: #fff;
+    box-shadow: 0 4px 24px var(--blue-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .btn-blue:hover {
+    box-shadow: 0 8px 40px rgba(59,139,255,0.5);
+    transform: translateY(-2px);
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg
-      text-slate-400 hover:text-slate-200 hover:bg-slate-800/50
-      text-sm transition-all duration-150;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover {
+    border-color: var(--text-dim);
+    color: var(--text-primary);
+    background: var(--surface-2);
   }
 
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-      bg-red-500/10 border border-red-500/20
-      hover:bg-red-500/20 hover:border-red-500/40
-      text-red-400 hover:text-red-300 text-sm font-medium
-      transition-all duration-200;
+  .btn-sm {
+    padding: 8px 20px;
+    font-size: 13px;
   }
 
-  /* ── Inputs ────────────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════
+     INPUTS
+     ═══════════════════════════════════════════════════ */
   .input {
-    @apply w-full bg-slate-800/80 border border-slate-700/80 rounded-lg
-      px-3 py-2.5 text-sm text-slate-100
-      placeholder:text-slate-500
-      focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/20
-      transition-all duration-150;
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--text-primary);
+    transition: all 0.15s;
+  }
+  .input::placeholder {
+    color: var(--text-dim);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 2px var(--blue-dim);
   }
 
   .input-label {
-    @apply block text-xs text-slate-400 mb-1.5 font-medium;
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 500;
   }
 
-  /* ── Cards ─────────────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════
+     CARDS — Interactive surfaces
+     ═══════════════════════════════════════════════════ */
   .card {
-    @apply bg-slate-900/60 border border-slate-800/60 rounded-xl
-      hover:border-slate-700/60 transition-all duration-200;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all 0.3s;
   }
 
   .card-interactive {
-    @apply card hover:bg-slate-900/80 hover:shadow-lg hover:shadow-black/20 cursor-pointer;
+    cursor: pointer;
+  }
+  .card-interactive:hover {
+    border-color: var(--border-glow);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px -12px rgba(0,0,0,0.5);
   }
 
-  /* ── Code / Terminal ────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════
+     CODE / TERMINAL
+     ═══════════════════════════════════════════════════ */
   .font-mono-terminal {
-    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+    font-family: var(--font-mono);
   }
 
   .code-block {
-    @apply font-mono-terminal bg-slate-800/50 border border-slate-800 rounded-lg
-      px-3 py-2 text-sm text-emerald-400;
+    font-family: var(--font-mono);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--green-signal);
   }
 
-  /* ── MITRE badge ────────────────────────────────────────── */
-  .mitre-badge {
-    @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded
-      bg-purple-500/10 border border-purple-500/20
-      text-purple-400 text-xs font-mono;
+  /* ═══════════════════════════════════════════════════
+     MITRE BADGE
+     ═══════════════════════════════════════════════════ */
+  .mitre-badge, .siem-mitre {
+    display: inline-block;
+    padding: 1px 6px;
+    background: rgba(59,139,255,0.08);
+    border-radius: 3px;
+    color: var(--blue-primary);
+    font-family: var(--font-mono);
+    font-size: 9px;
   }
 
-  /* ── Glow effects ──────────────────────────────────────── */
-  .glow-cyan {
-    box-shadow: 0 0 20px -5px theme('colors.cyan.500 / 30%');
+  /* ═══════════════════════════════════════════════════
+     SIEM EVENT ROW
+     ═══════════════════════════════════════════════════ */
+  .siem-event-row {
+    display: grid;
+    grid-template-columns: 64px 56px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.5;
+    transition: background 0.15s;
+    cursor: default;
+  }
+  .siem-event-row:hover {
+    background: rgba(255,255,255,0.02);
+  }
+  .siem-event-row.noise {
+    opacity: 0.35;
   }
 
-  .glow-red {
-    box-shadow: 0 0 20px -5px theme('colors.red.500 / 30%');
+  .siem-time {
+    color: var(--text-dim);
+    font-size: 10px;
+    padding-top: 1px;
   }
 
-  /* ── Loading skeleton ───────────────────────────────────── */
-  .skeleton {
-    @apply animate-pulse bg-slate-800/60 rounded;
-  }
-
-  /* ── Nav ────────────────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════
+     NAV
+     ═══════════════════════════════════════════════════ */
   .nav-bar {
-    @apply sticky top-0 z-40 border-b border-slate-800/50
-      bg-slate-950/90 backdrop-blur-md;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding: 0 48px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(8,9,12,0.8);
+    backdrop-filter: blur(20px) saturate(1.5);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Dual-square logo ─────────────────────────────── */
+  .nav-logo-icon {
+    width: 32px;
+    height: 32px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .nav-logo-icon::before,
+  .nav-logo-icon::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+  .nav-logo-icon::before {
+    top: 0; left: 0;
+    background: var(--red-primary);
+    box-shadow: 0 0 12px var(--red-glow);
+  }
+  .nav-logo-icon::after {
+    bottom: 0; right: 0;
+    background: var(--blue-primary);
+    box-shadow: 0 0 12px var(--blue-glow);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     SCENARIO CARDS (Dashboard & Landing)
+     ═══════════════════════════════════════════════════ */
+  .scenario-card {
+    position: relative;
+    padding: 28px 24px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .scenario-card:hover {
+    border-color: var(--border-glow);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px -12px rgba(0,0,0,0.5);
+  }
+  .scenario-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+  }
+  .scenario-card.sc-01::after { background: linear-gradient(90deg, var(--red-primary), var(--amber-warn)); }
+  .scenario-card.sc-02::after { background: linear-gradient(90deg, var(--amber-warn), var(--red-primary)); }
+  .scenario-card.sc-03::after { background: linear-gradient(90deg, var(--blue-primary), var(--critical)); }
+
+  .scenario-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .difficulty-inter {
+    border-color: rgba(255,170,0,0.3) !important;
+    color: var(--amber-warn) !important;
+  }
+  .difficulty-adv {
+    border-color: rgba(255,59,59,0.3) !important;
+    color: var(--red-primary) !important;
+  }
+  .difficulty-beg {
+    border-color: rgba(0,255,136,0.3) !important;
+    color: var(--green-signal) !important;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     LOADING SKELETON
+     ═══════════════════════════════════════════════════ */
+  .skeleton {
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    animation: skeletonPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes skeletonPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     GLOW EFFECTS
+     ═══════════════════════════════════════════════════ */
+  .glow-red {
+    box-shadow: 0 0 20px -5px rgba(255,59,59,0.3);
+  }
+  .glow-blue {
+    box-shadow: 0 0 20px -5px rgba(59,139,255,0.3);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     FRAMEWORK PILLS
+     ═══════════════════════════════════════════════════ */
+  .framework-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .framework-pill:hover {
+    border-color: var(--border-glow);
+    color: var(--text-primary);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     STATS BAR
+     ═══════════════════════════════════════════════════ */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface-1);
+  }
+  .stat {
+    padding: 32px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-value {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+    font-family: var(--font-display);
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
   }
 }
 
 @layer utilities {
-  /* Grid background pattern */
+  /* ── Grid background pattern ──────────────────────── */
   .bg-grid {
     background-image:
-      radial-gradient(circle at 1px 1px, rgba(6, 182, 212, 0.06) 1px, transparent 0);
+      radial-gradient(circle at 1px 1px, rgba(59,139,255,0.04) 1px, transparent 0);
     background-size: 40px 40px;
   }
 
-  /* Hex pattern overlay */
+  /* ── Noise texture ────────────────────────────────── */
   .bg-noise {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Ccircle cx='1' cy='1' r='0.5' fill='rgba(255,255,255,0.03)'/%3E%3C/svg%3E");
   }
 
-  /* Frosted glass surface */
+  /* ── Surface gradients for workspace panes ────────── */
+  .bg-red-surface {
+    background: linear-gradient(135deg, var(--red-surface) 0%, var(--surface-1) 100%);
+  }
+  .bg-blue-surface {
+    background: linear-gradient(135deg, var(--blue-surface) 0%, var(--surface-1) 100%);
+  }
+
+  /* ── Frosted glass ────────────────────────────────── */
   .glass {
-    @apply bg-slate-900/70 backdrop-blur-xl border border-white/5;
+    background: rgba(13,15,20,0.7);
+    backdrop-filter: blur(20px) saturate(1.5);
+    border: 1px solid var(--border);
   }
 
-  /* Animated gradient text */
-  .text-gradient {
-    @apply bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent;
-  }
-
+  /* ── Text gradients ───────────────────────────────── */
   .text-gradient-red {
-    @apply bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent;
+  }
+  .text-gradient-blue {
+    @apply bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent;
   }
 
-  /* Severity left border indicator */
-  .border-l-critical { @apply border-l-2 border-l-red-500; }
-  .border-l-high     { @apply border-l-2 border-l-orange-500; }
-  .border-l-medium   { @apply border-l-2 border-l-yellow-500; }
-  .border-l-low      { @apply border-l-2 border-l-blue-500; }
-  .border-l-info     { @apply border-l-2 border-l-slate-600; }
+  /* ── Severity left border indicators ──────────────── */
+  .border-l-critical { border-left: 2px solid var(--critical); }
+  .border-l-high     { border-left: 2px solid var(--red-primary); }
+  .border-l-medium   { border-left: 2px solid var(--amber-warn); }
+  .border-l-low      { border-left: 2px solid var(--blue-primary); }
+  .border-l-info     { border-left: 2px solid var(--surface-4); }
 
-  /* Truncate with max width */
+  /* ── Truncation helpers ───────────────────────────── */
   .truncate-sm  { @apply truncate max-w-xs; }
   .truncate-md  { @apply truncate max-w-sm; }
   .truncate-lg  { @apply truncate max-w-md; }
 }
 
-/* ── Custom animations ─────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   CUSTOM ANIMATIONS
+   ═══════════════════════════════════════════════════════ */
+
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
@@ -261,3 +665,23 @@
   50%, 100% { opacity: 0; }
 }
 .term-cursor { animation: termCursor 1s step-end infinite; }
+
+/* Cursor blink for demo terminal */
+.cursor-blink {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--red-primary);
+  animation: termCursor 1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .nav-bar { padding: 0 24px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(2) { border-right: none; }
+}
