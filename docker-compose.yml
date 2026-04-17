@@ -7,6 +7,13 @@ name: cybersim
 #  Bring up a scenario: docker-compose --profile sc01 up -d
 # ═══════════════════════════════════════════════════════════════════
 
+# Shared label applied to every CyberSim container.
+# The docker-safe.ps1 wrapper reads this label before allowing removal.
+x-cybersim-defaults: &cybersim-defaults
+  labels:
+    com.cybersim.protect: "true"
+    com.cybersim.project: "JUTerminal1"
+
 services:
 
   # ── Core Infrastructure ───────────────────────────────────────────
