@@ -1,7 +1,15 @@
 name: cybersim
+
+# ═══════════════════════════════════════════════════════════════════
+#  CyberSim — Single-Node Docker Compose
+#  Scenarios: SC-01 (Web App), SC-02 (Active Directory), SC-03 (Phishing)
+#  Bring up core: docker-compose up -d
+#  Bring up a scenario: docker-compose --profile sc01 up -d
+# ═══════════════════════════════════════════════════════════════════
+
 services:
 
-  # ── Core infrastructure ──────────────────────────────────────
+  # ── Core Infrastructure ───────────────────────────────────────────
   postgres:
     image: postgres:15-alpine
     environment:
@@ -63,11 +71,12 @@ services:
         limits:
           memory: 2g
 
+  # ── SIEM Pipeline ─────────────────────────────────────────────────
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.13.2
     user: root
-    # --strict.perms=false is required on Windows Docker Desktop:
-    # mounted files always appear rwxrwxrwx, which filebeat rejects by default.
+    # --strict.perms=false required on Windows Docker Desktop:
+    # bind-mounted files always appear as -rwxrwxrwx, which filebeat rejects.
     command: filebeat -e --strict.perms=false
     environment:
       - setup.kibana.host=kibana:5601
@@ -85,7 +94,7 @@ services:
         limits:
           memory: 256m
 
-  # ── Application ──────────────────────────────────────────────
+  # ── Application ───────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
@@ -158,8 +167,8 @@ services:
         limits:
           memory: 128m
 
-  # ── Scenario networks (created on demand by backend, defined here for reference) ──
-  # SC-01 — NovaMed Web App
+  # ── SC-01: NovaMed Web App Pentest ────────────────────────────────
+  # Start with: docker-compose --profile sc01 up -d
   sc01-webapp:
     build:
       context: ./infrastructure/docker/scenarios/sc01
@@ -188,7 +197,8 @@ services:
           cpus: '0.5'
           memory: 256m
 
-  # SC-02 — Nexora AD
+  # ── SC-02: Nexora Active Directory Compromise ─────────────────────
+  # Start with: docker-compose --profile sc02 up -d
   sc02-dc:
     build:
       context: ./infrastructure/docker/scenarios/sc02
@@ -212,7 +222,7 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 512M
+          memory: 512m
 
   sc02-fileserver:
     build:
@@ -240,9 +250,30 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 512M
+          memory: 512m
 
-  # SC-03 — Orion Logistics Phishing
+  # ── SC-03: Orion Logistics Phishing Campaign ──────────────────────
+  # Start with: docker-compose --profile sc03 up -d
+  sc03-mailrelay:
+    build:
+      context: ./infrastructure/docker/scenarios/sc03
+      dockerfile: Dockerfile.mailrelay
+    networks:
+      sc03-net:
+        ipv4_address: 172.20.3.20
+    profiles: ["sc03"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "127.0.0.1", "25"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+
   sc03-phish:
     build:
       context: ./infrastructure/docker/scenarios/sc03
@@ -268,27 +299,7 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 512M
-
-  sc03-mailrelay:
-    build:
-      context: ./infrastructure/docker/scenarios/sc03
-      dockerfile: Dockerfile.mailrelay
-    networks:
-      sc03-net:
-        ipv4_address: 172.20.3.20
-    profiles: ["sc03"]
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "nc", "-zv", "127.0.0.1", "25"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+          memory: 512m
 
   sc03-victim:
     build:
@@ -311,44 +322,16 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 512M
+          memory: 512m
 
-  # SC-04 — LocalStack (AWS sim)
-  sc04-localstack:
-    image: localstack/localstack:3
-    environment:
-      - SERVICES=s3,iam,sts,ec2,lambda,cloudtrail,guardduty
-      - DEFAULT_REGION=us-east-1
-      - AWS_DEFAULT_REGION=us-east-1
-    networks:
-      sc04-net:
-        ipv4_address: 172.20.4.20
-    profiles: ["sc04"]
-    restart: unless-stopped
-
-  # SC-05 — Splunk (Blue team)
-  sc05-splunk:
-    image: splunk/splunk:latest
-    environment:
-      # SPLUNK_GENERAL_TERMS is required by Splunk >=10.2 to accept the updated license
-      - SPLUNK_GENERAL_TERMS=--accept-sgt-current-at-splunk-com
-      - SPLUNK_START_ARGS=--accept-license
-      - SPLUNK_PASSWORD=${SPLUNK_PASSWORD:-cybersim123}
-    volumes:
-      - ./infrastructure/docker/scenarios/sc05/splunk-apps:/opt/splunk/etc/apps
-      - ./infrastructure/docker/scenarios/sc05/logs:/var/log/scenario:ro
-    networks:
-      sc05-net:
-        ipv4_address: 172.20.5.100
-    profiles: ["sc05"]
-    restart: unless-stopped
-
+# ─────────────────────────────────────────────────────────────────────
 volumes:
   postgres_data:
   redis_data:
   elastic_data:
 
 networks:
+  # Shared internal network for all core services
   internal:
     driver: bridge
     ipam:
@@ -356,6 +339,7 @@ networks:
         - subnet: 172.30.0.0/24
           gateway: 172.30.0.254
 
+  # Isolated scenario networks (internal: true = no internet access)
   sc01-net:
     driver: bridge
     internal: true
@@ -379,19 +363,3 @@ networks:
       config:
         - subnet: 172.20.3.0/24
           gateway: 172.20.3.254
-
-  sc04-net:
-    driver: bridge
-    internal: true
-    ipam:
-      config:
-        - subnet: 172.20.4.0/24
-          gateway: 172.20.4.254
-
-  sc05-net:
-    driver: bridge
-    internal: true
-    ipam:
-      config:
-        - subnet: 172.20.5.0/24
-          gateway: 172.20.5.254

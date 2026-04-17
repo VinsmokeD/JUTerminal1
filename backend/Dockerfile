@@ -6,7 +6,14 @@ WORKDIR /app
 RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
+    curl \
+    ca-certificates \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=docker:26-cli /usr/local/bin/docker /usr/local/bin/docker
+# Install Docker Compose standalone
+RUN curl -fsSL "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose
 
 # Install Python dependencies
 COPY requirements.txt .

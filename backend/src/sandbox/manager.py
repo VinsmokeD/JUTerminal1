@@ -25,12 +25,10 @@ _SCENARIO_TARGETS: dict[str, list[str]] = {
     "sc01": ["sc01-webapp", "sc01-waf"],
     "sc02": ["sc02-dc", "sc02-fileserver"],
     "sc03": ["sc03-phish"],
-    "sc04": ["sc04-localstack"],
-    "sc05": ["sc05-splunk"],
 }
 
-# Locate docker-compose.yml relative to project root
-_COMPOSE_FILE = Path(__file__).resolve().parents[3] / "docker-compose.yml"
+# Locate docker-compose.yml (now explicitly mounted as /project in backend)
+_COMPOSE_FILE = Path("/project/docker-compose.yml")
 
 # Singleton Docker client (avoids creating new connections per invocation)
 _docker_client: Optional["docker.DockerClient"] = None
@@ -114,10 +112,10 @@ def _ensure_scenario_targets(scenario_id: str) -> None:
         if all_running:
             return
 
-        # Use docker-compose with the scenario profile to start targets
         subprocess.run(
             [
-                "docker", "compose",
+                "docker-compose",
+                "--project-name", "cybersim",
                 "-f", str(_COMPOSE_FILE),
                 "--profile", profile,
                 "up", "-d", "--no-recreate",
@@ -138,7 +136,8 @@ def _teardown_scenario_targets(scenario_id: str) -> None:
     try:
         subprocess.run(
             [
-                "docker", "compose",
+                "docker-compose",
+                "--project-name", "cybersim",
                 "-f", str(_COMPOSE_FILE),
                 "--profile", profile,
                 "stop",
@@ -167,8 +166,7 @@ def _get_scenario_network(sc_num: str) -> str:
     except Exception:
         pass
     # Derive from compose file parent directory as a reliable fallback
-    project = _COMPOSE_FILE.parent.name.lower().replace(" ", "").replace("-", "")
-    return f"{project}_{sc_num}-net"
+    return f"cybersim_{sc_num}-net"
 
 
 def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
