@@ -66,6 +66,9 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.13.2
     user: root
+    # --strict.perms=false is required on Windows Docker Desktop:
+    # mounted files always appear rwxrwxrwx, which filebeat rejects by default.
+    command: filebeat -e --strict.perms=false
     environment:
       - setup.kibana.host=kibana:5601
     volumes:
@@ -327,6 +330,8 @@ services:
   sc05-splunk:
     image: splunk/splunk:latest
     environment:
+      # SPLUNK_GENERAL_TERMS is required by Splunk >=10.2 to accept the updated license
+      - SPLUNK_GENERAL_TERMS=--accept-sgt-current-at-splunk-com
       - SPLUNK_START_ARGS=--accept-license
       - SPLUNK_PASSWORD=${SPLUNK_PASSWORD:-cybersim123}
     volumes:
