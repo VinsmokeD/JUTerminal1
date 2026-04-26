@@ -329,6 +329,9 @@ function SiemEventRow({ event, expanded, onToggle, onExtractIoc }) {
     INFO: 'sev-info',
   }
   const isBackground = event.source === 'background'
+  const ts = new Date(event.timestamp || event.created_at || Date.now()).toLocaleTimeString('en-US', {
+    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit',
+  })
 
   return (
     <div className={`siem-event-row siem-event-enter cursor-pointer select-none ${isBackground ? 'opacity-35 hover:opacity-60' : 'hover:bg-white/[0.02]'}`} onClick={onToggle}>

@@ -14,12 +14,14 @@ import api from '../lib/api'
 export default function RedWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { currentSession, phase, score, aiMode } = useSessionStore()
+  const { currentSession, phase, score, aiMode, siemEvents } = useSessionStore()
   const { skillLevel } = useAuthStore()
   const [session, setSession] = useState(currentSession)
   const [roeAcked, setRoeAcked] = useState(currentSession?.roe_acknowledged ?? false)
   const [showWelcome, setShowWelcome] = useState(skillLevel === 'beginner')
   const [elapsed, setElapsed] = useState(0)
+  const [siemFlash, setSiemFlash] = useState(false)
+  const siemCountRef = useRef(0)
   const writeOutputRef = useRef(null)
 
   const { sendRawInput, sendCommand, requestHint, toggleMode } = useWebSocket(sessionId)
@@ -37,6 +39,16 @@ export default function RedWorkspace() {
     const interval = setInterval(() => setElapsed(e => e + 1), 1000)
     return () => clearInterval(interval)
   }, [])
+
+  // Causality flash: when new SIEM events arrive, briefly highlight the panel
+  useEffect(() => {
+    if (siemEvents.length > siemCountRef.current) {
+      siemCountRef.current = siemEvents.length
+      setSiemFlash(true)
+      const t = setTimeout(() => setSiemFlash(false), 2000)
+      return () => clearTimeout(t)
+    }
+  }, [siemEvents.length])
 
   const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
 
@@ -136,9 +148,12 @@ export default function RedWorkspace() {
         </div>
 
         {/* SIEM Peek — middle right */}
-        <div className="border-b border-cs-border flex flex-col overflow-hidden relative">
+        <div className={`border-b border-cs-border flex flex-col overflow-hidden relative transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
           <div className="absolute inset-0 bg-blue-surface opacity-30" />
-          <PanelHeader color="green" title="SIEM Feed" subtitle="alerts your actions trigger">
+          {siemFlash && (
+            <div className="absolute inset-0 bg-green-signal/5 z-20 pointer-events-none animate-pulse" />
+          )}
+          <PanelHeader color="green" title="SIEM Feed" subtitle={siemFlash ? 'alert triggered' : 'alerts your actions trigger'}>
             <LiveDot />
           </PanelHeader>
           <div className="flex-1 overflow-hidden relative z-10">

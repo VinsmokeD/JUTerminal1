@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { useSessionStore } from '../../store/sessionStore'
 import api from '../../lib/api'
@@ -6,15 +6,14 @@ import api from '../../lib/api'
 const TAGS = ['note', 'finding', 'evidence', 'ioc', 'remediation', 'todo']
 
 const TAG_STYLE = {
-  finding: 'text-rose-400 border-rose-800/50 bg-rose-950/30',
-  evidence: 'text-cyan-400 border-cyan-800/50 bg-cyan-950/30',
-  ioc: 'text-purple-400 border-purple-800/50 bg-purple-950/30',
-  remediation: 'text-emerald-400 border-emerald-800/50 bg-emerald-950/30',
-  todo: 'text-amber-400 border-amber-800/50 bg-amber-950/30',
-  note: 'text-slate-400 border-slate-800 bg-slate-800/30',
+  finding:     { badge: 'text-cs-red border-cs-red/30 bg-cs-red/5',       dot: 'bg-cs-red' },
+  evidence:    { badge: 'text-cs-blue border-cs-blue/30 bg-cs-blue/5',    dot: 'bg-cs-blue' },
+  ioc:         { badge: 'text-purple-400 border-purple-400/30 bg-purple-400/5', dot: 'bg-purple-400' },
+  remediation: { badge: 'text-green-signal border-green-signal/30 bg-green-signal/5', dot: 'bg-green-signal' },
+  todo:        { badge: 'text-amber-warn border-amber-warn/30 bg-amber-warn/5', dot: 'bg-amber-warn' },
+  note:        { badge: 'text-txt-secondary border-cs-border bg-surface-2/50', dot: 'bg-txt-dim' },
 }
 
-// Phase-aware templates for guided note-taking
 const TEMPLATES = {
   red: {
     1: '## Reconnaissance\n### Target Information\n- IP: \n- Open ports: \n- Services: \n\n### Technology Stack\n- Web Server: \n- Language/Framework: \n- Database: \n\n### Observations\n- ',
@@ -26,7 +25,7 @@ const TEMPLATES = {
   },
   blue: {
     1: '## Incident Identification\n### Initial Alert\n- Event ID: \n- Severity: \n- Source IP: \n- Timestamp: \n\n### Scope Assessment\n- Affected systems: \n- Affected users: ',
-    2: '## Detection & Analysis\n### Attack Timeline\n- First event: \n- Progression: \n- Latest activity: \n\n### True Positive / False Positive Assessment\n- Classification: \n- Evidence: ',
+    2: '## Detection and Analysis\n### Attack Timeline\n- First event: \n- Progression: \n- Latest activity: \n\n### True Positive Assessment\n- Classification: \n- Evidence: ',
     3: '## Containment\n### Actions Taken\n- [ ] Blocked source IP\n- [ ] Isolated affected hosts\n- [ ] Disabled compromised accounts\n- [ ] Preserved evidence\n\n### Justification\n- ',
     4: '## Eradication\n### Persistence Mechanisms Found\n- \n\n### Cleanup Actions\n- \n\n### Verification\n- ',
     5: '## Recovery\n### Systems Restored\n- \n\n### Monitoring Plan\n- ',
@@ -39,7 +38,7 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
   const [draft, setDraft] = useState('')
   const [tag, setTag] = useState('note')
   const [saving, setSaving] = useState(false)
-  const [mode, setMode] = useState('guided') // guided | freeform
+  const [mode, setMode] = useState('guided')
   const { skillLevel } = useAuthStore()
   const { pendingEvidence, clearPendingEvidence } = useSessionStore()
 
@@ -48,31 +47,12 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
     api.get(`/notes/${sessionId}`).then((r) => setNotes(r.data)).catch(() => {})
   }, [sessionId])
 
-  // Pre-fill template for beginners
   useEffect(() => {
     if (mode === 'guided' && notes.length === 0 && skillLevel === 'beginner') {
       const template = TEMPLATES[role]?.[phase] || TEMPLATES[role]?.[1] || ''
       setDraft(template)
     }
   }, [phase, mode, skillLevel, role])
-
-  // Handle auto-evidence events
-  useEffect(() => {
-    const handler = (evt) => {
-      const data = evt.detail
-      if (data && data.command) {
-        const summaryParts = []
-        for (const [key, items] of Object.entries(data.discoveries || {})) {
-          if (items.length > 0) summaryParts.push(`${key}: ${items.join(', ')}`)
-        }
-        if (summaryParts.length > 0) {
-          // Auto-evidence toast is handled by the parent workspace
-        }
-      }
-    }
-    window.addEventListener('evidence:discovered', handler)
-    return () => window.removeEventListener('evidence:discovered', handler)
-  }, [])
 
   const save = async () => {
     if (!draft.trim()) return
@@ -115,61 +95,71 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Auto-evidence toast */}
+    <div className="flex flex-col h-full bg-void">
       {pendingEvidence && (
-        <div className="mx-2 mt-2 p-2.5 rounded-lg border border-cyan-800/50 bg-cyan-950/20 flex items-center gap-2 animate-pulse">
-          <div className="w-2 h-2 rounded-full bg-cyan-400" />
-          <span className="text-xs text-cyan-300 flex-1">
+        <div className="mx-2 mt-2 p-2.5 rounded-cs border border-cs-blue/30 bg-cs-blue/5 flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-cs-blue animate-pulse flex-shrink-0" />
+          <span className="text-xs text-cs-blue flex-1">
             {pendingEvidence.tool} found new items — save as evidence?
           </span>
-          <button onClick={saveEvidence} className="text-xs text-cyan-400 hover:text-cyan-300 font-medium px-2 py-0.5 rounded bg-cyan-950/50">Save</button>
-          <button onClick={clearPendingEvidence} className="text-xs text-slate-600 hover:text-slate-400">Dismiss</button>
+          <button onClick={saveEvidence} className="text-xs text-cs-blue hover:text-cs-blue/80 font-medium px-2 py-0.5 rounded-cs-sm bg-cs-blue/10 border border-cs-blue/20 transition-colors">
+            Save
+          </button>
+          <button onClick={clearPendingEvidence} className="text-xs text-txt-dim hover:text-txt-secondary transition-colors">
+            Dismiss
+          </button>
         </div>
       )}
 
-      {/* Notes list */}
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
         {notes.length === 0 ? (
-          <div className="p-3 text-xs text-slate-600">
+          <div className="p-4 text-xs text-txt-dim font-mono leading-relaxed">
             {skillLevel === 'beginner'
               ? 'Start documenting your findings. Good note-taking is a critical professional skill — every observation matters.'
               : 'No notes yet. Add your first finding or observation.'}
           </div>
         ) : (
-          notes.map((n) => (
-            <div key={n.id} className={`rounded-lg border px-2.5 py-2 text-xs group relative ${TAG_STYLE[n.tag] || TAG_STYLE.note}`}>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="font-semibold uppercase opacity-70" style={{ fontSize: '10px' }}>#{n.tag}</span>
-                <span className="text-slate-600" style={{ fontSize: '10px' }}>{new Date(n.created_at).toLocaleTimeString()}</span>
+          notes.map((n) => {
+            const ts = TAG_STYLE[n.tag] || TAG_STYLE.note
+            return (
+              <div key={n.id} className={`rounded-cs border px-2.5 py-2 text-xs group relative ${ts.badge}`}>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <div className={`w-1 h-1 rounded-full flex-shrink-0 ${ts.dot}`} />
+                  <span className="font-semibold uppercase tracking-wide opacity-60 font-mono" style={{ fontSize: '10px' }}>#{n.tag}</span>
+                  <span className="text-txt-dim font-mono" style={{ fontSize: '10px' }}>{new Date(n.created_at).toLocaleTimeString()}</span>
+                </div>
+                <p className="text-txt-primary leading-relaxed whitespace-pre-wrap">{n.content}</p>
+                <button
+                  onClick={() => remove(n.id)}
+                  className="absolute top-1.5 right-1.5 text-txt-dim hover:text-cs-red opacity-0 group-hover:opacity-100 transition-opacity text-xs px-1"
+                >
+                  ×
+                </button>
               </div>
-              <p className="text-slate-200 leading-relaxed whitespace-pre-wrap">{n.content}</p>
-              <button
-                onClick={() => remove(n.id)}
-                className="absolute top-1.5 right-1.5 text-slate-700 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
-              >x</button>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
-      {/* Input area */}
-      <div className="border-t border-slate-800 p-2 space-y-1.5">
+      <div className="border-t border-cs-border p-2 space-y-1.5">
         <div className="flex items-center gap-1 flex-wrap">
-          {TAGS.map((t) => (
-            <button key={t} onClick={() => setTag(t)}
-              className={`text-xs px-2 py-0.5 rounded-md border transition-colors ${tag === t ? TAG_STYLE[t] : 'text-slate-600 border-slate-800 hover:text-slate-400'}`}>
-              #{t}
-            </button>
-          ))}
+          {TAGS.map((t) => {
+            const ts = TAG_STYLE[t] || TAG_STYLE.note
+            return (
+              <button key={t} onClick={() => setTag(t)}
+                className={`text-xs px-2 py-0.5 rounded-cs-sm border transition-colors font-mono ${tag === t ? ts.badge : 'text-txt-dim border-cs-border hover:text-txt-secondary hover:border-cs-border-glow'}`}>
+                #{t}
+              </button>
+            )
+          })}
           <div className="ml-auto flex gap-1">
             <button onClick={() => setMode(mode === 'guided' ? 'freeform' : 'guided')}
-              className="text-xs text-slate-600 hover:text-slate-400 px-1.5 py-0.5 rounded border border-slate-800">
+              className="text-xs text-txt-dim hover:text-txt-secondary px-1.5 py-0.5 rounded-cs-sm border border-cs-border transition-colors">
               {mode === 'guided' ? 'Freeform' : 'Guided'}
             </button>
             {mode === 'guided' && (
               <button onClick={loadTemplate}
-                className="text-xs text-cyan-600 hover:text-cyan-400 px-1.5 py-0.5 rounded border border-slate-800">
+                className="text-xs text-cs-blue hover:text-cs-blue/80 px-1.5 py-0.5 rounded-cs-sm border border-cs-blue/30 transition-colors">
                 Template
               </button>
             )}
@@ -181,10 +171,10 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
             onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save() }}
             placeholder={mode === 'guided' ? 'Use the template button or type freely... (Ctrl+Enter to save)' : 'Add note... (Ctrl+Enter to save)'}
             rows={3}
-            className="flex-1 bg-slate-800/50 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-600 resize-none font-mono"
+            className="flex-1 bg-surface-2 border border-cs-border rounded-cs px-2.5 py-2 text-xs text-txt-primary placeholder-txt-dim focus:outline-none focus:border-cs-blue/50 resize-none font-mono transition-colors"
           />
           <button onClick={save} disabled={saving || !draft.trim()}
-            className="px-3 text-xs bg-cyan-700 hover:bg-cyan-600 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-lg transition-colors self-end">
+            className="px-3 text-xs bg-cs-blue/15 hover:bg-cs-blue/25 disabled:bg-surface-2 disabled:text-txt-dim text-cs-blue border border-cs-blue/30 rounded-cs transition-colors self-end py-2 font-mono font-medium">
             Save
           </button>
         </div>

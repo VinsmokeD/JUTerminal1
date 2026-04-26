@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.auth.routes import get_current_user
-from src.db.database import get_db, Session, User
+from src.db.database import get_db, Session, User, CommandLog, SiemEvent
 from src.sandbox.manager import start_scenario_container, stop_scenario_container
 from src.cache.redis import cache_set, cache_get, cache_delete
 
@@ -146,6 +146,50 @@ async def end_session(
     await cache_delete(f"session:{session_id}:state")
 
     return {"completed_at": session.completed_at.isoformat()}
+
+
+@router.get("/{session_id}/commands")
+async def get_session_commands(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list:
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Session not found")
+    cmds = await db.execute(
+        select(CommandLog).where(CommandLog.session_id == session_id).order_by(CommandLog.created_at)
+    )
+    return [
+        {"id": c.id, "command": c.command, "tool": c.tool, "phase": c.phase, "created_at": c.created_at.isoformat()}
+        for c in cmds.scalars().all()
+    ]
+
+
+@router.get("/{session_id}/events")
+async def get_session_events(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list:
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Session not found")
+    evts = await db.execute(
+        select(SiemEvent).where(SiemEvent.session_id == session_id).order_by(SiemEvent.created_at)
+    )
+    return [
+        {
+            "id": e.id, "severity": e.severity, "message": e.message,
+            "source": e.source, "mitre_technique": e.mitre_technique,
+            "created_at": e.created_at.isoformat(),
+        }
+        for e in evts.scalars().all()
+    ]
 
 
 def _session_dict(s: Session) -> dict:

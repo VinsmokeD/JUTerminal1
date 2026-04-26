@@ -81,27 +81,27 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
     <div className="w-full">
       {/* ── Legend ────────────────────────────────────────────── */}
       <div className="flex items-center gap-6 mb-4 px-1">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="w-3 h-3 rounded-full bg-rose-500" />
+        <div className="flex items-center gap-2 text-xs text-txt-secondary font-mono">
+          <span className="w-3 h-3 rounded-full bg-cs-red" />
           Red Team — Commands
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="w-3 h-3 rounded-full bg-teal-500" />
+        <div className="flex items-center gap-2 text-xs text-txt-secondary font-mono">
+          <span className="w-3 h-3 rounded-full bg-cs-blue" />
           Blue Team — Detections
         </div>
         {gaps.length > 0 && (
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span className="w-4 h-px bg-slate-600 inline-block" />
+          <div className="flex items-center gap-2 text-xs text-txt-dim font-mono">
+            <span className="w-4 h-px bg-cs-border-glow inline-block" />
             Detection latency
           </div>
         )}
-        <div className="ml-auto text-xs text-slate-600 font-mono-terminal">
+        <div className="ml-auto text-xs text-txt-dim font-mono">
           {redItems.length} commands · {blueItems.length} detections
         </div>
       </div>
 
       {/* ── SVG Timeline ─────────────────────────────────────── */}
-      <div className="w-full overflow-x-auto rounded-xl border border-slate-800/60 bg-slate-900/60">
+      <div className="w-full overflow-x-auto rounded-cs border border-cs-border bg-surface-1/80">
         <svg
           width="100%"
           height={SVG_H}
@@ -113,21 +113,21 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
           {/* Background grid */}
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(100,116,139,0.06)" strokeWidth="1"/>
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(30,34,48,0.8)" strokeWidth="1"/>
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
 
           {/* Rail labels */}
-          <text x="8" y={RAIL_Y_RED + 4} fill="#f87171" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="600">
+          <text x="8" y={RAIL_Y_RED + 4} fill="#ff3b3b" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="600">
             ATTACK
           </text>
-          <text x="8" y={RAIL_Y_BLUE + 4} fill="#2dd4bf" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="600">
+          <text x="8" y={RAIL_Y_BLUE + 4} fill="#3b8bff" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="600">
             DETECT
           </text>
 
           {/* Center time axis */}
-          <line x1={PADDING_X} y1={AXIS_Y} x2="730" y2={AXIS_Y} stroke="#334155" strokeWidth="1" strokeDasharray="4 4"/>
+          <line x1={PADDING_X} y1={AXIS_Y} x2="730" y2={AXIS_Y} stroke="#1e2230" strokeWidth="1" strokeDasharray="4 4"/>
 
           {/* Rail backgrounds */}
           <rect x={PADDING_X} y={RAIL_Y_RED - 24} width="660" height="48" rx="8"
@@ -143,10 +143,10 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
             return (
               <g key={i}>
                 <line x1={x1} y1={RAIL_Y_RED + DOT_R} x2={x2} y2={RAIL_Y_BLUE - DOT_R}
-                  stroke="#475569" strokeWidth="1" strokeDasharray="3 3"/>
+                  stroke="#2a2f40" strokeWidth="1" strokeDasharray="3 3"/>
                 {/* Gap label */}
                 <text x={midX} y={AXIS_Y - 4} textAnchor="middle"
-                  fill="#64748b" fontSize="9" fontFamily="JetBrains Mono, monospace">
+                  fill="#4a5068" fontSize="9" fontFamily="JetBrains Mono, monospace">
                   +{g.label}
                 </text>
               </g>
@@ -181,13 +181,13 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
                 {isHovered && (
                   <g>
                     <rect x={x - 60} y={4} width={120} height={32} rx="4"
-                      fill="#1e293b" stroke="#ef4444" strokeWidth="0.5"/>
+                      fill="#0d0f14" stroke="#ff3b3b" strokeWidth="0.5"/>
                     <text x={x} y={16} textAnchor="middle"
-                      fill="#f87171" fontSize="9" fontFamily="JetBrains Mono, monospace">
+                      fill="#ff3b3b" fontSize="9" fontFamily="JetBrains Mono, monospace">
                       {(cmd.command || 'command').slice(0, 24)}
                     </text>
                     <text x={x} y={28} textAnchor="middle"
-                      fill="#64748b" fontSize="8" fontFamily="JetBrains Mono, monospace">
+                      fill="#4a5068" fontSize="8" fontFamily="JetBrains Mono, monospace">
                       {new Date(cmd.ms).toLocaleTimeString()}
                     </text>
                   </g>
@@ -217,7 +217,7 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
                   style={{ transition: 'r 0.15s' }}/>
                 {/* Label (below dot) */}
                 <text x={x} y={RAIL_Y_BLUE + DOT_R + 12} textAnchor="middle"
-                  fill="#94a3b8" fontSize="9" fontFamily="JetBrains Mono, monospace"
+                  fill="#8890a4" fontSize="9" fontFamily="JetBrains Mono, monospace"
                   className="select-none">
                   {label}
                 </text>
@@ -232,13 +232,13 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
                 {isHovered && (
                   <g>
                     <rect x={x - 70} y={SVG_H - 50} width={140} height={40} rx="4"
-                      fill="#1e293b" stroke={color} strokeWidth="0.5"/>
+                      fill="#0d0f14" stroke={color} strokeWidth="0.5"/>
                     <text x={x} y={SVG_H - 35} textAnchor="middle"
-                      fill="#e2e8f0" fontSize="9" fontFamily="JetBrains Mono, monospace">
+                      fill="#e8eaf0" fontSize="9" fontFamily="JetBrains Mono, monospace">
                       {(ev.message || '').slice(0, 28)}
                     </text>
                     <text x={x} y={SVG_H - 22} textAnchor="middle"
-                      fill="#64748b" fontSize="8" fontFamily="JetBrains Mono, monospace">
+                      fill="#4a5068" fontSize="8" fontFamily="JetBrains Mono, monospace">
                       {new Date(ev.ms).toLocaleTimeString()}
                     </text>
                   </g>
@@ -256,19 +256,19 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
             label="Avg detection gap"
             value={formatGap(gaps.reduce((s, g) => s + g.gapMs, 0) / gaps.length)}
             sub="attack → first alert"
-            color="text-yellow-400"
+            color="text-amber-warn"
           />
           <StatCard
             label="Fastest detection"
             value={formatGap(Math.min(...gaps.map((g) => g.gapMs)))}
             sub="best case latency"
-            color="text-emerald-400"
+            color="text-green-signal"
           />
           <StatCard
             label="Slowest detection"
             value={formatGap(Math.max(...gaps.map((g) => g.gapMs)))}
             sub="worst case latency"
-            color="text-rose-400"
+            color="text-cs-red"
           />
         </div>
       )}
@@ -278,25 +278,25 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
 
 function StatCard({ label, value, sub, color }) {
   return (
-    <div className="bg-slate-900/60 border border-slate-800/60 rounded-xl p-4 text-center">
-      <div className={`text-2xl font-bold font-mono-terminal ${color}`}>{value}</div>
-      <div className="text-slate-400 text-xs mt-1 font-medium">{label}</div>
-      <div className="text-slate-600 text-xs mt-0.5">{sub}</div>
+    <div className="bg-surface-2/60 border border-cs-border rounded-cs p-4 text-center">
+      <div className={`text-2xl font-bold font-mono ${color}`}>{value}</div>
+      <div className="text-txt-secondary text-xs mt-1 font-medium font-mono">{label}</div>
+      <div className="text-txt-dim text-xs mt-0.5 font-mono">{sub}</div>
     </div>
   )
 }
 
 function EmptyTimeline() {
   return (
-    <div className="rounded-xl border border-slate-800/60 bg-slate-900/60 p-10 text-center">
-      <div className="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center mx-auto mb-3">
-        <svg className="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <div className="rounded-cs border border-cs-border bg-surface-2/30 p-10 text-center">
+      <div className="w-12 h-12 rounded-full bg-surface-3 flex items-center justify-center mx-auto mb-3">
+        <svg className="w-6 h-6 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round"
             d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5" />
         </svg>
       </div>
-      <p className="text-slate-500 text-sm">No timeline data yet</p>
-      <p className="text-slate-700 text-xs mt-1">Complete the scenario to see the attack-detection timeline</p>
+      <p className="text-txt-dim text-sm font-mono">No timeline data yet</p>
+      <p className="text-txt-dim/60 text-xs mt-1">Complete the scenario to see the attack-detection timeline</p>
     </div>
   )
 }

@@ -20,23 +20,35 @@ export default function PhaseTrail({ methodology = 'ptes', role = 'red', current
           <div key={num} className="flex items-center gap-0.5 min-w-0">
             <div
               title={label}
-              className={`flex items-center justify-center w-5 h-5 rounded-full text-xs font-mono flex-shrink-0 border transition-colors ${
+              className={`flex items-center justify-center w-5 h-5 rounded-full text-xs font-mono flex-shrink-0 border transition-all duration-200 ${
                 active
-                  ? 'bg-blue-600 border-blue-400 text-white'
+                  ? role === 'red'
+                    ? 'bg-cs-red/20 border-cs-red text-cs-red'
+                    : 'bg-cs-blue/20 border-cs-blue text-cs-blue'
                   : done
-                  ? 'bg-gray-700 border-gray-600 text-gray-400'
-                  : 'bg-transparent border-gray-700 text-gray-600'
+                  ? 'bg-surface-3 border-cs-border-glow text-txt-dim'
+                  : 'bg-transparent border-cs-border text-txt-dim/40'
               }`}
             >
-              {done ? '✓' : num}
+              {done ? (
+                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              ) : num}
             </div>
             {i < phases.filter(Boolean).length - 1 && (
-              <div className={`h-px w-4 flex-shrink-0 ${done ? 'bg-gray-600' : 'bg-gray-800'}`} />
+              <div className={`h-px w-4 flex-shrink-0 transition-colors duration-200 ${
+                done
+                  ? role === 'red' ? 'bg-cs-red/30' : 'bg-cs-blue/30'
+                  : 'bg-cs-border'
+              }`} />
             )}
           </div>
         )
       })}
-      <span className="text-gray-500 text-xs ml-2 truncate hidden sm:block">
+      <span className={`text-xs ml-2 truncate hidden sm:block font-mono ${
+        role === 'red' ? 'text-cs-red/70' : 'text-cs-blue/70'
+      }`}>
         {phases[currentPhase - 1] || ''}
       </span>
     </div>
