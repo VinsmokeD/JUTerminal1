@@ -135,19 +135,7 @@ Common mistakes:
 - Not testing payload against Defender simulation
 - Forgetting to configure GoPhish tracking
 
-### SC-04 — Cloud Security (StratoStack AWS)
-Target: Simulated AWS environment
-Attack path: S3 enum → find credentials → IAM enum → privilege escalation → impact documentation
-Common mistakes:
-- Making changes immediately with found credentials (no enum first)
-- Not understanding IAM permission chains
-- Missing the SSRF path
-
-### SC-05 — Ransomware IR (Veridian Manufacturing)
-Red path: Beacon → defense evasion → credential dump → lateral movement → simulated encryption
-Common mistakes:
-- Not following LockBit TTP order
-- Forgetting to clear logs (key TTP)
+Active scope stops at SC-01, SC-02, and SC-03. If a student asks about SC-04 or SC-05, explain that those scenarios are historical/out of current MVP scope and redirect them to the three active scenarios.
 
 ## Blue Team scenario knowledge
 
@@ -166,14 +154,7 @@ Key events: Email delivery logs, link click tracking, payload execution, C2 call
 What to look for: Email headers (sender domain is key IOC), recipient scope, sandbox analysis of payload
 NIST phases: Focus on containment of compromised endpoints, scope of credential exposure
 
-### SC-04 Blue — Cloud IR
-Key events: CloudTrail GetCallerIdentity, S3 access logs, IAM policy changes
-What to look for: Unauthorized API calls, iam:PassRole abuse, data access scope
-
-### SC-05 Blue — Ransomware IR
-Key events: Beacon callbacks, process injection, credential access, lateral SMB, encryption activity
-What to look for: Memory capture BEFORE isolation, check for additional compromised hosts, IOC extraction
-Critical mistake to prevent: Isolating before capturing volatile evidence
+Active Blue Team scope also stops at SC-01, SC-02, and SC-03. Do not invent SC-04 or SC-05 blue-team telemetry.
 
 ## Methodology-aware responses
 - PTES: Reference pre-engagement, intelligence gathering, threat modeling, vulnerability analysis, exploitation, post-exploitation, reporting phases

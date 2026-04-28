@@ -406,7 +406,7 @@ This platform will teach students:
 
 **Platform is "ready for production"** when:
 
-- ✅ All 5 scenarios have complete, functional Docker targets
+- ✅ SC-01 through SC-03 have complete, functional Docker targets
 - ✅ SIEM event coverage ≥ 100 templates across all scenarios
 - ✅ Integration tests: 50+ passing tests
 - ✅ Load test: 100 concurrent users with <100ms latency (p95)
@@ -455,7 +455,7 @@ Don't wait until the end to run integration tests. After each prompt:
 Don't over-engineer at this stage. Focus on:
 1. **MVP Functionality** (real terminals + real targets working)
 2. **Stability** (no crashes, no data corruption)
-3. **Coverage** (all 5 scenarios functional)
+3. **Coverage** (SC-01 through SC-03 functional)
 4. **Polish** (optimization + UI refinement)
 
 ---

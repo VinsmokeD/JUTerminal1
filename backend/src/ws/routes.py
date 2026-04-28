@@ -1,12 +1,13 @@
 import asyncio
 import json
+import uuid
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.db.database import AsyncSessionLocal, Session, CommandLog
+from src.db.database import AsyncSessionLocal, Session, CommandLog, SiemEvent
 from src.sandbox.terminal import stream_terminal_output, send_terminal_input
 from src.siem.engine import process_command_for_siem
 from src.ai.monitor import get_ai_hint
@@ -173,7 +174,19 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         command=command,
                         tool=tool_name or None,
                         phase=session_state.get("phase", 1),
+                        triggered_siem_events=[ev.get("id") for ev in siem_events],
                     ))
+                    for ev in siem_events:
+                        db.add(SiemEvent(
+                            id=str(uuid.uuid4()),
+                            session_id=session_id,
+                            severity=ev.get("severity", "LOW"),
+                            message=ev.get("message", "SIEM event detected"),
+                            raw_log=ev.get("raw_log"),
+                            mitre_technique=ev.get("mitre_technique") or ev.get("mitre_id"),
+                            source_ip=ev.get("source_ip"),
+                            source=ev.get("source", "attacker"),
+                        ))
                     await db.commit()
 
                 # Store command in Redis for AI context

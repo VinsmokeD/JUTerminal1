@@ -15,6 +15,7 @@ from src.db.database import get_db, User
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 PASSWORD_HASH_PREFIX = "bcrypt_sha256$"
+LEGACY_PASSWORD_HASH_PREFIXES = ("bcrypt-sha256$",)
 
 
 class UserCreate(BaseModel):
@@ -35,11 +36,23 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain: str, hashed: str) -> bool:
+    stored_hash = hashed
     if hashed.startswith(PASSWORD_HASH_PREFIX):
-        digest = hashlib.sha256(plain.encode("utf-8")).hexdigest().encode("ascii")
-        stored = hashed.removeprefix(PASSWORD_HASH_PREFIX).encode("ascii")
-        return bcrypt.checkpw(digest, stored)
-    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("ascii"))
+        stored_hash = hashed.removeprefix(PASSWORD_HASH_PREFIX)
+        password = hashlib.sha256(plain.encode("utf-8")).hexdigest().encode("ascii")
+    elif any(hashed.startswith(prefix) for prefix in LEGACY_PASSWORD_HASH_PREFIXES):
+        for prefix in LEGACY_PASSWORD_HASH_PREFIXES:
+            if hashed.startswith(prefix):
+                stored_hash = hashed.removeprefix(prefix)
+                break
+        password = hashlib.sha256(plain.encode("utf-8")).hexdigest().encode("ascii")
+    else:
+        password = plain.encode("utf-8")
+
+    try:
+        return bcrypt.checkpw(password, stored_hash.encode("ascii"))
+    except ValueError:
+        return False
 
 
 def create_token(user_id: str, username: str) -> str:

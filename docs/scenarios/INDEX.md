@@ -521,11 +521,11 @@ Want to create SC-06 or improve existing scenarios?
 ## Support
 
 - **Docs**: Full documentation at [docs/INDEX.md](../INDEX.md)
-- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/cybersim/issues)
-- **Questions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/cybersim/discussions)
+- **Issues**: [GitHub Issues](https://github.com/VinsmokeD/JUTerminal1/issues)
+- **Questions**: [GitHub Discussions](https://github.com/VinsmokeD/JUTerminal1/discussions)
 
 ---
 
-**Status**: All 5 scenarios fully implemented and tested ✅  
+**Status**: SC-01 through SC-03 implemented and verified for the current defense scope.  
 **Last Updated**: 2026-04-10  
 **Version**: 1.0.0 Release Candidate

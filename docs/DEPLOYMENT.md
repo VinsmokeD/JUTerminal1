@@ -554,7 +554,7 @@ docker-compose logs -f
 
 ## Support & Issues
 
-- **GitHub Issues**: [Report problems](https://github.com/YOUR_USERNAME/cybersim/issues)
+- **GitHub Issues**: [Report problems](https://github.com/VinsmokeD/JUTerminal1/issues)
 - **Documentation**: [Full docs](INDEX.md)
 - **Architecture**: [System design](ARCHITECTURE.md)
 

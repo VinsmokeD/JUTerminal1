@@ -309,7 +309,7 @@ The system is ready to handle:
 
 ```bash
 # One-liner to deploy locally
-git clone https://github.com/YOUR_USERNAME/cybersim.git && \
+git clone https://github.com/VinsmokeD/JUTerminal1.git && \
 cd cybersim && \
 cp .env.example .env && \
 # Edit .env to set GEMINI_API_KEY and JWT_SECRET \

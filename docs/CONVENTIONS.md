@@ -556,5 +556,5 @@ npm install -D prettier eslint vitest @testing-library/react
 Refer to:
 - **[Architectural Decisions](docs/ARCHITECTURE.md)**
 - **[Development Setup](DEVELOPMENT.md)**
-- **[GitHub Issues](https://github.com/YOUR_USERNAME/cybersim/issues)**
+- **[GitHub Issues](https://github.com/VinsmokeD/JUTerminal1/issues)**
 

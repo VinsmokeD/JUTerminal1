@@ -35,8 +35,11 @@ from httpx_ws import aconnect_ws
 # ── App bootstrap ──────────────────────────────────────────────────────────
 os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("JWT_SECRET", "test-secret-for-ci-only-do-not-use-in-prod")
-os.environ.setdefault("POSTGRES_URL", "postgresql+asyncpg://cybersim:cybersim@localhost:5432/cybersim_test")
-os.environ.setdefault("REDIS_URL", "redis://localhost:6379/1")
+os.environ["POSTGRES_URL"] = os.environ.get(
+    "TEST_POSTGRES_URL",
+    "postgresql+asyncpg://cybersim:change_this_password@localhost:5432/cybersim",
+)
+os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://localhost:6379/1")
 
 from src.main import app  # noqa: E402  (must come after env setup)
 
@@ -198,7 +201,7 @@ async def test_engine_gate_ungated_tool_passes():
     mock_db = AsyncMock()
     with patch("src.scenarios.engine._get_current_phase", return_value=1):
         await check_gate(
-            command="nmap -sV 172.20.1.20",
+            command="curl -I http://app.novamed.local",
             session_id="fake-session-id",
             scenario_id="SC-01",
             db=mock_db,

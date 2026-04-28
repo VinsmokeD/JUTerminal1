@@ -561,7 +561,7 @@ git rebase --abort
 
 ## Questions?
 
-- Check [GitHub Issues](https://github.com/YOUR_USERNAME/cybersim/issues)
+- Check [GitHub Issues](https://github.com/VinsmokeD/JUTerminal1/issues)
 - Review [CONVENTIONS.md](CONVENTIONS.md) for code style
 - Ask maintainers in discussions
 

@@ -187,10 +187,10 @@ All agents enforce these on every change. No STATE_SAVE is valid if any guardrai
 | 18 | Final integration + End-to-End Tests | ✅ Done locally |
 | 19-22 | Unified Memory & Telemetry | ✅ Done |
 
-**Immediate blockers**:
-1. Docker Desktop offline — must be started manually to run E2E test suite.
-2. `GEMINI_API_KEY` in `.env` is a placeholder — replace with real Google AI Studio key for Socratic hints.
-3. Kali Dockerfile apt-get dependencies require pinning.
+**Immediate blockers / risks**:
+1. `GEMINI_API_KEY` in `.env` may be a placeholder — replace with a real Google AI Studio key for Socratic hints during live demos.
+2. Kali Dockerfile apt-get dependencies require pinning.
+3. Keep regression verification current with `python -m pytest`, `docker compose config --quiet`, frontend build, and browser E2E before defense demos.
 
 ---
 

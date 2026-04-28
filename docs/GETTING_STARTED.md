@@ -16,7 +16,7 @@ Welcome to CyberSim! This guide will help you set up the platform quickly.
 ### 1. Clone and Configure
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/cybersim.git
+git clone https://github.com/VinsmokeD/JUTerminal1.git
 cd cybersim
 cp .env.example .env
 ```
@@ -140,7 +140,7 @@ ENVIRONMENT=production docker-compose -f docker-compose.yml -f docker-compose.pr
 
 ## Getting Help
 
-- **GitHub Issues**: [Report bugs](https://github.com/YOUR_USERNAME/cybersim/issues)
+- **GitHub Issues**: [Report bugs](https://github.com/VinsmokeD/JUTerminal1/issues)
 - **Docs**: [Full documentation](INDEX.md)
 - **Architecture**: [System design](ARCHITECTURE.md)
 - **Scenarios**: [Scenario specs](scenarios/INDEX.md)

@@ -1,8 +1,10 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     ENVIRONMENT: str = "development"
     LOG_LEVEL: str = "INFO"
 
@@ -38,10 +40,5 @@ class Settings(BaseSettings):
     HINT_L2_PENALTY: int = 10
     HINT_L3_PENALTY: int = 20
     TIME_BONUS_THRESHOLD_MINUTES: int = 120
-
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
-
 
 settings = Settings()

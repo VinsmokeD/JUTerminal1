@@ -105,39 +105,9 @@ Containers:
 Special: GoPhish dashboard exposed at http://localhost:3333 (mapped from container)
 ```
 
-### SC-04 — Cloud misconfiguration
-```
-Network name:    cybersim-sc04
-Subnet:          172.20.4.0/24
-Gateway:         172.20.4.1
+### Frozen scenario ranges
 
-Containers:
-  kali-sc04        172.20.4.10   Kali + awscli configured to point to localstack
-  localstack-sc04  172.20.4.20   LocalStack (AWS simulation: S3, IAM, EC2 meta, Lambda)
-  webapp-sc04      172.20.4.30   SSRF-vulnerable Flask app (StratoStack portal)
-
-LocalStack services enabled: s3, iam, sts, ec2, lambda, cloudtrail, guardduty
-Pre-seeded: 3 S3 buckets (one public), IAM roles with misconfigs, Lambda with env vars
-AWS_ENDPOINT_URL in kali-sc04: http://172.20.4.20:4566
-```
-
-### SC-05 — Ransomware IR simulation
-```
-Network name:    cybersim-sc05
-Subnet:          172.20.5.0/24
-Gateway:         172.20.5.1
-
-Containers:
-  kali-sc05        172.20.5.10   Red team terminal (post-access simulation)
-  c2-sc05          172.20.5.20   Simulated C2 server (netcat listener + beacon sim)
-  victim-ws-sc05   172.20.5.30   Compromised Windows workstation sim
-  fileserver-sc05  172.20.5.40   SMB file server (lateral movement target)
-  dc-sc05          172.20.5.50   Domain controller (exfil target)
-
-Blue team tools (separate containers, blue-side access only):
-  splunk-sc05      172.20.5.100  Splunk Free (pre-indexed with scenario logs)
-  velociraptor-sc05 172.20.5.101 Velociraptor DFIR server
-```
+CyberSim currently exposes and verifies SC-01, SC-02, and SC-03 only. Later scenario ranges are historical design material and must not be treated as active network topology until the roadmap explicitly reopens them.
 
 ---
 

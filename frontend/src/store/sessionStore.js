@@ -38,6 +38,7 @@ export const useSessionStore = create((set, get) => ({
   setPhase: (phase) => set({ phase }),
   setScore: (score) => set({ score }),
   setAiMode: (mode) => set({ aiMode: mode }),
+  setSiemEvents: (events) => set({ siemEvents: events || [] }),
 
   addSiemEvent: (event) => set((s) => ({ siemEvents: [event, ...s.siemEvents].slice(0, 200) })),
 

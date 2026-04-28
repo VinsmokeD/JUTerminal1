@@ -20,6 +20,11 @@ _last_poll_time: str = "now-1m"
 _active_sessions: Dict[str, str] = {}  # session_id -> scenario_id
 
 
+def _event_file_stem(scenario_id: str) -> str:
+    """Normalize scenario IDs such as SC-01 to event file stems such as sc01."""
+    return scenario_id.lower().replace("-", "")
+
+
 async def queue_event(session_id: str, event: dict) -> None:
     """Queue an event for batched publishing (reduces Redis round-trips)."""
     if _event_queue is None:
@@ -235,7 +240,7 @@ async def process_command_for_siem(session_id: str, state: dict, command: str) -
         events_file = os.path.join(
             os.path.dirname(__file__),
             "events",
-            f"{scenario_id}_events.json"
+            f"{_event_file_stem(scenario_id)}_events.json"
         )
 
         if not os.path.exists(events_file):
@@ -271,6 +276,14 @@ async def process_command_for_siem(session_id: str, state: dict, command: str) -
                     triggered_event["id"] = event.get("id", f"event_{uuid.uuid4().hex[:8]}")
                     triggered_event["timestamp"] = datetime.now(timezone.utc).isoformat()
                     triggered_event["created_at"] = datetime.now(timezone.utc).isoformat()
+                    triggered_event.setdefault("source", "attacker")
+                    triggered_event.setdefault("source_ip", state.get("source_ip", "172.20.1.10"))
+                    if triggered_event.get("raw_log"):
+                        triggered_event["raw_log"] = (
+                            triggered_event["raw_log"]
+                            .replace("{src_ip}", triggered_event["source_ip"])
+                            .replace("{source_ip}", triggered_event["source_ip"])
+                        )
 
                     # Queue the event for Redis pub/sub broadcast
                     await queue_event(session_id, triggered_event)

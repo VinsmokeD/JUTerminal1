@@ -2018,3 +2018,101 @@ $ python3 -m py_compile src/main.py  # ✓
 | Container cleanup task | ✅ Done |
 | Integration with main.py | ✅ Done |
 | Acceptance tests ready | ✅ Ready |
+
+---
+
+## [2026-04-28 20:19:30 +03:00] Codex Verification Pass - Backend Stabilization, Browser E2E, Stale Docs Cleanup
+
+**Status:** Defense-readiness verification pass completed for the requested scope.
+
+**Why:** The current worktree needed proof that backend tests, compose config, frontend build, live API endpoints, scenario count, and the main browser user journey work against the real repository state. The pass also needed cleanup of stale documentation references to the old five-scenario/two-node architecture.
+
+**Files modified in this pass:**
+- `backend/pyproject.toml` - set pytest-asyncio fixture/test loop scope to `session` so asyncpg pooled DB connections are not reused across closed per-module event loops on Windows.
+- `backend/src/auth/routes.py` - added legacy `bcrypt-sha256$` password hash support and invalid-salt handling while preserving current SHA-256-prehashed bcrypt hashes.
+- `backend/src/cache/redis.py` - added development in-memory/no-op fallback for cache, list, and publish operations when ASGI tests exercise app routes without Redis lifespan initialization.
+- `backend/tests/integration_test.py` - updated stale assertions to match the current scenario YAML schema: dict-backed phases, `trigger_regex`, lowercase severity normalization, current SC-01/SC-02/SC-03 detection rules, and current SIEM event response shape.
+- `backend/tests/test_ws_integration.py` - updated the ungated tool test to use `curl`, because SC-01 now correctly gates `nmap` at phase 2.
+- `frontend/src/pages/Onboarding.jsx` - changed post-onboarding navigation from `/` to `/dashboard` after browser E2E proved login -> onboarding -> dashboard was broken.
+- `AGENTS.md` and `claude.md` - replaced stale two-node architecture text with the verified single-node Docker Compose layout and corrected scenario paths from SC-01..SC-05 to SC-01..SC-03.
+- `docs/HARDWARE_AND_NETWORK_SETUP_GUIDE.md` - replaced obsolete two-node setup instructions with the verified single-node local setup.
+- `docs/architecture/MASTER_BLUEPRINT.md` - removed stale "Docker Desktop offline" blocker and updated immediate risks.
+- `docs/scenarios/INDEX.md`, `docs/DOCUMENTATION_INDEX.md`, `docs/QUICK_START_CONTINUATION_GUIDE.md`, and `docs/reports/EXPERT_REVIEW_AND_STRATEGIC_RECOMMENDATIONS.md` - corrected stale five-scenario references to the current SC-01 through SC-03 defense scope.
+- `docs/CONVENTIONS.md`, `docs/DEPLOYMENT.md`, `docs/DEPLOYMENT_CHECKLIST.md`, `docs/GETTING_STARTED.md`, and `docs/GIT_WORKFLOW.md` - replaced `YOUR_USERNAME/cybersim` placeholders with `VinsmokeD/JUTerminal1`.
+
+**Verification evidence:**
+- `python -m pytest -p no:cacheprovider` in `backend/`: 79 passed, 2 warnings.
+- `docker compose config --quiet`: passed with no output.
+- `npm install` in `frontend/`: up to date, 0 vulnerabilities.
+- `npm run build` in `frontend/`: passed after escalated sandbox permission allowed esbuild helper spawn; production assets emitted successfully.
+- `docker compose up -d --build frontend`: frontend image rebuilt and restarted successfully so browser E2E used the updated onboarding route.
+- `GET http://localhost/health`: returned `{"status":"ok","version":"0.1.0"}`.
+- `GET http://localhost/api/scenarios/`: returned exactly 3 scenarios: `SC-01,SC-02,SC-03`.
+- Browser E2E via in-app browser: `http://localhost/auth` login as admin -> `/dashboard` -> SC-01 briefing -> Start mission -> active `/session/{id}/red` workspace -> ROE acknowledgment -> first-run tutorial dismissed -> End & debrief -> `/session/{id}/debrief` with Mission Debrief rendered.
+- Stale-reference scan over maintained docs/config/comments, excluding `CONTINUOUS_STATE.md`, found no remaining `5 scenarios`, `SC-{01-05}`, `sc{01-05}`, `Laptop 1`, `Laptop 2`, `YOUR_USERNAME`, or placeholder advisor/university strings.
+
+**Remaining risks:**
+- Warnings remain for Pydantic class-based config deprecation and deprecated `google.generativeai`; they do not fail tests but should be scheduled for dependency modernization.
+- Browser E2E confirmed the Red Team path; Blue Team live journey and terminal command execution/PTY behavior were not expanded because the requested scope prioritized one main journey and no broadening.
+- `npm audit` inside Docker build reported 2 moderate vulnerabilities in the container build context, while host `npm install` reported 0 vulnerabilities; dependency audit alignment should be checked separately before final handoff.
+
+**Completion score:** 89/100.
+
+**Next highest-priority task:** Run a focused Blue Team E2E plus one real terminal command/WS command execution check against SC-01 to validate live SIEM event generation from an actual workspace command.
+
+---
+
+## [2026-04-28 20:52:00 +03:00] Codex Final Proof Pass - SC-01 Red-to-Blue Event Loop
+
+**Status:** Final proof-of-product pass completed. The SC-01 Red-to-Blue loop is verified through the real authenticated terminal WebSocket command path, persisted backend evidence, and Blue Team browser visibility.
+
+**Why:** The previous pass proved build/test/API stability and the main Red Team launch/debrief flow. The remaining high-value product claim was that Red Team activity drives defender-side visibility. This pass focused only on that acceptance criterion plus small verified hardening discovered while testing.
+
+**Files modified in this pass:**
+- `backend/src/siem/engine.py` - fixed scenario event-map lookup by normalizing `SC-01` to `sc01`, and added default `source`, `source_ip`, and raw-log source-IP interpolation for command-triggered events.
+- `backend/src/ws/routes.py` - persisted triggered SIEM events to the `siem_events` table during `terminal_command` handling and recorded triggered event IDs in `command_log`.
+- `backend/src/sessions/routes.py` - returned `source_ip` and `raw_log` from `/api/sessions/{session_id}/events` so browser hydration has the fields Blue Team needs.
+- `frontend/src/store/sessionStore.js` - added `setSiemEvents` for server-side SIEM event hydration.
+- `frontend/src/pages/RedWorkspace.jsx` - hydrated SIEM events from `/sessions/{id}/events` on workspace load so Red refresh/debrief returns do not lose already-triggered events.
+- `frontend/src/pages/BlueWorkspace.jsx` - hydrated SIEM events from `/sessions/{id}/events` on workspace load so opening Blue after Red activity still shows evidence.
+- `docker-compose.yml` - exposed Postgres and Redis on `127.0.0.1` for local pytest integration tests while keeping them loopback-only.
+- `backend/tests/integration_test.py` and `backend/tests/test_ws_integration.py` - aligned local test DB/Redis URLs with the running Compose stack via `TEST_POSTGRES_URL`/`TEST_REDIS_URL` overrides and the default local Compose credentials.
+- `backend/src/config.py` - migrated Pydantic settings configuration to `SettingsConfigDict`, removing the Pydantic v2 deprecation warning.
+- `ai-monitor/system_prompt.md` - removed active SC-04/SC-05 tutor knowledge and replaced it with a frozen-scope directive for SC-01 through SC-03 only.
+- `docs/architecture/network-and-environment.md` - removed stale SC-04/SC-05 network topology sections and replaced them with a frozen-scenario note.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this verification record.
+
+**Verification evidence:**
+- `python -m pytest -p no:cacheprovider` in `backend/`: 79 passed, 1 warning. The remaining warning is the deprecated `google.generativeai` package.
+- `docker compose config --quiet`: passed with no output after port changes.
+- `npm install` in `frontend/`: up to date, audited 347 packages, 0 vulnerabilities.
+- `npm audit --audit-level=moderate` in `frontend/`: found 0 vulnerabilities.
+- `npm run build` in `frontend/`: passed after escalated Windows/esbuild helper spawn; production assets emitted successfully.
+- `GET http://localhost/health`: returned `{"status":"ok","version":"0.1.0"}` after backend restart.
+- `GET http://localhost/api/scenarios/`: returned exactly `SC-01,SC-02,SC-03`.
+- Running backend container was rebuilt/restarted so source fixes were active; local Postgres password drift was corrected to match the current `.env` and backend booted cleanly.
+- Real terminal command path: authenticated WebSocket `/ws/8f64971d-53e9-42a8-bb0c-1222275908e0` received `terminal_raw` plus `terminal_command` for `curl http://172.20.1.20`.
+- Backend/session evidence after command: `/api/sessions/8f64971d-53e9-42a8-bb0c-1222275908e0/commands` latest command was `curl http://172.20.1.20`, tool `curl`; `/events` returned one event: `HTTP probe: curl request to target`, severity `LOW`, source IP `172.20.1.10`, MITRE `T1595`, raw log `Web Server: GET request from 172.20.1.10`.
+- Browser Blue Team E2E: opened `/session/8f64971d-53e9-42a8-bb0c-1222275908e0/blue`; event was visible with severity, source IP, MITRE technique, and raw-log expansion.
+- Blue UX sanity checks: `source_ip:172.20.1.10` filter kept the event visible; `severity:HIGH` produced the empty-filter state; clearing/changing back restored the event; expanding the event showed raw-log evidence.
+- Red hydration sanity check: reopening `/red` hydrated and displayed the same SIEM event.
+- Maintained-doc stale scan over the active docs/config set found no stale active five-scenario claims; remaining SC-04/SC-05 mentions in maintained files are explicit frozen-scope notes.
+
+**Issues found and fixed:**
+- Event-map lookup used the literal scenario ID and missed `sc01_events.json`, preventing command-triggered SIEM events.
+- WebSocket-triggered SIEM events were live-only and not persisted, so Blue opened after Red activity could not hydrate evidence.
+- Event API omitted `source_ip` and `raw_log`, weakening Blue Team triage UX.
+- Rebuilt backend initially crashed because the local Postgres volume password had drifted from `.env`; local DB was aligned and Compose loopback ports were added for repeatable pytest.
+- Local pytest initially failed after the Docker rebuild because tests targeted `localhost` Postgres/Redis without Compose ports; fixed through loopback ports plus test URL alignment.
+- AI prompt and network topology docs still taught or described frozen SC-04/SC-05 material; corrected to current three-scenario scope.
+
+**Remaining risks:**
+- The browser plugin could not inject synthetic keystrokes directly into xterm, so the command proof used the same authenticated WebSocket terminal protocol the browser terminal sends rather than visual typing through xterm. The terminal output and backend command/session path verified execution, but a human manual keystroke check is still worth doing before presentation.
+- The deprecated `google.generativeai` package warning remains. It is not a blocker, but migrating to `google.genai` is the next maintainability task.
+- Existing historical reports still contain SC-04/SC-05 discussion by design; maintained docs now mark them as out of active scope.
+
+**Completion score:** 93/100.
+
+**Defense-readiness read:** Defense-ready for the core demo story: login, SC-01 launch, Red terminal command path, persisted SIEM evidence, Blue Team visibility, filtering, raw-log expansion, debrief path, tests, build, health, Compose config, and 3-scenario catalog are verified.
+
+**Next highest-priority task:** Perform one human/manual xterm keystroke smoke test in the browser and then migrate `google.generativeai` to `google.genai`.

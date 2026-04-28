@@ -98,8 +98,8 @@
 - ✅ `docs/scenarios/SC-01-webapp-pentest.yaml` — Web app scenario
 - ✅ `docs/scenarios/SC-02-ad-compromise.yaml` — AD scenario
 - ✅ `docs/scenarios/SC-03-phishing.yaml` — Phishing scenario
-- ✅ `backend/src/scenarios/hints/sc{01-05}_hints.json` — All hints (step-by-step)
-- ✅ `backend/src/siem/events/sc{01-05}_events.json` — SIEM event maps
+- ✅ `backend/src/scenarios/hints/sc01_hints.json` through `sc03_hints.json` — Scenario hints
+- ✅ `docs/scenarios/SC-{01-03}-*.yaml` — Scenario specs with SIEM detection rules
 
 ### Code
 - ✅ `backend/src/` — FastAPI backend (complete)
@@ -260,7 +260,7 @@
 | Why design decision X? | EXPERT_REVIEW_AND_STRATEGIC_RECOMMENDATIONS.md |
 | What were recent changes? | CONTINUOUS_STATE.md |
 | How does architecture work? | docs/architecture/MASTER_BLUEPRINT.md |
-| What about specific scenarios? | docs/scenarios/SC-{01-05}-*.yaml |
+| What about specific scenarios? | docs/scenarios/SC-{01-03}-*.yaml |
 
 ---
 

@@ -27,8 +27,8 @@ All attack capabilities operate ONLY against isolated Docker containers. No real
 - If your tests fail, fix them entirely within your iteration. Do not pass broken or completely untested code states back to the continuity agent.
 
 ## Architecture in one paragraph
-React frontend (Vite) → FastAPI backend / Elastic SIEM → Distributed Docker scenario containers.
-The deployment is split across two nodes: Laptop 1 (Platform Node) runs the frontend, backend, Postgres, Redis, and Elastic SIEM. Laptop 2 (Sandbox Node) runs the Kali container and vulnerable target networks. The frontend has two workspaces: RedTeam (raw PTY Kali terminal to the Sandbox) and BlueTeam (real Elastic SIEM feed). The SIEM operates entirely on genuine logs (Filebeat forwarding WAF/Samba/Syslog from Laptop 2 to Laptop 1), replacing the legacy simulated Python SIEM engine.
+React frontend (Vite) -> FastAPI backend / Elastic SIEM -> isolated Docker scenario containers.
+The verified local deployment is a single-node Docker Compose stack: frontend, backend, Postgres, Redis, Elasticsearch/Filebeat, Nginx, and scenario containers run on the same Docker host. The frontend has two workspaces: Red Team (Kali-style terminal through the backend sandbox/session layer) and Blue Team (live SIEM/event feed). Scenario networks are internal-only Docker networks for SC-01, SC-02, and SC-03.
 
 ## Repository structure
 ```
@@ -100,10 +100,10 @@ cybersim/
 - SCENARIO_NETWORK_PREFIX — e.g. "172.20" (avoid collision with host)
 
 ## Scenario content locations
-- Scenario specs: docs/scenarios/SC-{01-05}-*.md
-- Docker networks: infrastructure/docker/scenarios/sc{01-05}/
-- SIEM event maps: backend/src/siem/events/sc{01-05}_events.json
-- Hint trees: backend/src/scenarios/hints/sc{01-05}_hints.json
+- Scenario specs: docs/scenarios/SC-{01-03}-*.yaml
+- Docker scenarios: infrastructure/docker/scenarios/sc01/, sc02/, sc03/
+- SIEM detection rules: soc_detection sections in docs/scenarios/SC-{01-03}-*.yaml
+- Hint trees: backend/src/scenarios/hints/sc01_hints.json through sc03_hints.json
 - AI system prompt: ai-monitor/system_prompt.md
 
 ## Coding conventions

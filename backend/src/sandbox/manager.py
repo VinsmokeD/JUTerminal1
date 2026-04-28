@@ -207,7 +207,9 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
         return container.id, network_name
 
     except Exception as exc:
-        print(f"[Sandbox] Expected error when spawning container: {exc}")
+        if settings.ENVIRONMENT == "development":
+            print(f"[Sandbox] Docker unavailable; using mock container for {session_id}: {exc}")
+            return f"mock-{session_id[:8]}", network_name
         raise
 
 

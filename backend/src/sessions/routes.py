@@ -186,6 +186,7 @@ async def get_session_events(
         {
             "id": e.id, "severity": e.severity, "message": e.message,
             "source": e.source, "mitre_technique": e.mitre_technique,
+            "source_ip": e.source_ip, "raw_log": e.raw_log,
             "created_at": e.created_at.isoformat(),
         }
         for e in evts.scalars().all()
@@ -195,6 +196,7 @@ async def get_session_events(
 def _session_dict(s: Session) -> dict:
     return {
         "id": s.id,
+        "session_id": s.id,
         "scenario_id": s.scenario_id,
         "role": s.role,
         "methodology": s.methodology,

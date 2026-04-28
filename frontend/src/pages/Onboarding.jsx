@@ -50,7 +50,7 @@ export default function Onboarding() {
     if (!selected) return
     await setSkillLevel(selected)
     await completeOnboarding()
-    navigate('/')
+    navigate('/dashboard')
   }
 
   return (

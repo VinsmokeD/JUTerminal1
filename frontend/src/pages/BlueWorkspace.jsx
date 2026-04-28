@@ -60,7 +60,7 @@ const NIST_PHASES = {
 export default function BlueWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { currentSession, phase, score, siemEvents, aiMode } = useSessionStore()
+  const { currentSession, phase, score, siemEvents, aiMode, setSiemEvents } = useSessionStore()
   const { skillLevel } = useAuthStore()
   const [session, setSession] = useState(currentSession)
   const [roeAcked, setRoeAcked] = useState(currentSession?.roe_acknowledged ?? false)
@@ -84,7 +84,8 @@ export default function BlueWorkspace() {
         .then(r => { setSession(r.data); setRoeAcked(r.data.roe_acknowledged) })
         .catch(() => navigate('/dashboard'))
     }
-  }, [session, sessionId, navigate])
+    api.get(`/sessions/${sessionId}/events`).then(r => setSiemEvents(r.data || [])).catch(() => {})
+  }, [session, sessionId, navigate, setSiemEvents])
 
   useEffect(() => {
     const interval = setInterval(() => setElapsed(e => e + 1), 1000)

@@ -14,7 +14,7 @@ import api from '../lib/api'
 export default function RedWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { currentSession, phase, score, aiMode, siemEvents } = useSessionStore()
+  const { currentSession, phase, score, aiMode, siemEvents, setSiemEvents } = useSessionStore()
   const { skillLevel } = useAuthStore()
   const [session, setSession] = useState(currentSession)
   const [roeAcked, setRoeAcked] = useState(currentSession?.roe_acknowledged ?? false)
@@ -32,7 +32,8 @@ export default function RedWorkspace() {
         .then(r => { setSession(r.data); setRoeAcked(r.data.roe_acknowledged) })
         .catch(() => navigate('/dashboard'))
     }
-  }, [session, sessionId, navigate])
+    api.get(`/sessions/${sessionId}/events`).then(r => setSiemEvents(r.data || [])).catch(() => {})
+  }, [session, sessionId, navigate, setSiemEvents])
 
   // Session timer
   useEffect(() => {

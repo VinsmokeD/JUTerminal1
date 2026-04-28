@@ -149,7 +149,7 @@ cd backend && pytest tests/integration_test.py -v
 
 - ✅ All 7 prompts executed successfully
 - ✅ CONTINUOUS_STATE.md has 7 new detailed entries
-- ✅ All 5 scenarios have complete Docker targets
+- ✅ SC-01 through SC-03 have complete Docker targets
 - ✅ SIEM event coverage ≥ 100 templates
 - ✅ Integration tests passing (50+ tests)
 - ✅ Platform handles 100 concurrent users without errors
@@ -201,7 +201,7 @@ cd backend && pytest tests/integration_test.py -v
 
 **Minimum (MVP)**:
 - ✅ Terminal works reliably
-- ✅ All 5 scenarios have exploitable targets
+- ✅ SC-01 through SC-03 have exploitable targets
 - ✅ SIEM shows relevant alerts
 - ✅ Scoring is accurate
 - ✅ Debrief reports are generated
