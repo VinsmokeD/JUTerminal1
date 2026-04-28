@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta, timezone
+import hashlib
+
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -11,8 +13,8 @@ from src.config import settings
 from src.db.database import get_db, User
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+PASSWORD_HASH_PREFIX = "bcrypt_sha256$"
 
 
 class UserCreate(BaseModel):
@@ -27,11 +29,17 @@ class Token(BaseModel):
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    digest = hashlib.sha256(password.encode("utf-8")).hexdigest().encode("ascii")
+    hashed = bcrypt.hashpw(digest, bcrypt.gensalt(rounds=12)).decode("ascii")
+    return f"{PASSWORD_HASH_PREFIX}{hashed}"
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    if hashed.startswith(PASSWORD_HASH_PREFIX):
+        digest = hashlib.sha256(plain.encode("utf-8")).hexdigest().encode("ascii")
+        stored = hashed.removeprefix(PASSWORD_HASH_PREFIX).encode("ascii")
+        return bcrypt.checkpw(digest, stored)
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("ascii"))
 
 
 def create_token(user_id: str, username: str) -> str:

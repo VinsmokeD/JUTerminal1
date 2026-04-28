@@ -68,4 +68,5 @@ echo ""
 
 # Keep service running and show logs
 echo "[*] Monitoring Postfix logs..."
-tail -f /var/log/mail.log
+touch /var/log/maillog
+tail -F /var/log/maillog

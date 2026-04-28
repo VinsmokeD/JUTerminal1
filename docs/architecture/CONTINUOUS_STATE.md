@@ -13,6 +13,35 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-04-28 20:18:00] - Claude Code (Repository Audit, Documentation Consolidation, and Runtime Hardening)
+* **Status**: Complete - public documentation consolidated, frontend build verified, scenario unit tests verified, SC-03 mail relay fixed and running healthy
+* **Why**: User requested a blunt product-minded repo audit and hardening pass to bring CyberSim closer to graduation-defense quality. The repo had a real implemented platform surface, but the public docs overstated scope by referencing five scenarios and placeholder GitHub/advisor/support values, normal pytest collection imported a Locust load-test module, frontend dependency installation failed because of an ESLint peer conflict, auth hashing failed under the local Python 3.14/global bcrypt stack, and the running SC-03 mail relay container was stuck in a restart loop.
+* **Where**:
+  - `README.md` - Rewritten as the public product README with three-scenario MVP scope, accurate quick start, verification status, architecture summary, security rules, and completion score.
+  - `docs/README.md` - New maintained documentation entry point.
+  - `docs/ARCHITECTURE.md` - Rewritten to match the active Docker/FastAPI/React/Postgres/Redis/Elastic topology and SC-01 to SC-03 profiles.
+  - `docs/FEATURES.md` - New feature/status matrix.
+  - `docs/SETUP.md` - Rewritten with current ports, Docker commands, scenario profiles, and verification commands.
+  - `docs/AI_SYSTEM.md` - New AI monitor documentation and safety boundary summary.
+  - `docs/ROADMAP.md` - New status/remaining-verification roadmap.
+  - `docs/CONTRIBUTING.md` - New concise contributor workflow and quality gates.
+  - `docs/AGENT_CONTEXT.md` - New agent-maintainer context bridge.
+  - `docs/INDEX.md` - Rewritten to point at the maintained documentation set and mark SC-04/SC-05 as historical/out of MVP.
+  - `backend/pyproject.toml` - Added pytest discovery pattern so Locust load tests are not collected by normal `python -m pytest`.
+  - `backend/src/auth/routes.py` - Replaced passlib context usage with direct bcrypt plus SHA-256 prehashing for new password hashes, while preserving verification support for legacy short bcrypt hashes.
+  - `frontend/package.json` and `frontend/package-lock.json` - Pinned ESLint to v8.57.1 to satisfy the existing React Hooks ESLint plugin peer dependency and generated a lockfile from `npm install`.
+  - `infrastructure/docker/scenarios/sc03/init-mailrelay.sh` - Fixed Postfix log tailing to use `/var/log/maillog` and keep the service alive.
+  - `infrastructure/docker/scenarios/sc03/postfix-main.cf` - Removed invalid/nonportable `maillog_file_prefixes` setting.
+  - `docs/architecture/CONTINUOUS_STATE.md` - Updated with this entry.
+* **What & How**:
+  - Documentation was consolidated into one public README plus a clean `docs/` information architecture. The maintained docs now state the active MVP truth: SC-01, SC-02, and SC-03 only. Historical process docs remain available but are no longer presented as the primary reviewer path.
+  - Pytest discovery now uses `python_files = ["test_*.py", "unit_test_*.py", "integration_test.py"]`, preventing `tests/load_test.py` from being imported as a pytest module. Locust remains runnable explicitly with `locust -f backend/tests/load_test.py --host=http://localhost`.
+  - Frontend install originally failed with `ERESOLVE` because `eslint@9` conflicted with `eslint-plugin-react-hooks@4.6.2`. Pinning ESLint to the latest v8 line resolved install, generated `package-lock.json`, and allowed `npm run build` to complete.
+  - Auth hashing now stores new hashes as `bcrypt_sha256$<bcrypt hash>`, prehashing the UTF-8 password with SHA-256 before bcrypt. This avoids bcrypt's 72-byte input limit/backend probe failure seen under the local Python 3.14 environment while still checking legacy bcrypt hashes directly.
+  - SC-03 mail relay was restarting with exit code 1. The Postfix config included an invalid parameter and the startup script tailed the wrong log path. Removing the invalid setting and tailing `/var/log/maillog` fixed the container; rebuilt `sc03-mailrelay` now reports `Up ... (healthy)`.
+  - Verification performed: `docker compose config --quiet` passed; `npm install` completed; `npm run build` passed with Vite; `python -m pytest -p no:cacheprovider tests/unit_test_scenarios.py` passed 30/30; focused auth registration test passed; `Invoke-RestMethod http://localhost/health` returned ok/version; `Invoke-RestMethod http://localhost/api/scenarios/` returned exactly 3 scenarios; `docker compose ps` showed core services, SC-01, SC-02, and fixed SC-03 mail relay up, with Postgres/Redis/Elastic/SC-01 WAF/SC-02 services healthy.
+  - Remaining unverified/known issues: full `python -m pytest` still has failures under the local Python 3.14 runner, partly from asyncpg event-loop behavior and partly from stale test expectations around methodology gates/YAML field names. Full browser E2E flow (login -> scenario -> terminal -> SIEM -> debrief) was not completed in this pass. The local `.env` appears to contain a real Gemini key and should be rotated if exposed outside the machine.
+
 ### [2026-04-16 16:10:00] - Claude Code (Bug Fixes & Full Platform Hardening)
 * **Status**: Complete — 9 bugs fixed across backend and frontend, all services re-verified
 * **Why**: User requested "make sure everything is working, fix improve and enhance all aspects". Performed a systematic code audit across all modules and found 9 actionable bugs ranging from a crash-level NameError to stale React closures and wrong Docker network names.
@@ -1989,4 +2018,3 @@ $ python3 -m py_compile src/main.py  # ✓
 | Container cleanup task | ✅ Done |
 | Integration with main.py | ✅ Done |
 | Acceptance tests ready | ✅ Ready |
-

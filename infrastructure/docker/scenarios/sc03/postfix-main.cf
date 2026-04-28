@@ -35,9 +35,6 @@ message_size_limit = 51200000
 virtual_alias_domains = orion-logistics.sim
 virtual_alias_maps = hash:/etc/postfix/virtual
 
-# Logging format for SIEM integration
-maillog_file_prefixes = [SMTP]
-
 # Transport maps for routing to victim simulator
 transport_maps = hash:/etc/postfix/transport
 

@@ -1,53 +1,28 @@
 # CyberSim Documentation Index
 
-## Getting Started
-- **[SETUP.md](SETUP.md)** - Initial setup and installation guide
-- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Quick start for first-time users
-- **[.env Configuration](.env.md)** - Environment variables reference
+Use [README.md](README.md) as the documentation home for this folder.
 
-## Project Overview
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and design
-- **[MASTER_BLUEPRINT.md](architecture/MASTER_BLUEPRINT.md)** - Complete platform specification
-- **[Phases & Roadmap](architecture/phases.md)** - Development phases and timeline
+## Maintained Core Docs
 
-## Development
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development environment setup
-- **[API Documentation](API.md)** - Backend API reference
-- **[CONTINUOUS_STATE.md](architecture/CONTINUOUS_STATE.md)** - Change tracking and state management
+- [Project README](../README.md)
+- [Docs README](README.md)
+- [Architecture](ARCHITECTURE.md)
+- [Features](FEATURES.md)
+- [Setup](SETUP.md)
+- [AI System](AI_SYSTEM.md)
+- [Roadmap](ROADMAP.md)
+- [Contributing](CONTRIBUTING.md)
+- [Agent Context](AGENT_CONTEXT.md)
 
-## Scenarios
-- **[Scenario Index](scenarios/INDEX.md)** - All 5 scenarios overview
-- **[SC-01: NovaMed Healthcare Portal](scenarios/SC-01-webapp-pentest.md)** - Web app penetration testing
-- **[SC-02: Nexora Financial AD](scenarios/SC-02-05-specs.md#sc-02)** - Active Directory compromise
-- **[SC-03: Orion Logistics Phishing](scenarios/SC-02-05-specs.md#sc-03)** - Phishing & Initial Access
-- **[SC-04: StratoStack Cloud Audit](scenarios/SC-02-05-specs.md#sc-04)** - AWS security assessment
-- **[SC-05: Veridian Ransomware IR](scenarios/SC-02-05-specs.md#sc-05)** - Incident Response
+## Reference Docs
 
-## Infrastructure
-- **[Docker Setup](architecture/network-and-environment.md)** - Container and network configuration
-- **[Terminal Proxy Architecture](architecture/terminal-proxy.md)** - Kali terminal implementation
-- **[Scenario Provisioning](architecture/scenario-provisioning.md)** - Container lifecycle management
-- **[SIEM Engine](soc/)** - Security event management
+- [Master Blueprint](architecture/MASTER_BLUEPRINT.md)
+- [Continuous State](architecture/CONTINUOUS_STATE.md)
+- [Scenario Index](scenarios/INDEX.md)
+- [Demo Runbook](CYBERSIM_DEMO_RUNBOOK.md)
+- [Testing Reports](testing/)
+- [Historical Reports](reports/)
 
-## AI & Monitoring
-- **[AI Monitor System](../ai-monitor/system_prompt.md)** - Gemini integration and hints
-- **[Discovery Tracking](../backend/src/ai/discovery_tracker.py)** - Command parsing and learning
+## Current MVP Scope
 
-## Deployment & Operations
-- **[DEPLOYMENT_CHECKLIST.md](../DEPLOYMENT_CHECKLIST.md)** - Pre-deployment requirements
-- **[Deployment Guide](DEPLOYMENT.md)** - Production deployment
-
-## Reports & Status
-- **[Status Report](architecture/CURRENT_STATUS_REPORT.md)** - Current project status
-- **[Audit Report](../AUDIT_REPORT.md)** - Project audit findings
-- **[Quality Assurance Report](../PROJECT_VERIFICATION_SUMMARY.md)** - QA summary
-
-## Contributing
-- **[Code Conventions](CONVENTIONS.md)** - Coding standards
-- **[Git Workflow](GIT_WORKFLOW.md)** - Git and commit conventions
-
----
-
-**Last Updated**: 2026-04-10  
-**Project**: CyberSim - Dual-Perspective Cybersecurity Training Platform  
-**Repository**: [GitHub](https://github.com/YOUR_USERNAME/cybersim)
+The maintained project scope is SC-01, SC-02, and SC-03. SC-04 and SC-05 references in historical documents are not part of the active MVP unless the roadmap explicitly reopens them.

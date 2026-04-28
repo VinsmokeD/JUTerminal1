@@ -1,199 +1,145 @@
-# CyberSim — Complete Setup Guide
+# CyberSim Setup
 
-## Prerequisites check
+## Prerequisites
 
-```bash
-docker --version          # Need 24.x+
-docker compose version    # Need v2+
-free -h                   # Need 16GB RAM minimum
-df -h /                   # Need 40GB free disk
-python3 --version         # For local dev without Docker
-node --version            # Need 20+
+- Docker Desktop or Docker Engine with Compose v2
+- Node.js 18 or newer
+- Python 3.11 for local backend development
+- 8 GB RAM minimum, 16 GB recommended
+- Google AI Studio API key for AI hints
+
+## Environment
+
+From the repo root:
+
+```powershell
+Copy-Item .env.example .env
 ```
 
----
+Set:
 
-## Step 1 — Clone and configure
-
-```bash
-git clone https://github.com/YOUR_USERNAME/cybersim.git
-cd cybersim
-cp .env.example .env
+```env
+GEMINI_API_KEY=your_google_ai_studio_key_here
+JWT_SECRET=replace_with_64_character_hex_secret
+POSTGRES_PASSWORD=change_this_password
 ```
 
-Edit `.env` — minimum required:
-```bash
-# Get free key from: https://aistudio.google.com/app/apikey
-GEMINI_API_KEY=your_key_here
+Never commit `.env`. If a real key appears in logs or terminal output, rotate it.
 
-# Generate with: openssl rand -hex 32
-JWT_SECRET=your_64_char_hex_here
+## Docker Startup
 
-POSTGRES_PASSWORD=choose_a_strong_password
+Validate configuration:
+
+```powershell
+docker compose config
 ```
 
----
+Start the core platform:
 
-## Step 2 — Build the Kali image (one-time, ~10 min)
-
-```bash
-docker build -t cybersim-kali:latest ./infrastructure/docker/kali/
+```powershell
+docker compose up -d postgres redis elasticsearch filebeat backend frontend nginx
 ```
 
-This installs all pentest tools. Only needed once. Subsequent rebuilds use cache.
+Health checks:
 
----
-
-## Step 3 — Start core services
-
-```bash
-# Start database, cache, backend, frontend, nginx
-docker compose up -d postgres redis backend frontend nginx
-
-# Wait ~30s then verify all healthy
+```powershell
 docker compose ps
-
-# Expected output: all services show "healthy" or "Up"
-```
-
----
-
-## Step 4 — Verify backend
-
-```bash
 curl http://localhost/health
-# Expected: {"status":"ok","version":"0.1.0"}
-
-curl http://localhost/api/docs
-# Opens Swagger UI in browser (dev mode only)
+curl http://localhost/api/scenarios/
 ```
 
----
+Open `http://localhost`.
 
-## Step 5 — Start a scenario
+## Scenario Profiles
 
-Each scenario's target containers start on demand:
+Start only the scenario needed for a lab:
 
-```bash
-# SC-01: Web application pentest
+```powershell
 docker compose --profile sc01 up -d
-
-# SC-02: Active Directory
 docker compose --profile sc02 up -d
-
-# SC-04: AWS cloud misconfig (LocalStack)
-docker compose --profile sc04 up -d
-
-# SC-05: Ransomware IR (includes Splunk — takes ~2min to start)
-docker compose --profile sc05 up -d
+docker compose --profile sc03 up -d
 ```
 
----
+Stop scenario targets:
 
-## Step 6 — Access the platform
+```powershell
+docker compose --profile sc01 down
+docker compose --profile sc02 down
+docker compose --profile sc03 down
+```
 
-Open `http://localhost` in your browser.
+## Local Development
 
-Register an account, select a scenario, choose red or blue team, pick your methodology, acknowledge the ROE, and enter the workspace.
+Backend:
 
----
-
-## Development workflow (no Docker)
-
-```bash
-# Backend
+```powershell
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 uvicorn src.main:app --reload --port 8000
+```
 
-# Frontend (separate terminal)
+Frontend:
+
+```powershell
 cd frontend
 npm install
 npm run dev
-# Opens at http://localhost:3000
 ```
 
-You still need Docker for postgres, redis, and scenario containers:
-```bash
-docker compose up -d postgres redis
+## Verification Commands
+
+Backend tests:
+
+```powershell
+cd backend
+python -m pytest
 ```
 
----
+Frontend build:
 
-## Running Claude Code on this project
-
-Always start a Claude Code session with:
-```bash
-cat CLAUDE.md              # Project context
-git log --oneline -5       # Current state
-cat docs/architecture/phases.md | grep -A8 "Phase [0-9]" | head -40
+```powershell
+cd frontend
+npm run build
 ```
 
-Then give Claude Code a single-phase task. Never ask it to do multiple phases in one session — token limits cause truncation.
+Docker config:
 
-Example prompt for Phase 1:
-```
-Read CLAUDE.md. We are on Phase 1.
-Create docker-compose.yml with postgres, redis, backend, frontend, nginx.
-All services must pass health checks. Acceptance: curl localhost/health returns 200.
+```powershell
+docker compose config
 ```
 
----
+Load testing:
 
-## Antigravity continuity
-
-If Claude Code runs out of tokens mid-phase:
-1. Antigravity reads `git log --oneline -10`
-2. Antigravity reads `docs/architecture/phases.md` for current phase
-3. Antigravity resumes Claude Code from the next unchecked item
-4. After completion: `git add -A && git commit -m "feat: phase N complete" && git push`
-
----
+```powershell
+locust -f backend/tests/load_test.py --host=http://localhost
+```
 
 ## Troubleshooting
 
-**Backend fails to start:**
-```bash
-docker compose logs backend --tail=50
-# Common: GEMINI_API_KEY not set, or postgres not ready yet
+Backend cannot reach Postgres:
+
+```powershell
+docker compose logs postgres --tail=80
+docker compose logs backend --tail=80
 ```
 
-**Kali container not found:**
-```bash
-docker images | grep cybersim-kali
-# If missing: docker build -t cybersim-kali:latest ./infrastructure/docker/kali/
+Frontend build says `vite` is not recognized:
+
+```powershell
+cd frontend
+npm install
+npm run build
 ```
 
-**SC-01 webapp unreachable from Kali:**
-```bash
-docker compose --profile sc01 ps   # check targets are up
-docker network ls | grep sc01      # check network exists
+API docs not visible:
+
+- API docs are exposed at `/api/docs` only when the backend environment is development.
+
+Docker scenario target cannot be reached:
+
+```powershell
+docker compose --profile sc01 ps
+docker network ls
 ```
-
-**Splunk slow to start (SC-05):**
-```bash
-docker compose --profile sc05 logs sc05-splunk --follow
-# Wait for "Splunk is ready" message — takes ~90s
-```
-
-**Reset everything:**
-```bash
-docker compose down -v   # removes volumes (deletes all data)
-docker compose up -d postgres redis backend frontend nginx
-```
-
----
-
-## Cost summary
-
-All components are free for development and university demo:
-- Docker: free
-- Kali Linux: free
-- LocalStack: free tier (5 services, no time limit)
-- Splunk: free tier (500MB/day ingest — more than enough for training)
-- Gemini 1.5 Flash: free tier (15 RPM, 1M tokens/day)
-- Samba4 AD: free open source
-
-**Total monthly cost for a student running this locally: $0**
