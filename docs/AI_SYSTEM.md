@@ -28,7 +28,7 @@ Required environment variables:
 
 ```env
 GEMINI_API_KEY=your_google_ai_studio_key_here
-GEMINI_MODEL=gemini-1.5-flash-latest
+GEMINI_MODEL=gemini-2.5-flash
 GEMINI_MAX_TOKENS=150
 AI_CALL_COOLDOWN_SECONDS=10
 ```

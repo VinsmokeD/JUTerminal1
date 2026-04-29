@@ -20,18 +20,6 @@ const ROE_CONTENT = {
     outOfScope: ['Real external email addresses', 'Internet access (network is isolated)', 'Social engineering of real individuals'],
     rules: ['All phishing targets are simulated — no real people', 'Payload must be submitted for analysis before use', 'Track all GoPhish campaign metrics for the report'],
   },
-  'SC-04': {
-    title: 'StratoStack AWS — Rules of Engagement',
-    scope: ['LocalStack environment at 172.20.4.20', 'All S3 buckets, IAM roles, Lambda functions', 'SSRF against webapp at 172.20.4.30'],
-    outOfScope: ['Real AWS services', 'Any IP outside 172.20.4.0/24'],
-    rules: ['Enumerate before exploiting — document all findings first', 'Do not delete S3 buckets or IAM policies permanently', 'All AWS credentials found must be documented immediately'],
-  },
-  'SC-05': {
-    title: 'Veridian Ransomware IR — Rules of Engagement',
-    scope: ['Full 172.20.5.0/24 network', 'Red: deploy simulated ransomware payload on victim-ws', 'Blue: Splunk + Velociraptor at 172.20.5.100-101'],
-    outOfScope: ['Real ransomware encryption', 'Actions outside 172.20.5.0/24'],
-    rules: ['Red: follow LockBit TTP order — document every step', 'Blue: capture memory BEFORE isolating hosts', 'Both teams must submit IR report at end of session', 'Simulated encryption only — no real file destruction'],
-  },
 }
 
 export default function RoeBriefing({ session, onAcknowledged }) {

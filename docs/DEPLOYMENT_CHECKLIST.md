@@ -46,7 +46,7 @@
   - [ ] asyncpg (for PostgreSQL async)
   - [ ] aioredis (for Redis async)
   - [ ] docker (Python SDK)
-  - [ ] google-generativeai (Gemini)
+  - [ ] google-genai (Gemini)
 
 ---
 

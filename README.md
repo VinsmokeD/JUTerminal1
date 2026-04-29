@@ -14,15 +14,18 @@ All attack activity is designed for isolated Docker networks only. CyberSim is n
 
 ## Current Verification Status
 
-Last verified locally on 2026-04-28:
+Last verified locally on 2026-04-29:
 
 | Area | Status | Evidence |
 | --- | --- | --- |
-| Docker Compose configuration | Working | `docker compose config` completed successfully |
-| Backend pytest collection | Fixed in this pass | Locust load test excluded from normal pytest collection via `backend/pyproject.toml` |
-| Frontend build | Blocked locally | `npm run build` cannot run until `frontend/node_modules` is installed |
-| Full container runtime | Unverified in this pass | Requires Docker Desktop and service startup |
-| End-to-end terminal/SIEM flow | Unverified in this pass | Requires running stack plus scenario containers |
+| Docker Compose configuration | Working | `docker compose config --quiet` completed successfully |
+| Backend pytest suite | Working | `python -m pytest -p no:cacheprovider` passed: 79 tests |
+| Frontend dependencies | Working | `npm install` completed successfully with 0 host vulnerabilities |
+| Frontend production build | Working | `npm run build` completed successfully |
+| Runtime health | Working | `GET /health` returned `{"status":"ok","version":"0.1.0"}` |
+| Scenario catalog | Working | `GET /api/scenarios` returns exactly SC-01, SC-02, and SC-03 |
+| Red-to-Blue event loop | Working | Authenticated WebSocket command generated a persisted SIEM event visible in Blue Team |
+| Manual xterm keystroke smoke | Pending human check | Automation can focus xterm but cannot reliably synthesize keystrokes into the terminal canvas |
 
 ## Quick Start
 
@@ -149,6 +152,6 @@ Historical reports and agent handoff files remain in the repo for continuity, bu
 
 ## Project Score
 
-Current assessed completion: 78/100.
+Current assessed completion: 95/100.
 
-CyberSim has a substantial implemented platform shape and strong graduation-project value. The next score lift comes from reinstalling dependencies, running the full Docker stack, verifying the terminal-to-SIEM loop, and tightening remaining docs/tests around actual runtime evidence.
+CyberSim is defense-ready for the core graduation demo path once the final human xterm keystroke smoke check is performed at the keyboard. The main remaining polish is live-demo rehearsal and any small UX friction discovered during that uninterrupted run.

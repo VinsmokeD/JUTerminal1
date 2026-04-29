@@ -2116,3 +2116,58 @@ $ python3 -m py_compile src/main.py  # ✓
 **Defense-readiness read:** Defense-ready for the core demo story: login, SC-01 launch, Red terminal command path, persisted SIEM evidence, Blue Team visibility, filtering, raw-log expansion, debrief path, tests, build, health, Compose config, and 3-scenario catalog are verified.
 
 **Next highest-priority task:** Perform one human/manual xterm keystroke smoke test in the browser and then migrate `google.generativeai` to `google.genai`.
+
+---
+
+## 2026-04-29 09:53 +03:00 - Final AI Migration, University Text, and Defense Polish Verification
+
+**Status:** Mostly defense-ready; one true human xterm keystroke smoke remains.
+
+**Why:** User requested continuation from the latest verified state without broadening scope. The remaining work was to attempt the actual xterm smoke, migrate the deprecated Gemini SDK, fix the university name on the main auth page, and clean stale active docs/UI references before final demo rehearsal.
+
+**Exact changes made:**
+
+- `backend/src/ai/monitor.py` - replaced deprecated `google.generativeai` usage with the current `google-genai` SDK (`from google import genai`, `from google.genai import types`), switched to `client.aio.models.generate_content(...)`, removed the now-unused `asyncio` import, and added `types.ThinkingConfig(thinking_budget=0)` so Gemini 2.5 Flash spends the small hint budget on visible tutor output instead of internal thinking tokens.
+- `backend/requirements.txt` - replaced `google-generativeai==0.5.4` with `google-genai==1.73.1` and updated `httpx` to `0.28.1` to satisfy the SDK dependency floor.
+- `backend/src/config.py` - changed the default Gemini model from `gemini-1.5-flash-latest` to `gemini-2.5-flash` after the old model returned `404 NOT_FOUND` from the new SDK.
+- `.env.example` - updated `GEMINI_MODEL=gemini-2.5-flash`.
+- `.env` - updated local `GEMINI_MODEL` only; no secret value was printed or changed.
+- `frontend/src/pages/Auth.jsx` - corrected the institutional label from Jordan University of Science & Technology to University of Jordan.
+- `frontend/src/components/workspace/RoeBriefing.jsx` - removed inactive SC-04/SC-05 ROE content from active frontend code. The product catalog only exposes SC-01, SC-02, and SC-03.
+- `README.md` - updated verification status, current score, and remaining xterm smoke caveat to match the verified 2026-04-29 state.
+- `docs/AI_SYSTEM.md` - updated the Gemini model name to `gemini-2.5-flash`.
+- `docs/DEPLOYMENT_CHECKLIST.md` - updated the dependency checklist from `google-generativeai` to `google-genai`.
+- `docs/GIT_WORKFLOW.md` - updated the dependency bump example away from the deprecated Gemini package.
+- `docs/DOCUMENTATION_INDEX.md` - replaced stale pre-defense/five-scenario continuation content with the maintained docs index and active SC-01..SC-03 scope.
+- `docs/QUICK_START_CONTINUATION_GUIDE.md` - replaced stale feature-build guidance with defense-mode continuation guidance and verified baseline.
+- `docs/scenarios/INDEX.md` - replaced the five-scenario student-facing guide with a current SC-01, SC-02, SC-03 scenario index.
+
+**Verification evidence:**
+
+- Manual xterm attempt: In-app browser focused the real xterm terminal in `http://localhost/session/8f64971d-53e9-42a8-bb0c-1222275908e0/red`, but synthetic keystrokes did not reach the PTY. No new terminal command/event was produced by automation. This remains a required human keyboard smoke test; it must not be claimed as passed.
+- Runtime repair before browser checks: Postgres/Redis/backend were brought up, nginx was restarted, and `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`.
+- Browser login path: Auth UI login with `admin` succeeded and loaded the dashboard/red workspace.
+- Dependency import: `python -c "from google import genai; from google.genai import types; print('google-genai import ok')"` passed locally.
+- Backend tests: `python -m pytest -p no:cacheprovider` passed `79 passed, 1 warning`. The old `google.generativeai` warning is gone; the remaining warning is a Python 3.14 deprecation warning inside `google.genai.types` for `_UnionGenericAlias`.
+- Docker Compose: `docker compose config --quiet` passed.
+- Frontend: `npm run build` passed after sandbox escalation for esbuild spawn permissions.
+- Frontend install: `npm install` passed; it printed a transient `2 moderate severity vulnerabilities` audit summary, but the direct `npm audit --json` check immediately after reported `total: 0` vulnerabilities.
+- Runtime rebuild: `docker compose up -d --build backend frontend` passed and installed `google-genai==1.73.1` successfully in the Python 3.11 backend image. `docker compose build backend` passed again after the AI model/thinking-budget fix.
+- Health after rebuild: `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`.
+- Scenario API after rebuild: `GET http://localhost/api/scenarios` returned exactly three scenarios with IDs `SC-01`, `SC-02`, and `SC-03`.
+- Gemini model smoke: direct backend-container SDK call with `gemini-1.5-flash-latest` failed with `404 NOT_FOUND`; after changing to `gemini-2.5-flash` and adding `thinking_budget=0`, the SDK returned a normal sentence and `FinishReason.STOP`.
+- SC-01 AI hint path: authenticated WebSocket request to `/ws/8f64971d-53e9-42a8-bb0c-1222275908e0` with `{"type":"request_hint","level":1}` returned an `ai_hint` containing contextual Gemini tutor guidance about the student's previous `curl` action and reconnaissance next steps. This verifies the migrated AI path through the running backend rather than only an isolated SDK call.
+- University text verification: built frontend assets contain `University of Jordan=True` and `Jordan University of Science=False`.
+
+**Remaining risks:**
+
+- A true manual/human xterm keystroke smoke is still required. Automation can focus xterm but could not synthesize keystrokes into it reliably.
+- The local host Python is 3.14.3. Full `pip install -r backend/requirements.txt` on the host still risks `asyncpg==0.29.0` build incompatibility, while the supported Docker/Python 3.11 backend image installs successfully.
+- `npm install` and `npm audit --json` disagreed on the vulnerability summary; direct audit reported 0 vulnerabilities, but this should be watched in CI.
+- Historical reports still retain old SC-04/SC-05 discussion by design; maintained docs and active UI/code now present SC-01..SC-03 as the launchable scope.
+
+**Completion score:** 96/100.
+
+**Defense-readiness verdict:** Defense-ready for the verified API/WebSocket/browser navigation path and AI hint path. Before presenting live, perform the human keyboard xterm smoke and one uninterrupted demo rehearsal.
+
+**Next highest-priority task:** Sit at the browser and manually type `curl http://172.20.1.20` into the real xterm terminal, then confirm the Blue Team SIEM event appears live.

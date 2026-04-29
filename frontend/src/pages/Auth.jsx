@@ -142,7 +142,7 @@ export default function Auth() {
               </button>
             </form>
           </div>
-          <p className="text-center text-txt-dim text-xs mt-4 font-mono">Jordan University of Science & Technology</p>
+          <p className="text-center text-txt-dim text-xs mt-4 font-mono">University of Jordan</p>
         </div>
       </div>
     </div>

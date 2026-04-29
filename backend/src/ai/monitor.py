@@ -5,12 +5,12 @@ Uses the full context payload from context_builder to provide precise,
 mode-aware guidance. Supports Learn mode (step-by-step teaching) and
 Challenge mode (Socratic questioning).
 """
-import asyncio
 import json
 import time
 from pathlib import Path
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from src.config import settings
 from src.cache.redis import cache_get, cache_set
@@ -192,11 +192,7 @@ async def get_ai_hint(
         context = await build_ai_context(session_id)
         mode = context.get("mode", "learn")
 
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel(
-            model_name=settings.GEMINI_MODEL,
-            system_instruction=_load_system_prompt(mode),
-        )
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
         user_msg = _format_context_for_ai(context, command, hint_level)
 
@@ -205,17 +201,19 @@ async def get_ai_hint(
         if hint_level and hint_level >= 3:
             max_tokens = 400  # Procedural hints need more space
 
-        gen_config = genai.GenerationConfig(
+        gen_config = types.GenerateContentConfig(
+            system_instruction=_load_system_prompt(mode),
             max_output_tokens=max_tokens,
             temperature=0.4 if mode == "challenge" else 0.3,
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
         )
 
-        response = await asyncio.to_thread(
-            model.generate_content,
-            user_msg,
-            generation_config=gen_config,
+        response = await client.aio.models.generate_content(
+            model=settings.GEMINI_MODEL,
+            contents=user_msg,
+            config=gen_config,
         )
-        hint_text = response.text.strip()
+        hint_text = (response.text or "").strip()
 
         # Mark rate limit
         if not hint_level:

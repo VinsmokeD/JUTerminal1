@@ -140,7 +140,7 @@ chore: update python requirements to latest stable versions
 
 - FastAPI 0.108 → 0.109
 - SQLAlchemy 2.0.22 → 2.0.23
-- google-generativeai 0.3.1 → 0.4.0
+- google-genai 1.73.1 → next stable
 - pytest 7.4.3 → 7.4.4
 
 All tests passing.
