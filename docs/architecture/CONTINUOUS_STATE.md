@@ -13,6 +13,22 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-04-30 09:31:13 +03:00] - Claude Code (Final Proof Attempt and Defense Evidence Packaging)
+* **Status**: Manual xterm smoke not closed; evidence pack created; repo not tagged.
+* **Why**: The project is in defense proof and packaging mode. The only remaining truth gap is the manual browser xterm keystroke path, so this pass attempted to prove that path before freezing the repository. Because the terminal did not accept automation-assisted keystrokes and backend evidence showed no command/event, the correct defense action is to preserve the caveat instead of tagging a false release checkpoint.
+* **Where**:
+  - `docs/DEFENSE_EVIDENCE_PACK.md` - created a concise defense evidence and fallback document tied to observed runtime checks.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this state record.
+  - Reviewed runtime/browser surfaces: Docker Compose stack, `http://localhost/health`, `http://localhost/api/scenarios/`, `http://localhost/auth`, dashboard, SC-01 briefing, SC-01 Red workspace, and authenticated session command/event APIs for session `f112083e-b09f-47e0-899e-f865a3d91911`.
+* **What & How**:
+  - Started Docker Desktop and verified Docker CLI access under the Desktop Linux context.
+  - Ran `docker compose config --quiet`, then `docker compose up -d --build`. The stack came up with backend, frontend, nginx, Postgres, Redis, Elasticsearch, Filebeat, and scenario containers visible in `docker compose ps`.
+  - Restarted nginx after it returned a transient 502 against a rebuilt backend container. After restart, `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}` and `GET http://localhost/api/scenarios/` returned exactly `SC-01`, `SC-02`, and `SC-03`.
+  - Used the real browser UI to log in as admin, open the dashboard, open the SC-01 briefing, start a new Red Team mission at `/session/f112083e-b09f-47e0-899e-f865a3d91911/red`, acknowledge ROE, dismiss onboarding, and confirm the Red workspace rendered terminal, AI Tutor, SIEM Feed, and notebook with the SIEM connected and 0 starting events.
+  - Attempted terminal input through browser CUA typing after focusing the terminal, through Playwright interaction with `.xterm-helper-textarea`, and through a narrow OS-level SendKeys pass. The DOM showed `textbox "Terminal input" [active]`, but no command reached the backend.
+  - Authenticated checks of `/api/sessions/f112083e-b09f-47e0-899e-f865a3d91911/commands` and `/api/sessions/f112083e-b09f-47e0-899e-f865a3d91911/events` both returned empty collections after the attempts. Therefore the human/manual xterm keystroke smoke remains unverified.
+  - Created `docs/DEFENSE_EVIDENCE_PACK.md` with the exact verified runtime, today's observed results, the still-open xterm caveat, and fallback plans for Gemini outage or terminal input problems. No code behavior was changed, no feature scope was broadened, and no git tag was created because the final proof gate did not pass.
+
 ### [2026-04-28 20:18:00] - Claude Code (Repository Audit, Documentation Consolidation, and Runtime Hardening)
 * **Status**: Complete - public documentation consolidated, frontend build verified, scenario unit tests verified, SC-03 mail relay fixed and running healthy
 * **Why**: User requested a blunt product-minded repo audit and hardening pass to bring CyberSim closer to graduation-defense quality. The repo had a real implemented platform surface, but the public docs overstated scope by referencing five scenarios and placeholder GitHub/advisor/support values, normal pytest collection imported a Locust load-test module, frontend dependency installation failed because of an ESLint peer conflict, auth hashing failed under the local Python 3.14/global bcrypt stack, and the running SC-03 mail relay container was stuck in a restart loop.
