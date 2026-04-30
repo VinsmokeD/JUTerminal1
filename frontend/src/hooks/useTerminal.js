@@ -7,22 +7,18 @@ import 'xterm/css/xterm.css'
 /**
  * Real PTY terminal hook.
  *
- * Every keystroke is sent immediately to the backend (which forwards to
- * Docker exec PTY). Every byte from Docker is written to xterm. Line
- * editing, tab completion, and history are all handled by bash inside
- * the container — NOT by the frontend.
- *
- * onData(data) — called for every keystroke/paste, sends raw to backend
- * onCommand(cmd) — called when Enter is detected, for AI/discovery tracking
+ * Every keystroke is sent immediately to the backend, which forwards to
+ * Docker exec PTY. Docker output is written back into xterm.
  */
 export function useTerminal({ containerRef, onData, onCommand }) {
   const termRef = useRef(null)
   const fitRef = useRef(null)
-  const lineBufferRef = useRef('')    // Track current line for onCommand extraction
+  const lineBufferRef = useRef('')
   const historyRestoredRef = useRef(false)
-  // Stable refs so the terminal doesn't need to remount when callbacks change
+  const lastXtermDataAtRef = useRef(0)
   const onDataRef = useRef(onData)
   const onCommandRef = useRef(onCommand)
+
   useEffect(() => { onDataRef.current = onData }, [onData])
   useEffect(() => { onCommandRef.current = onCommand }, [onCommand])
 
@@ -66,7 +62,7 @@ export function useTerminal({ containerRef, onData, onCommand }) {
       },
       scrollback: 5000,
       allowProposedApi: true,
-      convertEol: false, // Raw PTY — do NOT convert EOL
+      convertEol: false,
     })
 
     const fitAddon = new FitAddon()
@@ -76,17 +72,14 @@ export function useTerminal({ containerRef, onData, onCommand }) {
 
     term.open(containerRef.current)
     fitAddon.fit()
+    term.focus()
 
     termRef.current = term
     fitRef.current = fitAddon
 
-    // Raw PTY mode: send every keystroke directly to the backend.
-    // Bash inside Docker handles line editing, tab completion, history.
-    term.onData((data) => {
-      // Send raw keystrokes to backend → Docker PTY
+    const handleInputData = (data) => {
       if (onDataRef.current) onDataRef.current(data)
 
-      // Track line buffer for command extraction (AI/discovery)
       if (data === '\r' || data === '\n') {
         const cmd = lineBufferRef.current.trim()
         if (cmd && onCommandRef.current) onCommandRef.current(cmd)
@@ -94,15 +87,17 @@ export function useTerminal({ containerRef, onData, onCommand }) {
       } else if (data === '\x7f' || data === '\b') {
         lineBufferRef.current = lineBufferRef.current.slice(0, -1)
       } else if (data === '\x03') {
-        // Ctrl+C — reset line buffer
         lineBufferRef.current = ''
       } else if (data.length === 1 && data >= ' ') {
         lineBufferRef.current += data
       }
-      // Arrow keys, tab, etc. are sent raw — bash handles them
+    }
+
+    term.onData((data) => {
+      lastXtermDataAtRef.current = Date.now()
+      handleInputData(data)
     })
 
-    // Listen for output from WebSocket (Docker PTY output)
     const handleOutput = (evt) => {
       term.write(evt.detail?.data || '')
     }
@@ -112,7 +107,6 @@ export function useTerminal({ containerRef, onData, onCommand }) {
       const terminalChunks = Array.isArray(payload.terminal) ? payload.terminal : []
       const commands = Array.isArray(payload.commands) ? payload.commands : []
 
-      // Batch writes using requestAnimationFrame to prevent rendering jank
       requestAnimationFrame(() => {
         if (terminalChunks.length > 0) {
           terminalChunks.forEach((chunk) => {
@@ -129,13 +123,49 @@ export function useTerminal({ containerRef, onData, onCommand }) {
     window.addEventListener('terminal:output', handleOutput)
     window.addEventListener('terminal:history', handleHistory)
 
-    // Resize observer
+    const focusTerminal = () => term.focus()
+    const fallbackKeyDown = (evt) => {
+      if (evt.ctrlKey || evt.metaKey || evt.altKey) return
+
+      let data = ''
+      if (evt.key === 'Enter') data = '\r'
+      else if (evt.key === 'Backspace') data = '\x7f'
+      else if (evt.key === 'Tab') data = '\t'
+      else if (evt.key.length === 1) data = evt.key
+
+      if (!data) return
+      const before = lastXtermDataAtRef.current
+      window.setTimeout(() => {
+        if (lastXtermDataAtRef.current === before) {
+          handleInputData(data)
+        }
+      }, 0)
+    }
+    const fallbackPaste = (evt) => {
+      const text = evt.clipboardData?.getData('text')
+      if (!text) return
+      const before = lastXtermDataAtRef.current
+      window.setTimeout(() => {
+        if (lastXtermDataAtRef.current === before) {
+          handleInputData(text)
+        }
+      }, 0)
+    }
+    containerRef.current.addEventListener('mousedown', focusTerminal)
+    containerRef.current.addEventListener('touchstart', focusTerminal)
+    containerRef.current.addEventListener('keydown', fallbackKeyDown, true)
+    containerRef.current.addEventListener('paste', fallbackPaste, true)
+
     const ro = new ResizeObserver(() => fitAddon.fit())
     ro.observe(containerRef.current)
 
     return () => {
       window.removeEventListener('terminal:output', handleOutput)
       window.removeEventListener('terminal:history', handleHistory)
+      containerRef.current?.removeEventListener('mousedown', focusTerminal)
+      containerRef.current?.removeEventListener('touchstart', focusTerminal)
+      containerRef.current?.removeEventListener('keydown', fallbackKeyDown, true)
+      containerRef.current?.removeEventListener('paste', fallbackPaste, true)
       ro.disconnect()
       term.dispose()
     }
@@ -145,5 +175,9 @@ export function useTerminal({ containerRef, onData, onCommand }) {
     termRef.current?.write(text)
   }
 
-  return { writeOutput, termRef }
+  const focus = () => {
+    termRef.current?.focus()
+  }
+
+  return { writeOutput, termRef, focus }
 }

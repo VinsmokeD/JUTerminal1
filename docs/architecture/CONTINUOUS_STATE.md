@@ -13,6 +13,23 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-04-30 10:02:05 +03:00] - Claude Code (Xterm Input Path Fix and Browser Proof)
+* **Status**: Complete - browser terminal keyboard path fixed and verified through Red-to-Blue evidence; repo not git-tagged in this pass.
+* **Why**: The release-candidate state still had one critical demo bug: a UI-launched Red workspace could open the terminal WebSocket, but browser keystrokes did not reliably reach the backend PTY/command handler. This blocked examiner-driven terminal typing and therefore blocked final defense confidence.
+* **Where**:
+  - `frontend/src/hooks/useTerminal.js` - reviewed and updated xterm setup/focus behavior, preserving xterm output rendering while adding guarded fallback handling for missed key/paste events.
+  - `frontend/src/components/terminal/Terminal.jsx` - added a transparent keyboard-capture textarea over the xterm renderer that sends raw PTY bytes and complete command notifications through the existing `onData` and `onCommand` callbacks.
+  - `docs/DEFENSE_EVIDENCE_PACK.md` - updated from unresolved caveat to fixed browser keyboard proof with exact session, command, event, and fallback details.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this state record.
+  - Reviewed but did not modify: `frontend/src/hooks/useWebSocket.js`, `frontend/src/pages/RedWorkspace.jsx`, `frontend/src/store/sessionStore.js`, `backend/src/ws/routes.py`, and `backend/src/sandbox/terminal.py`.
+* **What & How**:
+  - Diagnosis followed the terminal path in order. Backend logs for fresh UI session `6aca6e21-ea80-480e-835b-95b54d5a5e13` showed `WebSocket /ws/6aca6e21-ea80-480e-835b-95b54d5a5e13` accepted and open, proving that route registration, nginx WS forwarding, auth/session lookup, and `useWebSocket(sessionId)` connection creation were working.
+  - The same session produced 0 commands and 0 events after browser typing attempts, proving the gap was between the visible terminal surface and frontend input dispatch, not backend persistence or SIEM generation.
+  - Root cause: the implementation depended exclusively on xterm's hidden helper textarea producing `term.onData()`. In the real browser/in-app browser surface, focus could appear on `textbox "Terminal input"` while key events did not reliably produce `term.onData()`, so no `terminal_raw` or `terminal_command` frames reached the backend.
+  - Fix: `Terminal.jsx` now renders a transparent, full-panel keyboard-capture textarea layered over xterm. It maps printable keys, Enter, Backspace, Tab, Ctrl+C, and paste into the same raw PTY bytes and line-buffered command callback already used by the existing WebSocket path. `useTerminal.js` still owns xterm rendering/history/output and adds a guarded fallback for missed xterm key/paste events without changing backend APIs or SIEM logic.
+  - Verification: `npm run build` passed locally and the frontend container was rebuilt/restarted. Fresh browser session `6bae9108-5dfb-4879-9744-5b6e2904ab13` launched SC-01, acknowledged ROE, exposed `textbox "Terminal keyboard capture"`, accepted keyboard input for `curl http://172.20.1.20`, and backend APIs confirmed one command (`curl`, phase 1) plus one SIEM event (`HTTP probe: curl request to target`, severity `LOW`, source IP `172.20.1.10`, MITRE `T1595`, raw log `Web Server: GET request from 172.20.1.10`). Opening `/session/6bae9108-5dfb-4879-9744-5b6e2904ab13/blue` in the browser showed `1 events` with the same LOW curl HTTP probe event and metadata.
+  - Regression: `python -m pytest -p no:cacheprovider` in `backend/` passed 79 tests with 1 existing Python 3.14 `google.genai` deprecation warning. `npm run build` in `frontend/` passed. No backend route, SIEM engine, scenario scope, or API behavior was changed.
+
 ### [2026-04-30 09:31:13 +03:00] - Claude Code (Final Proof Attempt and Defense Evidence Packaging)
 * **Status**: Manual xterm smoke not closed; evidence pack created; repo not tagged.
 * **Why**: The project is in defense proof and packaging mode. The only remaining truth gap is the manual browser xterm keystroke path, so this pass attempted to prove that path before freezing the repository. Because the terminal did not accept automation-assisted keystrokes and backend evidence showed no command/event, the correct defense action is to preserve the caveat instead of tagging a false release checkpoint.

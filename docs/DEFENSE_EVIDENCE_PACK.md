@@ -1,6 +1,6 @@
 # CyberSim Defense Evidence Pack
 
-Last updated: 2026-04-30 09:31 +03:00
+Last updated: 2026-04-30 10:02 +03:00
 
 ## Defense Runtime
 
@@ -24,19 +24,29 @@ Last updated: 2026-04-30 09:31 +03:00
 - Red workspace rendered terminal, AI Tutor, SIEM Feed, and notebook.
 - SIEM feed was connected and showed 0 events before the terminal smoke attempt.
 
-## Manual Xterm Smoke Result
+## Terminal Keyboard Smoke Result
 
-Result: not closed from automation.
+Result after fix: passed through the real browser UI keyboard path.
 
-Observed attempts:
+Root cause:
 
-- Browser automation focused the xterm helper control; DOM showed `textbox "Terminal input" [active]`.
-- Browser CUA typing did not produce a command.
-- Playwright interaction with `.xterm-helper-textarea` failed because the helper textarea is hidden and has no clickable bounding box.
-- A narrowly scoped OS-level SendKeys attempt also left the new session with 0 commands and 0 SIEM events.
-- Authenticated backend checks for session `f112083e-b09f-47e0-899e-f865a3d91911` returned 0 commands and 0 events after the attempts.
+- The UI-launched WebSocket opened successfully for session `6aca6e21-ea80-480e-835b-95b54d5a5e13`, so the bug was not backend route registration, session lookup, or WebSocket creation.
+- Browser keyboard events were landing on xterm's hidden helper textarea / renderer surface without reliably producing `term.onData()` callbacks.
+- Because the frontend only sent PTY bytes from `term.onData()`, the backend saw an open socket but no terminal input messages.
 
-Conclusion: the remaining human-keyboard proof gap is still open. Do not claim that a real human manual xterm keystroke smoke has passed until someone physically types `curl http://172.20.1.20` in the visible browser terminal and observes command output plus the Blue Team SIEM event.
+Fix:
+
+- `frontend/src/components/terminal/Terminal.jsx` now renders a transparent keyboard-capture textarea over the xterm renderer.
+- The capture layer sends the same raw PTY bytes and complete command events through the existing `onData` / `onCommand` handlers.
+- `frontend/src/hooks/useTerminal.js` still keeps xterm as the primary renderer and keeps a guarded fallback for missed xterm key/paste events.
+
+Proof:
+
+- Real browser UI session: `6bae9108-5dfb-4879-9744-5b6e2904ab13`.
+- Typed through the browser terminal capture surface: `curl http://172.20.1.20`.
+- `GET /api/sessions/6bae9108-5dfb-4879-9744-5b6e2904ab13/commands` returned the command with tool `curl`.
+- `GET /api/sessions/6bae9108-5dfb-4879-9744-5b6e2904ab13/events` returned `HTTP probe: curl request to target`, severity `LOW`, source IP `172.20.1.10`, MITRE `T1595`, raw log `Web Server: GET request from 172.20.1.10`.
+- Blue Team browser UI for the same session showed `1 events` and displayed the LOW curl HTTP probe event live/hydrated with source IP and MITRE metadata.
 
 ## Previously Verified Core Path
 
@@ -58,11 +68,11 @@ Gemini unavailable:
 Xterm input misbehaves in the room:
 
 - First refresh the Red workspace and click directly inside the terminal area.
-- If the terminal still will not accept keyboard input, use the authenticated WebSocket evidence already recorded in `docs/architecture/CONTINUOUS_STATE.md` as the fallback proof.
-- Be explicit: the fallback proves the backend terminal protocol and SIEM pipeline, while the manual browser keyboard caveat remains separate.
+- The terminal has a transparent keyboard-capture layer over xterm, so ordinary typing should still flow to the backend even if xterm's hidden helper textarea misbehaves.
+- If terminal input still fails on presentation hardware, use the authenticated WebSocket evidence already recorded in `docs/architecture/CONTINUOUS_STATE.md` as the fallback proof.
 
 ## Freeze Guidance
 
-- Do not tag a final defense checkpoint until the human xterm smoke passes.
+- A final defense checkpoint can be created after one local human hand-test repeats the now-passing browser keyboard path.
 - Do not add new features or re-open SC-04/SC-05.
 - Keep fixes limited to demo-blocking issues on the verified SC-01 path.
