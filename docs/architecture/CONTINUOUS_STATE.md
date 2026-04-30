@@ -13,6 +13,21 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-04-30 10:10:57 +03:00] - Claude Code (Defense Freeze Verification)
+* **Status**: FROZEN - final defense verification passed and evidence pack updated.
+* **Why**: User requested the final pre-defense freeze pass: confirm the already-committed terminal input fix, rerun the verification suite, perform one final browser SC-01 terminal-to-Blue smoke, and update the defense evidence before tagging/pushing.
+* **Where**:
+  - `docs/DEFENSE_EVIDENCE_PACK.md` - updated final score, FROZEN verdict, verification checks, final session ID, command/event evidence, and known limitations.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this final freeze record.
+  - Verified but not modified: `frontend/src/components/terminal/Terminal.jsx`, `frontend/src/hooks/useTerminal.js`, Docker Compose stack, backend API, frontend build, browser Red/Blue workspaces.
+* **What & How**:
+  - Confirmed the terminal fix commit at `d3f9614`, containing exactly `frontend/src/components/terminal/Terminal.jsx`, `frontend/src/hooks/useTerminal.js`, `docs/DEFENSE_EVIDENCE_PACK.md`, and `docs/architecture/CONTINUOUS_STATE.md`.
+  - Final verification suite passed: `python -m pytest -p no:cacheprovider` returned `79 passed, 1 warning`; `npm run build` passed; `docker compose config --quiet` passed; `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`; `GET http://localhost/api/scenarios/` returned exactly `SC-01,SC-02,SC-03`.
+  - Rebuilt/refreshed the full stack with `docker compose up -d --build`; public health and scenario APIs remained green.
+  - Final browser smoke session: `d0ecd67b-8bc5-40df-9e31-84661254e2f7`. Browser path launched SC-01, acknowledged ROE, reloaded the patched terminal bundle, exposed `Terminal keyboard capture`, and accepted `curl http://172.20.1.20`.
+  - Backend evidence: `/api/sessions/d0ecd67b-8bc5-40df-9e31-84661254e2f7/commands` returned command `curl http://172.20.1.20`, tool `curl`, phase `1`, created at `2026-04-30T07:10:37.098117+00:00`. `/events` returned event `HTTP probe: curl request to target`, severity `LOW`, source `attacker`, MITRE `T1595`, source IP `172.20.1.10`, raw log `Web Server: GET request from 172.20.1.10`, created at `2026-04-30T07:10:37.101162+00:00`.
+  - Blue Team UI evidence: `/session/d0ecd67b-8bc5-40df-9e31-84661254e2f7/blue` displayed the curl HTTP probe event with source IP `172.20.1.10` and MITRE `T1595`. Completion score set to `100/100`; defense-readiness verdict set to `FROZEN`.
+
 ### [2026-04-30 10:02:05 +03:00] - Claude Code (Xterm Input Path Fix and Browser Proof)
 * **Status**: Complete - browser terminal keyboard path fixed and verified through Red-to-Blue evidence; repo not git-tagged in this pass.
 * **Why**: The release-candidate state still had one critical demo bug: a UI-launched Red workspace could open the terminal WebSocket, but browser keystrokes did not reliably reach the backend PTY/command handler. This blocked examiner-driven terminal typing and therefore blocked final defense confidence.
