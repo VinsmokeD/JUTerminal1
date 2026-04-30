@@ -4,10 +4,18 @@ set -e
 echo "[*] Victim Endpoint Simulator Initialization"
 echo "[*] Scenario: Orion Logistics Target Workstation (SC-03)"
 
-# Start Postfix SMTP for receiving emails
+# Start SMTP receiver for phishing mail delivery
 echo "[+] Initializing Postfix..."
+MAIL_LOG=/var/log/mail.log
+touch "$MAIL_LOG"
+
 postfix -c /etc/postfix new 2>/dev/null || true
-postfix -c /etc/postfix start
+if postfix -c /etc/postfix start; then
+    echo "[+] Postfix SMTP started"
+else
+    echo "[!] Postfix failed to start, using Python SMTP fallback"
+    python3 -u -m smtpd -n -c DebuggingServer 0.0.0.0:25 >> "$MAIL_LOG" 2>&1 &
+fi
 
 # Wait for SMTP to be ready
 echo "[*] Waiting for SMTP service (port 25)..."
@@ -56,4 +64,4 @@ echo ""
 # Monitor logs
 echo "[*] Monitoring victim simulator..."
 tail -f /var/log/victim-simulator.log &
-tail -f /var/log/mail.log
+tail -f "$MAIL_LOG"

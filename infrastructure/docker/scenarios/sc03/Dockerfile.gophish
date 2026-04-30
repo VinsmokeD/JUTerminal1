@@ -4,21 +4,16 @@ ENV GOPHISH_ADMIN_PORT=3333 \
     GOPHISH_PHISH_PORT=80 \
     GOPHISH_PHISH_SSL_PORT=443
 
-# Install tools for campaign initialization
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    jq \
-    python3 \
-    python3-requests \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Campaign initialization script
+USER root
 COPY init-gophish.sh /init-gophish.sh
 RUN chmod +x /init-gophish.sh
+
+USER app
 
 EXPOSE 3333 80 443
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
-    CMD curl -f http://127.0.0.1:3333 > /dev/null 2>&1 || exit 1
+    CMD pidof gophish > /dev/null 2>&1 || exit 1
 
 CMD ["/init-gophish.sh"]

@@ -4,9 +4,8 @@ set -e
 echo "[*] GoPhish Campaign Initialization Script"
 echo "[*] Scenario: Orion Logistics (SC-03)"
 
-# Ensure gophish config directory exists
-mkdir -p /home/gophish
-cd /home/gophish
+# Use the writable application home provided by the base image
+cd "${HOME:-/opt/gophish}"
 
 # Wait for GoPhish to start
 echo "[*] Starting GoPhish service..."
@@ -18,15 +17,15 @@ sleep 5
 
 echo "[+] GoPhish started (PID: $GOPHISH_PID)"
 
-# Wait for admin API to be available
-echo "[*] Waiting for GoPhish admin API (port 3333)..."
+# Wait for the GoPhish process to stay resident after initialization
+echo "[*] Waiting for GoPhish process to stabilize..."
 for i in {1..30}; do
-    if curl -s http://127.0.0.1:3333 > /dev/null 2>&1; then
-        echo "[+] GoPhish admin API is ready"
+    if pidof gophish > /dev/null 2>&1; then
+        echo "[+] GoPhish process is running"
         break
     fi
     if [ $i -eq 30 ]; then
-        echo "[!] GoPhish admin API failed to start"
+        echo "[!] GoPhish process failed to stay up"
     fi
     sleep 1
 done

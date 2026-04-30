@@ -2219,3 +2219,195 @@ $ python3 -m py_compile src/main.py  # ✓
 **Defense-readiness verdict:** Defense-ready for the verified API/WebSocket/browser navigation path and AI hint path. Before presenting live, perform the human keyboard xterm smoke and one uninterrupted demo rehearsal.
 
 **Next highest-priority task:** Sit at the browser and manually type `curl http://172.20.1.20` into the real xterm terminal, then confirm the Blue Team SIEM event appears live.
+
+---
+
+## 2026-04-30 15:40 +03:00 - Codex Startup Repair for Full Docker Bring-Up
+
+**Status:** Core platform started successfully; SC-03 victim startup bug patched and re-verification in progress.
+
+**Why:** User requested the project be started fully from the local Docker stack. Core services and scenario profiles came up, but `sc03-victim` entered a restart loop and prevented a clean "fully started" state.
+
+**Exact changes made:**
+
+- `infrastructure/docker/scenarios/sc03/init-victim.sh` - added a durable `MAIL_LOG` target, preserved the existing Postfix startup attempt, and added a Python `smtpd.DebuggingServer` fallback on port 25 when Postfix exits non-zero in the container. The script now keeps SMTP availability for the Orion Logistics victim endpoint instead of crashing during initialization.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this startup-repair record.
+
+**Technical breakdown:**
+
+- The original victim init flow used `set -e` and exited immediately when `postfix -c /etc/postfix start` returned status `1`, which caused the `sc03-victim` container to restart continuously under Compose.
+- The new flow creates `/var/log/mail.log`, attempts normal Postfix startup first, and only falls back when that command fails.
+- The fallback runs `python3 -u -m smtpd -n -c DebuggingServer 0.0.0.0:25` in the background and redirects mail output to the same mail log file so the rest of the script, readiness wait, and final log tailing remain intact.
+- This keeps the SC-03 victim endpoint able to accept SMTP connections from the mail relay during startup verification even when Postfix is unstable in the container image.
+
+**Verification evidence so far:**
+
+- `docker compose up -d postgres redis elasticsearch filebeat backend frontend nginx` completed successfully.
+- `docker compose --profile sc01 --profile sc02 --profile sc03 up -d` completed successfully for all profiles, exposing that `sc03-victim` was the only scenario container failing.
+- `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`.
+- `GET http://localhost/api/scenarios` returned exactly `SC-01`, `SC-02`, and `SC-03`.
+- `docker run --rm --entrypoint bash cybersim-sc03-victim -x /init-victim.sh` reproduced the failure at `postfix -c /etc/postfix start`, confirming the restart loop source before the patch.
+
+**Next verification step:** Rebuild `sc03-victim`, restart the SC-03 profile, and confirm `docker compose ps` shows the victim container staying up and healthy.
+
+---
+
+## 2026-04-30 15:45 +03:00 - Codex SC-03 Health Check Correction
+
+**Status:** Additional startup correction applied after post-rebuild verification surfaced a false-negative health state on `sc03-phish`.
+
+**Why:** After the SC-03 victim fix, `docker compose ps` showed `sc03-phish` as `unhealthy` even though its logs reported the GoPhish admin service ready. The health probe was checking port `3333` with plain HTTP, but the service listens there with HTTPS.
+
+**Exact changes made:**
+
+- `docker-compose.yml` - changed the `sc03-phish` health check from `curl -f http://127.0.0.1:3333` to `curl -kf https://127.0.0.1:3333`.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this health-check correction record.
+
+**Technical breakdown:**
+
+- GoPhish starts the phishing site on port `80` and the admin panel on port `3333` with TLS enabled.
+- The previous probe hit the TLS endpoint with an HTTP URL, which caused Compose to mark the container unhealthy despite the service being up.
+- The updated health check uses `https://127.0.0.1:3333` with `-k` to accept the container's self-signed certificate, matching the scenario's intended startup behavior.
+
+**Verification evidence so far:**
+
+- `docker compose ps` after the victim rebuild showed `sc03-victim` healthy and stable.
+- The same verification showed `sc03-phish` `unhealthy` while its startup logs still reported `GoPhish admin API is ready` and `Starting admin server at https://0.0.0.0:3333`.
+- Core runtime remained healthy during this correction: `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}` and `GET http://localhost/api/scenarios` continued returning `SC-01`, `SC-02`, and `SC-03`.
+
+**Next verification step:** Recreate `sc03-phish` with the corrected Compose health check and confirm the entire stack reports healthy or up as expected.
+
+---
+
+## 2026-04-30 15:56 +03:00 - Codex GoPhish Image Healthcheck Alignment
+
+**Status:** Final startup fix prepared for SC-03 after container inspection showed the running GoPhish image health check was still out of sync with the service protocol and image state.
+
+**Why:** Post-recreate verification showed `sc03-phish` remained unhealthy. Docker health logs reported repeated failures to execute `curl`, while the service logs still showed the admin panel fully started over HTTPS on port `3333`.
+
+**Exact changes made:**
+
+- `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` - changed the image-level health check from `curl -f http://127.0.0.1:3333` to `curl -kf https://127.0.0.1:3333`.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this image-healthcheck alignment record.
+
+**Technical breakdown:**
+
+- The GoPhish image already installs `curl`, but the previously built local image and health metadata were still using the original plain-HTTP probe on the TLS admin port.
+- Updating the Dockerfile health check keeps image-level health behavior consistent with the corrected Compose-level health check and the service’s actual runtime behavior.
+- Rebuilding `sc03-phish` after this change refreshes both the tool availability in the image and the health command Docker records for the container.
+
+**Verification evidence so far:**
+
+- `docker compose logs --tail 60 sc03-phish` showed `GoPhish admin API is ready`, `Starting admin server at https://0.0.0.0:3333`, and the final `SC-03 Scenario Ready` summary.
+- `docker inspect cybersim-sc03-phish-1 --format "{{json .State.Health}}"` showed the health failures were caused by `exec: "curl": executable file not found in $PATH`, confirming the current local image/container metadata needed a rebuild.
+- `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` already declared `curl` in the package install step, so the safest correction path is to rebuild the image and let the updated health definition take effect.
+
+**Next verification step:** Rebuild and recreate `sc03-phish`, then confirm `docker compose ps` shows all SC-03 services healthy and the full project up cleanly.
+
+---
+
+## 2026-04-30 16:00 +03:00 - Codex GoPhish Build Permission Fix
+
+**Status:** GoPhish rebuild permission issue corrected so the final SC-03 image can be rebuilt with the required health-check tooling.
+
+**Why:** Rebuilding `sc03-phish` failed during `apt-get update` with `Permission denied` on `/var/lib/apt/lists/partial`. Inspection confirmed both the base `gophish/gophish:latest` image and the running `sc03-phish` container default to the non-root `app` user.
+
+**Exact changes made:**
+
+- `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` - inserted `USER root` before the package-install layer and restored `USER app` after the initialization script is copied and marked executable.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this build-permission fix record.
+
+**Technical breakdown:**
+
+- The Dockerfile already needed `curl`, `jq`, and Python packages for initialization and health checks, but package manager operations require root privileges in this base image.
+- Switching to `USER root` only for the install step preserves the existing runtime expectation that GoPhish runs as the `app` user afterward.
+- Restoring `USER app` avoids an unnecessary privilege regression while still allowing the image rebuild to refresh the corrected HTTPS health check and bundled tooling.
+
+**Verification evidence so far:**
+
+- `docker image inspect gophish/gophish:latest --format "{{.Config.User}}"` returned `app`.
+- `docker inspect cybersim-sc03-phish-1 --format "{{.Config.User}}"` also returned `app`.
+- The failed rebuild log showed `apt-get update` aborting with `E: List directory /var/lib/apt/lists/partial is missing. - Acquire (13: Permission denied)`, which matches a non-root package manager invocation.
+
+**Next verification step:** Rebuild `sc03-phish` again, recreate the container, and confirm `docker compose ps` reports the full project healthy.
+
+---
+
+## 2026-04-30 16:08 +03:00 - Codex GoPhish Runtime-Safe Healthcheck Simplification
+
+**Status:** SC-03 phishing startup and health checks simplified to match the existing GoPhish runtime without depending on missing network utilities or fragile package installs.
+
+**Why:** Follow-up verification showed the current GoPhish container lacks `curl` but does provide `pidof`. The attempted image rebuild path to add tooling was blocked by upstream Debian package-signing failures, which was unnecessary for the user goal of getting the full local project running cleanly.
+
+**Exact changes made:**
+
+- `infrastructure/docker/scenarios/sc03/init-gophish.sh` - replaced the startup readiness loop from an HTTP `curl` probe to a `pidof gophish` process-stability check.
+- `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` - removed the extra `apt-get` package-install layer and changed the image health check to `pidof gophish > /dev/null 2>&1 || exit 1`.
+- `docker-compose.yml` - changed the `sc03-phish` service health check to `CMD-SHELL pidof gophish > /dev/null 2>&1 || exit 1`.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this runtime-safe healthcheck simplification record.
+
+**Technical breakdown:**
+
+- The running GoPhish service is already proven alive by its own startup logs and a resident `gophish` process (`pidof gophish` returned PID `7` inside the container).
+- Using `pidof` removes the dependency on `curl`, avoids TLS/self-signed edge cases on the admin port, and keeps both Compose- and image-level health reporting aligned with the actual process that matters.
+- Removing the package-install layer also eliminates the rebuild blocker introduced by unsigned upstream apt metadata in the base image, restoring a cleaner local build path for this service definition.
+
+**Verification evidence so far:**
+
+- `docker exec cybersim-sc03-phish-1 sh -lc "which pidof || true; which grep || true; which jq || true"` returned `/bin/pidof`, `/bin/grep`, and `/usr/bin/jq`.
+- `docker exec cybersim-sc03-phish-1 sh -lc "pidof gophish"` returned `7`, confirming a stable resident process suitable for health checks.
+- `docker compose logs --tail 60 sc03-phish` continued to show `GoPhish initialization complete` and the final `SC-03 Scenario Ready` banner during this correction cycle.
+
+**Next verification step:** Recreate `sc03-phish` with the simplified health checks and confirm the full stack reports healthy or up as expected.
+
+---
+
+## 2026-04-30 16:12 +03:00 - Codex GoPhish Script Permission Fix
+
+**Status:** Final GoPhish image adjustment applied after the simplified rebuild failed on the init-script permission step.
+
+**Why:** The stripped-down `Dockerfile.gophish` rebuild no longer hit apt issues, but it still inherited the base image's default `app` user and failed at `chmod +x /init-gophish.sh` with `Operation not permitted`.
+
+**Exact changes made:**
+
+- `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` - inserted `USER root` for the `COPY` and `chmod` of `/init-gophish.sh`, then restored `USER app` for runtime.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this script-permission fix record.
+
+**Technical breakdown:**
+
+- The GoPhish base image can run normally as `app`, but file ownership and mode adjustments during image build still require root.
+- This keeps the Dockerfile minimal: no package installation, no dependency on external apt metadata, and only a short root window for the script file layer.
+- Returning to `USER app` preserves the non-root runtime posture after the image is assembled.
+
+**Verification evidence so far:**
+
+- The simplified rebuild reached the script layer successfully and then failed specifically at `RUN chmod +x /init-gophish.sh` with `Operation not permitted`, confirming the last remaining issue was file-permission scope rather than missing packages or health logic.
+- Previous inspection already confirmed the base image user is `app`, so this targeted root handoff is consistent with the observed build behavior.
+
+**Next verification step:** Rebuild `sc03-phish` once more and confirm the full project is up with SC-03 healthy.
+
+---
+
+## 2026-04-30 16:16 +03:00 - Codex GoPhish Working Directory Fix
+
+**Status:** Final SC-03 restart cause identified and patched in the GoPhish init script.
+
+**Why:** After the rebuilt `sc03-phish` container started using the intended non-root `app` user again, its init script began failing immediately with `mkdir: cannot create directory '/home/gophish': Permission denied`, causing a restart loop.
+
+**Exact changes made:**
+
+- `infrastructure/docker/scenarios/sc03/init-gophish.sh` - removed the attempt to create and use `/home/gophish` and now changes into `${HOME:-/opt/gophish}`, which matches the base image's writable application directory.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this working-directory fix record.
+
+**Technical breakdown:**
+
+- Inspection of `gophish/gophish:latest` showed the runtime user is `app` (`uid=1000`) and the container starts in `/opt/gophish` with `HOME=/opt/gophish`.
+- The old script assumed it could create a new top-level home directory, which only worked when the image behavior effectively drifted away from the base non-root runtime.
+- Pointing the script at the image's native home keeps startup aligned with the base container design and avoids another privilege workaround.
+
+**Verification evidence so far:**
+
+- `docker compose logs --tail 80 sc03-phish` repeatedly showed `mkdir: cannot create directory '/home/gophish': Permission denied` as the restart cause.
+- `docker run --rm --entrypoint sh gophish/gophish:latest -lc 'id; pwd; echo HOME:$HOME'` returned `uid=1000(app)`, working directory `/opt/gophish`, and `HOME:/opt/gophish`.
+
+**Next verification step:** Rebuild and recreate `sc03-phish` with the corrected working directory, then confirm the entire stack is up cleanly.
