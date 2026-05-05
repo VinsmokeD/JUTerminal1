@@ -1,10 +1,13 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useSessionStore } from '../store/sessionStore'
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost/ws'
+const DEFAULT_WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
+const WS_URL = import.meta.env.VITE_WS_URL || DEFAULT_WS_URL
 
 export function useWebSocket(sessionId) {
   const wsRef = useRef(null)
+  const pendingFramesRef = useRef([])
+  const [connectionState, setConnectionState] = useState('disconnected')
   const { addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence } = useSessionStore()
 
   useEffect(() => {
@@ -13,9 +16,14 @@ export function useWebSocket(sessionId) {
     const token = localStorage.getItem('token')
     const ws = new WebSocket(`${WS_URL}/${sessionId}`)
     wsRef.current = ws
+    pendingFramesRef.current = []
+    setConnectionState('connecting')
 
     ws.onopen = () => {
       ws.send(JSON.stringify({ token }))
+      setConnectionState('connected')
+      pendingFramesRef.current.forEach((frame) => ws.send(JSON.stringify(frame)))
+      pendingFramesRef.current = []
     }
 
     ws.onmessage = (evt) => {
@@ -26,7 +34,9 @@ export function useWebSocket(sessionId) {
             addSiemEvent(msg.data)
             break
           case 'terminal_output':
-            window.dispatchEvent(new CustomEvent('terminal:output', { detail: msg.data }))
+            window.dispatchEvent(new CustomEvent('terminal:output', {
+              detail: typeof msg.data === 'string' ? { data: msg.data } : msg.data,
+            }))
             break
           case 'history':
             window.dispatchEvent(new CustomEvent('terminal:history', { detail: msg.data }))
@@ -53,40 +63,50 @@ export function useWebSocket(sessionId) {
       }
     }
 
-    ws.onclose = () => {
+    ws.onerror = () => {
+      setConnectionState('disconnected')
+    }
+
+    ws.onclose = (evt) => {
       wsRef.current = null
+      pendingFramesRef.current = []
+      setConnectionState(evt.code === 4001 ? 'unauthorized' : 'disconnected')
     }
 
     return () => {
+      pendingFramesRef.current = []
       ws.close()
     }
   }, [sessionId, addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence])
 
-  // Send raw keystrokes to Docker PTY (character-by-character)
-  const sendRawInput = useCallback((data) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'terminal_raw', data }))
+  const sendFrame = useCallback((frame) => {
+    const ws = wsRef.current
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(frame))
+      return
+    }
+    if (ws?.readyState === WebSocket.CONNECTING) {
+      pendingFramesRef.current.push(frame)
     }
   }, [])
+
+  // Send raw keystrokes to Docker PTY (character-by-character)
+  const sendRawInput = useCallback((data) => {
+    sendFrame({ type: 'terminal_raw', data })
+  }, [sendFrame])
 
   // Send complete command string (for AI/discovery tracking after Enter)
   const sendCommand = useCallback((command) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'terminal_command', data: command }))
-    }
-  }, [])
+    sendFrame({ type: 'terminal_command', data: command })
+  }, [sendFrame])
 
   const requestHint = useCallback((level) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'request_hint', level }))
-    }
-  }, [])
+    sendFrame({ type: 'request_hint', level })
+  }, [sendFrame])
 
   const toggleMode = useCallback((mode) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'toggle_mode', mode }))
-    }
-  }, [])
+    sendFrame({ type: 'toggle_mode', mode })
+  }, [sendFrame])
 
-  return { sendRawInput, sendCommand, requestHint, toggleMode }
+  return { sendRawInput, sendCommand, requestHint, toggleMode, connectionState }
 }

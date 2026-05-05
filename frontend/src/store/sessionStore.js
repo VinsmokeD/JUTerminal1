@@ -40,7 +40,15 @@ export const useSessionStore = create((set, get) => ({
   setAiMode: (mode) => set({ aiMode: mode }),
   setSiemEvents: (events) => set({ siemEvents: events || [] }),
 
-  addSiemEvent: (event) => set((s) => ({ siemEvents: [event, ...s.siemEvents].slice(0, 200) })),
+  addSiemEvent: (event) => set((s) => {
+    const eventKey = `${event?.id || event?.message || 'event'}:${event?.timestamp || event?.created_at || ''}`
+    const alreadyPresent = s.siemEvents.some((existing) => {
+      const existingKey = `${existing?.id || existing?.message || 'event'}:${existing?.timestamp || existing?.created_at || ''}`
+      return existingKey === eventKey
+    })
+    if (alreadyPresent) return s
+    return { siemEvents: [event, ...s.siemEvents].slice(0, 200) }
+  }),
 
   addDiscoveries: (newDiscoveries) => set((s) => {
     const d = { ...s.discoveries }

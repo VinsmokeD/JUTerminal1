@@ -152,7 +152,7 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
               </button>
             )
           })}
-          <div className="ml-auto flex gap-1">
+          <div className="flex basis-full gap-1 sm:ml-auto sm:basis-auto">
             <button onClick={() => setMode(mode === 'guided' ? 'freeform' : 'guided')}
               className="text-xs text-txt-dim hover:text-txt-secondary px-1.5 py-0.5 rounded-cs-sm border border-cs-border transition-colors">
               {mode === 'guided' ? 'Freeform' : 'Guided'}
@@ -165,13 +165,13 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex min-w-0 gap-2">
           <textarea
             value={draft} onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save() }}
             placeholder={mode === 'guided' ? 'Use the template button or type freely... (Ctrl+Enter to save)' : 'Add note... (Ctrl+Enter to save)'}
             rows={3}
-            className="flex-1 bg-surface-2 border border-cs-border rounded-cs px-2.5 py-2 text-xs text-txt-primary placeholder-txt-dim focus:outline-none focus:border-cs-blue/50 resize-none font-mono transition-colors"
+            className="min-w-0 flex-1 bg-surface-2 border border-cs-border rounded-cs px-2.5 py-2 text-xs text-txt-primary placeholder-txt-dim focus:outline-none focus:border-cs-blue/50 resize-none font-mono transition-colors"
           />
           <button onClick={save} disabled={saving || !draft.trim()}
             className="px-3 text-xs bg-cs-blue/15 hover:bg-cs-blue/25 disabled:bg-surface-2 disabled:text-txt-dim text-cs-blue border border-cs-blue/30 rounded-cs transition-colors self-end py-2 font-mono font-medium">

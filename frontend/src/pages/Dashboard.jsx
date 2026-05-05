@@ -48,6 +48,12 @@ const LEARN_POINTS = {
   'SC-03': ['Social engineering fundamentals', 'Phishing campaign management', 'Email header analysis', 'SPF/DKIM/DMARC validation', 'Macro-based payload delivery'],
 }
 
+const SCENARIO_SUMMARIES = {
+  'SC-01': 'Attack and defend a healthcare web portal inside an isolated NovaMed network. Practice web reconnaissance, evidence capture, WAF telemetry, and OWASP-focused reporting.',
+  'SC-02': 'Investigate a financial Active Directory compromise. Follow attacker movement through identity, Kerberos, file access, and SOC event correlation.',
+  'SC-03': 'Run and investigate a controlled phishing campaign for Orion Logistics. Connect pretexting, email telemetry, endpoint behavior, and incident response notes.',
+}
+
 export default function Dashboard() {
   const { scenarios, fetchScenarios, startSession } = useSessionStore()
   const { username, skillLevel } = useAuthStore()
@@ -138,11 +144,12 @@ export default function Dashboard() {
             const diffCls = DIFFICULTY_STYLE[sc.difficulty] || DIFFICULTY_STYLE.Intermediate
             const scCls = SCENARIO_CLASSES[sc.id] || 'sc-01'
             const learns = LEARN_POINTS[sc.id] || []
+            const summary = sc.description || SCENARIO_SUMMARIES[sc.id] || 'Hands-on mission in an isolated CyberSim training network.'
             return (
               <div key={sc.id} className={`scenario-card ${scCls}`} onClick={() => setBriefing(sc)}>
                 <div className="scenario-id">{sc.id}</div>
                 <h3>{sc.title}</h3>
-                <p>{sc.description}</p>
+                <p>{summary}</p>
 
                 {/* What you'll learn */}
                 {isBeginner && learns.length > 0 && (
@@ -202,9 +209,9 @@ export default function Dashboard() {
       {/* Mission Briefing Modal */}
       {briefing && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface-1 border border-cs-border rounded-cs-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="mission-modal bg-surface-1 border border-cs-border rounded-cs-lg shadow-2xl">
             {/* Header */}
-            <div className="p-6 border-b border-cs-border relative overflow-hidden">
+            <div className="flex-shrink-0 p-5 sm:p-6 border-b border-cs-border relative overflow-hidden">
               <div className="absolute inset-0 opacity-30" style={{
                 background: briefing.id === 'SC-01' ? 'linear-gradient(135deg, rgba(255,59,59,0.1), transparent)' :
                   briefing.id === 'SC-02' ? 'linear-gradient(135deg, rgba(59,139,255,0.1), transparent)' :
@@ -216,11 +223,11 @@ export default function Dashboard() {
                   <span className="text-xs text-txt-dim font-mono">Mission Briefing</span>
                 </div>
                 <h2 className="text-xl font-bold text-txt-primary mb-1 font-display">{briefing.title}</h2>
-                <p className="text-txt-secondary text-sm">{briefing.description}</p>
+                <p className="text-txt-secondary text-sm">{briefing.description || SCENARIO_SUMMARIES[briefing.id]}</p>
               </div>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="mission-modal-body p-5 sm:p-6 space-y-5">
               {/* Network diagram */}
               <div>
                 <h3 className="text-sm font-semibold text-txt-secondary mb-3 font-mono">Target Network</h3>
@@ -228,9 +235,9 @@ export default function Dashboard() {
                   <p className="text-xs text-txt-dim mb-3 font-mono">Network: {briefing.id === 'SC-01' ? '172.20.1.0/24' : briefing.id === 'SC-02' ? '172.20.2.0/24' : '172.20.3.0/24'}</p>
                   <div className="space-y-2">
                     {(NETWORK_DIAGRAMS[briefing.id] || []).map(h => (
-                      <div key={h.ip} className="flex items-center gap-3 text-xs">
-                        <code className="text-green-signal font-mono bg-green-signal/5 px-2 py-1 rounded-cs-sm">{h.ip}</code>
-                        <span className="text-txt-secondary">{h.label}</span>
+                      <div key={h.ip} className="flex min-w-0 items-center gap-3 text-xs">
+                        <code className="flex-shrink-0 text-green-signal font-mono bg-green-signal/5 px-2 py-1 rounded-cs-sm">{h.ip}</code>
+                        <span className="min-w-0 truncate text-txt-secondary">{h.label}</span>
                         <span className={`ml-auto px-1.5 py-0.5 rounded-cs-sm text-xs font-mono ${
                           h.type === 'target' ? 'text-cs-red bg-cs-red-dim' :
                           h.type === 'defense' ? 'text-cs-blue bg-cs-blue-dim' :
@@ -247,7 +254,7 @@ export default function Dashboard() {
               {isBeginner && (
                 <div>
                   <h3 className="text-sm font-semibold text-txt-secondary mb-3 font-mono">What you'll learn</h3>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid gap-2 sm:grid-cols-2">
                     {(LEARN_POINTS[briefing.id] || []).map(l => (
                       <div key={l} className="flex items-center gap-2 text-xs text-txt-secondary">
                         <div className="w-1.5 h-1.5 rounded-full bg-cs-blue flex-shrink-0" />
@@ -264,13 +271,13 @@ export default function Dashboard() {
                   Your role
                   {isBeginner && <span className="text-xs text-txt-dim ml-2 font-normal">(Red Team recommended for your first time)</span>}
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {[
                     { v: 'red', label: 'Red Team', desc: 'Attacker — execute the pentest', color: 'cs-red', icon: 'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' },
                     { v: 'blue', label: 'Blue Team', desc: 'Defender — SOC analyst / incident response', color: 'cs-blue', icon: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z' },
                   ].map(r => (
                     <button key={r.v} onClick={() => setRole(r.v)}
-                      className={`p-4 rounded-cs border-2 text-left transition-all ${role === r.v
+                      className={`min-w-0 p-4 rounded-cs border-2 text-left transition-all ${role === r.v
                         ? r.color === 'cs-red' ? 'border-cs-red/50 bg-cs-red-surface' : 'border-cs-blue/50 bg-cs-blue-surface'
                         : 'border-cs-border hover:border-cs-border-glow'}`}>
                       <div className="flex items-center gap-2 mb-1">
@@ -302,7 +309,7 @@ export default function Dashboard() {
                       }`}>
                         {methodology === m.value && <div className="w-2 h-2 rounded-full bg-cs-blue" />}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <div className="text-sm text-txt-primary font-semibold">{m.label}</div>
                         <div className="text-xs text-txt-dim mt-0.5">{m.desc}</div>
                       </div>
@@ -312,7 +319,7 @@ export default function Dashboard() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
                 <button onClick={() => setBriefing(null)} className="flex-1 btn btn-ghost justify-center text-sm">Cancel</button>
                 <button onClick={launch} disabled={!!launching}
                   className="flex-1 btn btn-red justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm">

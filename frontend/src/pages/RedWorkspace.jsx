@@ -24,7 +24,7 @@ export default function RedWorkspace() {
   const siemCountRef = useRef(0)
   const writeOutputRef = useRef(null)
 
-  const { sendRawInput, sendCommand, requestHint, toggleMode } = useWebSocket(sessionId)
+  const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(sessionId)
 
   useEffect(() => {
     if (!session) {
@@ -62,7 +62,7 @@ export default function RedWorkspace() {
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   return (
-    <div className="h-screen bg-void flex flex-col overflow-hidden font-display">
+    <div className="workspace-shell font-display">
       {/* Beginner welcome overlay */}
       {showWelcome && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -95,7 +95,7 @@ export default function RedWorkspace() {
       )}
 
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-2 bg-surface-1/80 border-b border-cs-border flex-shrink-0 backdrop-blur-sm">
+      <div className="workspace-topbar">
         <button onClick={() => navigate('/dashboard')} className="text-txt-dim hover:text-txt-secondary transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -108,10 +108,10 @@ export default function RedWorkspace() {
         <div className="h-4 w-px bg-cs-border" />
         <span className="text-txt-dim text-xs font-mono">{session.scenario_id}</span>
         <div className="h-4 w-px bg-cs-border" />
-        <div className="flex-1 overflow-hidden">
+        <div className="workspace-phase">
           <PhaseTrail methodology={session.methodology} role="red" currentPhase={phase} />
         </div>
-        <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="workspace-actions">
           <span className={`text-xs px-2 py-0.5 rounded-cs-sm font-mono font-medium ${
             aiMode === 'learn' ? 'text-cs-blue bg-cs-blue-dim border border-cs-blue/20' : 'text-amber-warn bg-amber-warn/10 border border-amber-warn/20'
           }`}>{aiMode === 'learn' ? 'Learn' : 'Challenge'}</span>
@@ -127,21 +127,21 @@ export default function RedWorkspace() {
       </div>
 
       {/* Main workspace */}
-      <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: '1fr 340px', gridTemplateRows: '1fr 1fr 200px' }}>
+      <div className="workspace-grid">
 
         {/* Terminal — left, spans 2 rows */}
-        <div className="row-span-2 border-r border-cs-border flex flex-col overflow-hidden relative">
+        <div className="workspace-pane workspace-terminal-pane">
           <div className="absolute inset-0 bg-red-surface opacity-50" />
           <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
             <MitreBadge phase={phase} scenario={session.scenario_id} />
           </PanelHeader>
           <div className="flex-1 overflow-hidden relative z-10">
-            <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} />
+            <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
           </div>
         </div>
 
         {/* AI Tutor — top right */}
-        <div className="border-b border-cs-border flex flex-col overflow-hidden">
+        <div className="workspace-pane workspace-side-pane">
           <PanelHeader color="blue" title="AI Tutor" />
           <div className="flex-1 overflow-hidden">
             <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
@@ -149,7 +149,7 @@ export default function RedWorkspace() {
         </div>
 
         {/* SIEM Peek — middle right */}
-        <div className={`border-b border-cs-border flex flex-col overflow-hidden relative transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
+        <div className={`workspace-pane workspace-side-pane transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
           <div className="absolute inset-0 bg-blue-surface opacity-30" />
           {siemFlash && (
             <div className="absolute inset-0 bg-green-signal/5 z-20 pointer-events-none animate-pulse" />
@@ -163,7 +163,7 @@ export default function RedWorkspace() {
         </div>
 
         {/* Notebook — bottom, full width */}
-        <div className="col-span-2 border-t border-cs-border flex flex-col overflow-hidden">
+        <div className="workspace-pane workspace-bottom-pane">
           <PanelHeader color="amber" title="Pentest Notebook" subtitle={`Phase ${phase}`}>
             <LearningContextBadge scenario={session.scenario_id} phase={phase} />
           </PanelHeader>
@@ -178,17 +178,17 @@ export default function RedWorkspace() {
 
 function PanelHeader({ color, title, subtitle, children }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-2/50 border-b border-cs-border/30 flex-shrink-0 relative z-10">
+    <div className="workspace-panel-header relative z-10">
       <span className={`panel-header-dot ${color}`} />
-      <span className="text-xs font-mono font-semibold uppercase tracking-wider" style={{
+      <span className="workspace-panel-title text-xs font-mono font-semibold uppercase tracking-wider" style={{
         color: color === 'red' ? 'var(--red-primary)' :
                color === 'blue' ? 'var(--blue-primary)' :
                color === 'green' ? 'var(--green-signal)' :
                color === 'amber' ? 'var(--amber-warn)' :
                color === 'purple' ? '#a855f7' : 'var(--text-dim)'
       }}>{title}</span>
-      {subtitle && <span className="text-xs text-txt-dim font-mono">{subtitle}</span>}
-      <div className="ml-auto flex items-center gap-2">{children}</div>
+      {subtitle && <span className="workspace-panel-subtitle text-xs text-txt-dim font-mono">{subtitle}</span>}
+      <div className="ml-auto flex flex-shrink-0 items-center gap-2">{children}</div>
     </div>
   )
 }

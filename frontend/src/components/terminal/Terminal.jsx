@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTerminal } from '../../hooks/useTerminal'
 
 /**
@@ -7,52 +7,91 @@ import { useTerminal } from '../../hooks/useTerminal'
  * onData — raw keystrokes sent to backend (every character)
  * onCommand — extracted command string sent on Enter (for AI/discovery)
  */
-export default function Terminal({ onData, onCommand, pendingOutput }) {
+export default function Terminal({ onData, onCommand, pendingOutput, connectionState = 'connected' }) {
   const containerRef = useRef(null)
   const captureRef = useRef(null)
   const lineBufferRef = useRef('')
-  const { writeOutput, focus } = useTerminal({ containerRef, onData, onCommand })
+  const { writeOutput } = useTerminal({ containerRef, onData, onCommand })
 
   // Expose writeOutput via ref so parent can push output
   if (pendingOutput) {
     pendingOutput.current = writeOutput
   }
 
-  const sendInput = (data) => {
-    if (onData) onData(data)
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      captureRef.current?.focus({ preventScroll: true })
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [])
 
-    if (data === '\r' || data === '\n') {
-      const cmd = lineBufferRef.current.trim()
-      if (cmd && onCommand) onCommand(cmd)
-      lineBufferRef.current = ''
-    } else if (data === '\x7f' || data === '\b') {
-      lineBufferRef.current = lineBufferRef.current.slice(0, -1)
-    } else if (data === '\x03') {
-      lineBufferRef.current = ''
-    } else if (data.length === 1 && data >= ' ') {
-      lineBufferRef.current += data
-    } else if (data.length > 1) {
-      lineBufferRef.current += data.replace(/\r?\n/g, '')
+  const rememberInput = (data) => {
+    const chars = data.replace(/\r\n/g, '\n').split('')
+    chars.forEach((char) => {
+      if (char === '\r' || char === '\n') {
+        const cmd = lineBufferRef.current.trim()
+        if (cmd && onCommand) onCommand(cmd)
+        lineBufferRef.current = ''
+      } else if (char === '\x7f' || char === '\b') {
+        lineBufferRef.current = lineBufferRef.current.slice(0, -1)
+      } else if (char === '\x03' || char === '\x04') {
+        lineBufferRef.current = ''
+      } else if (char >= ' ' && char !== '\x1b') {
+        lineBufferRef.current += char
+      }
+    })
+  }
+
+  const sendInput = (data, trackCommand = true) => {
+    if (onData) onData(data)
+    if (trackCommand) rememberInput(data)
+  }
+
+  const keyToTerminalData = (evt) => {
+    if (evt.ctrlKey && !evt.metaKey && !evt.altKey) {
+      const key = evt.key.toLowerCase()
+      if (key === 'c') return { data: '\x03', trackCommand: true }
+      if (key === 'd') return { data: '\x04', trackCommand: true }
+      if (key === 'l') return { data: '\x0c', trackCommand: false }
+      if (key === 'r') return { data: '\x12', trackCommand: false }
+      return null
     }
+    if (evt.metaKey || evt.altKey) return null
+
+    const specialKeys = {
+      Enter: '\r',
+      Backspace: '\x7f',
+      Tab: '\t',
+      Escape: '\x1b',
+      ArrowUp: '\x1b[A',
+      ArrowDown: '\x1b[B',
+      ArrowRight: '\x1b[C',
+      ArrowLeft: '\x1b[D',
+      Home: '\x1b[H',
+      End: '\x1b[F',
+      Delete: '\x1b[3~',
+      PageUp: '\x1b[5~',
+      PageDown: '\x1b[6~',
+    }
+    if (specialKeys[evt.key]) {
+      return { data: specialKeys[evt.key], trackCommand: !evt.key.startsWith('Arrow') && evt.key !== 'Home' && evt.key !== 'End' && evt.key !== 'Delete' && evt.key !== 'PageUp' && evt.key !== 'PageDown' && evt.key !== 'Escape' }
+    }
+    if (evt.key.length === 1) return { data: evt.key, trackCommand: true }
+    return null
   }
 
   const handleKeyDown = (evt) => {
-    if (evt.ctrlKey && evt.key.toLowerCase() === 'c') {
-      evt.preventDefault()
-      sendInput('\x03')
-      return
-    }
-    if (evt.ctrlKey || evt.metaKey || evt.altKey) return
-
-    let data = ''
-    if (evt.key === 'Enter') data = '\r'
-    else if (evt.key === 'Backspace') data = '\x7f'
-    else if (evt.key === 'Tab') data = '\t'
-    else if (evt.key.length === 1) data = evt.key
-
-    if (!data) return
+    const mapped = keyToTerminalData(evt)
+    if (!mapped) return
     evt.preventDefault()
-    sendInput(data)
+    sendInput(mapped.data, mapped.trackCommand)
+    evt.currentTarget.value = ''
+  }
+
+  const handleInput = (evt) => {
+    const text = evt.currentTarget.value
+    if (!text) return
+    sendInput(text)
     evt.currentTarget.value = ''
   }
 
@@ -65,9 +104,14 @@ export default function Terminal({ onData, onCommand, pendingOutput }) {
   }
 
   const focusCapture = () => {
-    focus()
-    captureRef.current?.focus()
+    captureRef.current?.focus({ preventScroll: true })
   }
+
+  const statusLabel = {
+    connecting: 'Connecting terminal...',
+    disconnected: 'Terminal disconnected',
+    unauthorized: 'Terminal auth failed',
+  }[connectionState]
 
   return (
     <div className="relative w-full h-full" onMouseDown={focusCapture} onTouchStart={focusCapture}>
@@ -83,11 +127,17 @@ export default function Terminal({ onData, onCommand, pendingOutput }) {
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
+        inputMode="text"
         className="absolute inset-0 z-20 h-full w-full resize-none border-0 bg-transparent p-0 text-transparent outline-none caret-transparent"
-        onFocus={focus}
         onKeyDown={handleKeyDown}
+        onInput={handleInput}
         onPaste={handlePaste}
       />
+      {statusLabel && (
+        <div className="pointer-events-none absolute right-3 top-3 z-30 rounded-cs-sm border border-cs-border bg-surface-1/90 px-2.5 py-1 text-[10px] font-mono uppercase text-txt-dim">
+          {statusLabel}
+        </div>
+      )}
     </div>
   )
 }

@@ -73,7 +73,7 @@ export default function BlueWorkspace() {
   const [activePanel, setActivePanel] = useState('siem')
   const writeOutputRef = useRef(null)
 
-  const { sendRawInput, sendCommand, requestHint, toggleMode } = useWebSocket(sessionId)
+  const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(sessionId)
 
   const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
   const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
@@ -123,9 +123,9 @@ export default function BlueWorkspace() {
   const nist = NIST_PHASES[phase] || NIST_PHASES[1]
 
   return (
-    <div className="h-screen bg-void flex flex-col overflow-hidden font-display">
+    <div className="workspace-shell font-display">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-2 bg-surface-1/80 border-b border-cs-border flex-shrink-0 backdrop-blur-sm">
+      <div className="workspace-topbar">
         <button onClick={() => navigate('/dashboard')} className="text-txt-dim hover:text-txt-secondary transition-colors">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -138,10 +138,10 @@ export default function BlueWorkspace() {
         <div className="h-4 w-px bg-cs-border" />
         <span className="text-txt-dim text-xs font-mono">{session.scenario_id}</span>
         <div className="h-4 w-px bg-cs-border" />
-        <div className="flex-1 overflow-hidden">
+        <div className="workspace-phase">
           <PhaseTrail methodology="nist" role="blue" currentPhase={phase} />
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="workspace-actions">
           {criticalCount > 0 && (
             <span className="badge sev-crit animate-pulse font-bold">
               {criticalCount} CRITICAL
@@ -164,12 +164,12 @@ export default function BlueWorkspace() {
       </div>
 
       {/* Main grid */}
-      <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: '1fr 340px', gridTemplateRows: '1fr 1fr 200px' }}>
+      <div className="workspace-grid">
 
         {/* Left panel — SIEM Console / Terminal toggle, spans 2 rows */}
-        <div className="row-span-2 border-r border-cs-border flex flex-col overflow-hidden relative">
+        <div className="workspace-pane workspace-terminal-pane">
           <div className="absolute inset-0 bg-blue-surface opacity-30" />
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-2/50 border-b border-cs-border/30 flex-shrink-0 relative z-10">
+          <div className="workspace-panel-header relative z-10 flex-wrap">
             <div className="flex gap-1 bg-surface-3 rounded-cs-sm p-0.5">
               <button onClick={() => setActivePanel('siem')}
                 className={`text-xs px-3 py-1 rounded-cs-sm transition-all font-mono font-medium ${
@@ -186,7 +186,7 @@ export default function BlueWorkspace() {
             </div>
             {activePanel === 'siem' && (
               <>
-                <div className="flex-1 mx-2">
+                <div className="min-w-[220px] flex-1 md:mx-2">
                   <input
                     value={siemFilter}
                     onChange={e => setSiemFilter(e.target.value)}
@@ -224,14 +224,14 @@ export default function BlueWorkspace() {
                 )}
               </div>
             ) : (
-              <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} />
+              <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
             )}
           </div>
         </div>
 
         {/* IR Playbook — top right */}
-        <div className="border-b border-cs-border flex flex-col overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-2/50 border-b border-cs-border/30 flex-shrink-0">
+        <div className="workspace-pane workspace-side-pane">
+          <div className="workspace-panel-header">
             <span className="panel-header-dot purple" />
             <span className="text-xs font-mono font-semibold uppercase tracking-wider" style={{ color: '#a855f7' }}>IR Playbook</span>
             <span className="text-xs text-txt-dim ml-auto font-mono">{Object.values(checkedSteps).filter(Boolean).length}/{playbook.length}</span>
@@ -255,8 +255,8 @@ export default function BlueWorkspace() {
         </div>
 
         {/* AI Tutor + NIST — middle right */}
-        <div className="border-b border-cs-border flex flex-col overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-2/50 border-b border-cs-border/30 flex-shrink-0">
+        <div className="workspace-pane workspace-side-pane">
+          <div className="workspace-panel-header">
             <span className="panel-header-dot blue" />
             <span className="text-xs font-mono font-semibold uppercase tracking-wider text-cs-blue">AI Tutor</span>
             <span className="text-xs text-cs-blue bg-cs-blue-dim border border-cs-blue/20 px-1.5 py-0.5 rounded-cs-sm ml-auto font-mono">
@@ -269,10 +269,10 @@ export default function BlueWorkspace() {
         </div>
 
         {/* Bottom — Notebook + IOCs */}
-        <div className="col-span-2 border-t border-cs-border flex overflow-hidden">
+        <div className="workspace-bottom-split">
           {/* Notebook */}
-          <div className="flex-1 border-r border-cs-border flex flex-col overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-2/50 border-b border-cs-border/30 flex-shrink-0">
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-cs-border">
+            <div className="workspace-panel-header">
               <span className="panel-header-dot amber" />
               <span className="text-xs font-mono font-semibold uppercase tracking-wider text-amber-warn">IR Notebook</span>
             </div>
@@ -282,8 +282,8 @@ export default function BlueWorkspace() {
           </div>
 
           {/* IOC Panel */}
-          <div className="w-72 flex flex-col overflow-hidden">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-2/50 border-b border-cs-border/30 flex-shrink-0">
+          <div className="workspace-ioc-panel flex flex-col overflow-hidden">
+            <div className="workspace-panel-header">
               <span className="panel-header-dot purple" />
               <span className="text-xs font-mono font-semibold uppercase tracking-wider" style={{ color: '#a855f7' }}>IOCs</span>
               <span className="text-xs text-txt-dim ml-auto font-mono">{iocs.length}</span>
@@ -340,7 +340,7 @@ function SiemEventRow({ event, expanded, onToggle, onExtractIoc }) {
       <span className={`badge ${sevStyles[event.severity] || 'sev-info'} justify-center mx-auto w-full`} style={{ display: 'flex' }}>
         {event.severity}
       </span>
-      <span className={`text-xs leading-relaxed truncate ${isBackground ? 'text-txt-dim' : 'text-txt-secondary'}`}>
+      <span className={`min-w-0 truncate text-xs leading-relaxed ${isBackground ? 'text-txt-dim' : 'text-txt-secondary'}`}>
         {event.message}
         {event.source_ip && (
           <button onClick={(e) => { e.stopPropagation(); onExtractIoc(event.source_ip) }}

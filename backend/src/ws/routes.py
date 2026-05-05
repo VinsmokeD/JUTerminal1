@@ -159,7 +159,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                             f"\r\n\x1b[31m[GATE BLOCKED] {gate_result.redirect_message}\x1b[0m"
                             f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
                         )
-                        await websocket.send_json({"type": "terminal_output", "data": warn})
+                        await websocket.send_json({"type": "terminal_output", "data": {"data": warn}})
                         continue
 
                 # Log command and trigger SIEM events
@@ -188,6 +188,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                             source=ev.get("source", "attacker"),
                         ))
                     await db.commit()
+
+                for ev in siem_events:
+                    await websocket.send_json({"type": "siem_event", "data": ev})
 
                 # Store command in Redis for AI context
                 await lpush_capped(f"session:{session_id}:commands", command, max_len=10)

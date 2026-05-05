@@ -59,8 +59,8 @@ export default function SiemFeed() {
       {/* ── Toolbar ──────────────────────────────────────────── */}
       <div className="flex-shrink-0 px-3 pt-3 pb-2 space-y-2 border-b border-cs-border/60">
         {/* Stats row */}
-        <div className="flex items-center gap-3 text-xs">
-          <span className="text-txt-dim font-mono">{events.length} events</span>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="flex-shrink-0 text-txt-dim font-mono">{events.length} events</span>
           {critCount > 0 && (
             <span className="badge sev-crit">
               <span className="w-1.5 h-1.5 rounded-full bg-critical animate-pulse" />
@@ -175,7 +175,7 @@ function EventRow({ event }) {
         {sev.label}
       </span>
 
-      <span className={`flex-1 text-xs leading-relaxed truncate ${isNoise ? 'text-txt-dim' : 'text-txt-secondary'}`}>
+      <span className={`min-w-0 flex-1 truncate text-xs leading-relaxed ${isNoise ? 'text-txt-dim' : 'text-txt-secondary'}`}>
         {event.message}
         {event.mitre_technique && !isNoise && (
           <span className="siem-mitre ml-1.5" title={event.mitre_id}>

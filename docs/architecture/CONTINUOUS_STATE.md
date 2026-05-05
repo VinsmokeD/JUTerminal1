@@ -13,6 +13,98 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-05 17:04:13 +03:00] - Claude Code (Terminal Input Stabilization)
+* **Status**: Coding - terminal input path hardened; workspace UI rework still in progress.
+* **Why**: User reported that the mission terminal was not working and that the mission/workspace UI had overlapping panels. The first priority was to restore reliable terminal focus/input and make backend terminal warnings render correctly before changing layout structure.
+* **Where**:
+  - `frontend/src/components/terminal/Terminal.jsx` - modified the keyboard capture layer and terminal key handling.
+  - `frontend/src/hooks/useWebSocket.js` - modified WebSocket connection state, queued sends while connecting, and normalized terminal output payloads.
+  - `backend/src/ws/routes.py` - modified direct gate-block terminal output to use the same `{data: ...}` payload shape as Redis terminal frames.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this progress record.
+* **What & How**:
+  - The terminal capture textarea now remains the actual focus target instead of immediately handing focus back to xterm's hidden helper input. This removes the focus ping-pong that could leave browser typing attached to the wrong element.
+  - Added support for pasted commands, mobile/input-event text, common shell keys (arrows, Home/End/Delete/PageUp/PageDown), and control keys (`Ctrl+C`, `Ctrl+D`, `Ctrl+L`, `Ctrl+R`) while preserving the existing raw PTY byte stream to the backend.
+  - Added WebSocket input queuing for keystrokes/commands sent while the socket is still connecting, plus a connection-state return value for workspace status display.
+  - Normalized terminal output handling so direct WebSocket strings, especially methodology gate warnings, render through the same browser terminal output event path as Docker/Redis output frames.
+
+### [2026-05-05 17:07:47 +03:00] - Claude Code (Mission Workspace Layout Rework)
+* **Status**: Coding - responsive workspace shell and mission card polish applied; verification still pending.
+* **Why**: The Red and Blue mission workspaces used a rigid desktop-only grid with fixed side widths and fixed bottom row height. On narrower or shorter screens, the top bar, phase trail, terminal, SIEM, tutor, and notebook controls were forced into each other instead of scrolling or stacking.
+* **Where**:
+  - `frontend/src/index.css` - added shared workspace shell/grid/pane/modal classes, responsive breakpoints, compact short-height behavior, SIEM row protection, and scenario card typography.
+  - `frontend/src/pages/RedWorkspace.jsx` - switched the Red Team mission screen to the shared responsive workspace shell and passed terminal connection state to the terminal component.
+  - `frontend/src/pages/BlueWorkspace.jsx` - switched the Blue Team mission screen to the shared responsive workspace shell, wrapped the SIEM toolbar, and passed terminal connection state to the terminal component.
+  - `frontend/src/components/terminal/Terminal.jsx` - removed the extra status-label letter-spacing utility added during the terminal pass.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this progress record.
+* **What & How**:
+  - Replaced inline `gridTemplateColumns: '1fr 340px'` / `gridTemplateRows: '1fr 1fr 200px'` workspace sizing with reusable CSS that uses `minmax(0, ...)` tracks, `min-width: 0`, and `min-height: 0` to let child panels scroll internally rather than overflow.
+  - Added a responsive breakpoint at 1180px that turns the mission workspace into a vertical, scrollable stack with stable minimum heights for the terminal and notebook instead of compressing all tools into one screen.
+  - Added a short-height desktop breakpoint to keep the bottom notebook from consuming too much vertical space on smaller laptop displays.
+  - Updated panel headers to truncate long subtitles cleanly and made the Blue SIEM toolbar wrap its filter controls instead of overlapping status text.
+  - Added explicit scenario-card title/body typography so the mission cards read as structured choices rather than browser-default headings.
+
+### [2026-05-05 17:09:23 +03:00] - Claude Code (Panel Overflow Cleanup)
+* **Status**: Coding - panel internals and mission briefing modal tightened; verification still pending.
+* **Why**: After the shared workspace shell was introduced, individual child controls still had local overflow risks: AI hint buttons could cram labels together, notebook tag actions could collide, SIEM rows needed stronger truncation, and the mission briefing modal needed a stable scroll body.
+* **Where**:
+  - `frontend/src/components/methodology/PhaseTrail.jsx` - reduced repeated phase filtering and made the phase rail more shrink-safe.
+  - `frontend/src/components/hints/AiHintPanel.jsx` - wrapped mode controls, truncated hint button subtitles, and stabilized empty-state hint rows.
+  - `frontend/src/components/notes/GuidedNotebook.jsx` - made notebook tag actions wrap into their own row on narrow panels and protected the note editor width.
+  - `frontend/src/components/siem/SiemFeed.jsx` - wrapped the SIEM toolbar stats row and added `min-width: 0` truncation to event messages.
+  - `frontend/src/pages/BlueWorkspace.jsx` - added truncation protection to the Blue Team SIEM event row.
+  - `frontend/src/pages/Dashboard.jsx` - converted the mission briefing modal to a flex shell with a scroll body, responsive role/learning grids, and truncation-safe target rows.
+  - `frontend/src/index.css` - added stacked-mode bottom split heights so the notebook/IOC panels do not collapse on responsive layouts.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this progress record.
+* **What & How**:
+  - The phase trail now computes visible phases once and lets connectors shrink before labels or action buttons collide.
+  - AI hint controls now use wrapping and truncation instead of forcing full descriptions into narrow columns.
+  - Notebook controls now split onto a second row on compact panels, preserving the editor and Save button alignment.
+  - SIEM event message cells explicitly allow grid shrinkage and truncation, preventing long messages or MITRE labels from pushing into timestamp/severity columns.
+  - The mission briefing modal now keeps its header fixed inside the modal and scrolls only the briefing body, with role and learning sections stacking cleanly on mobile.
+
+### [2026-05-05 17:19:21 +03:00] - Claude Code (Mission Copy Fallback)
+* **Status**: Coding - dashboard briefing copy fallback added after live browser inspection.
+* **Why**: Runtime inspection of the rebuilt dashboard showed that `/api/scenarios/` currently returns empty `description` strings for SC-01 through SC-03. The updated mission card typography exposed those blank paragraphs, weakening the scenario selection and briefing UX.
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - added `SCENARIO_SUMMARIES` fallback copy and used it for scenario cards and the mission briefing modal.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this progress record.
+* **What & How**:
+  - Added concise, scenario-specific summaries for NovaMed, Nexora, and Orion that remain inside the three-scenario MVP scope.
+  - Scenario cards now render `sc.description || SCENARIO_SUMMARIES[sc.id]`, so the UI stays informative even when backend scenario descriptions are empty.
+  - The mission briefing modal uses the same fallback so the first modal screen has a meaningful mission summary instead of an empty paragraph.
+
+### [2026-05-05 17:22:57 +03:00] - Claude Code (Live SIEM Echo Repair)
+* **Status**: Coding - terminal-to-SIEM live UI delivery repaired; verification still pending.
+* **Why**: Browser runtime proof showed the terminal command path worked (`curl http://172.20.1.20` was logged and the LOW HTTP probe SIEM event was persisted), but the Red workspace still displayed `0 events`. The mission UX needs immediate Red-to-Blue feedback, not only persisted evidence available by API refresh.
+* **Where**:
+  - `backend/src/ws/routes.py` - added direct `siem_event` WebSocket sends for the SIEM events returned by command processing.
+  - `frontend/src/store/sessionStore.js` - added duplicate protection for SIEM events using event id/message plus timestamp/created-at.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this progress record.
+* **What & How**:
+  - After command processing and DB persistence, the backend now sends each triggered SIEM event directly over the same authenticated WebSocket that handled the terminal command. This makes command-caused alerts visible immediately even if Redis pub/sub batching is delayed or missed.
+  - The frontend store now drops exact duplicate event frames, so a direct WebSocket send and a Redis pub/sub send for the same event do not double-render.
+  - Duplicate detection includes both identifier/message and timestamp so repeated executions of the same command can still create distinct timeline events.
+
+### [2026-05-05 17:24:56 +03:00] - Claude Code (Terminal/UI Verification Pass)
+* **Status**: Complete - terminal input path, mission layout, scenario briefing UI, and running Docker stack verified with noted lint/browser limits.
+* **Why**: User requested the broken terminal be fixed and the platform mission UI/UX/layout be reworked because panels were overlapping. This pass needed empirical proof that the terminal accepts browser typing, commands reach backend persistence, SIEM evidence exists, the redesigned mission surfaces render in the running app, and the stack remains healthy.
+* **Where**:
+  - Verified modified frontend files: `frontend/src/components/terminal/Terminal.jsx`, `frontend/src/hooks/useWebSocket.js`, `frontend/src/store/sessionStore.js`, `frontend/src/pages/RedWorkspace.jsx`, `frontend/src/pages/BlueWorkspace.jsx`, `frontend/src/pages/Dashboard.jsx`, `frontend/src/index.css`, `frontend/src/components/methodology/PhaseTrail.jsx`, `frontend/src/components/hints/AiHintPanel.jsx`, `frontend/src/components/notes/GuidedNotebook.jsx`, `frontend/src/components/siem/SiemFeed.jsx`.
+  - Verified modified backend file: `backend/src/ws/routes.py`.
+  - Runtime/browser surfaces verified: `http://localhost/auth`, `http://localhost/dashboard`, SC-01 mission briefing modal, SC-01 Red workspace session `3e19c3df-b127-4aab-b94a-9848bb4be77b`, backend command/event APIs, Docker Compose backend/frontend/nginx health.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this completion record.
+* **What & How**:
+  - Frontend production build passed with Vite after sandbox escalation for esbuild worker spawning. The rebuilt Docker frontend image also ran `npm run build` successfully during `docker compose up -d --build`.
+  - Backend regression suite passed: `python -m pytest -p no:cacheprovider` returned `79 passed, 1 warning` (existing Python 3.14 `google.genai` deprecation warning).
+  - Focused WebSocket test file passed after the final route change: `tests/test_ws_integration.py` returned `12 passed, 1 warning`.
+  - `docker compose config --quiet` passed, and `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}` after rebuild.
+  - Rebuilt/restarted `backend` and `frontend` containers with Docker Compose so the running localhost platform includes the changes. `docker compose ps backend frontend nginx` showed backend/frontend/nginx up after rebuild.
+  - Browser proof: logged in at `http://localhost/auth`, opened `http://localhost/dashboard`, confirmed scenario cards now render fallback summaries instead of blank paragraphs, opened the SC-01 briefing modal, and visually confirmed the modal scroll body, target network rows, learning list, and role cards no longer overlap.
+  - Browser terminal proof: started SC-01 session `3e19c3df-b127-4aab-b94a-9848bb4be77b`, acknowledged ROE, dismissed the welcome overlay, focused `Terminal keyboard capture`, typed `curl http://172.20.1.20`, and received an AI tutor response tied to that command. Backend API then confirmed one command (`curl http://172.20.1.20`, tool `curl`, phase `1`) and one SIEM event (`LOW`, `HTTP probe: curl request to target`, MITRE `T1595`, source IP `172.20.1.10`) persisted for that session.
+  - After the backend/frontend rebuild, reloading the same Red workspace showed the persisted SIEM event in the Red workspace SIEM feed as `1 events` with the LOW curl HTTP probe row, proving the redesigned layout and event feed render the evidence.
+  - `npm run lint` was attempted but could not run because the frontend currently has no ESLint configuration file; this is a repo configuration gap, not a failure from the changed code.
+  - Final in-app browser attempt to run one more live command after the direct SIEM echo repair was blocked by the browser automation usage limit. No workaround was attempted. The code path is covered by backend tests/builds and the prior browser command/API proof; a human can run another browser command to observe the immediate increment live.
+
 ### [2026-04-30 10:10:57 +03:00] - Claude Code (Defense Freeze Verification)
 * **Status**: FROZEN - final defense verification passed and evidence pack updated.
 * **Why**: User requested the final pre-defense freeze pass: confirm the already-committed terminal input fix, rerun the verification suite, perform one final browser SC-01 terminal-to-Blue smoke, and update the defense evidence before tagging/pushing.

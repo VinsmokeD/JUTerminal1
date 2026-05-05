@@ -69,7 +69,7 @@ export default function AiHintPanel({ onRequestHint, onToggleMode }) {
   return (
     <div className="flex flex-col h-full bg-void">
       <div className="px-3 pt-3 pb-2.5 border-b border-cs-border">
-        <div className="flex items-center gap-2 mb-2.5">
+        <div className="flex flex-wrap items-center gap-2 mb-2.5">
           <span className="text-xs text-txt-dim font-mono">Mode:</span>
           <div className="flex gap-1 bg-surface-2 rounded-cs-sm p-0.5">
             {['learn', 'challenge'].map((m) => (
@@ -94,12 +94,12 @@ export default function AiHintPanel({ onRequestHint, onToggleMode }) {
       </div>
 
       <div className="mx-3 mt-2.5 px-3 py-2.5 rounded-cs border border-cs-border bg-surface-2/60">
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex min-w-0 items-center gap-2 mb-1.5">
           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse ${role === 'red' ? 'bg-cs-red' : 'bg-cs-blue'}`} />
           <span className={`text-xs font-mono font-semibold ${role === 'red' ? 'text-cs-red' : 'text-cs-blue'}`}>
             Phase {phase}: {ctx.title}
           </span>
-          {scenarioId && <span className="text-xs text-txt-dim font-mono ml-auto">{scenarioId}</span>}
+          {scenarioId && <span className="ml-auto flex-shrink-0 text-xs text-txt-dim font-mono">{scenarioId}</span>}
         </div>
         <p className="text-xs text-txt-secondary leading-relaxed">{ctx.prompt}</p>
       </div>
@@ -118,11 +118,11 @@ export default function AiHintPanel({ onRequestHint, onToggleMode }) {
                 { level: 2, label: 'L2 Directional', desc: 'Which tool and approach?', color: 'text-orange-400' },
                 { level: 3, label: 'L3 Procedural', desc: 'Step-by-step walkthrough', color: 'text-cs-red' },
               ].map(({ level, label, desc, color }) => (
-                <div key={level} className="flex items-center gap-2 text-xs">
+                <div key={level} className="flex min-w-0 items-center gap-2 text-xs">
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-mono font-bold flex-shrink-0 bg-surface-3 ${color}`}>{level}</span>
-                  <span className={`font-medium ${color}`}>{label}</span>
-                  <span className="text-txt-dim">— {desc}</span>
-                  <span className="ml-auto text-txt-dim font-mono">-{hintPenalties[level - 1]}pts</span>
+                  <span className={`flex-shrink-0 font-medium ${color}`}>{label}</span>
+                  <span className="min-w-0 truncate text-txt-dim">{desc}</span>
+                  <span className="ml-auto flex-shrink-0 text-txt-dim font-mono">-{hintPenalties[level - 1]}pts</span>
                 </div>
               ))}
             </div>
@@ -138,16 +138,16 @@ export default function AiHintPanel({ onRequestHint, onToggleMode }) {
       </div>
 
       <div className="border-t border-cs-border p-2.5">
-        <div className="flex gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
           {[
             { level: 1, label: 'L1', desc: 'Conceptual', penalty: hintPenalties[0], cls: 'text-amber-warn border-amber-warn/30 hover:bg-amber-warn/10 hover:border-amber-warn/50' },
             { level: 2, label: 'L2', desc: 'Directional', penalty: hintPenalties[1], cls: 'text-orange-400 border-orange-400/30 hover:bg-orange-400/10 hover:border-orange-400/50' },
             { level: 3, label: 'L3', desc: 'Procedural', penalty: hintPenalties[2], cls: 'text-cs-red border-cs-red/30 hover:bg-cs-red/10 hover:border-cs-red/50' },
           ].map(({ level, label, desc, penalty, cls }) => (
             <button key={level} onClick={() => request(level)} disabled={loading}
-              className={`flex-1 py-2 rounded-cs border text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed ${cls}`}>
+              className={`min-w-0 rounded-cs border px-1 py-2 text-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed ${cls}`}>
               <div className="font-bold font-mono">{label}</div>
-              <div className="text-txt-dim mt-0.5 font-mono text-[10px]">{desc} · -{penalty}pts</div>
+              <div className="mt-0.5 truncate text-[10px] text-txt-dim font-mono">{desc} · -{penalty}pts</div>
             </button>
           ))}
         </div>

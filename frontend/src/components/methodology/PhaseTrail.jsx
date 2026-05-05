@@ -9,15 +9,16 @@ const PHASES = {
 export default function PhaseTrail({ methodology = 'ptes', role = 'red', currentPhase = 1 }) {
   const key = role === 'blue' ? 'nist' : (methodology || 'ptes')
   const phases = PHASES[key] || PHASES.ptes
+  const visiblePhases = phases.filter(Boolean)
 
   return (
-    <div className="flex items-center gap-0.5 overflow-hidden">
-      {phases.filter(Boolean).map((label, i) => {
+    <div className="flex min-w-0 items-center gap-0.5 overflow-hidden">
+      {visiblePhases.map((label, i) => {
         const num = i + 1
         const done = num < currentPhase
         const active = num === currentPhase
         return (
-          <div key={num} className="flex items-center gap-0.5 min-w-0">
+          <div key={num} className="flex min-w-0 items-center gap-0.5">
             <div
               title={label}
               className={`flex items-center justify-center w-5 h-5 rounded-full text-xs font-mono flex-shrink-0 border transition-all duration-200 ${
@@ -36,8 +37,8 @@ export default function PhaseTrail({ methodology = 'ptes', role = 'red', current
                 </svg>
               ) : num}
             </div>
-            {i < phases.filter(Boolean).length - 1 && (
-              <div className={`h-px w-4 flex-shrink-0 transition-colors duration-200 ${
+            {i < visiblePhases.length - 1 && (
+              <div className={`h-px w-3 sm:w-4 flex-shrink transition-colors duration-200 ${
                 done
                   ? role === 'red' ? 'bg-cs-red/30' : 'bg-cs-blue/30'
                   : 'bg-cs-border'
