@@ -13,6 +13,59 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-06 13:41:21 +03:00] - Claude Code (Terminal Architecture Hardening)
+* **Status**: Complete - terminal architecture hardened for continuous real Kali interactivity and rebuilt into the running stack.
+* **Why**: User reported the terminal could still randomly freeze and that refreshing replayed the typed input/output afterward. That symptom showed the real Kali PTY and Redis history were often still receiving data, but the live browser/WebSocket path could be blocked or miss output until reconnect. The remaining architecture risk was that raw PTY input, command logging, SIEM processing, discovery tracking, and AI hints were all handled in the same WebSocket receive loop, so slow command-side work could delay later terminal input. The frontend also dropped typed frames during reconnect windows, and terminal startup banners were published live but not persisted to history.
+* **Where**:
+  - `backend/src/ws/routes.py` - refactored WebSocket handling into a non-blocking raw input loop, sequential command worker queue, serialized outbound sends, and heartbeat task.
+  - `backend/src/sandbox/terminal.py` - persisted terminal startup banners into Redis history before publishing them live.
+  - `frontend/src/hooks/useWebSocket.js` - preserved pending terminal frames across reconnects for the same session and queued frames even while disconnected/closing.
+  - Previously hardened files still active in this pass: `backend/src/sandbox/manager.py`, `backend/src/sandbox/container_cleanup.py`, `backend/src/config.py`, `backend/src/main.py`, `frontend/src/hooks/useTerminal.js`, `frontend/src/components/terminal/Terminal.jsx`, `frontend/src/pages/RedWorkspace.jsx`, `frontend/src/pages/BlueWorkspace.jsx`.
+  - Runtime rebuilt: Docker `backend` and `frontend` images/containers.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this architecture-hardening record.
+* **What & How**:
+  - Raw keystrokes (`terminal_raw`) now remain on the hot path and only publish to the terminal input channel. Complete command events (`terminal_command`) are placed into a bounded async queue and processed by a command worker. This keeps SIEM, Postgres persistence, discovery tracking, and Gemini hint calls from blocking future keystrokes.
+  - Outbound WebSocket writes from Redis forwarding, command processing, hints, and heartbeat now pass through a shared send lock, preventing concurrent `send_json()` calls from racing on the same WebSocket.
+  - Added a lightweight `ws_ping` heartbeat every 20 seconds so nginx/browser/FastAPI keep the upgraded WebSocket active during quiet terminal periods.
+  - Hint requests are also dispatched asynchronously, so asking the AI tutor cannot stall terminal input processing.
+  - Frontend pending-frame handling no longer drops typed input during a disconnect/reconnect window for the same session. It caps the queue to the most recent 500 frames to avoid unbounded growth.
+  - Terminal banners are now written to Redis history as well as live output, so a refresh and a live attach converge on the same visible terminal context.
+  - Verification passed: `python -m py_compile` for touched backend files; `npm run build` passed; `python -m pytest -p no:cacheprovider backend/tests/test_ws_integration.py` returned `12 passed, 1 warning`; Docker `backend`/`frontend` rebuild completed; `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`; `docker compose config --quiet` passed; `docker compose ps backend frontend postgres redis nginx` showed backend/frontend up and Postgres/Redis healthy.
+  - Live stress verification passed against real SC-02 Kali session `46696a1d-0ebb-4e36-9569-095218018d5e`: rapid WebSocket PTY input for `echo stress_one`, `echo stress_two`, and `pwd` returned live `terminal_output` including both echo values and `/home/student` without needing refresh.
+
+### [2026-05-06 13:29:56 +03:00] - Claude Code (SC-02 Terminal Stale Container Repair)
+* **Status**: Complete - stale terminal container recovery, cleanup guard, frontend reconnect, and terminal history replay race fixed; runtime rebuilt.
+* **Why**: User showed the SC-02 Red Team terminal as a blank frozen panel and reported that clicking/typing did nothing. Investigation found the current SC-02 session `73ca91e5-492d-4fd9-8ff5-f8039695f51d` pointed at a Docker container id that no longer existed. The cleanup task had removed a newly opened no-command Kali container because it treated sessions with no commands as idle immediately. The browser could still send keypresses into Redis/WS, but no live PTY existed behind the session, and the frontend could also miss the initial history frame if it arrived before xterm registered its listener.
+* **Where**:
+  - `backend/src/sandbox/container_cleanup.py` - modified idle cleanup activity calculation and DB state clearing.
+  - `backend/src/sandbox/manager.py` - added `ensure_scenario_container()` recovery API for stale or missing session containers.
+  - `backend/src/ws/routes.py` - changed WebSocket attach to guarantee a live Kali PTY and update stale DB container ids before streaming.
+  - `backend/src/config.py` and `backend/src/main.py` - aligned CORS settings with the repo's comma-separated `.env` format so tests collect reliably.
+  - `frontend/src/hooks/useWebSocket.js` - added WebSocket reconnect and per-session terminal backlog retention.
+  - `frontend/src/hooks/useTerminal.js` - replays buffered history/output after xterm mounts and filters terminal events by session.
+  - `frontend/src/components/terminal/Terminal.jsx`, `frontend/src/pages/RedWorkspace.jsx`, `frontend/src/pages/BlueWorkspace.jsx` - pass `sessionId` into the terminal path.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this repair record.
+* **What & How**:
+  - Cleanup now uses `latest_command.created_at` when commands exist and `session.started_at` when no commands exist, so a newly opened mission is not deleted before the first successful command. When cleanup legitimately removes an idle container, it clears `container_id` and `network_name` in Postgres so later reconnects do not keep a stale Docker id.
+  - WebSocket attach now calls `ensure_scenario_container()` before starting terminal streaming. If the stored container is missing, stopped, or stale, the backend creates or restarts the session's `kali-{session_id[:8]}` container on the correct scenario network, updates Postgres, and then starts the Docker PTY proxy.
+  - Frontend WebSocket handling now auto-reconnects after non-auth disconnects and keeps a small per-session terminal backlog. The terminal hook replays the backlog after xterm mounts, removing the race where the `history` message could arrive before the terminal listener existed and leave a black empty panel.
+  - Runtime verification: `docker ps` confirmed `kali-73ca91e5` running on `cybersim_sc02-net`; Postgres now points SC-02 session `73ca91e5-492d-4fd9-8ff5-f8039695f51d` at the live replacement container `be6c4b8167fc...`; command logs show the user's `ls`, `ls -la`, and `pwd` commands were received; Redis terminal history contains the SC-02 prompt and command output.
+  - Regression/build verification passed: `python -m py_compile` for touched backend files, `python -m pytest -p no:cacheprovider backend/tests/test_ws_integration.py` returned `12 passed, 1 warning`, local `npm run build` passed, Docker frontend/backend rebuilds passed, `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`, and `docker compose ps backend frontend postgres redis nginx` showed backend/frontend up with Postgres/Redis healthy.
+
+### [2026-05-06 13:17:07 +03:00] - Claude Code (Terminal Freeze Runtime Repair)
+* **Status**: Complete - terminal backend restored and live WebSocket smoke verified.
+* **Why**: User reported the browser terminal was fully frozen and could not accept typing or interaction. Runtime inspection showed the frontend and nginx were running, but the backend was restart-looping because Postgres and Redis had stopped; without a stable backend, the terminal WebSocket could not remain connected and the xterm surface appeared dead.
+* **Where**:
+  - Docker runtime state reviewed/repaired: `backend`, `postgres`, `redis`, `frontend`, and `nginx` services in `docker-compose.yml`.
+  - Reviewed terminal path files without code modification: `frontend/src/components/terminal/Terminal.jsx`, `frontend/src/hooks/useTerminal.js`, `frontend/src/hooks/useWebSocket.js`, `frontend/src/pages/RedWorkspace.jsx`, `frontend/src/pages/BlueWorkspace.jsx`, and `backend/src/ws/routes.py`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this runtime repair record.
+* **What & How**:
+  - `docker compose ps` showed `cybersim-backend-1` restarting every second while `postgres` and `redis` were exited. Backend logs showed startup failing inside `init_db()` with `socket.gaierror: [Errno -5] No address associated with hostname` while resolving the Postgres host.
+  - Restarted the core runtime with `docker compose up -d postgres redis backend frontend nginx`; Postgres and Redis became healthy, but the backend container still had a stale network attachment with no active IP endpoint.
+  - Recreated only the backend container using `docker compose up -d --force-recreate backend`, which restored its Docker network attachment and allowed it to resolve/connect to Postgres successfully.
+  - Verification passed: `docker compose ps backend postgres redis nginx` showed backend up, Postgres/Redis healthy, and nginx up; `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`.
+  - Live terminal WebSocket smoke passed through the running nginx/backend path: authenticated as `admin`, started a fresh SC-01 Red session `40b1ffcc-f8ab-4499-a53f-0b75ee39ce98`, opened `ws://localhost/ws/{session_id}`, sent the token, received the terminal history/banner/prompt, sent a probe raw input frame, and received `terminal_output` containing the probe text.
+
 ### [2026-05-05 17:04:13 +03:00] - Claude Code (Terminal Input Stabilization)
 * **Status**: Coding - terminal input path hardened; workspace UI rework still in progress.
 * **Why**: User reported that the mission terminal was not working and that the mission/workspace UI had overlapping panels. The first priority was to restore reliable terminal focus/input and make backend terminal warnings render correctly before changing layout structure.

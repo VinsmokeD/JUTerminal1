@@ -136,7 +136,7 @@ export default function RedWorkspace() {
             <MitreBadge phase={phase} scenario={session.scenario_id} />
           </PanelHeader>
           <div className="flex-1 overflow-hidden relative z-10">
-            <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
+            <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
           </div>
         </div>
 

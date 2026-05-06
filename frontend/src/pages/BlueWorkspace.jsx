@@ -224,7 +224,7 @@ export default function BlueWorkspace() {
                 )}
               </div>
             ) : (
-              <Terminal onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
+              <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
             )}
           </div>
         </div>

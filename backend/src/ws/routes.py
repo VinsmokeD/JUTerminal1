@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import settings
 from src.db.database import AsyncSessionLocal, Session, CommandLog, SiemEvent
 from src.sandbox.terminal import stream_terminal_output, send_terminal_input
+from src.sandbox.manager import ensure_scenario_container
 from src.siem.engine import process_command_for_siem
 from src.ai.monitor import get_ai_hint
 from src.ai.discovery_tracker import track_command as track_discovery
@@ -48,6 +49,88 @@ async def _send_reconnect_history(websocket: WebSocket, session_id: str) -> None
     )
 
 
+async def _handle_terminal_command(session_id: str, session_state: dict, command: str, send_json) -> None:
+    """Process complete commands without blocking raw PTY keystrokes."""
+    if not command.strip():
+        return
+
+    current_phase: int = session_state["phase"]
+    try:
+        spec = load_scenario(session_state["scenario_id"])
+        phases = spec.get("phases", {})
+        phase_spec = phases.get(current_phase, phases.get(str(current_phase), {}))
+        ptes_phase = phase_spec.get("ptes_phase", "")
+    except Exception:
+        ptes_phase = ""
+
+    if ptes_phase:
+        gate_result = check_command(command, ptes_phase)
+        if gate_result.blocked:
+            async with AsyncSessionLocal() as db:
+                await db.execute(
+                    update(Session)
+                    .where(Session.id == session_id)
+                    .values(score=Session.score - _GATE_PENALTY)
+                )
+                await db.commit()
+            session_state["phase"] = current_phase
+            warn = (
+                f"\r\n\x1b[31m[GATE BLOCKED] {gate_result.redirect_message}\x1b[0m"
+                f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
+            )
+            await send_json({"type": "terminal_output", "data": {"data": warn}})
+            return
+
+    siem_events = await process_command_for_siem(session_id, session_state, command)
+
+    from src.scenarios.gatekeeper import _parse_tool as _gt
+    tool_name = _gt(command)
+    async with AsyncSessionLocal() as db:
+        db.add(CommandLog(
+            session_id=session_id,
+            command=command,
+            tool=tool_name or None,
+            phase=session_state.get("phase", 1),
+            triggered_siem_events=[ev.get("id") for ev in siem_events],
+        ))
+        for ev in siem_events:
+            db.add(SiemEvent(
+                id=str(uuid.uuid4()),
+                session_id=session_id,
+                severity=ev.get("severity", "LOW"),
+                message=ev.get("message", "SIEM event detected"),
+                raw_log=ev.get("raw_log"),
+                mitre_technique=ev.get("mitre_technique") or ev.get("mitre_id"),
+                source_ip=ev.get("source_ip"),
+                source=ev.get("source", "attacker"),
+            ))
+        await db.commit()
+
+    for ev in siem_events:
+        await send_json({"type": "siem_event", "data": ev})
+
+    await lpush_capped(f"session:{session_id}:commands", command, max_len=10)
+    await cache_set(f"session:{session_id}:last_cmd_time", str(__import__('time').time()), ttl=7200)
+
+    recent_output = await lrange(f"terminal:{session_id}:history", 0, 2)
+    output_text = " ".join(str(c) for c in recent_output if c) if recent_output else ""
+    discoveries = await track_discovery(session_id, command, output_text, session_state["scenario_id"])
+
+    if any(discoveries.values()):
+        await send_json({
+            "type": "auto_evidence",
+            "data": {
+                "command": command,
+                "discoveries": discoveries,
+                "tool": tool_name or (command.strip().split()[0] if command.strip() else ""),
+            },
+        })
+
+    ai_hint = await get_ai_hint(session_id, session_state, command, None)
+    if ai_hint:
+        await send_json({"type": "ai_hint", "data": {"text": ai_hint}})
+
+
 @router.websocket("/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     await websocket.accept()
@@ -83,9 +166,25 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             "container_id": session.container_id,
         }
 
+    # Ensure the browser always attaches to a live PTY. Cleanup or Docker
+    # restarts can leave the DB pointing at a removed Kali container.
+    container_id, network_name, changed = await ensure_scenario_container(
+        session_id,
+        session_state["scenario_id"],
+        session_state["container_id"],
+    )
+    if changed:
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                update(Session)
+                .where(Session.id == session_id)
+                .values(container_id=container_id, network_name=network_name)
+            )
+            await db.commit()
+    session_state["container_id"] = container_id
+
     # Start streaming terminal output from Docker to Redis (idempotent thread launch)
-    if session.container_id:
-        await stream_terminal_output(session_id, session.container_id, session_state["scenario_id"])
+    await stream_terminal_output(session_id, container_id, session_state["scenario_id"])
 
     # Replay persisted history so browser refresh restores terminal context immediately.
     await _send_reconnect_history(websocket, session_id)
@@ -94,7 +193,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     # container is running — prevents spurious SIEM noise when Docker is unavailable.
     redis = get_redis_client()
     has_real_container = bool(
-        session.container_id and not session.container_id.startswith("mock-")
+        session_state["container_id"] and not session_state["container_id"].startswith("mock-")
     )
     if has_real_container:
         await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, session_state["scenario_id"])
@@ -102,6 +201,12 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     # Subscribe to SIEM + terminal output channels via Redis pub/sub
     pubsub = redis.pubsub()
     await pubsub.subscribe(f"siem:{session_id}:feed", f"terminal:{session_id}:output")
+    send_lock = asyncio.Lock()
+    command_queue: asyncio.Queue[str] = asyncio.Queue(maxsize=50)
+
+    async def _send_json(payload: dict) -> None:
+        async with send_lock:
+            await websocket.send_json(payload)
 
     async def _redis_to_ws() -> None:
         async for message in pubsub.listen():
@@ -110,11 +215,60 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             channel = message["channel"]
             payload = json.loads(message["data"])
             if "siem:" in channel:
-                await websocket.send_json({"type": "siem_event", "data": payload})
+                await _send_json({"type": "siem_event", "data": payload})
             else:
-                await websocket.send_json({"type": "terminal_output", "data": payload})
+                await _send_json({"type": "terminal_output", "data": payload})
+
+    async def _command_worker() -> None:
+        while True:
+            command = await command_queue.get()
+            try:
+                await _handle_terminal_command(session_id, session_state, command, _send_json)
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).warning(
+                    "[WS] Command processing failed for session %s: %s",
+                    session_id[:8],
+                    exc,
+                )
+            finally:
+                command_queue.task_done()
+
+    async def _heartbeat() -> None:
+        while True:
+            await asyncio.sleep(20)
+            await _send_json({"type": "ws_ping", "data": {"session_id": session_id}})
+
+    async def _send_hint(level: int) -> None:
+        hint_text = None
+        hint_steps = None
+
+        ai_hint = await get_ai_hint(session_id, session_state, None, level)
+        if ai_hint:
+            hint_text = ai_hint
+            hint_steps = [ai_hint]
+        else:
+            hints_data = _load_hints(session_state["scenario_id"])
+            sc_hints = hints_data.get(session_state["scenario_id"], {})
+            role_hints = sc_hints.get(session_state.get("role", "red"), {})
+            phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
+            static_hint = phase_hints.get(f"L{level}")
+
+            if isinstance(static_hint, list):
+                hint_text = "\n".join(static_hint)
+                hint_steps = static_hint
+            elif static_hint:
+                hint_text = static_hint
+                hint_steps = [static_hint]
+
+        if hint_text:
+            await _send_json({"type": "ai_hint", "data": {"text": hint_text, "steps": hint_steps, "level": level}})
+        else:
+            await _send_json({"type": "ai_hint", "data": {"text": "No hint available for this phase yet. Try progressing to the next step.", "steps": [], "level": level}})
 
     redis_task = asyncio.create_task(_redis_to_ws())
+    command_task = asyncio.create_task(_command_worker())
+    heartbeat_task = asyncio.create_task(_heartbeat())
 
     try:
         while True:
@@ -129,94 +283,17 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     await send_terminal_input(session_id, raw_data)
 
             elif msg_type == "terminal_command":
-                # ── Complete command (sent on Enter): AI, SIEM, discovery ───
                 command = msg.get("data", "")
-                if not command.strip():
-                    continue
-
-                # Phase gate check
-                current_phase: int = session_state["phase"]
-                try:
-                    spec = load_scenario(session_state["scenario_id"])
-                    phases = spec.get("phases", {})
-                    phase_spec = phases.get(current_phase, phases.get(str(current_phase), {}))
-                    ptes_phase = phase_spec.get("ptes_phase", "")
-                except Exception:
-                    ptes_phase = ""
-
-                if ptes_phase:
-                    gate_result = check_command(command, ptes_phase)
-                    if gate_result.blocked:
-                        async with AsyncSessionLocal() as db:
-                            await db.execute(
-                                update(Session)
-                                .where(Session.id == session_id)
-                                .values(score=Session.score - _GATE_PENALTY)
-                            )
-                            await db.commit()
-                        session_state["phase"] = current_phase
-                        warn = (
-                            f"\r\n\x1b[31m[GATE BLOCKED] {gate_result.redirect_message}\x1b[0m"
-                            f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
-                        )
-                        await websocket.send_json({"type": "terminal_output", "data": {"data": warn}})
-                        continue
-
-                # Log command and trigger SIEM events
-                siem_events = await process_command_for_siem(session_id, session_state, command)
-
-                # Persist command to DB for timeline + reports (merged into single transaction)
-                from src.scenarios.gatekeeper import _parse_tool as _gt
-                tool_name = _gt(command)
-                async with AsyncSessionLocal() as db:
-                    db.add(CommandLog(
-                        session_id=session_id,
-                        command=command,
-                        tool=tool_name or None,
-                        phase=session_state.get("phase", 1),
-                        triggered_siem_events=[ev.get("id") for ev in siem_events],
-                    ))
-                    for ev in siem_events:
-                        db.add(SiemEvent(
-                            id=str(uuid.uuid4()),
-                            session_id=session_id,
-                            severity=ev.get("severity", "LOW"),
-                            message=ev.get("message", "SIEM event detected"),
-                            raw_log=ev.get("raw_log"),
-                            mitre_technique=ev.get("mitre_technique") or ev.get("mitre_id"),
-                            source_ip=ev.get("source_ip"),
-                            source=ev.get("source", "attacker"),
-                        ))
-                    await db.commit()
-
-                for ev in siem_events:
-                    await websocket.send_json({"type": "siem_event", "data": ev})
-
-                # Store command in Redis for AI context
-                await lpush_capped(f"session:{session_id}:commands", command, max_len=10)
-                await cache_set(f"session:{session_id}:last_cmd_time", str(__import__('time').time()), ttl=7200)
-
-                # Track discoveries from terminal output
-                recent_output = await lrange(f"terminal:{session_id}:history", 0, 2)
-                output_text = " ".join(str(c) for c in recent_output if c) if recent_output else ""
-                discoveries = await track_discovery(session_id, command, output_text, session_state["scenario_id"])
-
-                # Notify frontend about new discoveries for auto-evidence
-                if any(discoveries.values()):
-                    await websocket.send_json({
-                        "type": "auto_evidence",
-                        "data": {
-                            "command": command,
-                            "discoveries": discoveries,
-                            "tool": tool_name or (command.strip().split()[0] if command.strip() else ""),
-                        },
-                    })
-
-                # Trigger AI hint if applicable
-                ai_hint = await get_ai_hint(session_id, session_state, command, None)
-                if ai_hint:
-                    await websocket.send_json({"type": "ai_hint", "data": {"text": ai_hint}})
-
+                if command.strip():
+                    try:
+                        command_queue.put_nowait(command)
+                    except asyncio.QueueFull:
+                        await _send_json({
+                            "type": "terminal_output",
+                            "data": {
+                                "data": "\r\n\x1b[31m[terminal busy] Command queue is full. Wait for the current command to finish.\x1b[0m\r\n",
+                            },
+                        })
             elif msg_type == "terminal_input":
                 # ── Legacy: line-buffered input (mock terminal fallback) ────
                 command = msg.get("data", "")
@@ -234,41 +311,14 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         )
                         await db.commit()
                     session_state["ai_mode"] = new_mode
-                    await websocket.send_json({
+                    await _send_json({
                         "type": "mode_changed",
                         "data": {"mode": new_mode},
                     })
 
             elif msg_type == "request_hint":
                 level = msg.get("level", 1)
-                hint_text = None
-                hint_steps = None
-
-                # Try AI hint first
-                ai_hint = await get_ai_hint(session_id, session_state, None, level)
-                if ai_hint:
-                    hint_text = ai_hint
-                    hint_steps = [ai_hint]
-                else:
-                    # Fall back to static hint JSON files
-                    hints_data = _load_hints(session_state["scenario_id"])
-                    sc_hints = hints_data.get(session_state["scenario_id"], {})
-                    role_hints = sc_hints.get(session_state.get("role", "red"), {})
-                    phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
-                    static_hint = phase_hints.get(f"L{level}")
-
-                    if isinstance(static_hint, list):
-                        hint_text = "\n".join(static_hint)
-                        hint_steps = static_hint
-                    elif static_hint:
-                        hint_text = static_hint
-                        hint_steps = [static_hint]
-
-                if hint_text:
-                    await websocket.send_json({"type": "ai_hint", "data": {"text": hint_text, "steps": hint_steps, "level": level}})
-                else:
-                    await websocket.send_json({"type": "ai_hint", "data": {"text": "No hint available for this phase yet. Try progressing to the next step.", "steps": [], "level": level}})
-
+                asyncio.create_task(_send_hint(level))
     except WebSocketDisconnect:
         pass
     except Exception as exc:
@@ -278,6 +328,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         )
     finally:
         redis_task.cancel()
+        command_task.cancel()
+        heartbeat_task.cancel()
         try:
             await pubsub.unsubscribe()
         except Exception:

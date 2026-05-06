@@ -65,6 +65,23 @@ async def start_scenario_container(
     return await loop.run_in_executor(None, _start_sync, session_id, scenario_id)
 
 
+async def ensure_scenario_container(
+    session_id: str,
+    scenario_id: str,
+    container_id: str | None,
+) -> Tuple[str, str, bool]:
+    """
+    Return a live Kali container for a session, replacing stale DB pointers.
+
+    Returns (container_id, network_name, changed).
+    """
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id)
+    return await loop.run_in_executor(
+        None, _ensure_sync, session_id, scenario_id, container_id
+    )
+
+
 async def stop_scenario_container(container_id: str, scenario_id: str | None = None) -> None:
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _stop_sync, container_id)
@@ -211,6 +228,28 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
             print(f"[Sandbox] Docker unavailable; using mock container for {session_id}: {exc}")
             return f"mock-{session_id[:8]}", network_name
         raise
+
+
+def _ensure_sync(
+    session_id: str,
+    scenario_id: str,
+    container_id: str | None,
+) -> Tuple[str, str, bool]:
+    sc_num = scenario_id.lower().replace("-", "")
+    network_name = _get_scenario_network(sc_num)
+
+    if container_id and not container_id.startswith("mock-"):
+        try:
+            client = _get_client()
+            container = client.containers.get(container_id)
+            if container.status != "running":
+                container.start()
+            return container.id, network_name, False
+        except Exception:
+            pass
+
+    new_container_id, new_network_name = _start_sync(session_id, scenario_id)
+    return new_container_id, new_network_name, new_container_id != container_id
 
 
 def _stop_sync(container_id: str) -> None:

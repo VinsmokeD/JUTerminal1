@@ -57,13 +57,19 @@ async def cleanup_idle_containers(idle_threshold_minutes: int = 60):
                 cmd_result = await db.execute(command_query)
                 latest_command = cmd_result.scalars().first()
 
-                # If no commands or last command is old, clean up
-                if latest_command is None or latest_command.created_at < cutoff_time:
+                last_activity_at = latest_command.created_at if latest_command else session.started_at
+
+                # If the user has not typed yet, use session start time so a
+                # newly opened terminal is not deleted before the first command.
+                if last_activity_at < cutoff_time:
                     try:
                         # Try to kill the container
                         container = docker_client.containers.get(session.container_id)
                         container.stop(timeout=5)
                         container.remove()
+                        session.container_id = None
+                        session.network_name = None
+                        await db.commit()
                         cleaned_count += 1
 
                         logger.info(

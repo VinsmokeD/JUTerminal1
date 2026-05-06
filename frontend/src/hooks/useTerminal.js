@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Terminal as XTerm } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
+import { getTerminalBacklog } from './useWebSocket'
 import 'xterm/css/xterm.css'
 
 /**
@@ -10,7 +11,7 @@ import 'xterm/css/xterm.css'
  * Every keystroke is sent immediately to the backend, which forwards to
  * Docker exec PTY. Docker output is written back into xterm.
  */
-export function useTerminal({ containerRef, onData, onCommand }) {
+export function useTerminal({ containerRef, onData, onCommand, sessionId }) {
   const termRef = useRef(null)
   const fitRef = useRef(null)
   const lineBufferRef = useRef('')
@@ -99,9 +100,11 @@ export function useTerminal({ containerRef, onData, onCommand }) {
     })
 
     const handleOutput = (evt) => {
+      if (evt.detail?.sessionId && evt.detail.sessionId !== sessionId) return
       term.write(evt.detail?.data || '')
     }
     const handleHistory = (evt) => {
+      if (evt.detail?.sessionId && evt.detail.sessionId !== sessionId) return
       if (historyRestoredRef.current) return
       const payload = evt.detail || {}
       const terminalChunks = Array.isArray(payload.terminal) ? payload.terminal : []
@@ -122,6 +125,14 @@ export function useTerminal({ containerRef, onData, onCommand }) {
     }
     window.addEventListener('terminal:output', handleOutput)
     window.addEventListener('terminal:history', handleHistory)
+
+    const backlog = sessionId ? getTerminalBacklog(sessionId) : null
+    if (backlog?.history) {
+      handleHistory({ detail: { ...backlog.history, sessionId } })
+    }
+    if (backlog?.output?.length) {
+      backlog.output.forEach((data) => term.write(data || ''))
+    }
 
     const focusTerminal = () => term.focus()
     const fallbackKeyDown = (evt) => {
@@ -169,7 +180,7 @@ export function useTerminal({ containerRef, onData, onCommand }) {
       ro.disconnect()
       term.dispose()
     }
-  }, [])
+  }, [sessionId])
 
   const writeOutput = (text) => {
     termRef.current?.write(text)

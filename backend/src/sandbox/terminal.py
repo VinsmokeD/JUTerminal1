@@ -115,6 +115,10 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
         r_init = _make_sync_redis()
         banner = _build_banner(scenario_id) if scenario_id else ""
         if banner:
+            pipe = r_init.pipeline()
+            pipe.lpush(f"terminal:{session_id}:history", banner)
+            pipe.ltrim(f"terminal:{session_id}:history", 0, 499)
+            pipe.execute()
             r_init.publish(f"terminal:{session_id}:output", json.dumps({"data": banner}))
         r_init.close()
 
@@ -265,6 +269,5 @@ def _build_banner(scenario_id: str) -> str:
     lines.append("\x1b[1;34m" + "-" * 68 + "\x1b[0m")
     lines.append("")
     return "\r\n".join(lines)
-
 
 

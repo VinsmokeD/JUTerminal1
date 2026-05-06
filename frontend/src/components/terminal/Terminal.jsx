@@ -7,11 +7,11 @@ import { useTerminal } from '../../hooks/useTerminal'
  * onData — raw keystrokes sent to backend (every character)
  * onCommand — extracted command string sent on Enter (for AI/discovery)
  */
-export default function Terminal({ onData, onCommand, pendingOutput, connectionState = 'connected' }) {
+export default function Terminal({ onData, onCommand, pendingOutput, connectionState = 'connected', sessionId }) {
   const containerRef = useRef(null)
   const captureRef = useRef(null)
   const lineBufferRef = useRef('')
-  const { writeOutput } = useTerminal({ containerRef, onData, onCommand })
+  const { writeOutput } = useTerminal({ containerRef, onData, onCommand, sessionId })
 
   // Expose writeOutput via ref so parent can push output
   if (pendingOutput) {
