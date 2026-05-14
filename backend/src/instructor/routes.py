@@ -10,12 +10,14 @@ Default instructor: username=admin / password=CyberSimAdmin! (seeded in main.py 
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import PlainTextResponse
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_db, Session, User, SiemEvent
 from src.auth.routes import require_instructor
+from src.reports.generator import generate_report
 
 router = APIRouter()
 
@@ -52,6 +54,26 @@ async def list_all_sessions(
         }
         for s, username in rows
     ]
+
+
+@router.get("/sessions/{session_id}/report")
+async def get_student_report(
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_instructor),
+) -> PlainTextResponse:
+    """Return a Markdown report for any student session."""
+    result = await db.execute(select(Session).where(Session.id == session_id))
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    report_md = await generate_report(session, db)
+    return PlainTextResponse(
+        report_md,
+        media_type="text/markdown",
+        headers={"Content-Disposition": f'attachment; filename="cybersim-{session_id}.md"'},
+    )
 
 
 @router.get("/metrics")

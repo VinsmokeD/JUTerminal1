@@ -25,7 +25,7 @@ import sys
 import time
 import pytest
 import pytest_asyncio
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 # Make src importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -226,6 +226,81 @@ async def test_09_admin_role_distinguished(client: AsyncClient, admin_token: str
     )
     # Should get 200 (sessions exist or empty list)
     assert resp.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_09b_instructor_can_download_student_report(
+    client: AsyncClient,
+    admin_token: str,
+    test_session_id: str,
+):
+    """Instructor can download a Markdown report for any student session."""
+    resp = await client.get(
+        f"/api/instructor/sessions/{test_session_id}/report",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code == 200
+    assert "text/markdown" in resp.headers["content-type"]
+    assert "Report" in resp.text
+    assert "SC-01" in resp.text
+
+
+@pytest.mark.asyncio
+async def test_09c_learning_insights_links_commands_to_detections(
+    client: AsyncClient,
+    auth_token: str,
+    test_session_id: str,
+):
+    """Learning insights connect commands to nearby defender-visible events."""
+    from src.db.database import AsyncSessionLocal, CommandLog, SiemEvent
+
+    now = datetime.now(timezone.utc)
+    async with AsyncSessionLocal() as db:
+        db.add(
+            CommandLog(
+                session_id=test_session_id,
+                command="nmap -sV -p 80 172.20.1.20",
+                tool="nmap",
+                phase=2,
+                created_at=now,
+            )
+        )
+        db.add(
+            SiemEvent(
+                session_id=test_session_id,
+                severity="HIGH",
+                message="Reconnaissance scan detected against NovaMed portal",
+                source="attacker",
+                source_ip="172.20.1.10",
+                mitre_technique="T1046",
+                created_at=now + timedelta(seconds=3),
+            )
+        )
+        db.add(
+            SiemEvent(
+                session_id=test_session_id,
+                severity="LOW",
+                message="Background health check",
+                source="background",
+                created_at=now + timedelta(seconds=4),
+            )
+        )
+        await db.commit()
+
+    resp = await client.get(
+        f"/api/reports/{test_session_id}/learning-insights",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["summary"]["commands"] >= 1
+    assert body["summary"]["high_signal_detections"] >= 1
+    assert body["summary"]["background_events"] >= 1
+    assert body["summary"]["detection_coverage_percent"] > 0
+    nmap_link = next(item for item in body["cause_effect"] if item["tool"] == "nmap")
+    assert nmap_link["detected"] is True
+    assert nmap_link["related_events"][0]["detection_latency_seconds"] == 3.0
+    assert body["coaching"]["next_practice"]
 
 
 @pytest.mark.asyncio

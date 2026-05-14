@@ -13,6 +13,141 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-14 22:53:50 +03:00] - Claude Code (Docker GitHub Scope Confirmed)
+* **Status**: Complete - Docker source publication scope confirmed and documented.
+* **Why**: The user clarified that Docker should be fully added to GitHub with the project update. The repository should include all Docker and infrastructure source needed to rebuild the stack, while excluding generated images, containers, volumes, and cache artifacts that do not belong in Git.
+* **Where**:
+  - `docs/TEAM_SETUP_GUIDE.md` - documented the Docker source files that GitHub carries for full local rebuilds.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this Docker publication scope record.
+  - Reviewed Git tracking for `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `infrastructure/docker/**`, `infrastructure/nginx/nginx.conf`, and `infrastructure/postgres/init.sql`.
+* **What & How**: `git ls-files` confirmed the Compose file, backend/frontend Dockerfiles, Kali image source, all SC-01 through SC-03 scenario Dockerfiles/scripts/configs, SIEM Filebeat config, Nginx config, and Postgres init SQL are tracked. `git status --ignored` showed only the intended modified Kali Docker files plus ignored runtime `__pycache__`, which should remain out of Git. The team guide now explains that Docker images and volumes are rebuilt locally from committed source instead of being committed as binary artifacts.
+
+### [2026-05-14 22:51:37 +03:00] - Claude Code (Team Setup Guide Added)
+* **Status**: Complete - cross-platform team setup guide created and linked before GitHub publication.
+* **Why**: The user requested a setup guide that lets every team member run the project fully on their own machine. The existing setup page was a quick reference, but it did not cover repeatable team onboarding, OS-specific notes, full-profile Docker startup, verification, reset, update workflow, port/network maps, or troubleshooting.
+* **Where**:
+  - `docs/TEAM_SETUP_GUIDE.md` - created the full Windows/macOS/Linux team setup guide.
+  - `README.md` - updated the maintained documentation list and refreshed the latest verification baseline to the current 81-test backend result.
+  - `docs/README.md` - added the team setup guide to the documentation entry point.
+  - `docs/DOCUMENTATION_INDEX.md` - added the guide to the maintained docs index.
+  - `docs/SETUP.md` - linked the detailed team guide from the shorter setup reference.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this required state record.
+* **What & How**: The new guide documents prerequisites, Docker resource expectations, clone/update flow, `.env` creation, JWT secret generation, full `docker compose --profile sc01 --profile sc02 --profile sc03` build and startup commands, health checks, browser smoke testing, default local instructor login, backend/frontend verification commands, daily update workflow, reset commands, host ports, internal scenario subnets, and targeted troubleshooting. It stays within the verified single-node Docker architecture and explicitly preserves the SC-01 through SC-03 internal-only scenario boundary.
+
+### [2026-05-14 22:32:08 +03:00] - Claude Code (Phase 23 Verification Complete)
+* **Status**: Complete - product evolution plan documented and Phase 23 implemented with verification.
+* **Why**: The product roadmap and causality debrief work needed proof that it did not break the existing platform. Verification also needed to prove the new learning-insights endpoint works both in isolated tests and in the running Docker-backed app.
+* **Where**:
+  - `docs/product/PRODUCT_EVOLUTION_PLAN.md` - verified as the maintained product strategy and implementation roadmap.
+  - `docs/README.md`, `docs/DOCUMENTATION_INDEX.md`, `README.md`, and `docs/architecture/phases.md` - verified documentation links and Phase 23 status.
+  - `backend/src/reports/learning_insights.py` and `backend/src/reports/routes.py` - verified backend compilation, route behavior, and regression coverage.
+  - `frontend/src/pages/Debrief.jsx` - verified production build with the new Insights tab.
+  - `backend/tests/integration_test.py` - verified regression tests for instructor report download and learning-insight causality.
+  - Docker runtime: `backend`, `frontend`, `nginx`, `postgres`, and `redis`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this final verification record.
+* **What & How**: Verification passed with `python -m py_compile backend/src/reports/learning_insights.py backend/src/reports/routes.py backend/tests/integration_test.py`, `npm run build`, targeted `python -m pytest -p no:cacheprovider backend/tests/integration_test.py -k "learning_insights or instructor_can_download"` returning `2 passed, 37 deselected, 1 warning`, full `python -m pytest -p no:cacheprovider backend/tests` returning `81 passed, 1 warning`, and `docker compose config --quiet`. The backend container was restarted so the new route loaded in the running app, `GET /health` returned `{"status":"ok","version":"0.1.0"}`, Docker status showed backend/frontend/nginx running with Postgres and Redis healthy, and a live API smoke created SC-01 session `7c0d8624-f51a-4443-9da4-5381ca07ddd2` then confirmed `/api/reports/{session_id}/learning-insights` returned a valid authenticated payload.
+
+### [2026-05-14 22:28:01 +03:00] - Claude Code (Phase 23 Learning Insights Implementation)
+* **Status**: Coding - backend and frontend implementation for the first product evolution slice added.
+* **Why**: Phase 23 needed to make CyberSim's core product promise tangible by turning raw command, SIEM, note, and score records into an explicit learning debrief. This supports the user's requested innovation direction by making the Red-to-Blue cause-effect bridge visible inside the app.
+* **Where**:
+  - `backend/src/reports/learning_insights.py` - created the learning insight builder.
+  - `backend/src/reports/routes.py` - added `GET /api/reports/{session_id}/learning-insights`.
+  - `backend/tests/integration_test.py` - added regression coverage for command-to-detection insight linking.
+  - `frontend/src/pages/Debrief.jsx` - added an Insights tab with metrics, coaching lists, and cause-effect cards.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this implementation record.
+* **What & How**: The backend now queries `CommandLog`, `SiemEvent`, and `Note` rows for a session, separates attacker/system detections from background noise, links commands to nearby non-background detections within a 120-second window, calculates detection coverage and mean latency, and produces deterministic coaching content with strengths, improvement areas, and next-practice recommendations. The frontend fetches the new endpoint alongside existing debrief data and renders a product-facing Insights tab that explains system effect, defender question, related alerts, severity, and detection latency for each action.
+
+### [2026-05-14 22:25:25 +03:00] - Claude Code (Product Evolution Plan Added)
+* **Status**: Planning - product vision converted into an executable roadmap and documentation entry points.
+* **Why**: The user asked to add the product-manager vision as a fully detailed plan and begin implementing it. The project needed a maintained product strategy layer that explains CyberSim's north star, pillars, roadmap, measurement model, and first implementation phase without expanding beyond the approved SC-01 through SC-03 MVP scope.
+* **Where**:
+  - `docs/product/PRODUCT_EVOLUTION_PLAN.md` - created the full product evolution plan, including the product promise, audiences, strategic pillars, phases 23 through 28, acceptance criteria, and first implementation decision.
+  - `docs/README.md` - added the product evolution plan to the maintained documentation map.
+  - `docs/DOCUMENTATION_INDEX.md` - added the product evolution plan to the maintained docs list and updated the timestamp.
+  - `docs/architecture/phases.md` - extended the phase tracker with Phase 23 through Phase 28 and marked Phase 23 as in progress.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this planning record.
+* **What & How**: The roadmap formalizes CyberSim's unique product direction as the bridge between Red Team action, Blue Team signal, evidence, report quality, and instructor feedback. Phase 23 is selected as the first implementation slice because it reuses existing sessions, commands, notes, and SIEM events to create learning insights without adding unsafe scenario content, new services, or network changes.
+
+### [2026-05-13 21:03:01 +03:00] - Claude Code (Demo Readiness Verification Complete)
+* **Status**: Complete - demo-readiness hardening verified against the live Docker stack.
+* **Why**: The user requested the full improvement pass with Docker Desktop running. The pass needed physical verification instead of a documentation-only claim, especially around terminal reliability, instructor report download, frontend build validity, backend regression tests, Docker health, and scenario isolation.
+* **Where**:
+  - `backend/src/sandbox/terminal.py` - verified early raw WebSocket input buffering by sending terminal input immediately after auth.
+  - `backend/src/instructor/routes.py` and `frontend/src/pages/InstructorDashboard.jsx` - verified instructor report download through the running API and frontend build.
+  - `frontend/src/components/siem/SiemFeed.jsx` - verified JSX build after SIEM noise/detail changes.
+  - `backend/tests/integration_test.py` - verified the new instructor report route regression test.
+  - `README.md`, `docs/architecture/phases.md`, `docs/CYBERSIM_DEMO_RUNBOOK.md`, and `docs/architecture/CONTINUOUS_STATE.md` - verified updated documentation state.
+  - Docker runtime: `backend`, `frontend`, `nginx`, `postgres`, `redis`, `elasticsearch`, `filebeat`, `sc01-*`, `sc02-*`, and `sc03-*` containers.
+* **What & How**: Verification passed with `python -m py_compile backend/src/sandbox/terminal.py backend/src/instructor/routes.py backend/tests/integration_test.py`, `npm run build`, `python -m pytest -p no:cacheprovider backend/tests` returning `80 passed, 1 warning`, `docker compose config --quiet`, `GET http://localhost/health` returning `{"status":"ok","version":"0.1.0"}`, `GET http://localhost/api/scenarios` returning exactly SC-01, SC-02, and SC-03, `docker compose ps` showing the core stack and all SC-01/SC-02/SC-03 scenario containers up with health checks green where defined, and `docker network inspect` confirming `cybersim_sc01-net`, `cybersim_sc02-net`, and `cybersim_sc03-net` are `internal=true`. A final live smoke created SC-01 session `7eb8d585-2c13-4d2a-88d0-28db81a24668`, downloaded its report via the instructor API, then connected to `ws://localhost/ws/{session_id}` and saw live Kali PTY output for probe `final_ws_smoke_1778695341` within two terminal chunks.
+
+### [2026-05-13 20:57:35 +03:00] - Claude Code (Demo Readiness Hardening Pass)
+* **Status**: Coding - implemented the first demo-readiness batch and began re-verification.
+* **Why**: The user asked to perform the full improvement pass while Docker Desktop was running. Verification showed the core stack was healthy after Docker access was allowed, but an aggressive WebSocket smoke exposed a race where terminal raw input sent immediately after auth could arrive before the Docker PTY input queue was registered. The instructor workflow also lacked report download support in the instructor API/UI, and the SIEM feed's noise filter only handled `noise: true` rather than the blueprint's `source: background` convention.
+* **Where**:
+  - `backend/src/sandbox/terminal.py` - added bounded pending input buffering and drain-on-PTY-registration for early WebSocket keystrokes.
+  - `backend/src/instructor/routes.py` - added `GET /api/instructor/sessions/{session_id}/report` for instructor Markdown report downloads.
+  - `backend/tests/integration_test.py` - added coverage for instructor student-report downloads.
+  - `frontend/src/components/siem/SiemFeed.jsx` - updated noise recognition to include `source: background` and expanded event details with time/source/host metadata.
+  - `frontend/src/pages/InstructorDashboard.jsx` - added CSV export and per-session report download actions.
+  - `README.md` - updated the verification baseline to 2026-05-13 and reflected the successful automated terminal WebSocket smoke.
+  - `docs/architecture/phases.md` - corrected Phase 3 and Phase 4 from stale in-progress labels to done.
+  - `docs/CYBERSIM_DEMO_RUNBOOK.md` - rewrote the demo runbook around the current Compose stack, verified checks, instructor actions, and final human terminal smoke.
+  - Runtime reviewed: Docker Compose core services and SC-01/SC-02/SC-03 scenario containers.
+* **What & How**: `send_terminal_input()` now stores up to the latest 500 early input frames per session when a PTY queue is not ready, while preserving Redis fallback behavior. `_terminal_proxy_thread()` drains that pending buffer immediately after registering the active input queue, preventing early authenticated frames from being lost. Instructor report downloads reuse the existing report generator but authorize through `require_instructor`, allowing instructors to retrieve any student session report without weakening student-owned report routes. The SIEM feed now treats both explicit noise booleans and background-source telemetry as noise and shows more useful expanded metadata. The instructor dashboard can export the currently filtered table as CSV and download Markdown reports per row.
+
+### [2026-05-13 20:25:59 +03:00] - Claude Code (Project Improvement Roadmap Review)
+* **Status**: Complete - reviewed the maintained architecture/context documents and produced a non-code improvement roadmap for the user.
+* **Why**: The user asked what can be done to the project in detail. This required aligning the answer with the current CyberSim scope, phase state, verified capabilities, and known remaining risks instead of inventing unrelated features.
+* **Where**:
+  - `PROJECT_UNDERSTANDING.md` - reviewed project concept, architecture, agent workflow, and sandbox constraints.
+  - `.antigravity-rules.md` - reviewed planning, continuity, scope, and quality rules.
+  - `gemini.md` - reviewed schema, AI monitor, methodology gating, and safety constraints.
+  - `docs/architecture/MASTER_BLUEPRINT.md` - reviewed MVP scope, technical architecture, commercial-grade directives, phase status, and known risks.
+  - `docs/architecture/phases.md` - reviewed phase tracker and implementation coverage.
+  - `README.md` - reviewed current verification status, setup flow, and remaining manual xterm smoke requirement.
+  - `docs/architecture/CONTINUOUS_STATE.md` - updated with this planning/evaluation record.
+* **What & How**: No application code was modified. The review found that CyberSim is already described as a near-complete three-scenario MVP, so the recommended next work should prioritize defense-demo readiness, fresh regression verification, terminal/xterm human smoke testing, UX polish, instructor workflow polish, documentation cleanup, security hardening, CI reliability, telemetry/report quality, and deployment packaging rather than expanding beyond SC-01 through SC-03.
+
+### [2026-05-06 21:17:14 +03:00] - Claude Code (Terminal Live Output and Kali Nmap Repair)
+* **Status**: Complete - terminal freeze root cause fixed in the live-output path and Kali nmap output repaired for the sandbox policy.
+* **Why**: User reported the terminal froze again until page refresh and showed `nmap -sV 172.20.2.20` failing with `Operation not permitted`. Reproduction showed two separate root issues: Kali's nmap binary/launcher was incompatible with `cap_drop=["ALL"]` plus `no-new-privileges`, and Redis terminal history contained the complete nmap output while the live WebSocket stopped receiving later output frames. That proved the remaining freeze was on the Docker-output-to-browser live forwarding path, not command execution.
+* **Where**:
+  - `backend/src/sandbox/terminal.py` - added direct live output listener queues and fanout from the Docker PTY reader while preserving Redis history writes.
+  - `backend/src/ws/routes.py` - changed terminal output delivery from Redis pub/sub to the direct listener queue; Redis pub/sub remains for SIEM only.
+  - `backend/src/sandbox/manager.py` - added stale Kali tool detection so old containers with blocked nmap file capabilities are removed and recreated from the fixed image.
+  - `frontend/src/hooks/useWebSocket.js` - added echo-stall detection that reconnects automatically when raw input is sent but live terminal output stops.
+  - `frontend/src/hooks/useTerminal.js` - resets history state per session and scrolls live/history writes to the bottom.
+  - `frontend/src/components/terminal/Terminal.jsx` - retained visible live/reconnect/focus terminal status from the previous hardening pass.
+  - `infrastructure/docker/kali/Dockerfile` - removes nmap file capabilities at image build and adds an unprivileged `/usr/local/bin/nmap` shim to bypass Kali's `/usr/bin/nmap --privileged` launcher.
+  - `infrastructure/docker/kali/.bashrc` - replaced the simple nmap alias with a bounded classroom nmap function using TCP connect scan, `-Pn`, progress stats, low retries, and fast defaults for unscoped scans.
+  - Runtime rebuilt: `cybersim-kali:latest`, Docker `backend` and `frontend`, and restarted nginx; old `kali-*` session containers were removed so future attaches recreate from the fixed image.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this repair and verification record.
+* **What & How**:
+  - Docker PTY output is now pushed directly from the terminal proxy thread to per-WebSocket output queues via `_fanout_terminal_output()`. Redis still stores `terminal:{session_id}:history`, but live terminal rendering no longer depends on Redis pub/sub, which was the path that froze while history continued recording output.
+  - The WebSocket route registers a direct terminal output listener before launching the PTY stream, starts a `_terminal_output_to_ws()` task, and subscribes Redis only for SIEM events. This prevents missing late command output such as nmap reports while keeping refresh replay intact.
+  - Kali image repair now removes `/usr/lib/nmap/nmap` file capabilities at build time. Since the stock `/usr/bin/nmap` script forces `--privileged` for non-root users, the image adds `/usr/local/bin/nmap` to call the real nmap binary directly without privileged/raw-socket mode.
+  - The student shell `nmap()` function defaults common commands such as `nmap -sV 172.20.2.20` to `-sT -Pn --reason --max-retries 1 --host-timeout 25s --stats-every 5s --version-intensity 0 --top-ports 10`, while preserving explicit user port scopes like `-p` or `--top-ports`.
+  - Verification passed: `python -m py_compile backend/src/ws/routes.py backend/src/sandbox/terminal.py backend/src/sandbox/manager.py`; `npm run build`; `docker build -t cybersim-kali:latest infrastructure/docker/kali`; `docker compose up -d --build backend frontend`; `docker compose restart nginx`; `docker compose config --quiet`; `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`; `python -m pytest -p no:cacheprovider backend/tests/test_ws_integration.py` returned `12 passed, 1 warning`; full `python -m pytest -p no:cacheprovider backend/tests` returned `79 passed, 1 warning`.
+  - Live end-to-end proof passed after deleting stale Kali containers: fresh SC-02 session `e9c13933-28a6-44da-97ad-43128bf6e6aa` executed the exact browser/WebSocket command `nmap -sV 172.20.2.20`; live output included progress `Stats:`, an `Nmap scan report`, `PORT` table, and `Nmap done`; no `Operation not permitted` or raw socket error occurred.
+
+### [2026-05-06 20:51:20 +03:00] - Claude Code (Direct PTY Input Transport)
+* **Status**: Complete - terminal input hot path rebuilt and verified against the running Kali-backed platform.
+* **Why**: User reported the terminal still froze randomly and that refresh would reveal input/output that had been typed during the freeze. Previous repairs fixed stale containers, reconnect replay, and slow command processing, but raw keystrokes still depended on Redis pub/sub before reaching Docker. That left the most latency-sensitive path vulnerable to Redis subscriber stalls and made a live terminal feel frozen even when later history replay proved the backend eventually processed data.
+* **Where**:
+  - `backend/src/sandbox/terminal.py` - replaced the normal Redis-only stdin path with a direct per-session in-process input queue feeding the active Docker PTY socket, while preserving Redis input as fallback.
+  - `frontend/src/components/terminal/Terminal.jsx` - added visible live/reconnecting/auth terminal status, focus ring feedback, and queued-input messaging for disconnected states.
+  - Runtime rebuilt: Docker `backend` and `frontend` images/containers; nginx restarted after backend recreation so it resolved the new backend container IP.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this direct-transport verification record.
+* **What & How**:
+  - Added `_active_input_queues`, keyed by session id, beside `_active_sessions`. When the Docker PTY proxy starts, it registers a bounded queue for that session immediately after the raw Docker exec socket is available.
+  - `send_terminal_input()` now writes keystrokes directly into that queue when the session is active. This keeps normal browser typing on a local memory handoff into the Docker socket writer instead of waiting for Redis publish/subscribe delivery.
+  - The PTY proxy now has a `_queue_to_docker()` writer thread that drains queued text and calls `raw_sock.sendall(...)` directly. A separate `_redis_to_queue()` subscriber remains as a fallback for cross-process or reconnect edge cases, but it funnels fallback input into the same writer queue to preserve one serialized Docker stdin path.
+  - Cleanup now removes the queue registration only when it still belongs to that proxy instance, preventing stale queue handles after reconnect/restart cycles.
+  - The terminal UI now shows `Live Kali PTY` when connected and `Reconnecting; input queued` when disconnected. The capture layer also shows a subtle focus ring so users can tell the terminal is actually focused and ready for typing.
+  - Verification passed: `python -m py_compile backend/src/sandbox/terminal.py`; `npm run build`; `docker compose config --quiet`; `docker compose up -d --build backend frontend`; `docker compose restart nginx`; `GET http://localhost/health` returned `{"status":"ok","version":"0.1.0"}`; `docker compose ps backend frontend postgres redis nginx` showed backend/frontend/nginx up and Postgres/Redis healthy; `python -m pytest -p no:cacheprovider backend/tests/test_ws_integration.py` returned `12 passed, 1 warning`; full `python -m pytest -p no:cacheprovider backend/tests` returned `79 passed, 1 warning`.
+  - Live terminal proof passed against real SC-02 Kali session `7b2da133-4b2f-4165-8d54-3543a470a06a` through `ws://localhost/ws/{session_id}`: rapid raw input for `echo direct_queue_one`, `echo direct_queue_two`, and `pwd` returned live `terminal_output` containing both echo values and `/home/student` with no refresh.
+
 ### [2026-05-06 13:41:21 +03:00] - Claude Code (Terminal Architecture Hardening)
 * **Status**: Complete - terminal architecture hardened for continuous real Kali interactivity and rebuilt into the running stack.
 * **Why**: User reported the terminal could still randomly freeze and that refreshing replayed the typed input/output afterward. That symptom showed the real Kali PTY and Redis history were often still receiving data, but the live browser/WebSocket path could be blocked or miss output until reconnect. The remaining architecture risk was that raw PTY input, command logging, SIEM processing, discovery tracking, and AI hints were all handled in the same WebSocket receive loop, so slow command-side work could delay later terminal input. The frontend also dropped typed frames during reconnect windows, and terminal startup banners were published live but not persisted to history.

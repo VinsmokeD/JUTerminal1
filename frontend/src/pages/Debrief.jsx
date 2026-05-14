@@ -21,6 +21,7 @@ export default function Debrief() {
   const [notes, setNotes] = useState([])
   const [commands, setCommands] = useState([])
   const [siemEvents, setSiemEvents] = useState([])
+  const [insights, setInsights] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -31,12 +32,14 @@ export default function Debrief() {
       api.get(`/notes/${sessionId}`).catch(() => ({ data: [] })),
       api.get(`/sessions/${sessionId}/commands`).catch(() => ({ data: [] })),
       api.get(`/sessions/${sessionId}/events`).catch(() => ({ data: [] })),
-    ]).then(([sessRes, scoreRes, notesRes, cmdsRes, evtsRes]) => {
+      api.get(`/reports/${sessionId}/learning-insights`).catch(() => ({ data: null })),
+    ]).then(([sessRes, scoreRes, notesRes, cmdsRes, evtsRes, insightsRes]) => {
       setSession(sessRes.data)
       setScore(scoreRes.data)
       setNotes(notesRes.data || [])
       setCommands(cmdsRes.data || [])
       setSiemEvents(evtsRes.data || [])
+      setInsights(insightsRes.data)
     }).catch(() => navigate('/')).finally(() => setLoading(false))
   }, [sessionId, navigate])
 
@@ -161,6 +164,7 @@ export default function Debrief() {
         <div className="flex gap-1 mb-6 bg-surface-2 rounded-cs p-1 border border-cs-border">
           {[
             { id: 'overview', label: 'Overview' },
+            { id: 'insights', label: 'Insights' },
             { id: 'findings', label: `Findings (${findings.length})` },
             { id: 'timeline', label: 'Kill Chain' },
             { id: 'notes', label: `All Notes (${notes.length})` },
@@ -227,6 +231,87 @@ export default function Debrief() {
                   ))}
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Tab: Learning Insights ─────────────────────────────────── */}
+        {activeTab === 'insights' && (
+          <div className="space-y-4">
+            {!insights ? (
+              <div className="bg-surface-1 border border-cs-border rounded-cs-lg p-8 text-center">
+                <p className="text-txt-dim text-sm font-mono">Learning insights are not available for this session yet.</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Detection coverage', value: `${insights.summary?.detection_coverage_percent ?? 0}%` },
+                    { label: 'Mean latency', value: insights.summary?.mean_detection_latency_seconds == null ? '—' : `${insights.summary.mean_detection_latency_seconds}s` },
+                    { label: 'High-signal alerts', value: insights.summary?.high_signal_detections ?? 0 },
+                    { label: 'Evidence notes', value: insights.summary?.evidence_items ?? 0 },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="bg-surface-1 border border-cs-border rounded-cs-lg p-4">
+                      <div className="text-2xl font-bold text-txt-primary font-mono">{value}</div>
+                      <div className="text-xs text-txt-dim mt-1 font-mono">{label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-3">
+                  <InsightList title="Strengths" items={insights.coaching?.strengths} tone="green" />
+                  <InsightList title="Improve Next" items={insights.coaching?.improvement_areas} tone="amber" />
+                  <InsightList title="Next Practice" items={insights.coaching?.next_practice} tone="blue" />
+                </div>
+
+                <div className="bg-surface-1 border border-cs-border rounded-cs-lg p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-txt-secondary font-mono uppercase tracking-wider">Cause And Effect</h3>
+                      <p className="text-xs text-txt-dim mt-0.5">How Red Team actions became Blue Team signals</p>
+                    </div>
+                    <span className="text-xs text-txt-dim font-mono">{insights.cause_effect?.length || 0} actions</span>
+                  </div>
+
+                  {insights.cause_effect?.length ? (
+                    <div className="space-y-3">
+                      {insights.cause_effect.slice(0, 12).map((item) => (
+                        <div key={item.command_id} className="border border-cs-border rounded-cs p-4 bg-surface-2/40">
+                          <div className="flex items-start gap-3">
+                            <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${item.detected ? 'bg-green-signal' : 'bg-txt-dim'}`} />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <code className="text-xs text-cs-blue bg-cs-blue/5 border border-cs-blue/20 rounded-cs-sm px-2 py-1 break-all">
+                                  {item.command}
+                                </code>
+                                <span className="text-xs text-txt-dim font-mono">Phase {item.phase}</span>
+                                {item.tool && <span className="text-xs text-txt-dim font-mono">tool:{item.tool}</span>}
+                              </div>
+                              <p className="text-sm text-txt-secondary leading-relaxed">{item.system_effect}</p>
+                              <p className="text-xs text-amber-warn mt-2 font-mono">{item.blue_team_question}</p>
+                              {item.related_events?.length > 0 && (
+                                <div className="mt-3 space-y-1.5">
+                                  {item.related_events.map((event) => (
+                                    <div key={event.id} className="flex items-start gap-2 text-xs border border-cs-border/60 rounded-cs-sm px-2 py-1.5 bg-void/40">
+                                      <span className="text-cs-red font-mono flex-shrink-0">{event.severity}</span>
+                                      <span className="text-txt-secondary flex-1">{event.message}</span>
+                                      <span className="text-txt-dim font-mono flex-shrink-0">{event.detection_latency_seconds}s</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-txt-dim text-sm font-mono">
+                      Run mission commands to populate cause-and-effect insights.
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         )}
@@ -306,6 +391,32 @@ export default function Debrief() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function InsightList({ title, items = [], tone }) {
+  const palette = {
+    green: 'border-green-signal/20 text-green-signal',
+    amber: 'border-amber-warn/20 text-amber-warn',
+    blue: 'border-cs-blue/20 text-cs-blue',
+  }[tone] || 'border-cs-border text-txt-secondary'
+
+  return (
+    <div className={`bg-surface-1 border rounded-cs-lg p-4 ${palette}`}>
+      <h3 className="text-xs font-semibold uppercase tracking-wider font-mono mb-3">{title}</h3>
+      {items.length ? (
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <div key={`${title}-${index}`} className="flex gap-2 text-xs text-txt-secondary leading-relaxed">
+              <span className="font-mono opacity-70">{index + 1}.</span>
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-txt-dim">No signal yet.</p>
+      )}
     </div>
   )
 }

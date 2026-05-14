@@ -25,6 +25,8 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId }) {
 
   useEffect(() => {
     if (!containerRef.current) return
+    historyRestoredRef.current = false
+    lineBufferRef.current = ''
 
     const term = new XTerm({
       cursorBlink: true,
@@ -101,7 +103,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId }) {
 
     const handleOutput = (evt) => {
       if (evt.detail?.sessionId && evt.detail.sessionId !== sessionId) return
-      term.write(evt.detail?.data || '')
+      term.write(evt.detail?.data || '', () => term.scrollToBottom())
     }
     const handleHistory = (evt) => {
       if (evt.detail?.sessionId && evt.detail.sessionId !== sessionId) return
@@ -120,6 +122,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId }) {
             term.write(`\x1b[0;33m$ ${cmd}\x1b[0m\r\n`)
           })
         }
+        term.scrollToBottom()
         historyRestoredRef.current = true
       })
     }
@@ -131,7 +134,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId }) {
       handleHistory({ detail: { ...backlog.history, sessionId } })
     }
     if (backlog?.output?.length) {
-      backlog.output.forEach((data) => term.write(data || ''))
+      backlog.output.forEach((data) => term.write(data || '', () => term.scrollToBottom()))
     }
 
     const focusTerminal = () => term.focus()

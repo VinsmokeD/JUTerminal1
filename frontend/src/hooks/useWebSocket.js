@@ -10,6 +10,8 @@ export function useWebSocket(sessionId) {
   const pendingFramesRef = useRef([])
   const pendingSessionRef = useRef(null)
   const reconnectTimerRef = useRef(null)
+  const lastRawInputAtRef = useRef(0)
+  const lastTerminalOutputAtRef = useRef(0)
   const [reconnectTick, setReconnectTick] = useState(0)
   const [connectionState, setConnectionState] = useState('disconnected')
   const { addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence } = useSessionStore()
@@ -21,6 +23,8 @@ export function useWebSocket(sessionId) {
       pendingFramesRef.current = []
       pendingSessionRef.current = sessionId
     }
+    lastRawInputAtRef.current = 0
+    lastTerminalOutputAtRef.current = 0
 
     const token = localStorage.getItem('token')
     const ws = new WebSocket(`${WS_URL}/${sessionId}`)
@@ -44,6 +48,7 @@ export function useWebSocket(sessionId) {
             break
           case 'terminal_output':
             {
+              lastTerminalOutputAtRef.current = Date.now()
               const detail = typeof msg.data === 'string' ? { data: msg.data } : msg.data
               const backlog = terminalBacklogs.get(sessionId) || { history: null, output: [] }
               backlog.output = [...backlog.output, detail?.data || ''].slice(-250)
@@ -111,6 +116,25 @@ export function useWebSocket(sessionId) {
     }
   }, [sessionId, reconnectTick, addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence])
 
+  useEffect(() => {
+    if (!sessionId) return
+    const timer = window.setInterval(() => {
+      const ws = wsRef.current
+      if (connectionState !== 'connected' || ws?.readyState !== WebSocket.OPEN) return
+      const lastInputAt = lastRawInputAtRef.current
+      if (!lastInputAt || lastTerminalOutputAtRef.current >= lastInputAt) return
+      if (Date.now() - lastInputAt > 2500) {
+        setConnectionState('disconnected')
+        try {
+          ws.close(4000, 'terminal echo stalled')
+        } catch {
+          // reconnect will be handled by onclose
+        }
+      }
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [sessionId, connectionState])
+
   const sendFrame = useCallback((frame) => {
     const ws = wsRef.current
     if (ws?.readyState === WebSocket.OPEN) {
@@ -129,6 +153,7 @@ export function useWebSocket(sessionId) {
 
   // Send raw keystrokes to Docker PTY (character-by-character)
   const sendRawInput = useCallback((data) => {
+    lastRawInputAtRef.current = Date.now()
     sendFrame({ type: 'terminal_raw', data })
   }, [sendFrame])
 

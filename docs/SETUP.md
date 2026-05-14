@@ -1,5 +1,7 @@
 # CyberSim Setup
 
+For repeatable onboarding across Windows, macOS, and Linux team machines, use the full [Team Setup Guide](TEAM_SETUP_GUIDE.md). This file remains the shorter local setup reference.
+
 ## Prerequisites
 
 - Docker Desktop or Docker Engine with Compose v2

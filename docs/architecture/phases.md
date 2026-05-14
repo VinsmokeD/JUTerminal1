@@ -36,7 +36,7 @@
 
 ---
 
-## Phase 3 — Scenario engine core 🚧 In Progress
+## Phase 3 - Scenario engine core - Done
 **Goal**: Scenario state machine loads SC-01, tracks phases, evaluates step completion.
 **Files**:
 - backend/src/scenarios/engine.py
@@ -49,7 +49,7 @@
 
 ---
 
-## Phase 4 — Terminal proxy 🚧 In Progress
+## Phase 4 - Terminal proxy - Done
 **Goal**: xterm.js in browser connects to real Docker container shell via WebSocket.
 **Files**:
 - backend/src/sandbox/manager.py (Docker SDK container lifecycle)
@@ -258,6 +258,49 @@
 
 ---
 
-## Total estimated phases: 22
-## Estimated total Claude Code sessions: +4 for Conversion
+## Phase 23 - Learning Insights And Causality Debrief - Done
+**Goal**: Turn the debrief into a cause-and-effect learning review that links Red Team commands to Blue Team detections, latency, coaching, and next practice recommendations.
+**Files**:
+- docs/product/PRODUCT_EVOLUTION_PLAN.md
+- backend/src/reports/learning_insights.py
+- backend/src/reports/routes.py
+- backend/tests/integration_test.py
+- frontend/src/pages/Debrief.jsx
+**Acceptance**: `GET /api/reports/{session_id}/learning-insights` returns summary metrics, cause-effect links, coaching strengths, improvement areas, and next practice items; Debrief renders an Insights tab; backend tests and frontend build pass.
+**Est. tokens**: ~700
+
+---
+
+## Phase 24 - Blue Team Triage Workflow - Planned
+**Goal**: Make SIEM handling an active analyst workflow with persisted triage states and alert-linked notes.
+**Acceptance**: Blue Team can classify alerts as investigating, true positive, false positive, or escalated; triage decisions persist and appear in reports.
+
+---
+
+## Phase 25 - Instructor Learning Analytics - Planned
+**Goal**: Give instructors class-level learning signals, common mistake summaries, and stronger grading exports.
+**Acceptance**: Instructor can see weak phases, most-used hints, detection coverage, and export grade-ready data.
+
+---
+
+## Phase 26 - Mission Shell And Readiness UX - Planned
+**Goal**: Make each scenario feel like a coherent mission with readiness states for targets, terminal, SIEM, and AI.
+**Acceptance**: Students can see what is starting, ready, degraded, or blocked before they begin acting.
+
+---
+
+## Phase 27 - AI Debrief Mode - Planned
+**Goal**: Add safe post-session coaching that summarizes mistakes, missed detections, and next practice without giving exploit chains.
+**Acceptance**: Debrief produces bounded, safe coaching with deterministic fallback when Gemini is unavailable.
+
+---
+
+## Phase 28 - Scenario Depth And Randomization - Planned
+**Goal**: Increase replay value for SC-01 through SC-03 before expanding scenario count.
+**Acceptance**: Scenario seeds, difficulty variants, richer noise, and alternate valid paths exist while fixed demo paths still pass.
+
+---
+
+## Total estimated phases: 28
+## Estimated total Claude Code sessions: +6 for Product Evolution
 ## GitHub push points: after every phase

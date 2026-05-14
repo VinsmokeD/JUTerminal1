@@ -14,18 +14,19 @@ All attack activity is designed for isolated Docker networks only. CyberSim is n
 
 ## Current Verification Status
 
-Last verified locally on 2026-04-29:
+Last verified locally on 2026-05-14:
 
 | Area | Status | Evidence |
 | --- | --- | --- |
 | Docker Compose configuration | Working | `docker compose config --quiet` completed successfully |
-| Backend pytest suite | Working | `python -m pytest -p no:cacheprovider` passed: 79 tests |
+| Backend pytest suite | Working | `python -m pytest -p no:cacheprovider backend/tests` passed: 81 tests |
 | Frontend dependencies | Working | `npm install` completed successfully with 0 host vulnerabilities |
 | Frontend production build | Working | `npm run build` completed successfully |
 | Runtime health | Working | `GET /health` returned `{"status":"ok","version":"0.1.0"}` |
 | Scenario catalog | Working | `GET /api/scenarios` returns exactly SC-01, SC-02, and SC-03 |
 | Red-to-Blue event loop | Working | Authenticated WebSocket command generated a persisted SIEM event visible in Blue Team |
-| Manual xterm keystroke smoke | Pending human check | Automation can focus xterm but cannot reliably synthesize keystrokes into the terminal canvas |
+| Terminal WebSocket smoke | Working | Authenticated SC-01 WebSocket attached to Kali and returned live PTY output for an early raw-input command |
+| Manual browser xterm check | Recommended before demos | Sit at the browser and type one command into xterm to confirm physical keyboard focus on the presentation machine |
 
 ## Quick Start
 
@@ -135,7 +136,9 @@ Start with [docs/README.md](docs/README.md). The core maintained docs are:
 - [Architecture](docs/ARCHITECTURE.md)
 - [Features](docs/FEATURES.md)
 - [Setup](docs/SETUP.md)
+- [Team Setup Guide](docs/TEAM_SETUP_GUIDE.md)
 - [AI System](docs/AI_SYSTEM.md)
+- [Product Evolution Plan](docs/product/PRODUCT_EVOLUTION_PLAN.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Contributing](docs/CONTRIBUTING.md)
 - [Agent Context](docs/AGENT_CONTEXT.md)
@@ -154,4 +157,4 @@ Historical reports and agent handoff files remain in the repo for continuity, bu
 
 Current assessed completion: 95/100.
 
-CyberSim is defense-ready for the core graduation demo path once the final human xterm keystroke smoke check is performed at the keyboard. The main remaining polish is live-demo rehearsal and any small UX friction discovered during that uninterrupted run.
+CyberSim is defense-ready for the core graduation demo path. Before presenting live, perform one physical browser xterm keyboard check and one uninterrupted rehearsal on the presentation machine.

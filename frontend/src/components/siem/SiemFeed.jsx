@@ -15,6 +15,12 @@ const getSev = (s) => SEV[(s || 'INFO').toUpperCase()] || SEV.INFO
 // ── Filter controls ────────────────────────────────────────────────────────
 const SEVERITY_FILTERS = ['ALL', 'CRITICAL', 'HIGH', 'MED', 'LOW', 'INFO']
 
+const isNoiseEvent = (event) => (
+  event?.noise === true ||
+  event?.source === 'background' ||
+  event?.source_type === 'background'
+)
+
 export default function SiemFeed() {
   const events = useSessionStore((s) => s.siemEvents)
   const bottomRef = useRef(null)
@@ -26,7 +32,7 @@ export default function SiemFeed() {
     return [...events]
       .reverse()
       .filter((ev) => {
-        if (hideNoise && ev.noise) return false
+        if (hideNoise && isNoiseEvent(ev)) return false
         if (filter !== 'ALL') {
           const sev = (ev.severity || 'INFO').toUpperCase()
           const normalised = sev === 'MEDIUM' ? 'MED' : sev
@@ -154,7 +160,7 @@ function EmptyState() {
 function EventRow({ event }) {
   const [expanded, setExpanded] = useState(false)
   const sev = getSev(event.severity)
-  const isNoise = event.noise === true
+  const isNoise = isNoiseEvent(event)
   const ts = new Date(event.timestamp || event.created_at || Date.now()).toLocaleTimeString('en-US', {
     hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit',
   })
@@ -185,13 +191,21 @@ function EventRow({ event }) {
       </span>
 
       {/* ── Expanded details ── */}
-      {expanded && (event.raw_log || event.source || event.mitre_id || event.cwe) && (
+      {expanded && (
         <div className="col-start-1 col-end-4 px-1 pb-2 pt-2 space-y-2 animate-slide-in-up mt-1 border-t border-cs-border/30">
           {/* Source + IDs */}
           <div className="flex flex-wrap gap-2 text-[10px] uppercase font-mono">
+            <span className="text-txt-dim">
+              Time: <span className="text-txt-secondary font-mono">{event.timestamp || event.created_at || 'live'}</span>
+            </span>
             {event.source && (
               <span className="text-txt-dim">
                 Source: <span className="text-txt-secondary font-mono">{event.source}</span>
+              </span>
+            )}
+            {event.source_ip && (
+              <span className="text-txt-dim">
+                Host: <span className="text-txt-secondary font-mono">{event.source_ip}</span>
               </span>
             )}
             {event.mitre_id && (

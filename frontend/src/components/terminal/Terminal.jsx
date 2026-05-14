@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTerminal } from '../../hooks/useTerminal'
 
 /**
@@ -11,6 +11,7 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
   const containerRef = useRef(null)
   const captureRef = useRef(null)
   const lineBufferRef = useRef('')
+  const [isFocused, setIsFocused] = useState(false)
   const { writeOutput } = useTerminal({ containerRef, onData, onCommand, sessionId })
 
   // Expose writeOutput via ref so parent can push output
@@ -108,13 +109,19 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
   }
 
   const statusLabel = {
+    connected: 'Live Kali PTY',
     connecting: 'Connecting terminal...',
-    disconnected: 'Terminal disconnected',
+    disconnected: 'Reconnecting; input queued',
     unauthorized: 'Terminal auth failed',
-  }[connectionState]
+  }[connectionState] || 'Terminal offline'
+  const statusTone = connectionState === 'connected' ? 'border-green-signal/40 text-green-signal' : 'border-cs-red/40 text-cs-red'
 
   return (
-    <div className="relative w-full h-full" onMouseDown={focusCapture} onTouchStart={focusCapture}>
+    <div
+      className={`relative h-full w-full rounded-cs-sm transition-shadow ${isFocused ? 'ring-1 ring-cs-red/45' : 'ring-1 ring-transparent'}`}
+      onMouseDown={focusCapture}
+      onTouchStart={focusCapture}
+    >
       <div
         ref={containerRef}
         className="w-full h-full terminal"
@@ -132,12 +139,12 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
         onKeyDown={handleKeyDown}
         onInput={handleInput}
         onPaste={handlePaste}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
       />
-      {statusLabel && (
-        <div className="pointer-events-none absolute right-3 top-3 z-30 rounded-cs-sm border border-cs-border bg-surface-1/90 px-2.5 py-1 text-[10px] font-mono uppercase text-txt-dim">
-          {statusLabel}
-        </div>
-      )}
+      <div className={`pointer-events-none absolute right-3 top-3 z-30 rounded-cs-sm border bg-surface-1/90 px-2.5 py-1 text-[10px] font-mono uppercase ${statusTone}`}>
+        {statusLabel}
+      </div>
     </div>
   )
 }

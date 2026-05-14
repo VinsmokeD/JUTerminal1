@@ -7,7 +7,27 @@ export PS1="\[\033[01;32m\]student@kali\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\
 # Useful aliases
 alias ll='ls -la --color=auto'
 alias grep='grep --color=auto'
-alias nmap='nmap --reason'
+function nmap() {
+  local has_port_scope=0
+  local has_version_scan=0
+  for arg in "$@"; do
+    case "$arg" in
+      -p|--top-ports|-F|--exclude-ports|-p*) has_port_scope=1 ;;
+      -sV|-A) has_version_scan=1 ;;
+    esac
+  done
+
+  local defaults=(-sT -Pn --reason --max-retries 1 --host-timeout 25s --stats-every 5s)
+  if [ "$has_version_scan" -eq 1 ]; then
+    defaults+=(--version-intensity 0)
+  fi
+
+  if [ "$has_port_scope" -eq 1 ]; then
+    /usr/local/bin/nmap "${defaults[@]}" "$@"
+  else
+    /usr/local/bin/nmap "${defaults[@]}" --top-ports 10 "$@"
+  fi
+}
 alias cls='clear'
 
 # Pre-configured paths

@@ -186,6 +186,28 @@ def _get_scenario_network(sc_num: str) -> str:
     return f"cybersim_{sc_num}-net"
 
 
+def _repair_kali_tools(container: "docker.models.containers.Container") -> bool:
+    """Repair tool metadata that conflicts with the non-root sandbox policy."""
+    try:
+        container.exec_run(
+            [
+                "/bin/bash",
+                "-lc",
+                "if [ -f /usr/lib/nmap/nmap ] && command -v setcap >/dev/null 2>&1; then setcap -r /usr/lib/nmap/nmap 2>/dev/null || true; fi",
+            ],
+            user="root",
+        )
+        result = container.exec_run(
+            ["/bin/bash", "-lc", "getcap /usr/lib/nmap/nmap 2>/dev/null || true"]
+        )
+        output = (result.output or b"").decode("utf-8", errors="replace")
+        return "/usr/lib/nmap/nmap" not in output
+    except Exception as exc:
+        if settings.ENVIRONMENT == "development":
+            print(f"[Sandbox] Kali tool repair skipped for {container.name}: {exc}")
+        return True
+
+
 def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
     sc_num = scenario_id.lower().replace("-", "")  # sc01, sc02, sc03
     network_name = _get_scenario_network(sc_num)
@@ -199,7 +221,9 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
             existing = client.containers.get(container_name)
             if existing.status != "running":
                 existing.start()
-            return existing.id, network_name
+            if _repair_kali_tools(existing):
+                return existing.id, network_name
+            existing.remove(force=True)
         except NotFound:
             pass  # Expected on first boot — create it below
 
@@ -221,6 +245,7 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
             security_opt=["no-new-privileges"],
             remove=False,
         )
+        _repair_kali_tools(container)
         return container.id, network_name
 
     except Exception as exc:
@@ -244,7 +269,9 @@ def _ensure_sync(
             container = client.containers.get(container_id)
             if container.status != "running":
                 container.start()
-            return container.id, network_name, False
+            if _repair_kali_tools(container):
+                return container.id, network_name, False
+            container.remove(force=True)
         except Exception:
             pass
 

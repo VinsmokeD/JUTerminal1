@@ -16,6 +16,7 @@ Data flow:
 from __future__ import annotations
 
 import json
+import queue
 import select as _select
 import threading
 
@@ -32,6 +33,9 @@ from src.cache.redis import _get as get_async_redis
 
 # Track active proxy threads — prevent duplicate sessions
 _active_sessions: set[str] = set()
+_active_input_queues: dict[str, "queue.Queue[str]"] = {}
+_active_output_queues: dict[str, list["queue.Queue[str]"]] = {}
+_pending_input_buffers: dict[str, list[str]] = {}
 _active_sessions_lock = threading.Lock()
 
 
@@ -40,7 +44,22 @@ _active_sessions_lock = threading.Lock()
 # ---------------------------------------------------------------------------
 
 async def send_terminal_input(session_id: str, data: str) -> None:
-    """Publish keyboard input to Redis so the proxy thread can forward it to Docker."""
+    """Forward keyboard input to the active Docker PTY with Redis as fallback."""
+    with _active_sessions_lock:
+        input_queue = _active_input_queues.get(session_id)
+
+    if input_queue is not None:
+        try:
+            input_queue.put_nowait(data)
+            return
+        except queue.Full:
+            pass
+    else:
+        with _active_sessions_lock:
+            pending = _pending_input_buffers.setdefault(session_id, [])
+            pending.append(data)
+            del pending[:-500]
+
     redis = get_async_redis()
     await redis.publish(f"terminal:{session_id}:input", json.dumps({"data": data}))
 
@@ -68,6 +87,28 @@ async def stream_terminal_output(session_id: str, container_id: str, scenario_id
     ).start()
 
 
+def register_terminal_output_listener(session_id: str) -> "queue.Queue[str]":
+    """Register a live terminal-output queue for one WebSocket consumer."""
+    output_queue: "queue.Queue[str]" = queue.Queue(maxsize=1000)
+    with _active_sessions_lock:
+        _active_output_queues.setdefault(session_id, []).append(output_queue)
+    return output_queue
+
+
+def unregister_terminal_output_listener(session_id: str, output_queue: "queue.Queue[str]") -> None:
+    """Remove a live terminal-output queue registered by a WebSocket consumer."""
+    with _active_sessions_lock:
+        queues = _active_output_queues.get(session_id)
+        if not queues:
+            return
+        try:
+            queues.remove(output_queue)
+        except ValueError:
+            pass
+        if not queues:
+            _active_output_queues.pop(session_id, None)
+
+
 # ---------------------------------------------------------------------------
 # Sync helpers used inside background threads
 # ---------------------------------------------------------------------------
@@ -75,6 +116,25 @@ async def stream_terminal_output(session_id: str, container_id: str, scenario_id
 def _make_sync_redis() -> sync_redis.Redis:
     """Open a fresh synchronous Redis connection for use in a background thread."""
     return sync_redis.from_url(settings.REDIS_URL, decode_responses=True)
+
+
+def _fanout_terminal_output(session_id: str, data: str) -> None:
+    """Push terminal output directly to active WebSocket listener queues."""
+    with _active_sessions_lock:
+        queues = list(_active_output_queues.get(session_id, []))
+
+    for output_queue in queues:
+        try:
+            output_queue.put_nowait(data)
+        except queue.Full:
+            try:
+                output_queue.get_nowait()
+            except queue.Empty:
+                pass
+            try:
+                output_queue.put_nowait(data)
+            except queue.Full:
+                pass
 
 
 def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str = "SC-01") -> None:
@@ -89,6 +149,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
     """
     exec_sock = None
     raw_sock = None
+    input_queue: "queue.Queue[str]" = queue.Queue(maxsize=10000)
     stop_event = threading.Event()
 
     try:
@@ -110,6 +171,14 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
         # docker-py CancellableStream exposes the raw socket via ._sock
         raw_sock = exec_sock._sock
         raw_sock.setblocking(True)
+        with _active_sessions_lock:
+            _active_input_queues[session_id] = input_queue
+            pending_inputs = _pending_input_buffers.pop(session_id, [])
+        for pending_text in pending_inputs:
+            try:
+                input_queue.put_nowait(pending_text)
+            except queue.Full:
+                break
 
         # Send scenario banner on first connect so student sees targets immediately
         r_init = _make_sync_redis()
@@ -120,6 +189,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
             pipe.ltrim(f"terminal:{session_id}:history", 0, 499)
             pipe.execute()
             r_init.publish(f"terminal:{session_id}:output", json.dumps({"data": banner}))
+            _fanout_terminal_output(session_id, banner)
         r_init.close()
 
         # ── Thread A: Docker stdout → Redis publish ──────────────────────
@@ -141,6 +211,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                     for i in range(0, len(chunk), max_chunk_size):
                         frame = chunk[i:i+max_chunk_size]
                         r.publish(f"terminal:{session_id}:output", json.dumps({"data": frame}))
+                        _fanout_terminal_output(session_id, frame)
 
                     # Rolling history (capped at 500 entries) for reconnect replay
                     pipe = r.pipeline()
@@ -152,7 +223,25 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
             stop_event.set()  # Signal the sibling thread to exit too
 
         # ── Thread B: Redis subscribe → Docker stdin ─────────────────────
-        def _redis_to_docker() -> None:
+        def _queue_to_docker() -> None:
+            while not stop_event.is_set():
+                try:
+                    text = input_queue.get(timeout=0.5)
+                except queue.Empty:
+                    continue
+                try:
+                    if text:
+                        raw_sock.sendall(text.encode("utf-8"))
+                except Exception:
+                    stop_event.set()
+                    break
+                finally:
+                    try:
+                        input_queue.task_done()
+                    except ValueError:
+                        pass
+
+        def _redis_to_queue() -> None:
             r = _make_sync_redis()
             pub = r.pubsub(ignore_subscribe_messages=True)
             pub.subscribe(f"terminal:{session_id}:input")
@@ -165,7 +254,10 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                             payload = json.loads(message["data"])
                             text = payload.get("data", "")
                             if text:
-                                raw_sock.sendall(text.encode("utf-8"))
+                                try:
+                                    input_queue.put_nowait(text)
+                                except queue.Full:
+                                    pass
                         except Exception:
                             break
             finally:
@@ -177,9 +269,11 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
             stop_event.set()
 
         read_thread = threading.Thread(target=_docker_to_redis, daemon=True)
-        write_thread = threading.Thread(target=_redis_to_docker, daemon=True)
+        write_thread = threading.Thread(target=_queue_to_docker, daemon=True)
+        redis_fallback_thread = threading.Thread(target=_redis_to_queue, daemon=True)
         read_thread.start()
         write_thread.start()
+        redis_fallback_thread.start()
 
         stop_event.wait()  # Block until one side exits, then clean up
 
@@ -190,6 +284,8 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
         stop_event.set()
         with _active_sessions_lock:
             _active_sessions.discard(session_id)
+            if _active_input_queues.get(session_id) is input_queue:
+                _active_input_queues.pop(session_id, None)
         try:
             if exec_sock is not None:
                 exec_sock.close()
@@ -269,5 +365,3 @@ def _build_banner(scenario_id: str) -> str:
     lines.append("\x1b[1;34m" + "-" * 68 + "\x1b[0m")
     lines.append("")
     return "\r\n".join(lines)
-
-

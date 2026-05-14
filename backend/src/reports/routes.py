@@ -6,6 +6,7 @@ from sqlalchemy import select
 from src.auth.routes import get_current_user
 from src.db.database import get_db, Session, User, CommandLog, SiemEvent
 from src.reports.generator import generate_report
+from src.reports.learning_insights import build_learning_insights
 
 router = APIRouter()
 
@@ -82,3 +83,19 @@ async def get_timeline(
         "siem_events": siem_events,
     }
 
+
+@router.get("/{session_id}/learning-insights")
+async def get_learning_insights(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Return cause-effect learning insights for a debrief."""
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return await build_learning_insights(session, db)

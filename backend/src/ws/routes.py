@@ -1,5 +1,6 @@
 import asyncio
 import json
+import queue as thread_queue
 import uuid
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
@@ -8,7 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.db.database import AsyncSessionLocal, Session, CommandLog, SiemEvent
-from src.sandbox.terminal import stream_terminal_output, send_terminal_input
+from src.sandbox.terminal import (
+    stream_terminal_output,
+    send_terminal_input,
+    register_terminal_output_listener,
+    unregister_terminal_output_listener,
+)
 from src.sandbox.manager import ensure_scenario_container
 from src.siem.engine import process_command_for_siem
 from src.ai.monitor import get_ai_hint
@@ -183,7 +189,11 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             await db.commit()
     session_state["container_id"] = container_id
 
-    # Start streaming terminal output from Docker to Redis (idempotent thread launch)
+    # Register direct terminal output before launching the PTY proxy so live
+    # frames do not depend on Redis pub/sub delivery.
+    terminal_output_queue = register_terminal_output_listener(session_id)
+
+    # Start streaming terminal output from Docker to Redis/direct listeners (idempotent thread launch)
     await stream_terminal_output(session_id, container_id, session_state["scenario_id"])
 
     # Replay persisted history so browser refresh restores terminal context immediately.
@@ -198,9 +208,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     if has_real_container:
         await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, session_state["scenario_id"])
 
-    # Subscribe to SIEM + terminal output channels via Redis pub/sub
+    # Subscribe to SIEM channels via Redis pub/sub. Terminal output is delivered
+    # through the direct listener queue and still persisted to Redis for refresh.
     pubsub = redis.pubsub()
-    await pubsub.subscribe(f"siem:{session_id}:feed", f"terminal:{session_id}:output")
+    await pubsub.subscribe(f"siem:{session_id}:feed")
     send_lock = asyncio.Lock()
     command_queue: asyncio.Queue[str] = asyncio.Queue(maxsize=50)
 
@@ -212,12 +223,20 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         async for message in pubsub.listen():
             if message["type"] != "message":
                 continue
-            channel = message["channel"]
             payload = json.loads(message["data"])
-            if "siem:" in channel:
-                await _send_json({"type": "siem_event", "data": payload})
-            else:
-                await _send_json({"type": "terminal_output", "data": payload})
+            await _send_json({"type": "siem_event", "data": payload})
+
+    async def _terminal_output_to_ws() -> None:
+        def _get_frame() -> str | None:
+            try:
+                return terminal_output_queue.get(timeout=0.5)
+            except thread_queue.Empty:
+                return None
+
+        while True:
+            frame = await asyncio.to_thread(_get_frame)
+            if frame:
+                await _send_json({"type": "terminal_output", "data": {"data": frame}})
 
     async def _command_worker() -> None:
         while True:
@@ -267,6 +286,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             await _send_json({"type": "ai_hint", "data": {"text": "No hint available for this phase yet. Try progressing to the next step.", "steps": [], "level": level}})
 
     redis_task = asyncio.create_task(_redis_to_ws())
+    terminal_output_task = asyncio.create_task(_terminal_output_to_ws())
     command_task = asyncio.create_task(_command_worker())
     heartbeat_task = asyncio.create_task(_heartbeat())
 
@@ -328,6 +348,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         )
     finally:
         redis_task.cancel()
+        terminal_output_task.cancel()
         command_task.cancel()
         heartbeat_task.cancel()
         try:
@@ -342,3 +363,4 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             await redis.hdel(_ACTIVE_SESSIONS_KEY, session_id)
         except Exception:
             pass
+        unregister_terminal_output_listener(session_id, terminal_output_queue)

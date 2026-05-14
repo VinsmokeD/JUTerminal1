@@ -14,6 +14,11 @@ const SEVERITY_COLOR = (score) => {
   return 'text-red-400'
 }
 
+const csvEscape = (value) => {
+  const text = String(value ?? '')
+  return `"${text.replaceAll('"', '""')}"`
+}
+
 export default function InstructorDashboard() {
   const navigate = useNavigate()
   const [sessions, setSessions] = useState([])
@@ -56,6 +61,40 @@ export default function InstructorDashboard() {
     return true
   })
 
+  const exportCsv = useCallback(() => {
+    const headers = ['Student', 'Scenario', 'Role', 'Phase', 'Score', 'Hints', 'Status', 'Started', 'Session ID']
+    const rows = filtered.map(s => [
+      s.username,
+      s.scenario_id,
+      s.role,
+      s.phase,
+      s.score,
+      s.hints_used,
+      s.status,
+      s.started_at,
+      s.session_id,
+    ])
+    const csv = [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `cybersim-sessions-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }, [filtered])
+
+  const downloadReport = useCallback(async (sessionId) => {
+    const res = await api.get(`/instructor/sessions/${sessionId}/report`, { responseType: 'blob' })
+    const blob = new Blob([res.data], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `cybersim-${sessionId}.md`
+    link.click()
+    URL.revokeObjectURL(url)
+  }, [])
+
   if (loading) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-500 text-sm">
       Loading instructor data...
@@ -83,6 +122,12 @@ export default function InstructorDashboard() {
             className="text-xs px-3 py-1 border border-gray-700 text-gray-400 hover:text-gray-200 rounded transition-colors"
           >
             Refresh
+          </button>
+          <button
+            onClick={exportCsv}
+            className="text-xs px-3 py-1 border border-blue-800 text-blue-300 hover:text-blue-100 rounded transition-colors"
+          >
+            Export CSV
           </button>
           <button
             onClick={() => navigate('/')}
@@ -164,12 +209,13 @@ export default function InstructorDashboard() {
                 <th className="px-4 py-2.5 font-medium">Hints</th>
                 <th className="px-4 py-2.5 font-medium">Status</th>
                 <th className="px-4 py-2.5 font-medium">Started</th>
+                <th className="px-4 py-2.5 font-medium">Report</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-700">
+                  <td colSpan={9} className="px-4 py-8 text-center text-gray-700">
                     No sessions found
                   </td>
                 </tr>
@@ -209,6 +255,14 @@ export default function InstructorDashboard() {
                     </td>
                     <td className="px-4 py-2.5 text-gray-600 font-mono">
                       {new Date(s.started_at).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <button
+                        onClick={() => downloadReport(s.session_id)}
+                        className="text-xs px-2 py-1 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-500 rounded transition-colors"
+                      >
+                        Download
+                      </button>
                     </td>
                   </tr>
                 ))
