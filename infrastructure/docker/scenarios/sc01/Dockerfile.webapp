@@ -43,7 +43,7 @@ RUN echo "ServerSignature On" >> /etc/apache2/apache2.conf && \
 
 # Add entrypoint script
 COPY entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 # Non-root execution is NOT done here intentionally — old Apache/PHP setup for realism
 EXPOSE 80 21 22
