@@ -59,7 +59,7 @@ async def start_scenario_container(
     returns its existing ID without creating a duplicate.
     Returns (container_id, network_name).
     """
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     # Start target containers in parallel with the Kali container
     await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id)
     return await loop.run_in_executor(None, _start_sync, session_id, scenario_id)
@@ -75,7 +75,7 @@ async def ensure_scenario_container(
 
     Returns (container_id, network_name, changed).
     """
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id)
     return await loop.run_in_executor(
         None, _ensure_sync, session_id, scenario_id, container_id
@@ -83,7 +83,7 @@ async def ensure_scenario_container(
 
 
 async def stop_scenario_container(container_id: str, scenario_id: str | None = None) -> None:
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, _stop_sync, container_id)
     if scenario_id:
         await loop.run_in_executor(None, _teardown_scenario_targets, scenario_id)
@@ -93,7 +93,7 @@ async def exec_command(container_id: str, command: str) -> str:
     """Run a one-shot command in a container and return stdout."""
     if container_id.startswith("mock-"):
         return f"[mock] {command}"
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, _exec_sync, container_id, command)
 
 

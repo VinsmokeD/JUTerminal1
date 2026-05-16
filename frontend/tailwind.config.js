@@ -23,12 +23,14 @@ export default {
         'surface-2': '#13161d',
         'surface-3': '#1a1d26',
         'surface-4': '#22262f',
+        'surface-hover': '#1d212c',
         'cs-border': '#1e2230',
         'cs-border-glow': '#2a2f40',
-        /* ── Text ───────────────────────────────────────── */
+        /* ── Text (AA-contrast tuned) ───────────────────── */
         'txt-primary': '#e8eaf0',
-        'txt-secondary': '#8890a4',
-        'txt-dim': '#4a5068',
+        'txt-secondary': '#9ba3b8',
+        'txt-dim': '#5a6178',
+        'txt-ghost': '#3a4054',
         /* ── Accents ────────────────────────────────────── */
         'green-signal': '#00ff88',
         'amber-warn': '#ffaa00',
@@ -38,10 +40,29 @@ export default {
         display: ['"Outfit"', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Cascadia Code"', '"Fira Code"', 'monospace'],
       },
+      fontSize: {
+        /* CyberSim type scale v3 — [size, { lineHeight, letterSpacing, fontWeight }] */
+        'display-1': ['72px', { lineHeight: '76px', letterSpacing: '-0.04em', fontWeight: '800' }],
+        'display-2': ['56px', { lineHeight: '60px', letterSpacing: '-0.03em', fontWeight: '800' }],
+        'display-3': ['40px', { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'title-1':   ['28px', { lineHeight: '32px', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'title-2':   ['20px', { lineHeight: '26px', letterSpacing: '0',       fontWeight: '600' }],
+        'body-1':    ['16px', { lineHeight: '24px', letterSpacing: '0',       fontWeight: '400' }],
+        'body-2':    ['14px', { lineHeight: '20px', letterSpacing: '0',       fontWeight: '400' }],
+        'caption':   ['12px', { lineHeight: '16px', letterSpacing: '0.04em',  fontWeight: '500' }],
+        'mono-1':    ['14px', { lineHeight: '20px', letterSpacing: '0',       fontWeight: '500' }],
+        'mono-2':    ['12px', { lineHeight: '18px', letterSpacing: '0',       fontWeight: '400' }],
+      },
+      spacing: {
+        /* 8px base grid, 4px micro */
+        '1': '4px', '2': '8px', '3': '12px', '4': '16px',
+        '6': '24px', '8': '32px', '12': '48px', '16': '64px', '24': '96px',
+      },
       borderRadius: {
         cs: '10px',
         'cs-sm': '6px',
         'cs-lg': '16px',
+        'cs-xl': '24px',
       },
       boxShadow: {
         'red-glow': '0 4px 24px #ff3b3b40, inset 0 1px 0 rgba(255,255,255,0.15)',
@@ -50,12 +71,31 @@ export default {
         'blue-hover': '0 8px 40px rgba(59,139,255,0.5)',
         'card-hover': '0 20px 60px -12px rgba(0,0,0,0.5)',
         'demo-frame': '0 24px 80px -12px rgba(0,0,0,0.6), 0 0 120px -40px rgba(59,139,255,0.08)',
+        /* v3 elevation system */
+        'z-1': 'inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 2px rgba(0,0,0,0.4)',
+        'z-2': 'inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.4)',
+        'z-3': '0 24px 60px -12px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04)',
+        'focus-blue': '0 0 0 2px #08090c, 0 0 0 4px #3b8bff',
+        'focus-red':  '0 0 0 2px #08090c, 0 0 0 4px #ff3b3b',
+      },
+      transitionTimingFunction: {
+        /* Motion vocabulary — only these four are allowed */
+        enter: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        pop:   'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        glide: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
+      transitionDuration: {
+        enter: '280ms',
+        pop:   '180ms',
+        glide: '320ms',
       },
       animation: {
-        'fade-up': 'fadeUp 0.6s ease both',
-        'slide-in': 'slideIn 0.4s ease forwards',
+        'fade-up': 'fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both',
+        'slide-in': 'slideIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards',
         'type-line': 'typeLine 0.3s ease forwards',
         'cursor-blink': 'blink 1s step-end infinite',
+        'pulse-soft': 'pulseSoft 1.4s ease-in-out infinite',
+        'tilt-in': 'tiltIn 0.5s cubic-bezier(0.16,1,0.3,1) both',
       },
       keyframes: {
         fadeUp: {
@@ -73,6 +113,14 @@ export default {
         blink: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0' },
+        },
+        pulseSoft: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.55' },
+        },
+        tiltIn: {
+          from: { opacity: '0', transform: 'perspective(800px) rotateX(-8deg) translateY(20px)' },
+          to:   { opacity: '1', transform: 'perspective(800px) rotateX(0) translateY(0)' },
         },
       },
     },

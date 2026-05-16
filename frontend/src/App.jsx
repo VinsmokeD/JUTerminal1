@@ -1,10 +1,11 @@
 import { Suspense, lazy } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import Landing from './pages/Landing'
 import Auth from './pages/Auth'
 import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
+import CommandPalette from './components/palette/CommandPalette'
 
 // Lazy-load heavy components with xterm and complex state
 const RedWorkspace = lazy(() => import('./pages/RedWorkspace'))
@@ -49,9 +50,17 @@ function RequireOnboarding({ children }) {
   return onboardingCompleted ? children : <Navigate to="/onboarding" replace />
 }
 
+function GlobalPalette() {
+  // Hide palette on auth screen — no point launching commands before login
+  const loc = useLocation()
+  if (loc.pathname.startsWith('/auth')) return null
+  return <CommandPalette />
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <GlobalPalette />
       <Routes>
         {/* Public landing page */}
         <Route path="/" element={<Landing />} />

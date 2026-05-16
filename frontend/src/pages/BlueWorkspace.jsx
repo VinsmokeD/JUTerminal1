@@ -4,11 +4,12 @@ import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
 import { useWebSocket } from '../hooks/useWebSocket'
 import RoeBriefing from '../components/workspace/RoeBriefing'
+import WorkspaceTopBar from '../components/workspace/WorkspaceTopBar'
 import Terminal from '../components/terminal/Terminal'
 import SiemFeed from '../components/siem/SiemFeed'
 import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
-import PhaseTrail from '../components/methodology/PhaseTrail'
+import Badge from '../components/ui/Badge'
 import api from '../lib/api'
 
 const PLAYBOOKS = {
@@ -92,8 +93,6 @@ export default function BlueWorkspace() {
     return () => clearInterval(interval)
   }, [])
 
-  const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
-
   const criticalCount = siemEvents.filter(e => e.severity === 'CRITICAL').length
   const highCount = siemEvents.filter(e => e.severity === 'HIGH').length
 
@@ -124,44 +123,31 @@ export default function BlueWorkspace() {
 
   return (
     <div className="workspace-shell font-display">
-      {/* Top bar */}
-      <div className="workspace-topbar">
-        <button onClick={() => navigate('/dashboard')} className="text-txt-dim hover:text-txt-secondary transition-colors">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-          </svg>
-        </button>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <div className="w-2 h-2 rounded-full bg-cs-blue animate-pulse" style={{ boxShadow: '0 0 8px rgba(59,139,255,0.5)' }} />
-          <span className="text-cs-blue text-xs font-bold tracking-wider font-mono uppercase">BLUE TEAM — SOC</span>
-        </div>
-        <div className="h-4 w-px bg-cs-border" />
-        <span className="text-txt-dim text-xs font-mono">{session.scenario_id}</span>
-        <div className="h-4 w-px bg-cs-border" />
-        <div className="workspace-phase">
-          <PhaseTrail methodology="nist" role="blue" currentPhase={phase} />
-        </div>
-        <div className="workspace-actions">
+      <WorkspaceTopBar
+        role="blue"
+        sessionId={sessionId}
+        scenarioId={session.scenario_id}
+        methodology="nist"
+        phase={phase}
+        score={score}
+        aiMode={aiMode}
+        elapsed={elapsed}
+        connection={connectionState}
+      />
+
+      {/* Alert summary strip (blue-team-specific overlay) */}
+      {(criticalCount > 0 || highCount > 0) && (
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-surface-1/60 border-b border-cs-border">
+          <span className="text-[10.5px] font-mono uppercase tracking-[0.1em] text-txt-dim">Active alerts</span>
           {criticalCount > 0 && (
-            <span className="badge sev-crit animate-pulse font-bold">
-              {criticalCount} CRITICAL
-            </span>
+            <Badge tone="red" dot className="animate-pulse-soft">{criticalCount} Critical</Badge>
           )}
           {highCount > 0 && (
-            <span className="badge sev-high">
-              {highCount} HIGH
-            </span>
+            <Badge tone="red">{highCount} High</Badge>
           )}
-          <span className="text-xs text-txt-dim font-mono tabular-nums">{formatTime(elapsed)}</span>
-          <div className="text-xs text-txt-secondary font-mono">
-            Score: <span className={`font-bold ${score >= 80 ? 'text-green-signal' : score >= 50 ? 'text-amber-warn' : 'text-cs-red'}`}>{score}</span>
-          </div>
-          <button onClick={() => navigate(`/session/${sessionId}/debrief`)}
-            className="btn btn-ghost btn-sm text-xs">
-            Close incident
-          </button>
+          <span className="ml-auto text-[10.5px] font-mono text-txt-dim">NIST IR — {nist.name}</span>
         </div>
-      </div>
+      )}
 
       {/* Main grid */}
       <div className="workspace-grid">
@@ -326,6 +312,7 @@ function SiemEventRow({ event, expanded, onToggle, onExtractIoc }) {
     CRITICAL: 'sev-crit',
     HIGH: 'sev-high',
     MEDIUM: 'sev-med',
+    MED: 'sev-med',
     LOW: 'sev-low',
     INFO: 'sev-info',
   }

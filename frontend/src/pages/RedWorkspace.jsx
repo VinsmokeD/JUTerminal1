@@ -4,11 +4,13 @@ import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
 import { useWebSocket } from '../hooks/useWebSocket'
 import RoeBriefing from '../components/workspace/RoeBriefing'
+import WorkspaceTopBar from '../components/workspace/WorkspaceTopBar'
 import Terminal from '../components/terminal/Terminal'
 import SiemFeed from '../components/siem/SiemFeed'
 import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
-import PhaseTrail from '../components/methodology/PhaseTrail'
+import Modal from '../components/ui/Modal'
+import Button from '../components/ui/Button'
 import api from '../lib/api'
 
 export default function RedWorkspace() {
@@ -51,8 +53,6 @@ export default function RedWorkspace() {
     }
   }, [siemEvents.length])
 
-  const formatTime = (s) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
-
   // Raw keystrokes → Docker PTY
   const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
   // Complete command → AI/discovery tracking
@@ -61,70 +61,52 @@ export default function RedWorkspace() {
   if (!session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading session...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
+  const firstTargetIp = session.scenario_id === 'SC-01' ? '172.20.1.20' : session.scenario_id === 'SC-02' ? '172.20.2.20' : '172.20.3.40'
+
   return (
     <div className="workspace-shell font-display">
-      {/* Beginner welcome overlay */}
-      {showWelcome && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-1 border border-cs-border rounded-cs-lg max-w-lg p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-txt-primary mb-3 font-display">Welcome to your workspace</h2>
-            <div className="space-y-3 text-sm text-txt-secondary mb-6">
-              <div className="flex gap-3">
-                <div className="w-3 h-3 rounded-full bg-cs-red mt-1 flex-shrink-0 shadow-red-glow" />
-                <div><strong className="text-txt-primary">Terminal</strong> (left) — Type commands here. This is your Kali Linux terminal where you'll run penetration testing tools.</div>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-3 h-3 rounded-full bg-cs-blue mt-1 flex-shrink-0 shadow-blue-glow" />
-                <div><strong className="text-txt-primary">AI Tutor</strong> (top right) — Your mentor. It watches what you do and gives guidance. Toggle between Learn and Challenge modes.</div>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-3 h-3 rounded-full bg-green-signal mt-1 flex-shrink-0" />
-                <div><strong className="text-txt-primary">SIEM Feed</strong> (middle right) — See what alerts your actions trigger. This is what the Blue Team sees.</div>
-              </div>
-              <div className="flex gap-3">
-                <div className="w-3 h-3 rounded-full bg-amber-warn mt-1 flex-shrink-0" />
-                <div><strong className="text-txt-primary">Notebook</strong> (bottom) — Document your findings. Good documentation is a critical professional skill.</div>
-              </div>
+      {/* Beginner welcome modal */}
+      <Modal
+        open={showWelcome}
+        onClose={() => setShowWelcome(false)}
+        title="Welcome to your Red Team workspace"
+        size="md"
+        footer={
+          <div className="flex justify-end">
+            <Button variant="red" onClick={() => setShowWelcome(false)}>Start training</Button>
+          </div>
+        }
+      >
+        <div className="space-y-3.5 text-sm text-txt-secondary">
+          {[
+            ['cs-red',       'Terminal',  'Type Kali Linux commands here. Every keystroke is sent to your isolated container.'],
+            ['cs-blue',      'AI Tutor',  'Watches your moves and offers guidance. Toggle Learn / Challenge mode in the top bar.'],
+            ['green-signal', 'SIEM Feed', 'Real-time alerts your actions trigger — exactly what the Blue Team sees.'],
+            ['amber-warn',   'Notebook',  'Document findings. Good notes are the difference between a hobbyist and a professional.'],
+          ].map(([color, name, body]) => (
+            <div key={name} className="flex gap-3 items-start">
+              <div className={`w-2.5 h-2.5 mt-1.5 rounded-full flex-shrink-0 bg-${color}`} style={{ boxShadow: `0 0 8px var(--${color === 'cs-red' ? 'red-glow' : color === 'cs-blue' ? 'blue-glow' : color === 'green-signal' ? 'green-signal' : 'amber-warn'})` }} />
+              <div><strong className="text-txt-primary">{name}</strong> — {body}</div>
             </div>
-            <p className="text-xs text-txt-dim mb-4 font-mono">Tip: Start with a port scan. Try typing <code className="text-green-signal bg-surface-3 px-1.5 py-0.5 rounded-cs-sm">nmap -sV {session.scenario_id === 'SC-01' ? '172.20.1.20' : session.scenario_id === 'SC-02' ? '172.20.2.20' : '172.20.3.40'}</code></p>
-            <button onClick={() => setShowWelcome(false)} className="w-full btn btn-red justify-center text-sm">
-              Start training
-            </button>
-          </div>
+          ))}
         </div>
-      )}
+        <div className="mt-5 p-3 rounded-cs-sm border border-cs-border bg-surface-1">
+          <div className="text-[10.5px] font-mono uppercase tracking-wider text-txt-dim mb-1.5">Try this first</div>
+          <code className="text-green-signal font-mono text-[13px]">nmap -sV {firstTargetIp}</code>
+        </div>
+      </Modal>
 
-      {/* Top bar */}
-      <div className="workspace-topbar">
-        <button onClick={() => navigate('/dashboard')} className="text-txt-dim hover:text-txt-secondary transition-colors">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-          </svg>
-        </button>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <div className="w-2 h-2 rounded-full bg-cs-red animate-pulse" style={{ boxShadow: '0 0 8px rgba(255,59,59,0.5)' }} />
-          <span className="text-cs-red text-xs font-bold tracking-wider font-mono uppercase">RED TEAM</span>
-        </div>
-        <div className="h-4 w-px bg-cs-border" />
-        <span className="text-txt-dim text-xs font-mono">{session.scenario_id}</span>
-        <div className="h-4 w-px bg-cs-border" />
-        <div className="workspace-phase">
-          <PhaseTrail methodology={session.methodology} role="red" currentPhase={phase} />
-        </div>
-        <div className="workspace-actions">
-          <span className={`text-xs px-2 py-0.5 rounded-cs-sm font-mono font-medium ${
-            aiMode === 'learn' ? 'text-cs-blue bg-cs-blue-dim border border-cs-blue/20' : 'text-amber-warn bg-amber-warn/10 border border-amber-warn/20'
-          }`}>{aiMode === 'learn' ? 'Learn' : 'Challenge'}</span>
-          <span className="text-xs text-txt-dim font-mono tabular-nums">{formatTime(elapsed)}</span>
-          <div className="text-xs text-txt-secondary font-mono">
-            Score: <span className={`font-bold ${score >= 80 ? 'text-green-signal' : score >= 50 ? 'text-amber-warn' : 'text-cs-red'}`}>{score}</span>
-          </div>
-          <button onClick={() => navigate(`/session/${sessionId}/debrief`)}
-            className="btn btn-ghost btn-sm text-xs">
-            End & debrief
-          </button>
-        </div>
-      </div>
+      <WorkspaceTopBar
+        role="red"
+        sessionId={sessionId}
+        scenarioId={session.scenario_id}
+        methodology={session.methodology}
+        phase={phase}
+        score={score}
+        aiMode={aiMode}
+        elapsed={elapsed}
+        connection={connectionState}
+      />
 
       {/* Main workspace */}
       <div className="workspace-grid">

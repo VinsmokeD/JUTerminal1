@@ -4,19 +4,8 @@ import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
 import CyberSimNav from '../components/nav/CyberSimNav'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
+import ScenarioCard from '../components/dashboard/ScenarioCard'
 import api from '../lib/api'
-
-const DIFFICULTY_STYLE = {
-  Intermediate: 'difficulty-inter',
-  Advanced: 'difficulty-adv',
-  Beginner: 'difficulty-beg',
-}
-
-const SCENARIO_CLASSES = {
-  'SC-01': 'sc-01',
-  'SC-02': 'sc-02',
-  'SC-03': 'sc-03',
-}
 
 const METHODOLOGY_OPTIONS = [
   { value: 'ptes', label: 'PTES', desc: 'Penetration Testing Execution Standard — the industry-standard methodology for structured pentesting' },
@@ -60,6 +49,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [mySessions, setMySessions] = useState([])
   const [launching, setLaunching] = useState(null)
+  const [launchError, setLaunchError] = useState(null)
   const [briefing, setBriefing] = useState(null)
   const [role, setRole] = useState('red')
   const [methodology, setMethodology] = useState('ptes')
@@ -74,14 +64,14 @@ export default function Dashboard() {
   const launch = async () => {
     if (!briefing) return
     setLaunching(briefing.id)
+    setLaunchError(null)
     try {
       const session = await startSession(briefing.id, role, methodology)
       navigate(`/session/${session.id}/${role}`)
     } catch (e) {
-      alert('Failed to start session: ' + (e.response?.data?.detail || e.message))
+      setLaunchError(e.response?.data?.detail || e.message || 'Failed to start session')
     } finally {
       setLaunching(null)
-      setBriefing(null)
     }
   }
 
@@ -138,48 +128,19 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Scenario cards */}
+        {/* Scenario cards — 2.5D tilt + spotlight */}
         <div className="grid gap-5 lg:grid-cols-3">
           {scenarios.map(sc => {
-            const diffCls = DIFFICULTY_STYLE[sc.difficulty] || DIFFICULTY_STYLE.Intermediate
-            const scCls = SCENARIO_CLASSES[sc.id] || 'sc-01'
-            const learns = LEARN_POINTS[sc.id] || []
             const summary = sc.description || SCENARIO_SUMMARIES[sc.id] || 'Hands-on mission in an isolated CyberSim training network.'
             return (
-              <div key={sc.id} className={`scenario-card ${scCls}`} onClick={() => setBriefing(sc)}>
-                <div className="scenario-id">{sc.id}</div>
-                <h3>{sc.title}</h3>
-                <p>{summary}</p>
-
-                {/* What you'll learn */}
-                {isBeginner && learns.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs text-txt-dim font-mono mb-2">What you'll learn:</p>
-                    <div className="space-y-1">
-                      {learns.slice(0, 3).map(l => (
-                        <div key={l} className="flex items-center gap-2 text-xs text-txt-secondary">
-                          <div className="w-1 h-1 rounded-full bg-cs-blue flex-shrink-0" />
-                          {l}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tags */}
-                <div className="flex gap-1.5 flex-wrap mb-4">
-                  <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] font-medium border border-cs-border ${diffCls}`}>{sc.difficulty}</span>
-                  {sc.frameworks?.map(f => (
-                    <span key={f} className="px-2.5 py-0.5 rounded-full font-mono text-[10px] border border-cs-border text-txt-dim">{f}</span>
-                  ))}
-                </div>
-
-                <button
-                  onClick={(e) => { e.stopPropagation(); setBriefing(sc) }}
-                  className="w-full btn btn-blue btn-sm justify-center text-sm">
-                  {isBeginner ? 'View briefing' : 'Launch'}
-                </button>
-              </div>
+              <ScenarioCard
+                key={sc.id}
+                scenario={sc}
+                summary={summary}
+                learnPoints={LEARN_POINTS[sc.id] || []}
+                showLearnPoints={isBeginner}
+                onClick={() => setBriefing(sc)}
+              />
             )
           })}
         </div>
@@ -319,8 +280,13 @@ export default function Dashboard() {
               </div>
 
               {/* Actions */}
+              {launchError && (
+                <div className="rounded-cs border border-red-signal/40 bg-red-signal/10 px-3 py-2 text-xs text-red-signal font-mono">
+                  {launchError}
+                </div>
+              )}
               <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <button onClick={() => setBriefing(null)} className="flex-1 btn btn-ghost justify-center text-sm">Cancel</button>
+                <button onClick={() => { setBriefing(null); setLaunchError(null) }} className="flex-1 btn btn-ghost justify-center text-sm">Cancel</button>
                 <button onClick={launch} disabled={!!launching}
                   className="flex-1 btn btn-red justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm">
                   {launching ? 'Deploying environment...' : 'Start mission'}

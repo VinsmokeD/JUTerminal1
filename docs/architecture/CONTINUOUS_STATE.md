@@ -13,6 +13,73 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-16 12:00:00 +03:00] - Claude Code (Design System v3 — Phases 1-2, 3, 4 partial, 5, 7 partial)
+* **Status**: Complete — all green builds, three.js code-split verified, workspace bundle unchanged
+* **Why**: User approved the "Operations Center" design plan and asked to proceed. Phases 1+2+3+4(partial)+5+7(partial) shipped in one coherent pass. Workspaces (Phase 3) and Landing (Phase 5) get the biggest visible upgrade; foundation (1+2) underpins every future polish.
+* **Where**:
+  - **Phase 1 — Foundation tokens**:
+    - `frontend/tailwind.config.js` — added type scale (display-1..mono-2), v3 spacing grid, transition timing tokens (enter/pop/glide), elevation shadow tokens (z-1..z-3, focus rings), motion keyframes (tilt-in, pulse-soft)
+    - `frontend/src/styles/v3-design.css` (NEW) — design system layer with surface elevations, button/card/badge/stat/modal/empty-state primitives, focus ring, prefers-reduced-motion kill switch, 2.5D tilt utility, divider/eyebrow
+    - `frontend/src/main.jsx` — imports v3-design.css; wraps app in <PerfTier> provider
+  - **Phase 2 — UI primitives** (all new):
+    - `frontend/src/components/ui/Button.jsx` — variant=red|blue|subtle|ghost|danger; loading spinner; left/right icons
+    - `frontend/src/components/ui/Card.jsx` — interactive lift; 2.5D tilt; cursor spotlight; accent bar; CardHeader/Body/Footer
+    - `frontend/src/components/ui/Badge.jsx` — tone-based, severity-aware (MED + MEDIUM both map correctly)
+    - `frontend/src/components/ui/Stat.jsx` — KPI tile with label/value/trend
+    - `frontend/src/components/ui/Modal.jsx` — portal-mounted, scrim, esc-to-close, body-scroll-lock
+    - `frontend/src/components/ui/EmptyState.jsx`, `SectionHeading.jsx`, `LiveIndicator.jsx`, `Divider.jsx`
+    - `frontend/src/components/ui/PerfTier.jsx` — tier 0-3 classifier (reduced-motion, mobile, low-core), rolling FPS downgrade
+    - `frontend/src/components/ui/index.js` — barrel export
+    - `frontend/src/hooks/useTilt.js` — mouse-driven CSS-var tilt for any element
+  - **Phase 3 — Workspace polish**:
+    - `frontend/src/components/workspace/WorkspaceTopBar.jsx` (NEW) — shared topbar with role badge, scenario chip, phase trail, connection pill, AI mode chip, timer, score, end-debrief
+    - `frontend/src/components/workspace/ConnectionPill.jsx` (NEW) — connected/connecting/disconnected/unauthorized semantic states
+    - `frontend/src/pages/RedWorkspace.jsx` — adopted WorkspaceTopBar; replaced beginner welcome overlay with new Modal primitive + iterated copy; removed local formatTime helper
+    - `frontend/src/pages/BlueWorkspace.jsx` — adopted WorkspaceTopBar; collapsed inline alert badges into compact active-alerts strip with NIST phase label; removed local formatTime helper
+  - **Phase 4 partial — Dashboard refresh**:
+    - `frontend/src/components/dashboard/ScenarioCard.jsx` (NEW) — 2.5D tilt + cursor spotlight + accent gradient bar + ZScore-translated CTA. Keyboard accessible (role=button, Enter/Space)
+    - `frontend/src/pages/Dashboard.jsx` — replaced ad-hoc scenario-card markup with ScenarioCard; removed dead DIFFICULTY_STYLE / SCENARIO_CLASSES constants
+  - **Phase 5 — Landing 3D**:
+    - `frontend/package.json` — installed `three@0.169.0`
+    - `frontend/src/components/canvas/HeroScene3D.jsx` (NEW) — WebGL particle network with two interleaved Red/Blue formations, intra-team connecting lines, occasional cross-team attack-trace flash, mouse parallax + drag-rotate, fog, additive blending, perf-tier-aware profile (1400/900/500 particles), 30fps cap on tier 1, full dispose() cleanup
+    - `frontend/src/pages/Landing.jsx` — lazy-imports HeroScene3D via React.lazy, falls back to existing 2D ParticleCanvas while loading and on tier 0 (reduced-motion)
+  - **Phase 7 partial — Cmd+K palette**:
+    - `frontend/src/components/palette/CommandPalette.jsx` (NEW) — portal-mounted, global ⌘K / Ctrl+K trigger, fuzzy search across Navigate/Scenarios/Account sections, arrow-key + Enter + Esc keyboard, sectioned grouped results, footer kbd legend
+    - `frontend/src/App.jsx` — mounts <CommandPalette /> globally inside BrowserRouter (suppressed on /auth)
+* **What & How**:
+  1. **Design tokens** are pure CSS variables + Tailwind extensions — every later phase opts-in by class name. Zero runtime cost.
+  2. **PerfTier provider** wraps the whole app at main.jsx. Components consume tier via `usePerfTier()`. The provider monitors rolling FPS and auto-downgrades; reduced-motion users land on tier 0, mobile/coarse-pointer on tier 1.
+  3. **HeroScene3D** uses raw three.js (no R3F overhead) to keep the bundle lean. The lazy import means workspace routes pay zero three.js cost: build confirms `HeroScene3D-*.js` (119KB gz) only loads on /. The scene runs at 60fps on tier 3, 30fps capped on tier 1, never instantiates on tier 0 (SVG gradient fallback renders instead).
+  4. **WorkspaceTopBar** is shared between Red and Blue, parameterised by `role`. The topbar shows a live ConnectionPill (was a static pulse-only dot), AI-mode chip with semantic tone, monospace tabular timer, score with severity colour, end-debrief CTA.
+  5. **ScenarioCard** applies CSS perspective + rotateX/rotateY driven by mouse position via useTilt — translates to true 2.5D parallax for free. Inner button has `translateZ(30px)` so it "floats" off the card on tilt.
+  6. **CommandPalette** is mounted at the App level (inside BrowserRouter so it can use useNavigate). It listens for ⌘K/Ctrl+K on window. Items are statically declared with `to` routes or `action` strings. Cursor moves with arrow keys; mouse-hover also adjusts cursor. Esc closes; scrim closes. Section grouping is computed from filtered results.
+* **Build verification**:
+  - `npx vite build` → ✓ built in 3.42s
+  - Workspace bundles: RedWorkspace 14.71KB / 5.13KB gz, BlueWorkspace 14.72KB / 5.34KB gz (smaller than before despite richer features)
+  - HeroScene3D lazy chunk: 470KB / 118.92KB gz — only loaded on Landing
+  - Main bundle: 61.67KB / 17.95KB gz
+  - Total workspace TTI bundle ≈ 146KB gz vs 250KB budget ✓
+
+### [2026-05-16 09:30:00 +03:00] - Claude Code (Comprehensive Bug Fix Pass)
+* **Status**: Complete
+* **Why**: Full project audit identified 7 bugs spanning logging correctness, SIEM severity rendering, event file I/O hot path, orphaned phase-advancement logic, deprecated asyncio API, false-positive WebSocket reconnects, and native browser `alert()` usage in production UI.
+* **Where**:
+  - `backend/src/sandbox/container_cleanup.py` — fix container ID logging after nulling
+  - `frontend/src/pages/BlueWorkspace.jsx` — add `MED` key to `sevStyles` map
+  - `backend/src/siem/engine.py` — add `_events_cache` dict; load JSON once per scenario, not per command
+  - `backend/src/ws/routes.py` — import & call `try_advance_phase` after every command; send `phase_update` WS message when phase advances; send `score_update` WS message after gate penalty with `.returning(Session.score)`
+  - `backend/src/sandbox/manager.py` — replace all `asyncio.get_event_loop()` with `asyncio.get_running_loop()` (Python 3.10+ deprecation)
+  - `frontend/src/hooks/useWebSocket.js` — add `setPhase` to Zustand destructure; add `phase_update` case in message switch; increase echo-stall timeout 2500ms → 8000ms; add `setPhase` to useEffect deps
+  - `frontend/src/pages/Dashboard.jsx` — replace `alert()` with inline `launchError` state displayed as styled banner inside briefing modal; clear error on cancel
+* **What & How**:
+  1. **container_cleanup.py**: saved `container_id_log = session.container_id` before the DB null so the subsequent `logger.info` and `logger.warning` calls log the actual container ID instead of `None`.
+  2. **BlueWorkspace.jsx**: the backend `daemon_noise.py` normalises severity to `MED` (not `MEDIUM`). Added `MED: 'sev-med'` alongside the existing `MEDIUM` key so medium-severity badges render with amber styling.
+  3. **siem/engine.py**: `process_command_for_siem` was opening and JSON-parsing the events file on every command. Added module-level `_events_cache: Dict[str, list] = {}` populated on first access per scenario stem; subsequent calls skip I/O entirely.
+  4. **ws/routes.py**: `try_advance_phase` (fully implemented in `scenarios/engine.py`) was never called from the WS handler, meaning phase progression was permanently stalled. Now called inside a fresh `AsyncSessionLocal()` context after every command; if the returned phase differs from `session_state["phase"]`, the local dict is updated and a `phase_update` WS message is sent to the frontend. Gate-penalty block now uses `.returning(Session.score)` to retrieve the post-deduction score and sends a `score_update` message so the frontend HUD stays in sync.
+  5. **manager.py**: `asyncio.get_event_loop()` is deprecated in Python 3.10+ when called from a running event loop; replaced all four call sites with `asyncio.get_running_loop()`.
+  6. **useWebSocket.js**: added `setPhase` from Zustand's `sessionStore`; added `case 'phase_update': setPhase(msg.data.phase)` handler; echo-stall reconnect threshold raised from 2500ms to 8000ms to eliminate false reconnections on slow commands (nmap, sqlmap) that legitimately take several seconds before producing output; `setPhase` added to useEffect dependency array.
+  7. **Dashboard.jsx**: replaced the native `alert()` call (blocked by most CSPs, unusable on mobile) with a `launchError` state variable. On catch, sets the error string; the briefing modal renders it as a styled `font-mono` error banner above the action buttons. Cancel also clears the error.
+
 ### [2026-05-14 22:58:39 +03:00] - Claude Code (GitHub Push Complete)
 * **Status**: Complete - local master branch pushed to GitHub.
 * **Why**: The user explicitly confirmed the external GitHub update after the safety warning. The prepared commits needed to be published so the team can pull the product improvements, setup guide, and full Docker source updates from the shared repository.

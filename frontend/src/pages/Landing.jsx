@@ -1,6 +1,11 @@
+import { Suspense, lazy } from 'react'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { usePerfTier } from '../components/ui/PerfTier'
+
+// three.js hero is lazy-loaded so workspace bundles never pay the cost
+const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
 
 /**
  * Landing — Public landing page with hero, live demo, scenarios, stats, CTA.
@@ -10,6 +15,7 @@ import { useAuthStore } from '../store/authStore'
 export default function Landing() {
   const navigate = useNavigate()
   const { token } = useAuthStore()
+  const tier = usePerfTier()
 
   const goToPlatform = () => navigate(token ? '/dashboard' : '/auth')
 
@@ -37,7 +43,13 @@ export default function Landing() {
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-32 pb-20 overflow-hidden">
-        <ParticleCanvas />
+        {tier >= 1 ? (
+          <Suspense fallback={<ParticleCanvas />}>
+            <HeroScene3D />
+          </Suspense>
+        ) : (
+          <ParticleCanvas />
+        )}
         <div className="relative z-10 text-center max-w-[900px]">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-2 border border-cs-border rounded-full text-xs font-mono text-txt-secondary mb-8 animate-fade-up">

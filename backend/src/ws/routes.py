@@ -23,6 +23,7 @@ from src.cache.redis import cache_get, cache_set, lpush_capped, lrange, _get as 
 from src.scenarios.gatekeeper import check_command
 from src.scenarios.loader import load_scenario
 from src.scenarios.hint_engine import _load_hints
+from src.scenarios.engine import try_advance_phase
 
 _GATE_PENALTY = 5  # points deducted per blocked command
 _ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → scenario_id
@@ -72,19 +73,24 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
     if ptes_phase:
         gate_result = check_command(command, ptes_phase)
         if gate_result.blocked:
+            new_score = None
             async with AsyncSessionLocal() as db:
-                await db.execute(
+                result = await db.execute(
                     update(Session)
                     .where(Session.id == session_id)
                     .values(score=Session.score - _GATE_PENALTY)
+                    .returning(Session.score)
                 )
+                row = result.fetchone()
+                new_score = row[0] if row else None
                 await db.commit()
-            session_state["phase"] = current_phase
             warn = (
                 f"\r\n\x1b[31m[GATE BLOCKED] {gate_result.redirect_message}\x1b[0m"
                 f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
             )
             await send_json({"type": "terminal_output", "data": {"data": warn}})
+            if new_score is not None:
+                await send_json({"type": "score_update", "data": {"score": new_score}})
             return
 
     siem_events = await process_command_for_siem(session_id, session_state, command)
@@ -135,6 +141,12 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
     ai_hint = await get_ai_hint(session_id, session_state, command, None)
     if ai_hint:
         await send_json({"type": "ai_hint", "data": {"text": ai_hint}})
+
+    async with AsyncSessionLocal() as db:
+        new_phase = await try_advance_phase(session_id, session_state["scenario_id"], db)
+    if new_phase != session_state["phase"]:
+        session_state["phase"] = new_phase
+        await send_json({"type": "phase_update", "data": {"phase": new_phase}})
 
 
 @router.websocket("/{session_id}")

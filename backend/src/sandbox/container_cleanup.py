@@ -62,9 +62,10 @@ async def cleanup_idle_containers(idle_threshold_minutes: int = 60):
                 # If the user has not typed yet, use session start time so a
                 # newly opened terminal is not deleted before the first command.
                 if last_activity_at < cutoff_time:
+                    container_id_log = session.container_id
                     try:
                         # Try to kill the container
-                        container = docker_client.containers.get(session.container_id)
+                        container = docker_client.containers.get(container_id_log)
                         container.stop(timeout=5)
                         container.remove()
                         session.container_id = None
@@ -73,11 +74,11 @@ async def cleanup_idle_containers(idle_threshold_minutes: int = 60):
                         cleaned_count += 1
 
                         logger.info(
-                            f"[CLEANUP] Removed idle container: {session.container_id} "
+                            f"[CLEANUP] Removed idle container: {container_id_log} "
                             f"from session {session.id} (user: {session.user_id})"
                         )
                     except Exception as e:
-                        logger.warning(f"[CLEANUP] Failed to remove container {session.container_id}: {e}")
+                        logger.warning(f"[CLEANUP] Failed to remove container {container_id_log}: {e}")
 
             if cleaned_count > 0:
                 logger.info(f"[CLEANUP] Removed {cleaned_count} idle containers")

@@ -19,6 +19,9 @@ _last_poll_time: str = "now-1m"
 # Track active sessions for routing logs
 _active_sessions: Dict[str, str] = {}  # session_id -> scenario_id
 
+# Cache loaded event definition files to avoid repeated disk reads per command
+_events_cache: Dict[str, list] = {}
+
 
 def _event_file_stem(scenario_id: str) -> str:
     """Normalize scenario IDs such as SC-01 to event file stems such as sc01."""
@@ -236,28 +239,33 @@ async def process_command_for_siem(session_id: str, state: dict, command: str) -
     scenario_id = state.get("scenario_id", "sc01")
 
     try:
-        # Load scenario-specific SIEM event definitions
-        events_file = os.path.join(
-            os.path.dirname(__file__),
-            "events",
-            f"{_event_file_stem(scenario_id)}_events.json"
-        )
+        stem = _event_file_stem(scenario_id)
+        if stem not in _events_cache:
+            # Load scenario-specific SIEM event definitions
+            events_file = os.path.join(
+                os.path.dirname(__file__),
+                "events",
+                f"{stem}_events.json"
+            )
 
-        if not os.path.exists(events_file):
-            # No event definitions for this scenario
-            return []
+            if not os.path.exists(events_file):
+                _events_cache[stem] = []
+                return []
 
-        with open(events_file, 'r') as f:
-            events_data = json_lib.load(f)
+            with open(events_file, 'r') as f:
+                events_data = json_lib.load(f)
 
-        # Flatten all event categories into a single list
-        all_events = []
-        if isinstance(events_data, dict):
-            for category, events in events_data.items():
-                if isinstance(events, list):
-                    all_events.extend(events)
-        else:
-            all_events = events_data if isinstance(events_data, list) else []
+            # Flatten all event categories into a single list
+            flat: list = []
+            if isinstance(events_data, dict):
+                for _cat, evts in events_data.items():
+                    if isinstance(evts, list):
+                        flat.extend(evts)
+            else:
+                flat = events_data if isinstance(events_data, list) else []
+            _events_cache[stem] = flat
+
+        all_events = _events_cache[stem]
 
         # Match command against each event's trigger pattern
         for event in all_events:

@@ -14,7 +14,7 @@ export function useWebSocket(sessionId) {
   const lastTerminalOutputAtRef = useRef(0)
   const [reconnectTick, setReconnectTick] = useState(0)
   const [connectionState, setConnectionState] = useState('disconnected')
-  const { addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence } = useSessionStore()
+  const { addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence, setPhase } = useSessionStore()
 
   useEffect(() => {
     if (!sessionId) return
@@ -77,6 +77,9 @@ export function useWebSocket(sessionId) {
           case 'mode_changed':
             setAiMode(msg.data.mode)
             break
+          case 'phase_update':
+            setPhase(msg.data.phase)
+            break
           case 'auto_evidence':
             addDiscoveries(msg.data.discoveries)
             if (Object.values(msg.data.discoveries).some(arr => arr.length > 0)) {
@@ -114,7 +117,7 @@ export function useWebSocket(sessionId) {
       }
       ws.close()
     }
-  }, [sessionId, reconnectTick, addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence])
+  }, [sessionId, reconnectTick, addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence, setPhase])
 
   useEffect(() => {
     if (!sessionId) return
@@ -123,7 +126,7 @@ export function useWebSocket(sessionId) {
       if (connectionState !== 'connected' || ws?.readyState !== WebSocket.OPEN) return
       const lastInputAt = lastRawInputAtRef.current
       if (!lastInputAt || lastTerminalOutputAtRef.current >= lastInputAt) return
-      if (Date.now() - lastInputAt > 2500) {
+      if (Date.now() - lastInputAt > 8000) {
         setConnectionState('disconnected')
         try {
           ws.close(4000, 'terminal echo stalled')
