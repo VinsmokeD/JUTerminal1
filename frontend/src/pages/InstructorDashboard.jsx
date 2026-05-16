@@ -1,17 +1,27 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../lib/api'
+import { Badge, Button, EmptyState, LiveIndicator, Stat } from '../components/ui'
 
-const SCENARIO_LABELS = {
-  'SC-01': 'NovaMed Web Pentest',
-  'SC-02': 'Nexora AD Compromise',
-  'SC-03': 'Orion Phishing',
+const SCENARIOS = [
+  { id: 'SC-01', short: 'NovaMed', name: 'NovaMed Healthcare Web App', tone: 'red' },
+  { id: 'SC-02', short: 'Nexora', name: 'Nexora Financial Active Directory', tone: 'blue' },
+  { id: 'SC-03', short: 'Orion', name: 'Orion Logistics Phishing', tone: 'amber' },
+]
+
+const SCENARIO_LABELS = Object.fromEntries(SCENARIOS.map((scenario) => [scenario.id, scenario.name]))
+const SCENARIO_TONES = Object.fromEntries(SCENARIOS.map((scenario) => [scenario.id, scenario.tone]))
+
+const scoreTextClass = (score) => {
+  if (score >= 80) return 'text-green-signal'
+  if (score >= 60) return 'text-amber-warn'
+  return 'text-cs-red'
 }
 
-const SEVERITY_COLOR = (score) => {
-  if (score >= 80) return 'text-green-400'
-  if (score >= 50) return 'text-yellow-400'
-  return 'text-red-400'
+const progressClass = (score) => {
+  if (score >= 80) return 'bg-green-signal'
+  if (score >= 60) return 'bg-cs-blue'
+  return 'bg-amber-warn'
 }
 
 const csvEscape = (value) => {
@@ -61,6 +71,8 @@ export default function InstructorDashboard() {
     return true
   })
 
+  const hasFilter = filter.scenario !== 'all' || filter.status !== 'all'
+
   const exportCsv = useCallback(() => {
     const headers = ['Student', 'Scenario', 'Role', 'Phase', 'Score', 'Hints', 'Status', 'Started', 'Session ID']
     const rows = filtered.map(s => [
@@ -95,89 +107,101 @@ export default function InstructorDashboard() {
     URL.revokeObjectURL(url)
   }, [])
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-500 text-sm">
-      Loading instructor data...
-    </div>
-  )
+  if (loading) return <InstructorLoading />
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
-      {/* Header */}
-      <div className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center gap-4">
+    <div className="min-h-screen bg-void text-txt-primary font-display">
+      <header className="sticky top-0 z-40 h-14 bg-surface-1 border-b border-cs-border px-6 flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-blue-500" />
-          <span className="text-blue-400 text-sm font-semibold tracking-wide">INSTRUCTOR DASHBOARD</span>
+          <div className="relative h-[22px] w-[22px]">
+            <div className="absolute left-0 top-0 h-[9px] w-[9px] rounded-[2px] bg-cs-red shadow-red-glow" />
+            <div className="absolute bottom-0 right-0 h-[9px] w-[9px] rounded-[2px] bg-cs-blue shadow-blue-glow" />
+          </div>
+          <span className="font-display font-bold text-txt-primary">CyberSim</span>
         </div>
-        <div className="h-4 w-px bg-gray-700" />
-        <span className="text-gray-500 text-xs font-mono">CyberSim v2.0</span>
-        <div className="ml-auto flex items-center gap-4">
+        <div className="h-5 w-px bg-cs-border" />
+        <Badge tone="blue">Instructor</Badge>
+
+        <div className="hidden flex-1 justify-center md:flex">
+          <span className="text-xs font-mono uppercase tracking-[0.2em] text-txt-dim">Operations Center</span>
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
+          <LiveIndicator />
           {lastRefresh && (
-            <span className="text-gray-600 text-xs">
-              Updated {lastRefresh.toLocaleTimeString()}
+            <span className="hidden text-xs font-mono text-txt-dim sm:inline">
+              {lastRefresh.toLocaleTimeString()}
             </span>
           )}
-          <button
-            onClick={fetchData}
-            className="text-xs px-3 py-1 border border-gray-700 text-gray-400 hover:text-gray-200 rounded transition-colors"
-          >
-            Refresh
-          </button>
-          <button
-            onClick={exportCsv}
-            className="text-xs px-3 py-1 border border-blue-800 text-blue-300 hover:text-blue-100 rounded transition-colors"
-          >
-            Export CSV
-          </button>
-          <button
-            onClick={() => navigate('/')}
-            className="text-xs px-3 py-1 border border-gray-700 text-gray-400 hover:text-gray-200 rounded transition-colors"
-          >
-            ← Back
-          </button>
+          <Button onClick={fetchData} variant="ghost" size="sm">Refresh</Button>
+          <Button onClick={exportCsv} variant="subtle" size="sm">Export CSV</Button>
+          <Button onClick={() => navigate('/')} variant="ghost" size="sm">Back</Button>
         </div>
-      </div>
+      </header>
 
-      <div className="flex-1 p-6 space-y-6">
+      <main className="p-6 space-y-6">
         {error && (
-          <div className="bg-red-950 border border-red-800 text-red-400 text-sm px-4 py-3 rounded">
-            {error}
+          <div className="card-v3 flex items-center gap-3 border-cs-red/30 bg-cs-red/5 px-4 py-3">
+            <Badge tone="red">Error</Badge>
+            <span className="text-sm text-cs-red">{error}</span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="ml-auto flex h-7 w-7 items-center justify-center rounded-cs-sm text-cs-red hover:bg-cs-red/10"
+              aria-label="Dismiss error"
+            >
+              X
+            </button>
           </div>
         )}
 
-        {/* Metrics row */}
         {metrics && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <MetricCard label="Total sessions" value={metrics.total_sessions} />
-            <MetricCard label="Active now" value={metrics.active_sessions} highlight />
-            <MetricCard label="Avg score" value={`${metrics.avg_score}pts`} />
-            <MetricCard label="SIEM events" value={metrics.total_siem_events} />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Stat label="Total sessions" value={metrics.total_sessions} accent="neutral" trend={<Sparkline tone="blue" />} />
+            <Stat
+              label="Active now"
+              value={<span className="inline-flex items-center gap-2">{metrics.active_sessions}<span className="h-2 w-2 rounded-full bg-green-signal shadow-[0_0_8px_#00ff88] animate-pulse" /></span>}
+              accent="green"
+              trend={<Sparkline tone="green" />}
+            />
+            <Stat label="Avg score" value={`${metrics.avg_score}pts`} accent="blue" trend={<Sparkline tone="blue" />} />
+            <Stat label="SIEM events" value={metrics.total_siem_events} accent="red" trend={<Sparkline tone="red" />} />
           </div>
         )}
 
-        {/* Scenario breakdown */}
-        {metrics?.by_scenario?.length > 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded p-4">
-            <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-3">By scenario</h3>
-            <div className="flex gap-6">
-              {metrics.by_scenario.map(s => (
-                <div key={s.scenario_id} className="text-center">
-                  <div className="text-xs text-gray-400 font-mono">{s.scenario_id}</div>
-                  <div className="text-white text-lg font-semibold">{s.session_count}</div>
-                  <div className="text-xs text-gray-600">sessions · avg {s.avg_score}pts</div>
+        {metrics && (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {SCENARIOS.map((scenario) => {
+              const row = metrics.by_scenario?.find((item) => item.scenario_id === scenario.id)
+              const count = row?.session_count ?? 0
+              const avg = Math.round(row?.avg_score ?? 0)
+              return (
+                <div key={scenario.id} className="card-v3 p-5">
+                  <div className="flex items-center justify-between">
+                    <Badge tone={scenario.tone}>{scenario.id}</Badge>
+                    <span className="text-xs text-txt-dim font-mono">{count} sessions</span>
+                  </div>
+                  <p className="mt-2 text-xs text-txt-dim">{scenario.name}</p>
+                  <div className="mt-5 text-3xl font-mono font-bold text-txt-primary">{count}</div>
+                  <div className="mt-4 h-2 rounded-full bg-surface-3 overflow-hidden">
+                    <div className={`h-full rounded-full ${progressClass(avg)}`} style={{ width: `${Math.max(0, Math.min(100, avg))}%` }} />
+                  </div>
+                  <div className="mt-2 flex justify-between text-xs text-txt-dim font-mono">
+                    <span>avg score</span>
+                    <span>{avg}pts</span>
+                  </div>
                 </div>
-              ))}
-            </div>
+              )
+            })}
           </div>
         )}
 
-        {/* Filters */}
-        <div className="flex gap-3 items-center">
-          <span className="text-gray-600 text-xs">Filter:</span>
+        <div className="card-v3 flex flex-wrap items-center gap-3 px-4 py-3">
+          <span className="text-xs font-mono uppercase tracking-[0.12em] text-txt-dim">Filter</span>
           <select
             value={filter.scenario}
             onChange={e => setFilter(f => ({ ...f, scenario: e.target.value }))}
-            className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1 focus:outline-none"
+            className="input max-w-[190px] text-xs font-mono"
           >
             <option value="all">All scenarios</option>
             <option value="SC-01">SC-01 NovaMed</option>
@@ -187,101 +211,137 @@ export default function InstructorDashboard() {
           <select
             value={filter.status}
             onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
-            className="bg-gray-800 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1 focus:outline-none"
+            className="input max-w-[170px] text-xs font-mono"
           >
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="completed">Completed</option>
           </select>
-          <span className="text-gray-600 text-xs ml-auto">{filtered.length} sessions</span>
+          {hasFilter && (
+            <Button onClick={() => setFilter({ scenario: 'all', status: 'all' })} variant="ghost" size="sm">
+              Clear filters
+            </Button>
+          )}
+          <div className="ml-auto">
+            <Badge tone="neutral">{filtered.length} sessions</Badge>
+          </div>
         </div>
 
-        {/* Sessions table */}
-        <div className="bg-gray-900 border border-gray-800 rounded overflow-hidden">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-gray-800 text-gray-500 text-left">
-                <th className="px-4 py-2.5 font-medium">Student</th>
-                <th className="px-4 py-2.5 font-medium">Scenario</th>
-                <th className="px-4 py-2.5 font-medium">Role</th>
-                <th className="px-4 py-2.5 font-medium">Phase</th>
-                <th className="px-4 py-2.5 font-medium">Score</th>
-                <th className="px-4 py-2.5 font-medium">Hints</th>
-                <th className="px-4 py-2.5 font-medium">Status</th>
-                <th className="px-4 py-2.5 font-medium">Started</th>
-                <th className="px-4 py-2.5 font-medium">Report</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-gray-700">
-                    No sessions found
-                  </td>
+        <div className="card-v3 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[960px] text-xs font-mono">
+              <thead>
+                <tr className="bg-surface-2 text-[10.5px] font-mono uppercase tracking-[0.12em] text-txt-dim border-b border-cs-border text-left">
+                  <th className="px-4 py-3 font-medium">Student</th>
+                  <th className="px-4 py-3 font-medium">Scenario</th>
+                  <th className="px-4 py-3 font-medium">Role</th>
+                  <th className="px-4 py-3 font-medium">Phase</th>
+                  <th className="px-4 py-3 font-medium">Score</th>
+                  <th className="px-4 py-3 font-medium">Hints</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Started</th>
+                  <th className="px-4 py-3 font-medium">Report</th>
                 </tr>
-              ) : (
-                filtered.map(s => (
-                  <tr key={s.session_id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                    <td className="px-4 py-2.5 font-mono text-gray-200">{s.username}</td>
-                    <td className="px-4 py-2.5">
-                      <span className="font-mono text-gray-400">{s.scenario_id}</span>
-                      <span className="text-gray-600 ml-1.5">{SCENARIO_LABELS[s.scenario_id]}</span>
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                        s.role === 'red'
-                          ? 'bg-red-950 text-red-400 border border-red-800'
-                          : 'bg-teal-950 text-teal-400 border border-teal-800'
-                      }`}>
-                        {s.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-300 font-mono">{s.phase}</td>
-                    <td className="px-4 py-2.5">
-                      <span className={`font-semibold font-mono ${SEVERITY_COLOR(s.score)}`}>
-                        {s.score}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-500 font-mono">{s.hints_used}</td>
-                    <td className="px-4 py-2.5">
-                      {s.status === 'active' ? (
-                        <span className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                          <span className="text-green-400">active</span>
-                        </span>
-                      ) : (
-                        <span className="text-gray-600">completed</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-gray-600 font-mono">
-                      {new Date(s.started_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <button
-                        onClick={() => downloadReport(s.session_id)}
-                        className="text-xs px-2 py-1 border border-gray-700 text-gray-300 hover:text-white hover:border-gray-500 rounded transition-colors"
-                      >
-                        Download
-                      </button>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={9}>
+                      <EmptyState icon={<TableIcon />} title="No sessions match filters" />
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  filtered.map(s => (
+                    <tr key={s.session_id} className="bg-transparent hover:bg-surface-2/60 transition-colors border-b border-cs-border/40">
+                      <td className="px-4 py-3 text-txt-primary font-semibold">{s.username}</td>
+                      <td className="px-4 py-3">
+                        <Badge tone={SCENARIO_TONES[s.scenario_id] || 'neutral'}>{s.scenario_id}</Badge>
+                        <span className="text-txt-dim text-[10px] ml-1.5">{SCENARIO_LABELS[s.scenario_id]}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge tone={s.role === 'red' ? 'red' : 'blue'}>{s.role}</Badge>
+                      </td>
+                      <td className="px-4 py-3 text-txt-secondary">{s.phase}</td>
+                      <td className="px-4 py-3">
+                        <span className={`font-semibold ${scoreTextClass(s.score)}`}>{s.score}</span>
+                        <div className="mt-1 h-1 w-10 rounded-full bg-surface-3 overflow-hidden">
+                          <div className={`h-full rounded-full ${progressClass(s.score)}`} style={{ width: `${Math.max(0, Math.min(100, s.score))}%` }} />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-txt-dim">{s.hints_used}</td>
+                      <td className="px-4 py-3">
+                        {s.status === 'active' ? (
+                          <LiveIndicator label="active" />
+                        ) : (
+                          <span className="text-txt-dim">done</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-txt-dim">
+                        {new Date(s.started_at).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Button onClick={() => downloadReport(s.session_id)} variant="ghost" size="sm">
+                          ↓ Report
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+function Sparkline({ tone = 'blue' }) {
+  const bg = {
+    blue: 'bg-cs-blue/30',
+    red: 'bg-cs-red/30',
+    green: 'bg-green-signal/30',
+  }[tone] || 'bg-cs-blue/30'
+  return (
+    <div className="mt-1 flex h-6 items-end gap-1">
+      {[35, 62, 45, 78, 58].map((height, index) => (
+        <span key={index} className={`w-2 rounded-sm ${bg}`} style={{ height: `${height}%` }} />
+      ))}
+    </div>
+  )
+}
+
+function InstructorLoading() {
+  return (
+    <div className="min-h-screen bg-void flex items-center justify-center">
+      <style>{`
+        @keyframes instructorLogoA { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.9); } }
+        @keyframes instructorLogoB { 0%, 100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } }
+        @keyframes instructorDot { 0%, 80%, 100% { transform: translateY(0); opacity: 0.45; } 40% { transform: translateY(-5px); opacity: 1; } }
+      `}</style>
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative h-12 w-12">
+          <div className="absolute left-0 top-0 h-6 w-6 rounded bg-cs-red shadow-red-glow" style={{ animation: 'instructorLogoA 1.4s ease-in-out infinite' }} />
+          <div className="absolute bottom-0 right-0 h-6 w-6 rounded bg-cs-blue shadow-blue-glow" style={{ animation: 'instructorLogoB 1.4s ease-in-out infinite' }} />
+        </div>
+        <div className="flex gap-1">
+          {[0, 1, 2].map((index) => (
+            <span
+              key={index}
+              className="h-1.5 w-1.5 rounded-full bg-cs-blue"
+              style={{ animation: `instructorDot 900ms ease-in-out ${index * 120}ms infinite` }}
+            />
+          ))}
         </div>
       </div>
     </div>
   )
 }
 
-function MetricCard({ label, value, highlight = false }) {
+function TableIcon() {
   return (
-    <div className={`bg-gray-900 border rounded p-4 ${highlight ? 'border-blue-800' : 'border-gray-800'}`}>
-      <div className="text-xs text-gray-500 mb-1">{label}</div>
-      <div className={`text-2xl font-semibold font-mono ${highlight ? 'text-blue-400' : 'text-white'}`}>
-        {value}
-      </div>
-    </div>
+    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5M8.25 5.25v13.5m7.5-13.5v13.5" />
+    </svg>
   )
 }

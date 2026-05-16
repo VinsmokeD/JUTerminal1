@@ -72,6 +72,17 @@ else
     echo "[*] User jsmith already exists"
 fi
 
+# Create more realistic users
+for user in "mross:Winter2024!" "bclark:Spring2024!" "ajones:Summer2024!" "lwilliams:Autumn2024!"; do
+    username=$(echo $user | cut -d: -f1)
+    password=$(echo $user | cut -d: -f2)
+    if samba-tool user create $username "$password" 2>/dev/null; then
+        echo "[+] Created user: $username"
+    else
+        echo "[*] User $username already exists"
+    fi
+done
+
 # Create service account for Kerberoasting (SPN-based vulnerability)
 if samba-tool user create svc_backup "Backup2023!" 2>/dev/null; then
     echo "[+] Created user: svc_backup (service account)"
@@ -82,6 +93,12 @@ fi
 # Add SPN (Service Principal Name) to svc_backup for Kerberoasting vulnerability
 if ! samba-tool user addspn svc_backup "CIFS/NEXORA-FS01.nexora.local" 2>/dev/null; then
     echo "[*] SPN CIFS/NEXORA-FS01.nexora.local already exists for svc_backup"
+fi
+
+# Add another SPN for SQL service
+if samba-tool user create svc_sql "SqlPass456!" 2>/dev/null; then
+    samba-tool user addspn svc_sql "MSSQLSvc/NEXORA-SQL01.nexora.local:1433" 2>/dev/null || true
+    echo "[+] Created user: svc_sql with SPN"
 fi
 
 # Create domain admin user

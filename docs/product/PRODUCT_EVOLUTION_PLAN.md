@@ -196,6 +196,8 @@ Acceptance:
 
 Goal: Make the Blue Team workspace an active analyst surface.
 
+Status: Implementation added in the current working tree; DB-backed runtime verification is pending Docker Desktop/Postgres availability.
+
 Deliverables:
 
 - triage API over existing `siem_triage` table,
@@ -204,12 +206,27 @@ Deliverables:
 - investigation checklist by event category,
 - instructor visibility into triage completion.
 
+Implemented:
+
+- session event payloads include `triage` metadata,
+- triage classifications can be saved as `investigating`, `true_positive`, `false_positive`, or `escalated`,
+- Blue Workspace exposes classification and analyst notes directly inside expanded SIEM events,
+- instructor session rows and metrics include triage coverage,
+- generated markdown reports include Blue Team triage decisions,
+- Dashboard can open a scenario briefing from Command Palette scenario shortcuts.
+
 Acceptance:
 
 - a Blue Team user can classify an event,
 - triage state persists,
 - instructor sees triage coverage,
 - report includes triage decisions.
+
+Verification:
+
+- `frontend` production build passes.
+- `docker compose config --quiet` passes.
+- DB-backed pytest/runtime checks are pending until Docker Desktop/Postgres is reachable locally.
 
 ### Phase 25: Instructor Learning Analytics
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
 import CyberSimNav from '../components/nav/CyberSimNav'
@@ -47,6 +47,8 @@ export default function Dashboard() {
   const { scenarios, fetchScenarios, startSession } = useSessionStore()
   const { username, skillLevel } = useAuthStore()
   const navigate = useNavigate()
+  const location = useLocation()
+  const requestedScenarioId = location.state?.scenarioId
   const [mySessions, setMySessions] = useState([])
   const [launching, setLaunching] = useState(null)
   const [launchError, setLaunchError] = useState(null)
@@ -60,6 +62,14 @@ export default function Dashboard() {
     api.get('/sessions/').then(r => setMySessions(r.data)).catch(() => {})
     api.get('/auth/me').then(r => setUserRole(r.data.role)).catch(() => {})
   }, [fetchScenarios])
+
+  useEffect(() => {
+    if (!requestedScenarioId || scenarios.length === 0) return
+    const requested = scenarios.find((sc) => sc.id === requestedScenarioId)
+    if (!requested) return
+    setBriefing(requested)
+    navigate('/dashboard', { replace: true, state: {} })
+  }, [requestedScenarioId, scenarios, navigate])
 
   const launch = async () => {
     if (!briefing) return

@@ -23,6 +23,7 @@ postgres_data/
 redis_data/
 
 # IDE
+.claude/
 .vscode/
 .idea/
 *.swp

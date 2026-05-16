@@ -162,6 +162,7 @@ services:
           memory: 512m
 
   nginx:
+    <<: *cybersim-defaults
     image: nginx:alpine
     ports:
       - "80:80"

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.auth.routes import get_current_user
-from src.db.database import get_db, Session, User, CommandLog, SiemEvent
+from src.db.database import get_db, Session, User, CommandLog, SiemEvent, SiemTriage
 from src.sandbox.manager import start_scenario_container, stop_scenario_container
 from src.cache.redis import cache_set, cache_get, cache_delete
 
@@ -20,6 +20,20 @@ class SessionStart(BaseModel):
 
 class RoeAck(BaseModel):
     session_id: str
+
+
+class TriageUpdate(BaseModel):
+    event_id: str
+    classification: str
+    notes: str | None = None
+
+
+TRIAGE_CLASSIFICATIONS = {
+    "investigating",
+    "true_positive",
+    "false_positive",
+    "escalated",
+}
 
 
 @router.post("/start")
@@ -182,15 +196,80 @@ async def get_session_events(
     evts = await db.execute(
         select(SiemEvent).where(SiemEvent.session_id == session_id).order_by(SiemEvent.created_at)
     )
+    triage_rows = await db.execute(
+        select(SiemTriage).where(SiemTriage.session_id == session_id)
+    )
+    triage_by_event = {t.event_id: t for t in triage_rows.scalars().all()}
     return [
         {
             "id": e.id, "severity": e.severity, "message": e.message,
             "source": e.source, "mitre_technique": e.mitre_technique,
             "source_ip": e.source_ip, "raw_log": e.raw_log,
             "created_at": e.created_at.isoformat(),
+            "triage": _triage_dict(triage_by_event.get(e.id)),
         }
         for e in evts.scalars().all()
     ]
+
+
+@router.get("/{session_id}/triage")
+async def get_session_triage(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[dict]:
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    triage = await db.execute(
+        select(SiemTriage).where(SiemTriage.session_id == session_id).order_by(SiemTriage.created_at)
+    )
+    return [_triage_dict(t) for t in triage.scalars().all()]
+
+
+@router.put("/{session_id}/triage")
+async def upsert_session_triage(
+    session_id: str,
+    body: TriageUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    classification = body.classification.strip().lower()
+    if classification not in TRIAGE_CLASSIFICATIONS:
+        allowed = ", ".join(sorted(TRIAGE_CLASSIFICATIONS))
+        raise HTTPException(status_code=400, detail=f"classification must be one of: {allowed}")
+
+    session_result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    if not session_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    event_result = await db.execute(
+        select(SiemEvent.id).where(SiemEvent.id == body.event_id, SiemEvent.session_id == session_id)
+    )
+    if not event_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="SIEM event not found")
+
+    triage_result = await db.execute(
+        select(SiemTriage).where(
+            SiemTriage.session_id == session_id,
+            SiemTriage.event_id == body.event_id,
+        )
+    )
+    triage = triage_result.scalar_one_or_none()
+    if triage is None:
+        triage = SiemTriage(session_id=session_id, event_id=body.event_id)
+        db.add(triage)
+
+    triage.classification = classification
+    triage.notes = body.notes.strip() if body.notes and body.notes.strip() else None
+    await db.commit()
+    await db.refresh(triage)
+    return _triage_dict(triage)
 
 
 def _session_dict(s: Session) -> dict:
@@ -207,4 +286,17 @@ def _session_dict(s: Session) -> dict:
         "started_at": s.started_at.isoformat(),
         "completed_at": s.completed_at.isoformat() if s.completed_at else None,
         "container_id": s.container_id,
+    }
+
+
+def _triage_dict(triage: SiemTriage | None) -> dict | None:
+    if triage is None:
+        return None
+    return {
+        "id": triage.id,
+        "session_id": triage.session_id,
+        "event_id": triage.event_id,
+        "classification": triage.classification,
+        "notes": triage.notes,
+        "created_at": triage.created_at.isoformat(),
     }

@@ -8,19 +8,25 @@ RUN echo "wireshark-common wireshark-common/install-setuid boolean false" | debc
 # Core tools for all scenarios — installed in one layer to minimise image size
 RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     # Recon
-    nmap nikto whatweb dnsutils whois curl wget \
+    nmap nikto whatweb dnsutils whois curl wget enum4linux \
     # Web assessment
-    gobuster ffuf wfuzz sqlmap \
+    gobuster ffuf wfuzz sqlmap dirb wpscan \
     # Password attacks
     john hashcat hydra \
-    # Network analysis
-    netcat-openbsd tcpdump tshark wireshark-common \
+    # Wordlists & payloads
+    seclists wordlists exploitdb \
+    # Network analysis & pivoting
+    netcat-openbsd tcpdump tshark wireshark-common proxychains4 \
+    # Active Directory / SMB
+    smbclient crackmapexec impacket-scripts evil-winrm responder \
+    # Exploitation
+    metasploit-framework \
     # Scripting & utilities
-    python3 python3-pip git vim less jq \
+    python3 python3-pip git vim less jq tmux \
     # AWS
     awscli \
     # Misc pentest
-    medusa crackmapexec impacket-scripts \
+    medusa \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Docker uses no-new-privileges for the student sandbox. Kali ships nmap with

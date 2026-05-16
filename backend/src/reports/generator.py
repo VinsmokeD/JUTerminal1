@@ -3,7 +3,7 @@ from datetime import timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from src.db.database import Session, Note, CommandLog, SiemEvent
+from src.db.database import Session, Note, CommandLog, SiemEvent, SiemTriage
 
 
 async def generate_report(session: Session, db: AsyncSession) -> str:
@@ -22,6 +22,11 @@ async def generate_report(session: Session, db: AsyncSession) -> str:
         select(CommandLog).where(CommandLog.session_id == session.id).order_by(CommandLog.created_at)
     )
     commands = list(cmd_result.scalars())
+
+    triage_result = await db.execute(
+        select(SiemTriage).where(SiemTriage.session_id == session.id).order_by(SiemTriage.created_at)
+    )
+    triage_decisions = list(triage_result.scalars())
 
     role_label = "Penetration Test" if session.role == "red" else "Incident Response"
     started = session.started_at.strftime("%Y-%m-%d %H:%M UTC")
@@ -76,6 +81,21 @@ async def generate_report(session: Session, db: AsyncSession) -> str:
             sections += [f"- `{ts}` **{ev.severity}**{mitre} — {ev.message}"]
         sections += [""]
 
+    if triage_decisions:
+        event_messages = {e.id: e.message for e in siem_events}
+        sections += [
+            "## Blue Team Triage Decisions",
+            "",
+            "| Event | Classification | Analyst Notes |",
+            "|-------|----------------|---------------|",
+        ]
+        for triage in triage_decisions[:30]:
+            event_label = _table_cell(event_messages.get(triage.event_id, triage.event_id))
+            classification = _table_cell((triage.classification or "investigating").replace("_", " ").title())
+            notes = _table_cell(triage.notes or "")
+            sections += [f"| {event_label} | {classification} | {notes} |"]
+        sections += [""]
+
     # Recommendations
     remediations = [n for n in notes if n.tag == "remediation"]
     if remediations:
@@ -97,3 +117,7 @@ async def generate_report(session: Session, db: AsyncSession) -> str:
     ]
 
     return "\n".join(sections)
+
+
+def _table_cell(value: str) -> str:
+    return str(value).replace("\n", " ").replace("|", "\\|").strip()

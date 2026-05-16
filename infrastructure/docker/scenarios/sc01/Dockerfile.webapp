@@ -3,8 +3,27 @@ FROM php:7.4-apache
 # Enable Apache modules
 RUN a2enmod rewrite headers
 
-# Install MySQL extension and security-intentionally-missing features
-RUN docker-php-ext-install pdo pdo_mysql
+# Install MySQL extension, SSH, FTP, and other utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-server \
+    vsftpd \
+    sudo \
+    netcat \
+    && docker-php-ext-install pdo pdo_mysql \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Setup SSH
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' | chpasswd
+# Allow root login with password
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Create a vulnerable user
+RUN useradd -m -s /bin/bash sysadmin && echo 'sysadmin:admin123' | chpasswd
+
+# Setup vsftpd (anonymous enabled)
+COPY vsftpd.conf /etc/vsftpd.conf
+RUN mkdir -p /var/run/vsftpd/empty
 
 # Copy intentionally vulnerable application
 COPY index.php /var/www/html/index.php
@@ -22,5 +41,11 @@ RUN mkdir -p /var/www/html/records && \
 RUN echo "ServerSignature On" >> /etc/apache2/apache2.conf && \
     echo "ServerTokens Full" >> /etc/apache2/apache2.conf
 
+# Add entrypoint script
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Non-root execution is NOT done here intentionally — old Apache/PHP setup for realism
-EXPOSE 80
+EXPOSE 80 21 22
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

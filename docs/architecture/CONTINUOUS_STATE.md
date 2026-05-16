@@ -2788,3 +2788,57 @@ $ python3 -m py_compile src/main.py  # ✓
 - `docker run --rm --entrypoint sh gophish/gophish:latest -lc 'id; pwd; echo HOME:$HOME'` returned `uid=1000(app)`, working directory `/opt/gophish`, and `HOME:/opt/gophish`.
 
 **Next verification step:** Rebuild and recreate `sc03-phish` with the corrected working directory, then confirm the entire stack is up cleanly.
+
+---
+
+## 2026-05-16 16:15:03 +03:00 - Codex Phase 24 Triage + v3 Page Rebuilds
+
+**Status:** Phase 24 triage implementation added, four v3 rebuild prompts completed, and the local verification suite passes after starting the missing Postgres and Redis services.
+
+**Why:** The user asked to review the recent changes, continue the remaining work, implement the supplied Auth/Onboarding/Debrief/InstructorDashboard v3 prompts, and keep the project documented. A review also found a product regression where Command Palette scenario shortcuts had no action.
+
+**Exact files modified:**
+
+- `.gitignore` - ignored the local `.claude/` workspace/tooling folder so it no longer pollutes Git status.
+- `backend/src/db/database.py` - aligned `SiemTriage.classification` documentation with the active triage states.
+- `backend/src/sessions/routes.py` - added triage response payloads for SIEM events plus `GET /api/sessions/{session_id}/triage` and `PUT /api/sessions/{session_id}/triage`.
+- `backend/src/instructor/routes.py` - added triage totals, completed counts, and coverage percentages to instructor session/metrics responses.
+- `backend/src/reports/generator.py` - added a Blue Team triage decisions table to generated markdown reports.
+- `frontend/src/components/palette/CommandPalette.jsx` - made SC-01, SC-02, and SC-03 shortcuts navigate to Dashboard with a requested scenario id.
+- `frontend/src/pages/Dashboard.jsx` - opens the requested scenario briefing when navigated to from the command palette and clears the transient navigation state.
+- `frontend/src/pages/BlueWorkspace.jsx` - added expanded-event triage controls, classifications, analyst notes, save handling, and disposition badges.
+- `frontend/src/pages/Auth.jsx` - rebuilt the auth page on v3 primitives with pure-CSS animated background, scan lines, pulsing dual-square logo, spotlight form card, typed tagline, v3 Button submit, and animated error state.
+- `frontend/src/pages/Onboarding.jsx` - rebuilt onboarding on the v3 layout with the dual-square logo, grid background, v3 cards, per-card tilt hooks, selected pills, staggered entrance, and v3 continue button.
+- `frontend/src/pages/Debrief.jsx` - polished loading, score ring, stats, tabs, buttons, insight cards, and lazy-loaded the KillChain timeline.
+- `frontend/src/components/debrief/KillChainTimeline.jsx` - replaced the SVG timeline with a tier-aware three.js 3D dual-track visualization and HTML fallback.
+- `frontend/src/pages/InstructorDashboard.jsx` - rebuilt the instructor operations center with v3 navigation, stats, sparklines, scenario cards, filters, table, error/loading states, CSV export, and report download intact.
+- `docs/architecture/phases.md` - marked Phase 24 as implementation added with runtime verification status.
+- `docs/product/PRODUCT_EVOLUTION_PLAN.md` - documented Phase 24 implementation and verification state.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this state record.
+
+**Technical breakdown:**
+
+- Blue Team triage now persists analyst classification and notes against existing SIEM event ids, returns that state inside `/sessions/{session_id}/events`, and updates frontend SIEM rows without changing the live event stream contract.
+- Instructor metrics now expose triage coverage by comparing SIEM event counts with classified triage rows, giving instructors a completion signal without adding new frontend API calls.
+- Reports now join triage rows to SIEM messages and render a markdown table, escaping table cells to preserve valid report formatting.
+- The command palette scenario fix uses React Router state to request a Dashboard briefing, avoiding new global store state and keeping the launch flow unchanged.
+- Auth and Onboarding were rebuilt with CSS-only motion and v3 primitives, removing the old auth ParticleCanvas dependency from the login page.
+- Debrief now lazy-loads the KillChain visualization so `three` is split into its own production chunk; the 3D timeline uses TubeGeometry tracks, node spheres, detection-link line segments, sprite canvas labels on higher tiers, and a non-WebGL fallback on tier 0.
+- InstructorDashboard keeps its existing polling, export, report-download, and navigation behavior while moving to v3 operational UI patterns.
+
+**Verification evidence:**
+
+- `cd frontend && npm run build` passed after Auth rebuild.
+- `cd frontend && npm run build` passed after Onboarding rebuild.
+- `cd frontend && npm run build` passed after Debrief/KillChain rebuild; output included separate `KillChainTimeline-*.js` and `three.module-*.js` chunks.
+- `cd frontend && npm run build` passed after InstructorDashboard rebuild.
+- Browser smoke testing on `http://localhost:3000` passed for Auth registration, Onboarding desktop/mobile rendering, Dashboard post-onboarding navigation, Debrief empty-state rendering, and InstructorDashboard data rendering.
+- Browser smoke testing caught and fixed one Onboarding accessibility issue where hidden `Selected` pills were still included in unselected card names.
+- Final `cd frontend && npm run build` passed after the Onboarding accessibility fix.
+- `docker compose config --quiet` passed.
+- `docker compose ps` initially required elevated Docker access, then showed the stack running; Postgres and Redis were missing from the active set.
+- `docker compose up -d postgres redis` started the missing dependencies and `docker compose ps postgres redis` showed both healthy on `127.0.0.1:5432` and `127.0.0.1:6379`.
+- `python -m pytest -p no:cacheprovider backend/tests` first failed while Postgres was not running, then passed after starting Postgres/Redis: `81 passed, 1 warning in 8.57s`.
+- `npm run lint` is not usable yet because the frontend package has no ESLint configuration file.
+
+**Next step:** Commit and push this batch when ready; add an ESLint config in a later quality pass if linting should become part of the required verification gate.

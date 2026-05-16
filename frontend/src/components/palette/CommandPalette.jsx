@@ -28,9 +28,9 @@ const TIP_ITEMS = [
   { id: 'home',        section: 'Navigate', label: 'Landing page',      hint: 'Public marketing site',          tone: 'neutral', kbd: 'G H', to: '/' },
   { id: 'dashboard',   section: 'Navigate', label: 'Dashboard',          hint: 'Choose a scenario to launch',    tone: 'blue',    kbd: 'G D', to: '/dashboard' },
   { id: 'onboard',     section: 'Navigate', label: 'Onboarding',         hint: 'Walkthrough for new operators',  tone: 'amber',   to: '/onboarding' },
-  { id: 'sc01',        section: 'Scenarios', label: 'SC-01 — NovaMed Healthcare', hint: 'Web app pentest (OWASP)',  tone: 'red',  kbd: '1' },
-  { id: 'sc02',        section: 'Scenarios', label: 'SC-02 — Nexora Financial',   hint: 'Active Directory (Kerberoasting)', tone: 'red', kbd: '2' },
-  { id: 'sc03',        section: 'Scenarios', label: 'SC-03 — Orion Logistics',    hint: 'Phishing campaign (GoPhish)', tone: 'red', kbd: '3' },
+  { id: 'sc01',        section: 'Scenarios', label: 'SC-01 — NovaMed Healthcare', hint: 'Web app pentest (OWASP)',  tone: 'red',  kbd: '1', scenarioId: 'SC-01' },
+  { id: 'sc02',        section: 'Scenarios', label: 'SC-02 — Nexora Financial',   hint: 'Active Directory (Kerberoasting)', tone: 'red', kbd: '2', scenarioId: 'SC-02' },
+  { id: 'sc03',        section: 'Scenarios', label: 'SC-03 — Orion Logistics',    hint: 'Phishing campaign (GoPhish)', tone: 'red', kbd: '3', scenarioId: 'SC-03' },
   { id: 'logout',      section: 'Account',  label: 'Sign out',           hint: 'End your CyberSim session',       tone: 'neutral', action: 'logout' },
 ]
 
@@ -77,6 +77,10 @@ export default function CommandPalette() {
     if (item.action === 'logout') {
       logout()
       navigate('/auth')
+      return
+    }
+    if (item.scenarioId) {
+      navigate('/dashboard', { state: { scenarioId: item.scenarioId } })
       return
     }
     if (item.to) navigate(item.to)

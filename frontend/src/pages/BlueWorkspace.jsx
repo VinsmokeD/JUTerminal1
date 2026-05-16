@@ -6,7 +6,6 @@ import { useWebSocket } from '../hooks/useWebSocket'
 import RoeBriefing from '../components/workspace/RoeBriefing'
 import WorkspaceTopBar from '../components/workspace/WorkspaceTopBar'
 import Terminal from '../components/terminal/Terminal'
-import SiemFeed from '../components/siem/SiemFeed'
 import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
 import Badge from '../components/ui/Badge'
@@ -72,6 +71,7 @@ export default function BlueWorkspace() {
   const [expandedEvent, setExpandedEvent] = useState(null)
   const [elapsed, setElapsed] = useState(0)
   const [activePanel, setActivePanel] = useState('siem')
+  const [triageSaving, setTriageSaving] = useState(null)
   const writeOutputRef = useRef(null)
 
   const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(sessionId)
@@ -113,6 +113,22 @@ export default function BlueWorkspace() {
     if (!iocInput.trim()) return
     setIocs(p => [...p, { value: iocInput.trim(), ts: new Date().toLocaleTimeString(), type: _classifyIoc(iocInput.trim()) }])
     setIocInput('')
+  }
+
+  const saveTriage = async (eventId, classification, notes) => {
+    setTriageSaving(eventId)
+    try {
+      const res = await api.put(`/sessions/${sessionId}/triage`, {
+        event_id: eventId,
+        classification,
+        notes,
+      })
+      setSiemEvents(siemEvents.map((event) => (
+        event.id === eventId ? { ...event, triage: res.data } : event
+      )))
+    } finally {
+      setTriageSaving(null)
+    }
   }
 
   if (!session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading...</div>
@@ -204,6 +220,8 @@ export default function BlueWorkspace() {
                       <SiemEventRow key={event.id} event={event} expanded={expandedEvent === event.id}
                         onToggle={() => setExpandedEvent(expandedEvent === event.id ? null : event.id)}
                         onExtractIoc={(val) => { setIocs(p => [...p, { value: val, ts: new Date().toLocaleTimeString(), type: _classifyIoc(val) }]) }}
+                        onTriageSave={saveTriage}
+                        triageSaving={triageSaving === event.id}
                       />
                     ))}
                   </div>
@@ -307,7 +325,10 @@ export default function BlueWorkspace() {
   )
 }
 
-function SiemEventRow({ event, expanded, onToggle, onExtractIoc }) {
+function SiemEventRow({ event, expanded, onToggle, onExtractIoc, onTriageSave, triageSaving }) {
+  const [classification, setClassification] = useState(event.triage?.classification || '')
+  const [notes, setNotes] = useState(event.triage?.notes || '')
+  const [triageError, setTriageError] = useState('')
   const sevStyles = {
     CRITICAL: 'sev-crit',
     HIGH: 'sev-high',
@@ -320,6 +341,27 @@ function SiemEventRow({ event, expanded, onToggle, onExtractIoc }) {
   const ts = new Date(event.timestamp || event.created_at || Date.now()).toLocaleTimeString('en-US', {
     hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit',
   })
+  const activeTriage = TRIAGE_OPTIONS.find((option) => option.value === classification)
+
+  useEffect(() => {
+    setClassification(event.triage?.classification || '')
+    setNotes(event.triage?.notes || '')
+    setTriageError('')
+  }, [event.id, event.triage?.classification, event.triage?.notes])
+
+  const handleTriageSave = async (e) => {
+    e.stopPropagation()
+    if (!classification) {
+      setTriageError('Choose a disposition before saving.')
+      return
+    }
+    setTriageError('')
+    try {
+      await onTriageSave(event.id, classification, notes.trim())
+    } catch {
+      setTriageError('Could not save triage. Check the session connection and retry.')
+    }
+  }
 
   return (
     <div className={`siem-event-row siem-event-enter cursor-pointer select-none ${isBackground ? 'opacity-35 hover:opacity-60' : 'hover:bg-white/[0.02]'}`} onClick={onToggle}>
@@ -339,16 +381,101 @@ function SiemEventRow({ event, expanded, onToggle, onExtractIoc }) {
         {event.mitre_technique && (
           <span className="siem-mitre ml-1.5">{event.mitre_technique}</span>
         )}
+        {activeTriage ? (
+          <span className={`badge ${activeTriage.badgeClass} ml-1.5`}>{activeTriage.label}</span>
+        ) : (
+          <span className="ml-1.5 text-[10px] font-mono text-txt-dim">untriaged</span>
+        )}
       </span>
       {expanded && (
         <div className="col-start-1 col-end-4 pb-2 pt-2 animate-slide-in-up mt-1 border-t border-cs-border/30">
           <pre className="text-[10.5px] text-green-signal font-mono whitespace-pre-wrap bg-surface-1 rounded-cs-sm p-3 border border-cs-border">
             {event.raw_log || JSON.stringify(event, null, 2)}
           </pre>
+          <div className="mt-2 rounded-cs-sm border border-cs-border bg-surface-1/80 p-3" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cs-blue">Analyst triage</p>
+                <p className="mt-1 text-xs text-txt-dim">{_triagePrompt(event)}</p>
+              </div>
+              {event.triage?.updated_at && (
+                <span className="text-[10px] font-mono text-txt-dim">
+                  saved {new Date(event.triage.updated_at).toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 md:grid-cols-4">
+              {TRIAGE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setClassification(option.value); setTriageError('') }}
+                  className={`rounded-cs-sm border px-2 py-1.5 text-[10.5px] font-mono transition-all ${
+                    classification === option.value
+                      ? option.activeClass
+                      : 'border-cs-border bg-surface-2 text-txt-dim hover:border-cs-blue/40 hover:text-txt-secondary'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Evidence, containment action, or escalation context..."
+              className="input mt-2 min-h-[68px] resize-none text-xs font-mono"
+            />
+            <div className="mt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleTriageSave}
+                disabled={triageSaving}
+                className="btn btn-blue px-3 py-1.5 text-[10.5px] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {triageSaving ? 'Saving...' : 'Save triage'}
+              </button>
+              {triageError && <span className="text-[10.5px] font-mono text-cs-red">{triageError}</span>}
+            </div>
+          </div>
         </div>
       )}
     </div>
   )
+}
+
+const TRIAGE_OPTIONS = [
+  {
+    value: 'investigating',
+    label: 'Investigating',
+    badgeClass: 'sev-info',
+    activeClass: 'border-cs-blue/70 bg-cs-blue/10 text-cs-blue shadow-blue-glow',
+  },
+  {
+    value: 'true_positive',
+    label: 'True positive',
+    badgeClass: 'sev-crit',
+    activeClass: 'border-cs-red/70 bg-cs-red/10 text-cs-red shadow-red-glow',
+  },
+  {
+    value: 'false_positive',
+    label: 'False positive',
+    badgeClass: 'sev-low',
+    activeClass: 'border-green-signal/70 bg-green-signal/10 text-green-signal',
+  },
+  {
+    value: 'escalated',
+    label: 'Escalated',
+    badgeClass: 'sev-high',
+    activeClass: 'border-amber-warn/70 bg-amber-warn/10 text-amber-warn',
+  },
+]
+
+function _triagePrompt(event) {
+  if (event.severity === 'CRITICAL') return 'Confirm impact quickly, preserve evidence, and decide whether this needs escalation.'
+  if (event.severity === 'HIGH') return 'Correlate with nearby events and decide whether this is actionable or noise.'
+  if (event.mitre_technique) return `Map ${event.mitre_technique} to observed evidence before closing the alert.`
+  return 'Document why this event matters or why it can be safely dismissed.'
 }
 
 function _classifyIoc(val) {

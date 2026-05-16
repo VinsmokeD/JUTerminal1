@@ -1,308 +1,316 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import * as THREE from 'three'
+import { usePerfTier } from '../ui/PerfTier'
 
-/**
- * KillChainTimeline — Dual-axis SVG attack timeline
- *
- * Top rail  (red):  attacker commands, plotted by timestamp
- * Bottom rail (blue): SIEM detections, plotted by timestamp
- * Connector lines show cause-and-effect latency between attack and detection.
- *
- * No D3 — pure SVG with calculated x positions from timestamp ranges.
- */
-
-const RAIL_Y_RED   = 60   // y-center of red rail
-const RAIL_Y_BLUE  = 160  // y-center of blue rail
-const AXIS_Y       = 110  // y of the shared time axis
-const PADDING_X    = 70   // left/right padding
-const DOT_R        = 6    // event dot radius
-const CARD_W       = 130  // max event card width
-const SVG_H        = 240  // total SVG height
-
-// Severity → color
-const sevColor = (sev) => {
-  switch ((sev || '').toUpperCase()) {
-    case 'CRITICAL': return '#ef4444'
-    case 'HIGH':     return '#f97316'
-    case 'MEDIUM':
-    case 'MED':      return '#eab308'
-    case 'LOW':      return '#3b82f6'
-    default:         return '#64748b'
-  }
-}
+const X_MIN = -20
+const X_MAX = 20
+const RED_Y = 1.5
+const BLUE_Y = -1.5
+const MATCH_WINDOW_MS = 30000
 
 export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
-  const [hovered, setHovered] = useState(null) // { type: 'cmd'|'evt', index }
+  const containerRef = useRef(null)
+  const tier = usePerfTier()
+  const timeline = useMemo(() => buildTimeline(commands, siemEvents), [commands, siemEvents])
 
-  // ── Combine and sort all events by timestamp ──────────────────────────────
-  const { redItems, blueItems, minTs, maxTs } = useMemo(() => {
-    const toMs = (v) => v ? new Date(v).getTime() : 0
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container || tier <= 0 || timeline.isEmpty) return
 
-    const red = commands
-      .filter((c) => c.created_at || c.timestamp)
-      .map((c, i) => ({ ...c, ms: toMs(c.created_at || c.timestamp), index: i }))
-      .sort((a, b) => a.ms - b.ms)
+    const scene = new THREE.Scene()
+    scene.fog = new THREE.FogExp2(0x08090c, 0.035)
 
-    const blue = siemEvents
-      .filter((e) => !e.noise && (e.created_at || e.timestamp))
-      .map((e, i) => ({ ...e, ms: toMs(e.created_at || e.timestamp), index: i }))
-      .sort((a, b) => a.ms - b.ms)
+    const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 120)
+    camera.position.set(0, 4, 20)
+    camera.lookAt(0, 0, 0)
 
-    const all = [...red.map((r) => r.ms), ...blue.map((b) => b.ms)].filter(Boolean)
-    const min = all.length ? Math.min(...all) : Date.now() - 60000
-    const max = all.length ? Math.max(...all) : Date.now()
-
-    return { redItems: red, blueItems: blue, minTs: min, maxTs: max }
-  }, [commands, siemEvents])
-
-  const isEmpty = redItems.length === 0 && blueItems.length === 0
-
-  // ── x position from timestamp ─────────────────────────────────────────────
-  const xPos = (ms, width) => {
-    const range = maxTs - minTs || 1
-    return PADDING_X + ((ms - minTs) / range) * (width - PADDING_X * 2)
-  }
-
-  // ── Detection gap annotations ──────────────────────────────────────────────
-  const gaps = useMemo(() => {
-    const result = []
-    redItems.forEach((cmd) => {
-      const firstDetection = blueItems.find((ev) => ev.ms >= cmd.ms)
-      if (firstDetection) {
-        const gapMs = firstDetection.ms - cmd.ms
-        result.push({ cmdMs: cmd.ms, evMs: firstDetection.ms, gapMs, label: formatGap(gapMs) })
-      }
+    const renderer = new THREE.WebGLRenderer({
+      antialias: tier >= 2,
+      alpha: true,
+      powerPreference: 'high-performance',
     })
-    return result
-  }, [redItems, blueItems])
+    renderer.setClearColor(0x08090c, 1)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, tier >= 3 ? 2 : 1.35))
+    container.appendChild(renderer.domElement)
 
-  if (isEmpty) return <EmptyTimeline />
+    const resize = () => {
+      const w = container.clientWidth || 1
+      const h = container.clientHeight || 1
+      renderer.setSize(w, h, false)
+      camera.aspect = w / h
+      camera.updateProjectionMatrix()
+    }
+    resize()
+
+    const root = new THREE.Group()
+    scene.add(root)
+
+    scene.add(new THREE.AmbientLight(0x222222, 1.7))
+    const dir = new THREE.DirectionalLight(0xffffff, 1.35)
+    dir.position.set(9, 12, 10)
+    scene.add(dir)
+    const redLight = new THREE.PointLight(0xff3b3b, 2.6, 24)
+    redLight.position.set(-8, RED_Y, 6)
+    scene.add(redLight)
+    const blueLight = new THREE.PointLight(0x3b8bff, 2.6, 24)
+    blueLight.position.set(8, BLUE_Y, 6)
+    scene.add(blueLight)
+
+    addTrack(root, RED_Y, 0xff3b3b, tier)
+    addTrack(root, BLUE_Y, 0x3b8bff, tier)
+    addNodes(root, timeline.redItems, RED_Y, 0xff3b3b, tier, 'command')
+    addNodes(root, timeline.blueItems, BLUE_Y, 0x3b8bff, tier, 'event')
+    if (tier >= 2) addDetectionLines(root, timeline.matches)
+
+    let hovered = false
+    let dragging = false
+    let lastPointer = { x: 0, y: 0 }
+    let pan = { x: 0, y: 0 }
+    let angle = 0
+    let raf
+
+    const onEnter = () => { hovered = true }
+    const onLeave = () => { hovered = false; dragging = false }
+    const onDown = (e) => {
+      dragging = true
+      lastPointer = { x: e.clientX, y: e.clientY }
+      container.setPointerCapture?.(e.pointerId)
+    }
+    const onMove = (e) => {
+      if (!dragging) return
+      const dx = e.clientX - lastPointer.x
+      const dy = e.clientY - lastPointer.y
+      lastPointer = { x: e.clientX, y: e.clientY }
+      pan.x += dx * 0.025
+      pan.y -= dy * 0.018
+      pan.x = THREE.MathUtils.clamp(pan.x, -5, 5)
+      pan.y = THREE.MathUtils.clamp(pan.y, -2, 2)
+    }
+    const onUp = (e) => {
+      dragging = false
+      container.releasePointerCapture?.(e.pointerId)
+    }
+
+    container.addEventListener('pointerenter', onEnter)
+    container.addEventListener('pointerleave', onLeave)
+    container.addEventListener('pointerdown', onDown)
+    container.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    const ro = new ResizeObserver(resize)
+    ro.observe(container)
+
+    const tick = () => {
+      raf = requestAnimationFrame(tick)
+      if (document.visibilityState === 'hidden') return
+      if (!hovered && !dragging) angle += 0.0025
+      const radius = 20
+      camera.position.x = Math.sin(angle) * 3 + pan.x
+      camera.position.z = Math.cos(angle) * 2 + radius
+      camera.position.y = 4 + pan.y
+      camera.lookAt(pan.x, pan.y * 0.35, 0)
+      root.rotation.y = Math.sin(angle * 0.6) * 0.04
+      renderer.render(scene, camera)
+    }
+    raf = requestAnimationFrame(tick)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+      container.removeEventListener('pointerenter', onEnter)
+      container.removeEventListener('pointerleave', onLeave)
+      container.removeEventListener('pointerdown', onDown)
+      container.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      scene.traverse((obj) => {
+        if (obj.geometry) obj.geometry.dispose()
+        if (obj.material) {
+          const materials = Array.isArray(obj.material) ? obj.material : [obj.material]
+          materials.forEach((material) => {
+            if (material.map) material.map.dispose()
+            material.dispose()
+          })
+        }
+      })
+      renderer.dispose()
+      if (renderer.domElement.parentNode === container) container.removeChild(renderer.domElement)
+    }
+  }, [tier, timeline])
+
+  if (tier <= 0 || timeline.isEmpty) return <TimelineFallback timeline={timeline} />
 
   return (
-    <div className="w-full">
-      {/* ── Legend ────────────────────────────────────────────── */}
-      <div className="flex items-center gap-6 mb-4 px-1">
-        <div className="flex items-center gap-2 text-xs text-txt-secondary font-mono">
-          <span className="w-3 h-3 rounded-full bg-cs-red" />
-          Red Team — Commands
-        </div>
-        <div className="flex items-center gap-2 text-xs text-txt-secondary font-mono">
-          <span className="w-3 h-3 rounded-full bg-cs-blue" />
-          Blue Team — Detections
-        </div>
-        {gaps.length > 0 && (
-          <div className="flex items-center gap-2 text-xs text-txt-dim font-mono">
-            <span className="w-4 h-px bg-cs-border-glow inline-block" />
-            Detection latency
-          </div>
+    <div className="h-[260px] w-full overflow-hidden rounded-cs-lg bg-void border border-cs-border relative">
+      <div
+        ref={containerRef}
+        className="absolute inset-0"
+        style={{ cursor: 'grab', touchAction: 'none' }}
+        aria-label="3D kill-chain timeline"
+      />
+      <div className="pointer-events-none absolute left-3 top-3 flex gap-3 text-[10px] font-mono uppercase tracking-[0.12em]">
+        <span className="text-cs-red">Red commands</span>
+        <span className="text-cs-blue">Blue detections</span>
+      </div>
+    </div>
+  )
+}
+
+function buildTimeline(commands, siemEvents) {
+  const toMs = (value) => value ? new Date(value).getTime() : 0
+  const redRaw = commands
+    .map((command, index) => ({ ...command, type: 'command', index, ms: toMs(command.created_at || command.timestamp) }))
+    .filter((item) => Number.isFinite(item.ms) && item.ms > 0)
+    .sort((a, b) => a.ms - b.ms)
+  const blueRaw = siemEvents
+    .filter((event) => !event.noise)
+    .map((event, index) => ({ ...event, type: 'event', index, ms: toMs(event.created_at || event.timestamp) }))
+    .filter((item) => Number.isFinite(item.ms) && item.ms > 0)
+    .sort((a, b) => a.ms - b.ms)
+  const all = [...redRaw, ...blueRaw]
+  const min = all.length ? Math.min(...all.map((item) => item.ms)) : Date.now() - 60000
+  const max = all.length ? Math.max(...all.map((item) => item.ms)) : Date.now()
+  const range = max - min || 1
+  const place = (item) => ({ ...item, x: X_MIN + ((item.ms - min) / range) * (X_MAX - X_MIN) })
+  const redItems = redRaw.map(place)
+  const blueItems = blueRaw.map(place)
+  const matches = redItems.map((command) => {
+    const event = blueItems
+      .map((candidate) => ({ event: candidate, delta: Math.abs(candidate.ms - command.ms) }))
+      .filter(({ delta }) => delta <= MATCH_WINDOW_MS)
+      .sort((a, b) => a.delta - b.delta)[0]?.event
+    return event ? { command, event } : null
+  }).filter(Boolean)
+  return { redItems, blueItems, matches, isEmpty: redItems.length === 0 && blueItems.length === 0 }
+}
+
+function addTrack(root, y, color, tier) {
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(X_MIN, y, 0),
+    new THREE.Vector3(-7, y, Math.sin(y) * 0.4),
+    new THREE.Vector3(7, y, -Math.sin(y) * 0.4),
+    new THREE.Vector3(X_MAX, y, 0),
+  ])
+  const geometry = new THREE.TubeGeometry(curve, tier >= 2 ? 96 : 32, tier >= 2 ? 0.075 : 0.055, 10, false)
+  const material = new THREE.MeshStandardMaterial({
+    color,
+    emissive: color,
+    emissiveIntensity: tier >= 2 ? 0.65 : 0.25,
+    roughness: 0.35,
+    metalness: 0.25,
+  })
+  root.add(new THREE.Mesh(geometry, material))
+}
+
+function addNodes(root, items, y, color, tier, kind) {
+  const geometry = new THREE.SphereGeometry(kind === 'command' ? 0.3 : 0.25, tier >= 2 ? 24 : 10, tier >= 2 ? 16 : 8)
+  items.forEach((item, index) => {
+    const material = new THREE.MeshStandardMaterial({
+      color,
+      emissive: color,
+      emissiveIntensity: tier >= 2 ? 0.9 : 0.25,
+      roughness: 0.28,
+      metalness: 0.12,
+    })
+    const sphere = new THREE.Mesh(geometry.clone(), material)
+    sphere.position.set(item.x, y, 0)
+    sphere.scale.setScalar(1 + (index % 3) * 0.05)
+    root.add(sphere)
+    if (tier >= 2) {
+      const label = makeLabelSprite(labelFor(item, kind), color)
+      label.position.set(item.x, y + (kind === 'command' ? 0.72 : -0.72), 0)
+      root.add(label)
+    }
+  })
+  geometry.dispose()
+}
+
+function addDetectionLines(root, matches) {
+  if (!matches.length) return
+  const positions = new Float32Array(matches.length * 6)
+  matches.forEach(({ command, event }, index) => {
+    const offset = index * 6
+    positions[offset] = command.x
+    positions[offset + 1] = RED_Y
+    positions[offset + 2] = 0
+    positions[offset + 3] = event.x
+    positions[offset + 4] = BLUE_Y
+    positions[offset + 5] = 0
+  })
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  const material = new THREE.LineBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.6,
+  })
+  root.add(new THREE.LineSegments(geometry, material))
+}
+
+function makeLabelSprite(text, color) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 192
+  canvas.height = 48
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.font = '11px "JetBrains Mono", monospace'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle = 'rgba(232,234,240,0.95)'
+  ctx.shadowColor = `#${color.toString(16).padStart(6, '0')}`
+  ctx.shadowBlur = 8
+  ctx.fillText(truncate(text, 20), canvas.width / 2, canvas.height / 2)
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.minFilter = THREE.LinearFilter
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false })
+  const sprite = new THREE.Sprite(material)
+  sprite.scale.set(3.8, 0.95, 1)
+  return sprite
+}
+
+function labelFor(item, kind) {
+  if (kind === 'command') return item.command || item.tool || 'command'
+  return item.message || item.mitre_technique || item.source || 'event'
+}
+
+function truncate(value, max) {
+  const text = String(value || '')
+  return text.length > max ? `${text.slice(0, max - 1)}...` : text
+}
+
+function TimelineFallback({ timeline }) {
+  const red = timeline.redItems || []
+  const blue = timeline.blueItems || []
+  return (
+    <div className="h-[260px] w-full rounded-cs-lg border border-cs-border bg-void overflow-hidden p-4">
+      <div className="h-full rounded-cs bg-surface-1/70 border border-cs-border/60 p-4 flex flex-col justify-center gap-8">
+        <FallbackTrack color="red" label="Red commands" items={red} />
+        <FallbackTrack color="blue" label="Blue detections" items={blue} />
+        {timeline.isEmpty && (
+          <div className="text-center text-xs text-txt-dim font-mono">No timeline data yet</div>
         )}
-        <div className="ml-auto text-xs text-txt-dim font-mono">
-          {redItems.length} commands · {blueItems.length} detections
-        </div>
       </div>
-
-      {/* ── SVG Timeline ─────────────────────────────────────── */}
-      <div className="w-full overflow-x-auto rounded-cs border border-cs-border bg-surface-1/80">
-        <svg
-          width="100%"
-          height={SVG_H}
-          viewBox={`0 0 800 ${SVG_H}`}
-          preserveAspectRatio="xMidYMid meet"
-          className="block"
-          style={{ minWidth: Math.max(600, redItems.length * 80, blueItems.length * 80) }}
-        >
-          {/* Background grid */}
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(30,34,48,0.8)" strokeWidth="1"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-
-          {/* Rail labels */}
-          <text x="8" y={RAIL_Y_RED + 4} fill="#ff3b3b" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="600">
-            ATTACK
-          </text>
-          <text x="8" y={RAIL_Y_BLUE + 4} fill="#3b8bff" fontSize="10" fontFamily="JetBrains Mono, monospace" fontWeight="600">
-            DETECT
-          </text>
-
-          {/* Center time axis */}
-          <line x1={PADDING_X} y1={AXIS_Y} x2="730" y2={AXIS_Y} stroke="#1e2230" strokeWidth="1" strokeDasharray="4 4"/>
-
-          {/* Rail backgrounds */}
-          <rect x={PADDING_X} y={RAIL_Y_RED - 24} width="660" height="48" rx="8"
-            fill="rgba(239,68,68,0.04)" stroke="rgba(239,68,68,0.08)" strokeWidth="1"/>
-          <rect x={PADDING_X} y={RAIL_Y_BLUE - 24} width="660" height="48" rx="8"
-            fill="rgba(20,184,166,0.04)" stroke="rgba(20,184,166,0.08)" strokeWidth="1"/>
-
-          {/* ── Detection gap connector lines ────────────────── */}
-          {gaps.map((g, i) => {
-            const x1 = xPos(g.cmdMs, 800)
-            const x2 = xPos(g.evMs, 800)
-            const midX = (x1 + x2) / 2
-            return (
-              <g key={i}>
-                <line x1={x1} y1={RAIL_Y_RED + DOT_R} x2={x2} y2={RAIL_Y_BLUE - DOT_R}
-                  stroke="#2a2f40" strokeWidth="1" strokeDasharray="3 3"/>
-                {/* Gap label */}
-                <text x={midX} y={AXIS_Y - 4} textAnchor="middle"
-                  fill="#4a5068" fontSize="9" fontFamily="JetBrains Mono, monospace">
-                  +{g.label}
-                </text>
-              </g>
-            )
-          })}
-
-          {/* ── Red team command events ────────────────────── */}
-          {redItems.map((cmd, i) => {
-            const x = xPos(cmd.ms, 800)
-            const isHovered = hovered?.type === 'cmd' && hovered?.index === i
-            const label = (cmd.command || cmd.tool || 'cmd').slice(0, 16)
-            return (
-              <g key={i}
-                onMouseEnter={() => setHovered({ type: 'cmd', index: i })}
-                onMouseLeave={() => setHovered(null)}
-                style={{ cursor: 'pointer' }}
-              >
-                {/* Dot */}
-                <circle cx={x} cy={RAIL_Y_RED} r={isHovered ? DOT_R + 2 : DOT_R}
-                  fill="#ef4444" stroke="#fca5a5" strokeWidth={isHovered ? 2 : 1}
-                  style={{ transition: 'r 0.15s, stroke-width 0.15s' }}/>
-                {/* Tick to axis */}
-                <line x1={x} y1={RAIL_Y_RED + DOT_R} x2={x} y2={AXIS_Y}
-                  stroke="rgba(239,68,68,0.3)" strokeWidth="1"/>
-                {/* Label (above dot) */}
-                <text x={x} y={RAIL_Y_RED - DOT_R - 6} textAnchor="middle"
-                  fill="#fca5a5" fontSize="9" fontFamily="JetBrains Mono, monospace"
-                  className="select-none">
-                  {label}
-                </text>
-                {/* Tooltip on hover */}
-                {isHovered && (
-                  <g>
-                    <rect x={x - 60} y={4} width={120} height={32} rx="4"
-                      fill="#0d0f14" stroke="#ff3b3b" strokeWidth="0.5"/>
-                    <text x={x} y={16} textAnchor="middle"
-                      fill="#ff3b3b" fontSize="9" fontFamily="JetBrains Mono, monospace">
-                      {(cmd.command || 'command').slice(0, 24)}
-                    </text>
-                    <text x={x} y={28} textAnchor="middle"
-                      fill="#4a5068" fontSize="8" fontFamily="JetBrains Mono, monospace">
-                      {new Date(cmd.ms).toLocaleTimeString()}
-                    </text>
-                  </g>
-                )}
-              </g>
-            )
-          })}
-
-          {/* ── Blue team detection events ─────────────────── */}
-          {blueItems.map((ev, i) => {
-            const x = xPos(ev.ms, 800)
-            const isHovered = hovered?.type === 'evt' && hovered?.index === i
-            const color = sevColor(ev.severity)
-            const label = (ev.mitre_technique || ev.source || 'alert').slice(0, 12)
-            return (
-              <g key={i}
-                onMouseEnter={() => setHovered({ type: 'evt', index: i })}
-                onMouseLeave={() => setHovered(null)}
-                style={{ cursor: 'pointer' }}
-              >
-                {/* Tick from axis */}
-                <line x1={x} y1={AXIS_Y} x2={x} y2={RAIL_Y_BLUE - DOT_R}
-                  stroke={`${color}44`} strokeWidth="1"/>
-                {/* Dot */}
-                <circle cx={x} cy={RAIL_Y_BLUE} r={isHovered ? DOT_R + 2 : DOT_R}
-                  fill={color} stroke={color} strokeWidth={isHovered ? 2 : 0.5}
-                  style={{ transition: 'r 0.15s' }}/>
-                {/* Label (below dot) */}
-                <text x={x} y={RAIL_Y_BLUE + DOT_R + 12} textAnchor="middle"
-                  fill="#8890a4" fontSize="9" fontFamily="JetBrains Mono, monospace"
-                  className="select-none">
-                  {label}
-                </text>
-                {/* Severity badge rectangle */}
-                <rect x={x - 15} y={RAIL_Y_BLUE + DOT_R + 15} width={30} height={10} rx="2"
-                  fill={`${color}22`} stroke={`${color}55`} strokeWidth="0.5"/>
-                <text x={x} y={RAIL_Y_BLUE + DOT_R + 23} textAnchor="middle"
-                  fill={color} fontSize="7" fontFamily="JetBrains Mono, monospace">
-                  {(ev.severity || 'LOW').slice(0, 4)}
-                </text>
-                {/* Tooltip on hover */}
-                {isHovered && (
-                  <g>
-                    <rect x={x - 70} y={SVG_H - 50} width={140} height={40} rx="4"
-                      fill="#0d0f14" stroke={color} strokeWidth="0.5"/>
-                    <text x={x} y={SVG_H - 35} textAnchor="middle"
-                      fill="#e8eaf0" fontSize="9" fontFamily="JetBrains Mono, monospace">
-                      {(ev.message || '').slice(0, 28)}
-                    </text>
-                    <text x={x} y={SVG_H - 22} textAnchor="middle"
-                      fill="#4a5068" fontSize="8" fontFamily="JetBrains Mono, monospace">
-                      {new Date(ev.ms).toLocaleTimeString()}
-                    </text>
-                  </g>
-                )}
-              </g>
-            )
-          })}
-        </svg>
-      </div>
-
-      {/* ── Summary stats ────────────────────────────────────── */}
-      {gaps.length > 0 && (
-        <div className="mt-3 grid grid-cols-3 gap-3">
-          <StatCard
-            label="Avg detection gap"
-            value={formatGap(gaps.reduce((s, g) => s + g.gapMs, 0) / gaps.length)}
-            sub="attack → first alert"
-            color="text-amber-warn"
-          />
-          <StatCard
-            label="Fastest detection"
-            value={formatGap(Math.min(...gaps.map((g) => g.gapMs)))}
-            sub="best case latency"
-            color="text-green-signal"
-          />
-          <StatCard
-            label="Slowest detection"
-            value={formatGap(Math.max(...gaps.map((g) => g.gapMs)))}
-            sub="worst case latency"
-            color="text-cs-red"
-          />
-        </div>
-      )}
     </div>
   )
 }
 
-function StatCard({ label, value, sub, color }) {
+function FallbackTrack({ color, label, items }) {
+  const isRed = color === 'red'
+  const textClass = isRed ? 'text-cs-red' : 'text-cs-blue'
+  const railClass = isRed ? 'bg-cs-red/50' : 'bg-cs-blue/50'
+  const dotClass = isRed ? 'bg-cs-red' : 'bg-cs-blue'
   return (
-    <div className="bg-surface-2/60 border border-cs-border rounded-cs p-4 text-center">
-      <div className={`text-2xl font-bold font-mono ${color}`}>{value}</div>
-      <div className="text-txt-secondary text-xs mt-1 font-medium font-mono">{label}</div>
-      <div className="text-txt-dim text-xs mt-0.5 font-mono">{sub}</div>
-    </div>
-  )
-}
-
-function EmptyTimeline() {
-  return (
-    <div className="rounded-cs border border-cs-border bg-surface-2/30 p-10 text-center">
-      <div className="w-12 h-12 rounded-full bg-surface-3 flex items-center justify-center mx-auto mb-3">
-        <svg className="w-6 h-6 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round"
-            d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5" />
-        </svg>
+    <div>
+      <div className={`mb-2 text-[10px] font-mono uppercase tracking-[0.12em] ${textClass}`}>{label}</div>
+      <div className="relative h-8 rounded-full bg-surface-3">
+        <div className={`absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 ${railClass}`} />
+        {items.map((item, index) => (
+          <div
+            key={`${label}-${item.id || index}`}
+            className={`absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full ${dotClass} shadow-z-1`}
+            style={{ left: `${Math.max(2, Math.min(96, ((item.x - X_MIN) / (X_MAX - X_MIN)) * 100))}%` }}
+            title={labelFor(item, color === 'red' ? 'command' : 'event')}
+          />
+        ))}
       </div>
-      <p className="text-txt-dim text-sm font-mono">No timeline data yet</p>
-      <p className="text-txt-dim/60 text-xs mt-1">Complete the scenario to see the attack-detection timeline</p>
     </div>
   )
-}
-
-function formatGap(ms) {
-  if (ms < 1000) return `${Math.round(ms)}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-  return `${Math.floor(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s`
 }

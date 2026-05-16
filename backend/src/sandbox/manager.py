@@ -101,11 +101,10 @@ async def exec_command(container_id: str, command: str) -> str:
 # Sync implementations (run in thread pool to avoid blocking event loop)
 # ---------------------------------------------------------------------------
 
-def _ensure_scenario_targets(scenario_id: str) -> None:
+def _ensure_scenario_targets(scenario_id: str, force_reset: bool = True) -> None:
     """Bring up scenario-specific target containers using docker-compose profiles.
 
-    Idempotent — already-running containers are left untouched.  Falls back
-    silently in development mode so the platform works without Docker.
+    If force_reset is True, it will recreate containers to ensure a clean state.
     """
     profile = scenario_id.lower().replace("-", "")  # SC-01 → sc01
     targets = _SCENARIO_TARGETS.get(profile)
@@ -113,33 +112,35 @@ def _ensure_scenario_targets(scenario_id: str) -> None:
         return
 
     try:
-        client = _get_client()
-        # Check if targets are already running — skip compose if so
-        all_running = True
-        for svc in targets:
-            try:
-                c = client.containers.get(svc)
-                if c.status != "running":
+        # If not force_reset, check if already running
+        if not force_reset:
+            client = _get_client()
+            all_running = True
+            for svc in targets:
+                try:
+                    c = client.containers.get(svc)
+                    if c.status != "running":
+                        all_running = False
+                        break
+                except Exception:
                     all_running = False
                     break
-            except Exception:
-                all_running = False
-                break
+            if all_running:
+                return
 
-        if all_running:
-            return
+        cmd = [
+            "docker-compose",
+            "--project-name", "cybersim",
+            "-f", str(_COMPOSE_FILE),
+            "--profile", profile,
+            "up", "-d",
+        ]
+        if force_reset:
+            cmd.append("--force-recreate")
+        else:
+            cmd.append("--no-recreate")
 
-        subprocess.run(
-            [
-                "docker-compose",
-                "--project-name", "cybersim",
-                "-f", str(_COMPOSE_FILE),
-                "--profile", profile,
-                "up", "-d", "--no-recreate",
-            ],
-            capture_output=True,
-            timeout=60,
-        )
+        subprocess.run(cmd, capture_output=True, timeout=60)
     except Exception as exc:
         print(f"[Sandbox] Scenario targets for {profile} unavailable: {exc}")
 
@@ -151,13 +152,16 @@ def _teardown_scenario_targets(scenario_id: str) -> None:
         return
 
     try:
+        # Use 'down' to stop and remove containers for this profile
+        # Note: --remove-orphans might be risky if multiple scenarios run, 
+        # but profiles should isolate them.
         subprocess.run(
             [
                 "docker-compose",
                 "--project-name", "cybersim",
                 "-f", str(_COMPOSE_FILE),
                 "--profile", profile,
-                "stop",
+                "stop", # Keep 'stop' for now to be safe, or 'down' if we want full removal
             ],
             capture_output=True,
             timeout=60,
@@ -216,16 +220,12 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
     try:
         client = _get_client()
 
-        # v2.0 Rule 4 — re-attach if container already exists
+        # Mission reset: always recreate the container if it exists
         try:
             existing = client.containers.get(container_name)
-            if existing.status != "running":
-                existing.start()
-            if _repair_kali_tools(existing):
-                return existing.id, network_name
             existing.remove(force=True)
         except NotFound:
-            pass  # Expected on first boot — create it below
+            pass
 
         container = client.containers.run(
             image=settings.KALI_IMAGE,

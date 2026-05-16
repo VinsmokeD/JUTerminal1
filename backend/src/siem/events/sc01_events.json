@@ -39,6 +39,26 @@
       "mitre_technique": "T1595",
       "cwe": "CWE-200",
       "category": "reconnaissance"
+    },
+    {
+      "id": "sc01_recon_ftp_probe",
+      "trigger_pattern": "ftp\\s+.*172\\.20\\.1\\.20|nmap\\s+.*-p\\s*21",
+      "severity": "LOW",
+      "message": "FTP service enumeration: FTP probe detected",
+      "raw_log": "IDS Alert: FTP service scan on 172.20.1.20 from {src_ip}",
+      "mitre_technique": "T1046",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    },
+    {
+      "id": "sc01_recon_ssh_probe",
+      "trigger_pattern": "ssh\\s+.*172\\.20\\.1\\.20|nmap\\s+.*-p\\s*22",
+      "severity": "LOW",
+      "message": "SSH service enumeration: SSH probe detected",
+      "raw_log": "IDS Alert: SSH service scan on 172.20.1.20 from {src_ip}",
+      "mitre_technique": "T1046",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
     }
   ],
   "enumeration": [
@@ -256,6 +276,26 @@
     }
   ],
   "authentication": [
+    {
+      "id": "sc01_auth_ftp_brute",
+      "trigger_pattern": "hydra.*ftp|medusa.*ftp|ftp-brute",
+      "severity": "HIGH",
+      "message": "FTP Authentication: brute force attack detected",
+      "raw_log": "FTP Server: Multiple failed login attempts for user anonymous from {src_ip}",
+      "mitre_technique": "T1110",
+      "cwe": "CWE-307",
+      "category": "authentication"
+    },
+    {
+      "id": "sc01_auth_ssh_brute",
+      "trigger_pattern": "hydra.*ssh|medusa.*ssh|ssh-brute",
+      "severity": "HIGH",
+      "message": "SSH Authentication: brute force attack detected",
+      "raw_log": "SSH Server: Multiple failed login attempts for user sysadmin from {src_ip}",
+      "mitre_technique": "T1110",
+      "cwe": "CWE-307",
+      "category": "authentication"
+    },
     {
       "id": "sc01_auth_brute_force",
       "trigger_pattern": "hydra|medusa|metasploit|fail.*login",
