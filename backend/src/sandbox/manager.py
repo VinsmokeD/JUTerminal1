@@ -102,9 +102,9 @@ async def exec_command(container_id: str, command: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _ensure_scenario_targets(scenario_id: str, force_reset: bool = True) -> None:
-    """Bring up scenario-specific target containers using docker-compose profiles.
+    """Bring up scenario-specific target containers using docker-compose.
 
-    If force_reset is True, it will recreate containers to ensure a clean state.
+    Explicitly targets the required services to avoid restarting the backend.
     """
     profile = scenario_id.lower().replace("-", "")  # SC-01 → sc01
     targets = _SCENARIO_TARGETS.get(profile)
@@ -112,57 +112,39 @@ def _ensure_scenario_targets(scenario_id: str, force_reset: bool = True) -> None
         return
 
     try:
-        # If not force_reset, check if already running
-        if not force_reset:
-            client = _get_client()
-            all_running = True
-            for svc in targets:
-                try:
-                    c = client.containers.get(svc)
-                    if c.status != "running":
-                        all_running = False
-                        break
-                except Exception:
-                    all_running = False
-                    break
-            if all_running:
-                return
-
         cmd = [
             "docker-compose",
             "--project-name", "cybersim",
             "-f", str(_COMPOSE_FILE),
-            "--profile", profile,
-            "up", "-d",
+            "up", "-d", "--no-deps",
         ]
         if force_reset:
             cmd.append("--force-recreate")
         else:
             cmd.append("--no-recreate")
+        
+        # Explicitly target only the scenario services
+        cmd.extend(targets)
 
         subprocess.run(cmd, capture_output=True, timeout=60)
     except Exception as exc:
         print(f"[Sandbox] Scenario targets for {profile} unavailable: {exc}")
 
 def _teardown_scenario_targets(scenario_id: str) -> None:
-    """Tear down scenario-specific targets dynamically to save single-node RAM."""
+    """Stop scenario-specific targets."""
     profile = scenario_id.lower().replace("-", "")
     targets = _SCENARIO_TARGETS.get(profile)
     if not targets or not _COMPOSE_FILE.exists():
         return
 
     try:
-        # Use 'down' to stop and remove containers for this profile
-        # Note: --remove-orphans might be risky if multiple scenarios run, 
-        # but profiles should isolate them.
         subprocess.run(
             [
                 "docker-compose",
                 "--project-name", "cybersim",
                 "-f", str(_COMPOSE_FILE),
-                "--profile", profile,
-                "stop", # Keep 'stop' for now to be safe, or 'down' if we want full removal
-            ],
+                "stop",
+            ] + targets,
             capture_output=True,
             timeout=60,
         )
