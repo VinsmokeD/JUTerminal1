@@ -53,6 +53,29 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
     return () => window.removeEventListener('terminal:insight', handler)
   }, [sessionId])
 
+  useEffect(() => {
+    const forThisSession = (evt) => !evt.detail?.sessionId || evt.detail.sessionId === sessionId
+    const onClear = (evt) => { if (forThisSession(evt)) terminal.clear() }
+    const onCopyAll = (evt) => { if (forThisSession(evt)) terminal.copyAll() }
+    const onNewTab = (evt) => {
+      if (forThisSession(evt)) window.open(window.location.href, '_blank', 'noopener,noreferrer')
+    }
+    const onInsert = (evt) => {
+      if (!forThisSession(evt)) return
+      terminal.pasteText(evt.detail?.data || '')
+    }
+    window.addEventListener('terminal:clear', onClear)
+    window.addEventListener('terminal:copy-all', onCopyAll)
+    window.addEventListener('terminal:new-tab', onNewTab)
+    window.addEventListener('terminal:insert', onInsert)
+    return () => {
+      window.removeEventListener('terminal:clear', onClear)
+      window.removeEventListener('terminal:copy-all', onCopyAll)
+      window.removeEventListener('terminal:new-tab', onNewTab)
+      window.removeEventListener('terminal:insert', onInsert)
+    }
+  }, [sessionId, terminal])
+
   const handleKeyDown = (evt) => {
     if (evt.ctrlKey && evt.shiftKey && evt.key.toLowerCase() === 'c') {
       evt.preventDefault()

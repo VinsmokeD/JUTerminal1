@@ -56,6 +56,44 @@ export default function Debrief() {
     URL.revokeObjectURL(url)
   }
 
+  const downloadPdf = async () => {
+    const { jsPDF } = await import('jspdf')
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+    const margin = 44
+    const width = doc.internal.pageSize.getWidth() - margin * 2
+    let y = margin
+    const addLine = (text, size = 10, gap = 16) => {
+      doc.setFontSize(size)
+      const lines = doc.splitTextToSize(String(text || ''), width)
+      lines.forEach((line) => {
+        if (y > 760) {
+          doc.addPage()
+          y = margin
+        }
+        doc.text(line, margin, y)
+        y += gap
+      })
+    }
+
+    addLine('CyberSim Mission Debrief', 18, 22)
+    addLine(`${session.scenario_id} | ${session.role?.toUpperCase()} Team | Score ${score?.final_score ?? session.score ?? '--'}/100`, 11, 18)
+    addLine(`Phase ${session.phase} | Findings ${findings.length} | Evidence ${evidence.length} | Events ${siemEvents.length}`, 10, 18)
+    addLine('Summary', 13, 20)
+    addLine(session.role === 'red'
+      ? `Completed a structured ${session.methodology?.toUpperCase()} assessment with ${findings.length} findings and ${evidence.length} evidence notes.`
+      : `Completed incident response review with ${iocs.length} IOCs and ${siemEvents.length} SIEM events.`, 10, 15)
+    addLine('Top Findings', 13, 20)
+    ;(findings.length ? findings.slice(0, 6) : [{ content: 'No findings tagged in this session.' }]).forEach((finding, index) => {
+      addLine(`${index + 1}. ${finding.content}`, 10, 14)
+    })
+    addLine('Learning Insights', 13, 20)
+    const strengths = insights?.coaching?.strengths || []
+    const improvements = insights?.coaching?.improvement_areas || []
+    addLine(`Strengths: ${strengths.length ? strengths.join('; ') : 'Not available.'}`, 10, 14)
+    addLine(`Improve Next: ${improvements.length ? improvements.join('; ') : 'Not available.'}`, 10, 14)
+    doc.save(`cybersim-debrief-${sessionId.slice(0, 8)}.pdf`)
+  }
+
   if (loading) return <DebriefLoading />
   if (!session) return null
 
@@ -127,6 +165,7 @@ export default function Debrief() {
 
           <div className="relative z-10 flex gap-3 mt-6 pt-6 border-t border-cs-border/30">
             <Button onClick={downloadReport} variant="blue" size="sm">Export report (.md)</Button>
+            <Button onClick={downloadPdf} variant="ghost" size="sm">Export PDF</Button>
             <Button onClick={() => navigate('/dashboard')} variant="ghost" size="sm">New scenario</Button>
           </div>
         </div>

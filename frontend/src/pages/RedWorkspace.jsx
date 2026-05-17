@@ -18,7 +18,7 @@ import api from '../lib/api'
 export default function RedWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { currentSession, phase, score, aiMode, siemEvents, setSiemEvents } = useSessionStore()
+  const { currentSession, phase, score, aiMode, siemEvents, setSiemEvents, setCurrentSession } = useSessionStore()
   const { skillLevel } = useAuthStore()
   const [session, setSession] = useState(currentSession)
   const [roeAcked, setRoeAcked] = useState(currentSession?.roe_acknowledged ?? false)
@@ -33,11 +33,22 @@ export default function RedWorkspace() {
   useEffect(() => {
     if (!session) {
       api.get(`/sessions/${sessionId}`)
-        .then(r => { setSession(r.data); setRoeAcked(r.data.roe_acknowledged) })
+        .then(r => { setCurrentSession(r.data); setSession(r.data); setRoeAcked(r.data.roe_acknowledged) })
         .catch(() => navigate('/dashboard'))
     }
     api.get(`/sessions/${sessionId}/events`).then(r => setSiemEvents(r.data || [])).catch(() => {})
-  }, [session, sessionId, navigate, setSiemEvents])
+  }, [session, sessionId, navigate, setSiemEvents, setCurrentSession])
+
+  useEffect(() => {
+    const onHint = (event) => requestHint(event.detail?.level || 1)
+    const onMode = (event) => toggleMode(event.detail?.mode || 'learn')
+    window.addEventListener('mission:request-hint', onHint)
+    window.addEventListener('mission:toggle-ai-mode', onMode)
+    return () => {
+      window.removeEventListener('mission:request-hint', onHint)
+      window.removeEventListener('mission:toggle-ai-mode', onMode)
+    }
+  }, [requestHint, toggleMode])
 
   useEffect(() => {
     const interval = setInterval(() => setElapsed(e => e + 1), 1000)

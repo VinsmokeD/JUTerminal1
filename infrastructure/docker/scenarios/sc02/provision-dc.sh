@@ -12,22 +12,45 @@ echo "[*] Domain: $DOMAIN"
 echo "[*] Realm: $REALM"
 echo "[*] NetBIOS: $NETBIOS_NAME"
 
-# Provision the domain (idempotent - check for actual database file)
-if [ ! -f /var/lib/samba/private/sam.ldb ]; then
-    echo "[+] Provisioning Samba4 AD DC..."
-    # Clean up partial/corrupted state if directory exists
-    [ -d /var/lib/samba/private ] && rm -rf /var/lib/samba/private
+PROVISION_MARKER="/var/lib/samba/private/.cybersim_provisioned"
 
-    samba-tool domain provision \
+# Provision the domain. A plain sam.ldb file can exist after a failed partial
+# provision, so use an explicit marker written only after success.
+if [ ! -f "$PROVISION_MARKER" ]; then
+    echo "[+] Provisioning Samba4 AD DC..."
+    # Clean up default/partial/corrupted state before provisioning.
+    rm -rf /var/lib/samba/private /var/lib/samba/sysvol /var/cache/samba/*
+    mkdir -p /var/lib/samba/private
+    rm -f /etc/samba/smb.conf
+
+    # NOTE: On Docker/WSL2 overlay filesystems the kernel may reject the NT
+    # ACL system xattr set during sysvol setup with NT_STATUS_ACCESS_DENIED.
+    # Telling Samba to ignore system ACLs sidesteps the xattr write path while
+    # keeping the AD database functional for the training scenario.
+    if samba-tool domain provision \
         --use-rfc2307 \
         --realm=$REALM \
         --domain=$NETBIOS_NAME \
         --server-role=dc \
         --dns-backend=SAMBA_INTERNAL \
-        --adminpass="$ADMIN_PASS"
+        --adminpass="$ADMIN_PASS" \
+        --option="acl_xattr:ignore system acls=yes" \
+        --option="vfs objects = "; then
+        touch "$PROVISION_MARKER"
+    else
+        echo "[!] Samba domain provision failed; removing partial state before exit"
+        rm -rf /var/lib/samba/private /var/lib/samba/sysvol /var/cache/samba/*
+        exit 1
+    fi
+
+    # Persist the ACL workaround into smb.conf so subsequent Samba runs do not
+    # try to read/write system NT ACLs on directories that lack xattr support.
+    if [ -f /etc/samba/smb.conf ] && ! grep -q "ignore system acls" /etc/samba/smb.conf; then
+        sed -i '/^\[global\]/a\        acl_xattr:ignore system acls = yes\n        vfs objects =' /etc/samba/smb.conf
+    fi
     echo "[+] Domain provisioned successfully"
 else
-    echo "[*] Domain already provisioned (sam.ldb exists), skipping provision step"
+    echo "[*] Domain already provisioned (success marker exists), skipping provision step"
 fi
 
 # Configure Kerberos for RC4 (weaker, for educational context - enables Kerberoasting)

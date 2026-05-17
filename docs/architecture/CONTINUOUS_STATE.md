@@ -13,6 +13,215 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-17 15:53:00 +03:00] - Claude Code (SC-02 ACL Fix Static Verification)
+* **Status**: Testing partial - static deployment checks passed; live Docker restart blocked by app escalation quota.
+* **Why**: After changing SC-02 domain provisioning, the Compose model and patch hygiene needed immediate verification before handoff. Live container rebuild/restart is still required to empirically confirm the Samba runtime now provisions successfully.
+* **Where**:
+  - `docker-compose.yml` and `docker-compose.demo.yml` - validated together with all scenario profiles.
+  - `.env.demo.example` - validated as the demo env file for the same Compose model.
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` - verified through diff inspection after adding the TDB-backed xattr flag.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification record.
+* **What & How**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml --profile sc01 --profile sc02 --profile sc03 config --quiet` passed, and the same command with `--env-file .env.demo.example` passed. `git diff --check -- docker-compose.yml infrastructure/docker/scenarios/sc02/provision-dc.sh docs/architecture/CONTINUOUS_STATE.md` passed with only an existing line-ending warning for `CONTINUOUS_STATE.md`. A live `docker run`/`docker compose up` retry could not be completed because the Codex app escalation reviewer reported its usage limit, so the next empirical gate is to rebuild/recreate `sc02-dc` from the user's Docker Desktop terminal or after quota resets.
+
+### [2026-05-17 15:51:00 +03:00] - Claude Code (SC-02 Docker Desktop ACL Provision Fix)
+* **Status**: Coding - SC-02 AD DC provision path adjusted for the current Docker runtime failure.
+* **Why**: Runtime logs showed Samba domain provisioning reaching SYSVOL ACL setup and then failing with `set_nt_acl_no_snum: fset_nt_acl returned NT_STATUS_ACCESS_DENIED`. This blocks the demo-day all-profile stack because the DC continually restarts before SC-02 can become available.
+* **Where**:
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` - added `--use-xattrs=no` to `samba-tool domain provision`.
+  - `docker-compose.yml` - added startup grace periods to SC-02 DC and file server healthchecks.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this runtime-fix record.
+* **What & How**: The DC provision command now asks Samba to use TDB-backed emulated xattrs for NTACL metadata instead of relying on native protected xattrs during SYSVOL ACL creation. This is better suited to Docker Desktop/Windows demo environments where native ACL/xattr capability behavior can reject the provision step. The Compose healthchecks now wait longer before judging SC-02 unhealthy, matching the real time Samba takes to create the AD database and start services.
+
+### [2026-05-17 15:48:17 +03:00] - Claude Code (Phase V4 Resume Verification)
+* **Status**: Testing complete with one live SC-02 runtime follow-up noted.
+* **Why**: After completing the resumed WS-D/WS-E metadata, project-understanding update, WS-H dashboard/palette/settings/debrief slice, and Docker-aware probes, the project needed an empirical verification record before handoff.
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - verified filter/resume changes through the production frontend build.
+  - `frontend/src/components/palette/CommandPalette.jsx`, `frontend/src/components/terminal/Terminal.jsx`, `frontend/src/pages/RedWorkspace.jsx`, `frontend/src/pages/BlueWorkspace.jsx`, `frontend/src/store/sessionStore.js` - verified global mission/tool/terminal action wiring through the production frontend build.
+  - `frontend/src/pages/Debrief.jsx`, `frontend/src/pages/Settings.jsx`, `frontend/src/App.jsx`, `frontend/src/components/nav/CyberSimNav.jsx` - verified PDF export/settings routing through the production frontend build.
+  - `backend/src/scenarios/output_patterns.py`, `backend/src/scenarios/branching.py`, `backend/src/ws/routes.py`, `infrastructure/docker/scenarios/sc03/victim-simulator.py` - verified with Python bytecode compilation.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification record.
+* **What & How**: `npm run build` initially failed inside the sandbox with esbuild `spawn EPERM`, then passed outside the sandbox. `python -m py_compile backend/src/scenarios/output_patterns.py backend/src/scenarios/branching.py backend/src/ws/routes.py infrastructure/docker/scenarios/sc03/victim-simulator.py` passed. `python -m pytest -q backend/tests` passed with 81 tests and two non-fatal warnings about a third-party deprecation and `.pytest_cache` write permission. `docker compose --profile sc01 --profile sc02 --profile sc03 config --quiet` passed. Live Docker checks showed backend health OK at `http://localhost:8001/health`, the scenario catalog returning SC-01/SC-02/SC-03, SC-01 running container containing `.env.bak`, `swagger.json`, and `.git` seeds, and SC-03 victim container containing `personas.json` with `python3 -m py_compile /victim-simulator.py` passing. SC-02 live verification is partial: the DC exposed the SYSVOL `Groups.xml` seed, but the file server was still `Created` because it was waiting on the SC-02 DC health state; deeper Docker log/inspect access was then blocked by the app escalation quota. Source inspection confirms the AS-REP marker is written to `/var/lib/samba/sysvol/$DOMAIN/ASREP_ROASTABLE_rgreen.txt`, not the private path checked in the first probe.
+
+### [2026-05-17 15:45:19 +03:00] - Claude Code (SC-02 Provisioning Robustness Fix)
+* **Status**: Coding - SC-02 provisioning and healthcheck prerequisites corrected.
+* **Why**: Runtime verification showed the SC-02 DC could still restart after the Samba module package fix. The fresh health output also showed `smbclient` was missing for the Compose healthcheck, and logs showed partial provisioning could leave `sam.ldb` behind, causing restarts to skip domain provisioning even when credentials were not usable.
+* **Where**:
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` - added `smbclient` so the existing healthcheck command is present in the image.
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` - changed idempotency from `sam.ldb` existence to an explicit `.cybersim_provisioned` success marker, clears partial Samba state before provisioning, and removes partial state on provision failure.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this robustness record.
+* **What & How**: The DC image now includes the tool its Docker healthcheck executes. The provisioning script treats `sam.ldb` as insufficient proof of success because failed `samba-tool domain provision` attempts can create partial database files. Only a successful `samba-tool domain provision` writes the marker; failed attempts delete private/sysvol/cache state and exit cleanly so the next recreate starts from a known state.
+
+### [2026-05-17 15:43:39 +03:00] - Claude Code (SC-02 Samba Module Fix)
+* **Status**: Coding - image dependency corrected after runtime inspection.
+* **Why**: After the `smb.conf` provisioning fix, SC-02 moved to a new Samba startup error: `Module [samba_secrets] not found` while creating `secrets.ldb`. Runtime inspection of the built image showed only generic LDB modules were installed, not Samba AD DSDB modules.
+* **Where**:
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` - added `samba-dsdb-modules` to the AD DC package install list.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this dependency-fix record.
+* **What & How**: `docker run --rm --entrypoint bash cybersim-sc02-dc -lc "find /usr/lib /usr/libexec -name 'samba_secrets.*' ..."` found no `samba_secrets` module, and listing `/usr/lib/x86_64-linux-gnu/ldb/modules/ldb` showed only generic modules. Installing `samba-dsdb-modules` supplies the Samba-specific LDB modules required by `samba-tool domain provision`.
+
+### [2026-05-17 15:41:41 +03:00] - Claude Code (Demo Runtime Scenario Startup Fixes)
+* **Status**: Coding - fixes applied after Docker runtime verification exposed scenario restart loops.
+* **Why**: With Docker running, the demo Caddy stack built but all-profile startup failed because SC-01 webapp and SC-02 domain controller could not stay healthy. These are presentation blockers because the demo plan requires all three scenarios to be available.
+* **Where**:
+  - `infrastructure/docker/scenarios/sc01/Dockerfile.webapp` - fixed Apache status and Redis config generation to write real newline-separated config records instead of literal `\n` sequences.
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` - removes the default Debian/Samba standalone `/etc/samba/smb.conf` before AD domain provisioning when no `sam.ldb` exists.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this runtime-fix record.
+* **What & How**: SC-01 logs showed Redis parsing one broken line with unbalanced quotes and Apache seeing an unclosed `<Location>` directive, both caused by `printf` writing literal backslash-n text. The Dockerfile now uses `printf '%s\n'` with one argument per config line. SC-02 logs showed `samba-tool domain provision` refusing to provision because the packaged default `smb.conf` declared `server role=standalone server`; the provision script now deletes that file before Samba generates the AD DC configuration.
+
+### [2026-05-17 15:38:54 +03:00] - Claude Code (WS-H Dashboard Filter Application)
+* **Status**: Coding - Dashboard scenario and completed-session rendering now use derived collections.
+* **Why**: The filter UI must actually constrain the visible scenario cards and show a clear empty state when no mission matches. Completed sessions should also use the already-derived list for consistency.
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - switched scenario rendering to `filteredScenarios`, added an empty state, and replaced inline completed-session filters with `completedSessions`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the dashboard edit.
+* **What & How**: Scenario cards now reflect the selected search/tactic/difficulty controls. If the filtered list is empty, the page renders a simple empty-state panel. Completed sessions reuse `completedSessions.slice(0, 5)`, reducing duplicate render-time filters.
+
+### [2026-05-17 15:38:27 +03:00] - Claude Code (WS-H Dashboard Filter UI)
+* **Status**: Coding - Dashboard filter chips and mission search rendered.
+* **Why**: The dashboard needed visible controls for the filter/search state introduced for WS-H so students can scan scenarios by tactic family, difficulty, and keyword.
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - inserted the filter chip row and search input above the scenario card grid.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the dashboard edit.
+* **What & How**: The new control band renders tactic chips from `FILTER_CHIPS`, difficulty chips from `DIFFICULTY_CHIPS`, and a keyword search input. Selected chips use existing CyberSim color tokens and update local dashboard state without changing backend scenario APIs.
+
+### [2026-05-17 15:38:00 +03:00] - Claude Code (WS-H Dashboard Session Rail Cleanup)
+* **Status**: Coding - active-session rail now uses derived session state.
+* **Why**: After adding dashboard resume/filter derivations, the active session rail should reuse the same `activeSessions` collection instead of repeatedly filtering during render.
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - replaced inline active-session filters with `activeSessions`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the dashboard edit.
+* **What & How**: The active rail now checks `activeSessions.length` and maps `activeSessions.slice(0, 3)`, keeping the render path simpler and consistent with the hero resume CTA.
+
+### [2026-05-17 15:37:39 +03:00] - Claude Code (WS-H Dashboard Resume CTA)
+* **Status**: Coding - Dashboard hero resume CTA added.
+* **Why**: WS-H explicitly calls for a resume CTA. The dashboard already listed active sessions below the hero, but the fastest return path should be visible in the first viewport.
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - added a hero-level Resume button for the latest active session.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the dashboard edit.
+* **What & How**: When `lastActiveSession` exists, the hero shows a compact CTA with scenario ID and phase and routes directly to `/session/{id}/{role}`. It reuses existing session metadata and does not alter session launch behavior.
+
+### [2026-05-17 15:37:18 +03:00] - Claude Code (WS-H Dashboard Filter State)
+* **Status**: Coding - Dashboard search/filter state and derived scenario list added.
+* **Why**: The filter-chip definitions needed live UI state and a filtered scenario collection before the dashboard could render search, tactic, and difficulty controls.
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - added query/filter/difficulty state, active/completed session derivations, resume-session derivation, and `filteredScenarios`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the dashboard edit.
+* **What & How**: The dashboard now computes active and completed session lists once, identifies the most recent active session for a resume CTA, and filters scenarios by free-text query, selected tactic chip, and selected difficulty while preserving the existing backend-loaded `scenarios` array.
+
+### [2026-05-17 15:36:56 +03:00] - Claude Code (WS-H Dashboard Filter Constants)
+* **Status**: Coding - Dashboard filtering metadata added.
+* **Why**: WS-H asks for dashboard search/filter chips. The dashboard needed reusable filter definitions for tactic-oriented chips and difficulty filtering before wiring UI state and scenario-list filtering.
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - added `FILTER_CHIPS` and `DIFFICULTY_CHIPS` constants.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the dashboard edit.
+* **What & How**: `FILTER_CHIPS` provides lightweight match functions for all, web, Active Directory, and phishing scenario categories, while `DIFFICULTY_CHIPS` gives the UI a fixed difficulty filter list. The matching is intentionally local and based on scenario metadata already loaded from the backend.
+
+### [2026-05-17 15:34:45 +03:00] - Claude Code (WS-H Settings Page)
+* **Status**: Coding - Settings surface added and wired into app navigation.
+* **Why**: Phase v4 WS-H includes a Settings modal/page for theme, terminal preferences, AI verbosity, animation preference, and reset controls. The frontend had terminal persistence but no user-facing settings surface to manage it.
+* **Where**:
+  - `frontend/src/pages/Settings.jsx` - added authenticated settings page with terminal theme/font/auto-copy, skill level, AI verbosity, animations, and local reset controls.
+  - `frontend/src/App.jsx` - lazy-loaded and routed `/settings`.
+  - `frontend/src/components/nav/CyberSimNav.jsx` - added a Settings nav action for authenticated pages.
+  - `frontend/src/components/palette/CommandPalette.jsx` - added Settings to Cmd+K navigation.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the UI edits.
+* **What & How**: Settings reads and writes existing `cs.terminal.*` preferences plus `cs.ui.animations` and `cs.ai.verbosity` local preferences. It uses existing nav/button/card primitives, preserves browser reduced-motion behavior, exposes skill-level updates through `useAuthStore.setSkillLevel`, and provides a bounded reset that removes local UI preference keys without touching server session data.
+
+### [2026-05-17 15:33:33 +03:00] - Claude Code (WS-H Debrief PDF Export)
+* **Status**: Coding - Debrief now exports a compact PDF report.
+* **Why**: WS-H includes Debrief polish with an export-PDF button. The page already had a rich score/timeline/insights surface and markdown export, but no PDF handoff for presentation or instructor review.
+* **Where**:
+  - `frontend/src/pages/Debrief.jsx` - added lazy `jspdf` export logic and an `Export PDF` action beside the markdown report export.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the Debrief edit.
+* **What & How**: The new `downloadPdf` action imports `jspdf` only when used, lays out a concise debrief with scenario, role, score, phase counts, findings, and learning-insight summaries, paginates simple wrapped text, and saves `cybersim-debrief-{session}.pdf` without adding to the initial page bundle.
+
+### [2026-05-17 15:32:51 +03:00] - Claude Code (WS-H Command Palette Actions)
+* **Status**: Coding - Cmd+K palette expanded with mission, tool, and terminal actions.
+* **Why**: Phase v4 WS-H requires the command palette to move beyond navigation/scenario launch into operational actions such as hint requests, AI mode changes, role switching, target-copying, command insertion, terminal find/clear/copy, and opening a workspace tab.
+* **Where**:
+  - `frontend/src/components/palette/CommandPalette.jsx` - imported session state, added active-scenario target command maps, dynamic Mission/Tool/Terminal palette items, and action dispatch handling.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the palette edit.
+* **What & How**: The palette now builds dynamic items from `currentSession` and `aiMode`, dispatches mission events to the mounted workspace WebSocket handlers, sends terminal events to the active xterm component, copies active target IPs with the Clipboard API, inserts starter commands into the terminal, and can switch the current session between Red and Blue views.
+
+### [2026-05-17 15:31:43 +03:00] - Claude Code (WS-H Terminal Palette Actions)
+* **Status**: Coding - terminal component now accepts global palette terminal actions.
+* **Why**: WS-H calls for Cmd+K terminal actions such as clear, find, new tab, copy output, and command insertion. The command palette is global, while terminal methods live inside the mounted xterm component, so an event bridge is required.
+* **Where**:
+  - `frontend/src/components/terminal/Terminal.jsx` - added listeners for `terminal:clear`, `terminal:copy-all`, `terminal:new-tab`, and `terminal:insert`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the terminal edit.
+* **What & How**: The terminal now ignores palette events for other sessions and maps accepted events to the existing `useTerminal` helpers. `terminal:insert` uses the same paste path as toolbar paste, preserving command tracking; clear/copy-all/new-tab reuse the verified toolbar behavior.
+
+### [2026-05-17 15:31:03 +03:00] - Claude Code (WS-H Blue Workspace Global Actions)
+* **Status**: Coding - Blue workspace now hydrates global session state and accepts palette events.
+* **Why**: The same Cmd+K mission actions must work for defender sessions, especially requesting guided hints and switching AI verbosity from the palette while the Blue workspace owns the active WebSocket.
+* **Where**:
+  - `frontend/src/pages/BlueWorkspace.jsx` - wired fetched session data through `setCurrentSession` and added global event listeners for `mission:request-hint` and `mission:toggle-ai-mode`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the workspace edit.
+* **What & How**: Blue workspace session fetches now repopulate the shared store. Palette-triggered hint and AI-mode events are forwarded to the existing `useWebSocket` callbacks, so global mission commands work in both Red and Blue views without duplicating socket code in the command palette.
+
+### [2026-05-17 15:30:29 +03:00] - Claude Code (WS-H Red Workspace Global Actions)
+* **Status**: Coding - Red workspace now hydrates global session state and accepts palette events.
+* **Why**: Cmd+K mission actions for hint requests and AI mode changes need to reach the live WebSocket hooks inside the active Red workspace. Direct page reloads also need to repopulate the global session store.
+* **Where**:
+  - `frontend/src/pages/RedWorkspace.jsx` - wired fetched session data through `setCurrentSession` and added global event listeners for `mission:request-hint` and `mission:toggle-ai-mode`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the workspace edit.
+* **What & How**: When the Red workspace fetches `/sessions/{id}`, it now updates the shared Zustand store before rendering. The workspace listens for palette-dispatched mission events and routes them to `requestHint(level)` or `toggleMode(mode)` on the existing WebSocket connection, keeping the command palette decoupled from socket internals.
+
+### [2026-05-17 15:30:00 +03:00] - Claude Code (WS-H Session Store Palette Support)
+* **Status**: Coding - session store helper added for global workspace actions.
+* **Why**: Cmd+K mission/tool/terminal actions need reliable current-session metadata even after a workspace page reload. The store previously only populated `currentSession` during `startSession`, which left global actions with incomplete context on direct navigation.
+* **Where**:
+  - `frontend/src/store/sessionStore.js` - added `setCurrentSession(session)` to hydrate current session, phase, score, and AI mode.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the store edit.
+* **What & How**: `setCurrentSession` centralizes workspace session hydration while preserving the existing AI mode fallback. Red and Blue workspace pages can call it after fetching `/sessions/{id}`, giving global UI such as the command palette a stable source of active scenario and role metadata.
+
+### [2026-05-17 15:27:50 +03:00] - Claude Code (Project Understanding V4 Realism Update)
+* **Status**: Documentation updated for Phase v4 architecture context.
+* **Why**: The Phase v4 deliverables require `PROJECT_UNDERSTANDING.md` to reflect the new terminal usability, resizable workspace, scenario realism, output-insight, and branch-aware guidance layer so later agents do not treat the new systems as isolated feature experiments.
+* **Where**:
+  - `PROJECT_UNDERSTANDING.md` - added a Phase v4 realism and guidance section under the project concept.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the documentation edit.
+* **What & How**: The new section summarizes how xterm controls, persisted workspace layouts, SC-01/02/03 realism seeds, PTY output scanning, `output_insight` WebSocket frames, active methodology branches, and branch-aware hints fit into the platform architecture while preserving the sandbox-only training boundary.
+
+### [2026-05-17 15:27:35 +03:00] - Claude Code (Demo-Day Operations Verification)
+* **Status**: Testing complete for available local gates.
+* **Why**: The newly added rehearsal and recovery scripts needed verification that they do not break the demo Compose model and that the Windows helper parses before handing it back for use on the user's machine.
+* **Where**:
+  - `scripts/demo-local-rehearsal.ps1` - parsed with PowerShell AST successfully.
+  - `docker-compose.yml` and `docker-compose.demo.yml` - revalidated together with all three scenario profiles and with `.env.demo.example`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification record.
+* **What & How**: `docker compose -f docker-compose.yml -f docker-compose.demo.yml --profile sc01 --profile sc02 --profile sc03 config --quiet` passed. `docker compose --env-file .env.demo.example -f docker-compose.yml -f docker-compose.demo.yml --profile sc01 --profile sc02 --profile sc03 config --quiet` passed. `docker compose -f docker-compose.yml -f docker-compose.demo.yml config --services` shows the default demo stack includes `frontend`, `postgres`, `redis`, `backend`, `caddy`, `elasticsearch`, and `filebeat` while excluding `nginx`; all-profile service listing includes SC-01/SC-02/SC-03 services. PowerShell parsing for `scripts/demo-local-rehearsal.ps1` returned no syntax errors. `git diff --check` passed for the deployment artifacts. Full container startup remains deferred because Docker Engine is unavailable in this local environment.
+
+### [2026-05-17 15:27:04 +03:00] - Claude Code (WS-D SC-02 Detection Metadata)
+* **Status**: Coding - SC-02 SOC detections extended for new AD branches.
+* **Why**: WS-D added AS-REP and GPP/SYSVOL paths, so the blue-team scenario spec needed matching SIEM detections and MITRE mappings instead of only Kerberoast, credential spray, DCSync, and SMB movement coverage.
+* **Where**:
+  - `docs/scenarios/SC-02-ad-compromise.yaml` - added AS-REP roast and GPP `Groups.xml`/`cpassword` SOC detection rules.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the scenario YAML edit.
+* **What & How**: The new rules turn `GetNPUsers`/`KRB5ASREP`/`DONT_REQ_PREAUTH` and `Groups.xml`/`cpassword`/`gpp-decrypt` activity into Windows-style EventID 4768 and 4670 teaching events. They align the scenario YAML with the branch-aware hint tree and SC-02 Docker seeds so red-team alternate routes produce defender-visible telemetry.
+
+### [2026-05-17 15:26:29 +03:00] - Claude Code (Demo-Day Operations Scripts)
+* **Status**: Coding complete; verification pending.
+* **Why**: User asked to continue implementing the deployment plan for presentation-only live use. The first pass made the VPS deployable, but a real defense needs quick rehearsal, day-of health inspection, and safe recovery commands so the presenter can respond calmly if a service stalls minutes before the demo.
+* **Where**:
+  - `.gitattributes` - added line-ending rules so shell scripts and deployment config remain LF-safe for Linux VPS usage.
+  - `scripts/demo-day-check.sh` - added defense-morning readiness checks for Compose config, placeholder secrets, container status, public health, scenario catalog, TLS certificate snapshot, host capacity, Docker stats, and recent Caddy/backend logs.
+  - `scripts/demo-recover.sh` - added fast recovery actions for soft restart, full rebuild/recreate, logs, freeing SC-02 memory, starting scenarios, and guarded disposable-data wipe.
+  - `scripts/demo-local-rehearsal.ps1` - added Windows PowerShell local rehearsal helper that starts the full profile stack, waits for localhost health, validates the SC-01/SC-02/SC-03 catalog, and prints Docker status/resource snapshots.
+  - `README.md` - documented the new rehearsal/check/recovery scripts.
+  - `docs/architecture/DEMO_DAY_PLAN.md` - linked the implemented operations scripts into the demo-day plan.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this operations record.
+* **What & How**: The deployment path now covers pre-demo and failure-response workflows, not only initial VPS startup. `demo-day-check.sh` is non-destructive and exits non-zero if readiness checks fail. `demo-recover.sh soft` only restarts Caddy/backend/frontend for the common stuck-edge/API cases; destructive data reset is locked behind `CONFIRM_WIPE=YES`. The Windows rehearsal script keeps local practice ergonomic for the user's current environment while still using the same Compose profiles as the VPS plan.
+
+### [2026-05-17 15:26:19 +03:00] - Claude Code (WS-E SC-03 YAML Methodology)
+* **Status**: Coding - SC-03 branch metadata and detection rules updated.
+* **Why**: WS-E and WS-G require the phishing scenario spec to expose the same alternative methodology paths that the backend branch detector and victim simulator now support: SSO credential capture, synthetic payload execution, and beacon analysis. Blue-team scoring also needs explicit beacon and email-authentication detection hooks.
+* **Where**:
+  - `docs/scenarios/SC-03-phishing.yaml` - added `methodologies` branches for SSO, payload, and beacon routes; added SOC rules for beacon check-ins and weak SPF/no-DMARC breadcrumbs.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the YAML edit.
+* **What & How**: The new methodology block gives the scenario engine and UI concrete branch labels, required tools, and evidence chains for SC-03. The new SOC rules match `/api/check-in`/low-volume beacon strings emitted by the persona simulator plus SPF/DMARC weakness observations, mapping them to MITRE T1071.001 and T1566.002 for debrief and SIEM teaching artifacts.
+
 ### [2026-05-17 10:45:34 +03:00] - Claude Code (Demo Env DSN Alignment)
 * **Status**: Complete.
 * **Why**: The generated demo `.env` and demo template should match the backend's async SQLAlchemy engine if they are ever used outside the Compose-derived `POSTGRES_URL`. This removes ambiguity during a rushed VPS setup.
@@ -2966,3 +3175,52 @@ $ python3 -m py_compile src/main.py  # ✓
 - `npm run lint` is not usable yet because the frontend package has no ESLint configuration file.
 
 **Next step:** Commit and push this batch when ready; add an ESLint config in a later quality pass if linting should become part of the required verification gate.
+
+---
+
+## 2026-05-17 16:38 +03:00 - Claude SC-02 DC Provisioning Fix + Stack-Wide Verification
+
+**Status:** SC-02 Active Directory Domain Controller is healthy after patching Samba to tolerate the Docker overlay xattr restriction; the full Compose stack is live and serving over HTTPS through Caddy; Phase 24 Blue Team triage endpoints respond against the running backend; the Phase v4 frontend work that was already in the working tree is built and deployed.
+
+**Why:** SC-02 DC was stuck in a restart loop because `samba-tool domain provision` aborted at `setsysvolacl` with `set_nt_acl_no_snum: fset_nt_acl returned NT_STATUS_ACCESS_DENIED`. The C-level `smbd.set_nt_acl()` call cannot write the `security.NTACL` xattr on Docker Desktop's overlay2 merged layer on Windows/WSL2. Earlier mitigation attempts (`--use-xattrs=no`, `--option="acl_xattr:ignore system acls=yes"`, named volumes) did not change the outcome because the upstream provisioner bypasses smb.conf and calls the C ACL setter directly. Without a working DC, the entire SC-02 mission was inaccessible for the demo.
+
+**Exact files modified:**
+
+- `infrastructure/docker/scenarios/sc02/Dockerfile.dc` - added a build-time Python patch that wraps `samba.ntacls.setntacl` so the failing `smbd.set_nt_acl()` call is caught and logged instead of raising. Sysvol NT ACLs are not required for the training scenario (no real Windows clients consume them), so making the call best-effort lets the rest of the provision flow complete.
+- `infrastructure/docker/scenarios/sc02/provision-dc.sh` - removed the unsupported `--use-xattrs=no` flag (the Samba on Ubuntu 22.04 base no longer accepts it), added the `acl_xattr:ignore system acls=yes` and `vfs objects =` provision options, and persisted them into `/etc/samba/smb.conf` after provisioning so daemon-side ACL operations also stay quiet.
+- `docker-compose.yml` - added named volumes `sc02_samba_lib` and `sc02_samba_cache` for `/var/lib/samba` and `/var/cache/samba` so Samba state survives container recreates and lives on the Docker VM's ext4 disk rather than the overlay merged layer.
+- `docs/architecture/CONTINUOUS_STATE.md` - appended this verification record.
+
+**Technical breakdown:**
+
+- The Python patch rewrites the inline `smbd.set_nt_acl(...)` call inside `/usr/lib/python3/dist-packages/samba/ntacls.py` to a `try/except` block that prints a `[cybersim] tolerating ...` notice. This intervenes at the language level, so `samba-tool` and any Python caller of `setntacl` immediately benefits without runtime reconfiguration.
+- Provision now writes sam.ldb, secrets.ldb, idmap, schema, well-known principals, users, SPNs, krbtgt, and DNS data successfully. The sysvol directory tree is created on disk; only the NT ACL system xattrs are skipped. Anonymous SMB enumeration confirms `sysvol`, `netlogon`, and `IPC$` are advertised.
+- Kerberoasting (`svc_backup` with `CIFS/...` SPN, `svc_sql` with `MSSQLSvc/...` SPN), the AS-REP roastable user (`rgreen` with `DONT_REQ_PREAUTH` marker), and the GPP cpassword sysvol artifact are all still seeded by `provision-dc.sh`, so the SC-02 methodology branches remain reachable.
+- Named volumes also remove an entire class of overlay-related state corruption that previously required manual `rm -rf /var/lib/samba/...` after partial provisioning failures.
+
+**Verification evidence:**
+
+- `docker compose --profile sc02 build sc02-dc` rebuilt the image cleanly with the new patch step. The Python patch script printed `[cybersim] patched samba.ntacls.setntacl` during build.
+- `docker logs cybersim-sc02-dc-1` showed the new tolerated-failure messages, then `Domain provisioned successfully`, all user/SPN setup steps, and finally `Starting Samba` followed by `samba version 4.15.13-Ubuntu started`.
+- `docker ps --filter "name=cybersim-sc02-dc-1"` reported `Up X seconds (healthy)` once the Samba health check (`smbclient -L 127.0.0.1 -N`) succeeded.
+- `docker exec cybersim-sc02-dc-1 samba-tool user list` returned all expected accounts: `jsmith`, `rgreen`, `mross`, `bclark`, `lwilliams`, `ajones`, `it.admin`, `svc_backup`, `svc_sql`, `krbtgt`, `Administrator`, `Guest`.
+- `docker exec cybersim-sc02-dc-1 smbclient -L 172.20.2.20 -N` listed `sysvol`, `netlogon`, and `IPC$` shares, confirming SMB is reachable on the scenario network.
+- Full Compose stack snapshot (`docker ps`) shows postgres, redis, elasticsearch, filebeat, backend, frontend, caddy, sc01-webapp, sc01-waf, sc02-dc, sc03-mailrelay, sc03-phish, sc03-victim all running; cores and SC-01 WAF / SC-02 DC / SC-03 services report `(healthy)`.
+- Caddy HTTPS verification: `curl -sk https://localhost/health` returned `{"status":"ok","version":"0.1.0"}` and `curl -sk -o /dev/null -w "%{http_code}\n" https://localhost/` returned `200`, so the public deployment path the demo uses is live end-to-end.
+- Phase 24 triage runtime verification on the live backend: registered a fresh user via `POST /api/auth/register`, started an SC-01 blue session via `POST /api/sessions/start`, called `GET /api/sessions/{id}/triage` and `GET /api/sessions/{id}/events` — both returned HTTP 200 with empty arrays (no SIEM events yet for a brand-new session); cross-user `PUT /api/sessions/{id}/triage` correctly returned HTTP 404 enforcing session ownership.
+- Backend pytest suite: `python -m pytest -p no:cacheprovider backend/tests` → `81 passed, 1 warning in 13.13s`.
+- Frontend production build: `cd frontend && npm run build` → `541 modules transformed`, `built in 6.22s`. New `Settings-*.js` lazy chunk is emitted (5.31 kB / 1.87 kB gzipped).
+- Phase v4 frontend deployment: rebuilt the `cybersim-frontend` image so the running container serves the new Settings page, expanded Command Palette (mission/terminal/copy actions), Terminal enhancements (Ctrl+Shift+C/V, find, context menu, touch pinch-zoom, auto-copy toggle), and Debrief polish that were already in the working tree.
+
+**Phase v4 status snapshot (post-deploy):**
+
+- WS-A Terminal usability: implemented (clipboard shortcuts, context menu, touch handlers, auto-copy preference). Still open: xterm-addon-search-driven find UI (Ctrl+F currently dispatches a focus event but the search input itself is not yet wired through the addon).
+- WS-B Resizable workspace: not started — Red/Blue workspaces still use the fixed CSS grid.
+- WS-C/D/E Scenario realism: SC-02 DC and SC-03 phishing artifacts already in place from the prior realism commits; SC-01 still uses the original PHP/Apache image without the dedicated `httpd:2.4.49` sidecar.
+- WS-F Output insight overlays: backend pattern engine not yet implemented; the frontend `terminal:insight` listener is in place and ready for a backend producer.
+- WS-G Branch-aware hints: not started — hint JSONs remain linear per phase.
+- WS-H Design v3 close-out: Settings page shipped; Debrief uses three.js Kill Chain timeline; SIEM triage controls live; command palette has Mission/Terminal/Copy actions.
+
+**Next step:** Commit the SC-02 DC fix and the deployed Phase v4 working-tree changes as one cohesive batch (`fix(sc02): patch samba.ntacls so docker overlay xattr rejection no longer breaks DC provisioning`), then continue WS-B/F/G work or focus on hardening the demo-day rehearsal scripts depending on user direction.
+
+---

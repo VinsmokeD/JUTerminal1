@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import { useSessionStore } from '../../store/sessionStore'
 
 /**
  * CommandPalette — global ⌘K (Ctrl+K) command launcher.
@@ -28,11 +29,24 @@ const TIP_ITEMS = [
   { id: 'home',        section: 'Navigate', label: 'Landing page',      hint: 'Public marketing site',          tone: 'neutral', kbd: 'G H', to: '/' },
   { id: 'dashboard',   section: 'Navigate', label: 'Dashboard',          hint: 'Choose a scenario to launch',    tone: 'blue',    kbd: 'G D', to: '/dashboard' },
   { id: 'onboard',     section: 'Navigate', label: 'Onboarding',         hint: 'Walkthrough for new operators',  tone: 'amber',   to: '/onboarding' },
+  { id: 'settings',    section: 'Navigate', label: 'Settings',           hint: 'Preferences, terminal defaults, learning mode', tone: 'neutral', kbd: 'G S', to: '/settings' },
   { id: 'sc01',        section: 'Scenarios', label: 'SC-01 — NovaMed Healthcare', hint: 'Web app pentest (OWASP)',  tone: 'red',  kbd: '1', scenarioId: 'SC-01' },
   { id: 'sc02',        section: 'Scenarios', label: 'SC-02 — Nexora Financial',   hint: 'Active Directory (Kerberoasting)', tone: 'red', kbd: '2', scenarioId: 'SC-02' },
   { id: 'sc03',        section: 'Scenarios', label: 'SC-03 — Orion Logistics',    hint: 'Phishing campaign (GoPhish)', tone: 'red', kbd: '3', scenarioId: 'SC-03' },
   { id: 'logout',      section: 'Account',  label: 'Sign out',           hint: 'End your CyberSim session',       tone: 'neutral', action: 'logout' },
 ]
+
+const TARGET_IPS = {
+  'SC-01': '172.20.1.20',
+  'SC-02': '172.20.2.20',
+  'SC-03': '172.20.3.40',
+}
+
+const STARTER_COMMANDS = {
+  'SC-01': 'nmap -sV 172.20.1.20\r',
+  'SC-02': 'enum4linux-ng 172.20.2.20\r',
+  'SC-03': 'curl -I http://172.20.3.40\r',
+}
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false)
@@ -42,6 +56,64 @@ export default function CommandPalette() {
   const listRef = useRef(null)
   const navigate = useNavigate()
   const { logout } = useAuthStore()
+  const { currentSession, aiMode } = useSessionStore()
+
+  const items = useMemo(() => {
+    const active = currentSession
+    const scenarioId = active?.scenario_id
+    const targetIp = TARGET_IPS[scenarioId]
+    const starterCommand = STARTER_COMMANDS[scenarioId]
+    const nextRole = active?.role === 'blue' ? 'red' : 'blue'
+    const dynamic = [
+      { id: 'hint-l1', section: 'Mission', label: 'Request L1 hint', hint: 'Conceptual nudge for current phase', tone: 'amber', kbd: 'H 1', action: 'hint', level: 1 },
+      { id: 'hint-l2', section: 'Mission', label: 'Request L2 hint', hint: 'Directional hint for current phase', tone: 'amber', kbd: 'H 2', action: 'hint', level: 2 },
+      { id: 'hint-l3', section: 'Mission', label: 'Request L3 hint', hint: 'Procedural hint with higher score penalty', tone: 'red', kbd: 'H 3', action: 'hint', level: 3 },
+      { id: 'mode-learn', section: 'Mission', label: 'AI mode: Learn', hint: aiMode === 'learn' ? 'Currently active' : 'More explanatory coaching', tone: 'blue', action: 'toggle-ai', mode: 'learn' },
+      { id: 'mode-challenge', section: 'Mission', label: 'AI mode: Challenge', hint: aiMode === 'challenge' ? 'Currently active' : 'Socratic prompts with less guidance', tone: 'red', action: 'toggle-ai', mode: 'challenge' },
+      { id: 'submit-flag', section: 'Mission', label: 'Submit flag', hint: 'Focus the mission flag workflow when available', tone: 'green', action: 'submit-flag' },
+      { id: 'term-find', section: 'Terminal', label: 'Find in terminal', hint: 'Focus terminal search', tone: 'neutral', kbd: 'Ctrl F', action: 'terminal-event', eventName: 'terminal:focus-find' },
+      { id: 'term-clear', section: 'Terminal', label: 'Clear terminal', hint: 'Clear the active terminal viewport', tone: 'neutral', action: 'terminal-event', eventName: 'terminal:clear' },
+      { id: 'term-copy-all', section: 'Terminal', label: 'Copy terminal output', hint: 'Copy all visible scrollback', tone: 'neutral', action: 'terminal-event', eventName: 'terminal:copy-all' },
+      { id: 'term-new-tab', section: 'Terminal', label: 'Open workspace tab', hint: 'Open current session in a new browser tab', tone: 'neutral', action: 'terminal-event', eventName: 'terminal:new-tab' },
+    ]
+
+    if (active?.id) {
+      dynamic.push({
+        id: 'switch-role',
+        section: 'Mission',
+        label: `Switch to ${nextRole} team`,
+        hint: `Open the ${nextRole} workspace for this session`,
+        tone: nextRole === 'red' ? 'red' : 'blue',
+        action: 'switch-role',
+        role: nextRole,
+      })
+    }
+    if (targetIp) {
+      dynamic.push({
+        id: 'copy-target',
+        section: 'Tool',
+        label: 'Copy target IP',
+        hint: targetIp,
+        tone: 'green',
+        action: 'copy-text',
+        value: targetIp,
+        keywords: ['target', 'ip', scenarioId],
+      })
+    }
+    if (starterCommand) {
+      dynamic.push({
+        id: 'insert-starter-command',
+        section: 'Tool',
+        label: 'Insert starter command',
+        hint: starterCommand.trim(),
+        tone: 'green',
+        action: 'insert-terminal',
+        value: starterCommand,
+        keywords: ['nmap', 'enum', 'curl', 'command', scenarioId],
+      })
+    }
+    return [...TIP_ITEMS, ...dynamic]
+  }, [currentSession, aiMode])
 
   // ── Global ⌘K / Ctrl+K trigger ────────────────────────────────
   useEffect(() => {
@@ -73,28 +145,66 @@ export default function CommandPalette() {
   }, [open])
 
   const runItem = useCallback((item) => {
-    setOpen(false)
     if (item.action === 'logout') {
+      setOpen(false)
       logout()
       navigate('/auth')
       return
     }
     if (item.scenarioId) {
+      setOpen(false)
       navigate('/dashboard', { state: { scenarioId: item.scenarioId } })
       return
     }
+    if (item.action === 'hint') {
+      setOpen(false)
+      window.dispatchEvent(new CustomEvent('mission:request-hint', { detail: { level: item.level } }))
+      return
+    }
+    if (item.action === 'toggle-ai') {
+      setOpen(false)
+      window.dispatchEvent(new CustomEvent('mission:toggle-ai-mode', { detail: { mode: item.mode } }))
+      return
+    }
+    if (item.action === 'submit-flag') {
+      setOpen(false)
+      window.dispatchEvent(new CustomEvent('mission:submit-flag'))
+      return
+    }
+    if (item.action === 'terminal-event') {
+      setOpen(false)
+      window.dispatchEvent(new CustomEvent(item.eventName, { detail: { sessionId: currentSession?.id } }))
+      return
+    }
+    if (item.action === 'copy-text') {
+      setOpen(false)
+      navigator.clipboard?.writeText(item.value).catch(() => {})
+      return
+    }
+    if (item.action === 'insert-terminal') {
+      setOpen(false)
+      window.dispatchEvent(new CustomEvent('terminal:insert', { detail: { data: item.value, sessionId: currentSession?.id } }))
+      return
+    }
+    if (item.action === 'switch-role' && currentSession?.id) {
+      setOpen(false)
+      navigate(`/session/${currentSession.id}/${item.role}`)
+      return
+    }
+    setOpen(false)
     if (item.to) navigate(item.to)
-  }, [navigate, logout])
+  }, [navigate, logout, currentSession])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return TIP_ITEMS
-    return TIP_ITEMS.filter((i) =>
+    if (!q) return items
+    return items.filter((i) =>
       i.label.toLowerCase().includes(q) ||
       i.hint?.toLowerCase().includes(q) ||
-      i.section?.toLowerCase().includes(q),
+      i.section?.toLowerCase().includes(q) ||
+      i.keywords?.some((keyword) => String(keyword).toLowerCase().includes(q)),
     )
-  }, [query])
+  }, [query, items])
 
   // Group by section in render order
   const grouped = useMemo(() => {

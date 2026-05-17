@@ -90,6 +90,9 @@ The demo layer is:
 - `infrastructure/caddy/Caddyfile` routes `/api`, `/ws`, and `/health` to FastAPI and all other paths to the React frontend.
 - `.env.demo.example` documents the demo-only environment values.
 - `scripts/demo-healthcheck.sh` verifies Compose config plus the public health and scenario endpoints.
+- `scripts/demo-day-check.sh` is the morning-of status check for containers, public health, TLS, logs, disk, and memory.
+- `scripts/demo-recover.sh soft` restarts only Caddy/backend/frontend if the live demo looks stuck.
+- `scripts/demo-local-rehearsal.ps1` starts the full local stack on Windows and checks `localhost` before you rehearse.
 
 If you do not own a domain yet, omit `CYBERSIM_DOMAIN`; the bootstrap script creates an `sslip.io` hostname from the VPS public IP.
 

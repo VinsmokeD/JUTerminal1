@@ -12,6 +12,7 @@ const RedWorkspace = lazy(() => import('./pages/RedWorkspace'))
 const BlueWorkspace = lazy(() => import('./pages/BlueWorkspace'))
 const Debrief = lazy(() => import('./pages/Debrief'))
 const InstructorDashboard = lazy(() => import('./pages/InstructorDashboard'))
+const Settings = lazy(() => import('./pages/Settings'))
 
 // Loading fallback — dual-square logo + void background
 function LoadingSpinner() {
@@ -103,6 +104,16 @@ export default function App() {
             <RequireAuth>
               <Suspense fallback={<LoadingSpinner />}>
                 <InstructorDashboard />
+              </Suspense>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <RequireAuth>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Settings />
               </Suspense>
             </RequireAuth>
           }

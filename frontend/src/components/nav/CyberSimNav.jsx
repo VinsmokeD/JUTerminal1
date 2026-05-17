@@ -47,6 +47,12 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
               </span>
             )}
             <button
+              onClick={() => navigate('/settings')}
+              className="text-txt-dim hover:text-txt-secondary text-sm transition-colors font-mono"
+            >
+              Settings
+            </button>
+            <button
               onClick={logout}
               className="text-txt-dim hover:text-txt-secondary text-sm transition-colors font-mono"
             >

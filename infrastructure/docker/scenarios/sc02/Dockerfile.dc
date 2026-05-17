@@ -11,7 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     samba \
     samba-common \
     samba-common-bin \
+    samba-dsdb-modules \
     samba-vfs-modules \
+    smbclient \
     winbind \
     krb5-user \
     krb5-config \
@@ -21,6 +23,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     openssl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Patch Samba's setntacl so that smbd.set_nt_acl() failures on Docker overlay
+# filesystems do not abort domain provisioning. The training scenario does not
+# rely on sysvol NT ACLs, but the upstream provisioner aborts on the first
+# NT_STATUS_ACCESS_DENIED. The patch wraps the C call in try/except so the
+# rest of provisioning still completes (database, users, SPNs, Kerberos).
+RUN python3 - <<'PYEOF'
+import re, pathlib
+p = pathlib.Path('/usr/lib/python3/dist-packages/samba/ntacls.py')
+src = p.read_text()
+needle = 'smbd.set_nt_acl(\n            file, SECURITY_SECINFO_FLAGS, sd,\n            service=service, session_info=session_info)'
+replacement = (
+    'try:\n'
+    '            smbd.set_nt_acl(\n'
+    '                file, SECURITY_SECINFO_FLAGS, sd,\n'
+    '                service=service, session_info=session_info)\n'
+    '        except Exception as _e:\n'
+    '            import sys\n'
+    '            print(f"[cybersim] tolerating smbd.set_nt_acl failure on {file}: {_e}", file=sys.stderr)'
+)
+if needle in src:
+    p.write_text(src.replace(needle, replacement))
+    print('[cybersim] patched samba.ntacls.setntacl')
+else:
+    print('[cybersim] WARNING: setntacl pattern not found; aborting')
+    raise SystemExit(1)
+PYEOF
 
 # Domain provisioning script (Kerberos config handled inline in script)
 COPY provision-dc.sh /provision-dc.sh

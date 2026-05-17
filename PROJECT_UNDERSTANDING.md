@@ -7,6 +7,12 @@
 
 Instead of pre-scripted events, students run live methodologies. To enhance the learning experience, an AI Monitor parses command logic and provides Socratic-style hints to guide students without handing them direct answers.
 
+### Phase v4 realism and guidance layer
+Phase v4 adds a realism/usability layer on top of the existing v3 operations-center shell:
+- **Terminal and workspace UX**: xterm.js now supports native selection, Ctrl-Shift clipboard shortcuts, find, font controls, copy-all, scroll controls, output insight cards, and persisted preferences. Red and Blue workspaces use persisted resizable panels with Focus, Balanced, and Debug presets.
+- **Scenario realism**: SC-01 exposes NovaMed web artifacts and alternate SQLi/LFI/Redis routes; SC-02 adds SYSVOL/GPP, AS-REP, realistic share breadcrumbs, and Windows-style event mappings; SC-03 adds a NEXORA SSO landing page, persona-driven victim simulation, synthetic payload markers, and beacon telemetry.
+- **Guided outputs and branches**: backend scenario helpers scan completed PTY lines for safe educational fingerprints, emit `output_insight` WebSocket frames, infer active methodology branches from submitted commands, and feed branch-aware hints to the AI tutor and phase trail.
+
 ---
 
 ## 2. The Multi-Agent Ecosystem

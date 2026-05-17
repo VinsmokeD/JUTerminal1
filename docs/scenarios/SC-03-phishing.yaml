@@ -33,6 +33,20 @@ flags:
   - id: FLAG-SC03-1
     description: "Reverse shell callback received from simulated endpoint"
 
+methodologies:
+  branch_sso:
+    label: "NEXORA SSO credential-capture simulation"
+    required_tools: ["gophish", "curl"]
+    evidence_chain: ["SSO landing page", "submitted credential event", "2FA prompt telemetry"]
+  branch_payload:
+    label: "Synthetic attachment execution"
+    required_tools: ["gophish", "msfvenom"]
+    evidence_chain: ["payload marker selected", "persona execution event", "process telemetry"]
+  branch_beacon:
+    label: "Beacon detection and response"
+    required_tools: ["grep", "siem"]
+    evidence_chain: ["check-in interval", "destination pattern", "containment recommendation"]
+
 methodology_gates:
   msfvenom:
     min_phase: 3
@@ -121,6 +135,18 @@ soc_detection:
     event_template: "CRITICAL — Reverse shell callback from {target_host} to {source_ip}:{source_port}. C2 beacon established."
     mitre: "T1571"
     detection_window_seconds: 60
+    source: attacker
+  - trigger_regex: "beacon|/api/cmd|/api/check-in|low_data_volume"
+    severity: high
+    event_template: "Beacon pattern detected from {target_host} to attacker-controlled endpoint"
+    mitre: "T1071.001"
+    detection_window_seconds: 180
+    source: attacker
+  - trigger_regex: "spf.*~all|DMARC.*not found|No DMARC|smtp.*reply-to.*nexora"
+    severity: medium
+    event_template: "Email authentication weakness observed for phishing simulation"
+    mitre: "T1566.002"
+    detection_window_seconds: 300
     source: attacker
 
 scoring:

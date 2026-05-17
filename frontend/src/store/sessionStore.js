@@ -37,6 +37,12 @@ export const useSessionStore = create((set, get) => ({
     set((s) => ({ currentSession: s.currentSession ? { ...s.currentSession, roe_acknowledged: true } : null }))
   },
 
+  setCurrentSession: (session) => set({
+    currentSession: session,
+    phase: session?.phase ?? 1,
+    score: session?.score ?? 100,
+    aiMode: session?.ai_mode || get().aiMode || 'learn',
+  }),
   setPhase: (phase) => set({ phase }),
   setScore: (score) => set({ score }),
   setAiMode: (mode) => set({ aiMode: mode }),

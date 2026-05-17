@@ -41,6 +41,9 @@ bash scripts/demo-deploy.sh
 - `scripts/demo-bootstrap.sh` installs system packages, enables the firewall, clones/updates the repo, creates a generated `.env`, and prints the exact deploy command.
 - `scripts/demo-deploy.sh` validates Compose config, builds the full stack with all three scenario profiles, and runs the health check.
 - `scripts/demo-healthcheck.sh` checks the public HTTPS health endpoint and scenario catalog.
+- `scripts/demo-day-check.sh` is the defense-morning readiness check: Compose, public `/health`, scenario catalog, TLS snapshot, disk, memory, container health, and recent Caddy/backend logs.
+- `scripts/demo-recover.sh` gives fast recovery actions: `soft`, `full`, `logs`, `free-memory`, `start-scenarios`, and guarded `wipe-data`.
+- `scripts/demo-local-rehearsal.ps1` runs the all-profile local rehearsal from Windows PowerShell and confirms `http://localhost/health` plus the three-scenario catalog.
 
 ## Why this setup, in one paragraph
 

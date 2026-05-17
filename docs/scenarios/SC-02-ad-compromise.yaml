@@ -133,6 +133,18 @@ soc_detection:
     mitre: "T1558.003"
     detection_window_seconds: 60
     source: attacker
+  - trigger_regex: "GetNPUsers|AS-REP|KRB5ASREP|DONT_REQ_PREAUTH"
+    severity: high
+    event_template: "EventID 4768 — AS-REQ without pre-authentication for {target_user} from {source_ip}. AS-REP roastable account exposed."
+    mitre: "T1558.004"
+    detection_window_seconds: 60
+    source: attacker
+  - trigger_regex: "Groups\\.xml|cpassword|gpp-decrypt|SYSVOL"
+    severity: medium
+    event_template: "EventID 4670 — SYSVOL policy credential artifact accessed by {target_user} from {source_ip}."
+    mitre: "T1552.006"
+    detection_window_seconds: 120
+    source: attacker
   - trigger_regex: "crackmapexec|cme .*smb"
     severity: medium
     event_template: "EventID 4625 — Multiple failed logon attempts from {source_ip} across subnet. Credential spray pattern."

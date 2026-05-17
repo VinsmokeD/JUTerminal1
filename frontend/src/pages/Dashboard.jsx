@@ -43,6 +43,15 @@ const SCENARIO_SUMMARIES = {
   'SC-03': 'Run and investigate a controlled phishing campaign for Orion Logistics. Connect pretexting, email telemetry, endpoint behavior, and incident response notes.',
 }
 
+const FILTER_CHIPS = [
+  { id: 'all', label: 'All', match: () => true },
+  { id: 'web', label: 'Web', match: (scenario) => scenario.id === 'SC-01' || /web|owasp|sqli/i.test(JSON.stringify(scenario)) },
+  { id: 'ad', label: 'Active Directory', match: (scenario) => scenario.id === 'SC-02' || /active directory|kerberos|smb/i.test(JSON.stringify(scenario)) },
+  { id: 'phishing', label: 'Phishing', match: (scenario) => scenario.id === 'SC-03' || /phishing|email|gophish/i.test(JSON.stringify(scenario)) },
+]
+
+const DIFFICULTY_CHIPS = ['All', 'Beginner', 'Intermediate', 'Advanced']
+
 export default function Dashboard() {
   const { scenarios, fetchScenarios, startSession } = useSessionStore()
   const { username, skillLevel } = useAuthStore()
@@ -56,6 +65,9 @@ export default function Dashboard() {
   const [role, setRole] = useState('red')
   const [methodology, setMethodology] = useState('ptes')
   const [userRole, setUserRole] = useState(null)
+  const [query, setQuery] = useState('')
+  const [filterChip, setFilterChip] = useState('all')
+  const [difficultyChip, setDifficultyChip] = useState('All')
 
   useEffect(() => {
     fetchScenarios()
@@ -86,6 +98,16 @@ export default function Dashboard() {
   }
 
   const isBeginner = skillLevel === 'beginner'
+  const activeSessions = mySessions.filter(s => !s.completed_at)
+  const completedSessions = mySessions.filter(s => s.completed_at)
+  const lastActiveSession = activeSessions[0]
+  const activeFilter = FILTER_CHIPS.find(chip => chip.id === filterChip) || FILTER_CHIPS[0]
+  const filteredScenarios = scenarios.filter((sc) => {
+    const haystack = `${sc.id} ${sc.title || ''} ${sc.description || ''} ${(LEARN_POINTS[sc.id] || []).join(' ')}`.toLowerCase()
+    const matchesQuery = !query.trim() || haystack.includes(query.trim().toLowerCase())
+    const matchesDifficulty = difficultyChip === 'All' || String(sc.difficulty || '').toLowerCase() === difficultyChip.toLowerCase()
+    return matchesQuery && matchesDifficulty && activeFilter.match(sc)
+  })
 
   return (
     <div className="min-h-screen bg-void text-txt-primary font-display">
@@ -114,16 +136,25 @@ export default function Dashboard() {
               ? 'Choose a scenario to begin your training. Each one teaches different cybersecurity skills through hands-on practice in a safe, sandboxed environment.'
               : 'Select a scenario, choose your role and methodology, then launch your session.'}
           </p>
+          {lastActiveSession && (
+            <button
+              onClick={() => navigate(`/session/${lastActiveSession.id}/${lastActiveSession.role}`)}
+              className="mt-5 inline-flex items-center gap-3 rounded-cs border border-cs-blue/30 bg-cs-blue/10 px-4 py-2.5 text-sm text-cs-blue transition-colors hover:bg-cs-blue/15"
+            >
+              <span className="font-mono text-xs uppercase tracking-[0.12em]">Resume</span>
+              <span>{lastActiveSession.scenario_id} phase {lastActiveSession.phase}</span>
+            </button>
+          )}
         </div>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 pb-12">
         {/* Active sessions banner */}
-        {mySessions.filter(s => !s.completed_at).length > 0 && (
+        {activeSessions.length > 0 && (
           <div className="mb-8 p-4 rounded-cs-lg border border-cs-blue/20 bg-cs-blue-surface">
             <h3 className="text-sm font-semibold text-cs-blue mb-3 font-mono uppercase tracking-wider">Active Sessions</h3>
             <div className="flex gap-3 flex-wrap">
-              {mySessions.filter(s => !s.completed_at).slice(0, 3).map(s => (
+              {activeSessions.slice(0, 3).map(s => (
                 <button key={s.id} onClick={() => navigate(`/session/${s.id}/${s.role}`)}
                   className="flex items-center gap-3 px-4 py-2.5 rounded-cs border border-cs-border bg-surface-1 hover:border-cs-blue/30 transition-all group">
                   <span className="font-mono text-xs text-cs-blue">{s.scenario_id}</span>
@@ -139,8 +170,43 @@ export default function Dashboard() {
         )}
 
         {/* Scenario cards — 2.5D tilt + spotlight */}
+        <div className="mb-5 flex flex-col gap-3 rounded-cs-lg border border-cs-border bg-surface-1/70 p-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-1 flex-wrap items-center gap-2">
+            {FILTER_CHIPS.map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => setFilterChip(chip.id)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-mono transition-colors ${
+                  filterChip === chip.id ? 'border-cs-blue/40 bg-cs-blue/10 text-cs-blue' : 'border-cs-border text-txt-dim hover:text-txt-secondary'
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+            {DIFFICULTY_CHIPS.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => setDifficultyChip(chip)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-mono transition-colors ${
+                  difficultyChip === chip ? 'border-amber-warn/40 bg-amber-warn/10 text-amber-warn' : 'border-cs-border text-txt-dim hover:text-txt-secondary'
+                }`}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            className="input w-full text-xs font-mono md:max-w-[260px]"
+            placeholder="Search missions, tools, tactics"
+          />
+        </div>
+
         <div className="grid gap-5 lg:grid-cols-3">
-          {scenarios.map(sc => {
+          {filteredScenarios.map(sc => {
             const summary = sc.description || SCENARIO_SUMMARIES[sc.id] || 'Hands-on mission in an isolated CyberSim training network.'
             return (
               <ScenarioCard
@@ -154,13 +220,18 @@ export default function Dashboard() {
             )
           })}
         </div>
+        {filteredScenarios.length === 0 && (
+          <div className="mt-6 rounded-cs border border-cs-border bg-surface-1 p-6 text-sm text-txt-dim">
+            No scenarios match the current filters.
+          </div>
+        )}
 
         {/* Recent completed sessions */}
-        {mySessions.filter(s => s.completed_at).length > 0 && (
+        {completedSessions.length > 0 && (
           <div className="mt-12">
             <h2 className="text-sm font-semibold text-txt-dim mb-3 font-mono uppercase tracking-wider">Completed Sessions</h2>
             <div className="space-y-2">
-              {mySessions.filter(s => s.completed_at).slice(0, 5).map(s => (
+              {completedSessions.slice(0, 5).map(s => (
                 <div key={s.id} className="flex items-center justify-between bg-surface-1 border border-cs-border rounded-cs px-4 py-3 text-xs">
                   <span className="font-mono text-cs-blue">{s.scenario_id}</span>
                   <span className={`px-2 py-0.5 rounded-cs-sm font-mono font-medium ${

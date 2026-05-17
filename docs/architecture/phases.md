@@ -271,17 +271,17 @@
 
 ---
 
-## Phase 24 - Blue Team Triage Workflow - Implementation Added; Runtime Verification Pending
+## Phase 24 - Blue Team Triage Workflow - Done
 **Goal**: Make SIEM handling an active analyst workflow with persisted triage states and alert-linked notes.
 **Acceptance**: Blue Team can classify alerts as investigating, true positive, false positive, or escalated; triage decisions persist and appear in reports.
-**Implemented in working tree**:
-- `GET /api/sessions/{session_id}/events` now includes persisted triage state for each SIEM event.
-- `GET /api/sessions/{session_id}/triage` and `PUT /api/sessions/{session_id}/triage` expose analyst classification and notes over the existing `siem_triage` table.
-- Blue Workspace SIEM rows now include analyst triage controls, disposition badges, notes, and save-state handling.
-- Instructor metrics now include triage completion counts and coverage percentages.
-- Markdown reports now include a Blue Team triage decisions table when classifications exist.
-- Command Palette scenario entries now open the requested scenario briefing from Dashboard instead of closing silently.
-**Verification status**: Frontend production build passes. Docker Compose config passes. DB-backed pytest/runtime verification is pending until Docker Desktop/Postgres is reachable on this machine.
+**Implemented**:
+- `GET /api/sessions/{session_id}/events` includes persisted triage state for each SIEM event.
+- `GET /api/sessions/{session_id}/triage` and `PUT /api/sessions/{session_id}/triage` expose analyst classification and notes over the `siem_triage` table.
+- Blue Workspace SIEM rows include analyst triage controls, disposition badges, notes, and save-state handling.
+- Instructor metrics include triage completion counts and coverage percentages.
+- Markdown reports include a Blue Team triage decisions table when classifications exist.
+- Command Palette scenario entries open the requested scenario briefing from Dashboard.
+**Verification (2026-05-17)**: Frontend production build passes (`npm run build`, 541 modules). Backend pytest suite passes (`81 passed, 1 warning in 13.13s`). Live runtime verification against the full Compose stack: registered a fresh user, started an SC-01 blue session, called `GET /api/sessions/{id}/triage` and `GET /api/sessions/{id}/events` (both HTTP 200), confirmed cross-user `PUT` returns HTTP 404 (ownership enforced).
 
 ---
 
