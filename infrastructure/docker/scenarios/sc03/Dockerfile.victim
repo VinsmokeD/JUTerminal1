@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Victim simulation scripts and SMTP config
 COPY init-victim.sh /init-victim.sh
 COPY victim-simulator.py /victim-simulator.py
+COPY personas.json /personas.json
 COPY postfix-victim.cf /etc/postfix/main.cf
 RUN chmod +x /init-victim.sh /victim-simulator.py
 

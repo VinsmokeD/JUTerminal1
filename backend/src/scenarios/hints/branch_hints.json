@@ -1,0 +1,95 @@
+{
+  "SC-01": {
+    "red": {
+      "3": {
+        "branch_sqli": {
+          "L1": ["You are leaning into the SQL injection route. Prove the parameter is injectable before automation, then map database impact."],
+          "L2": ["Focus on login form behavior, database errors, and table discovery. Keep each request/response as evidence."],
+          "L3": ["Document the injectable field, enumerate database names, and confirm which table contains the admin credential evidence."]
+        },
+        "branch_lfi": {
+          "L1": ["You are leaning into file-read and traversal evidence. Version strings and path normalization behavior matter here."],
+          "L2": ["Compare the web server version with traversal symptoms, then prove controlled file disclosure without changing the host."],
+          "L3": ["Capture the vulnerable server version, the disclosed file path, and the exact response snippet that proves read access."]
+        },
+        "branch_redis": {
+          "L1": ["You are leaning into exposed service abuse. First confirm whether Redis requires authentication."],
+          "L2": ["Separate service misconfiguration evidence from web-app evidence so your report explains both risks clearly."],
+          "L3": ["Record Redis reachability, auth behavior, and any writable configuration evidence before moving to impact."]
+        }
+      },
+      "4": {
+        "branch_sqli": {
+          "L1": ["For the SQLi branch, exploitation should connect data access to application impact."],
+          "L2": ["Use minimal data extraction to prove risk. Avoid dumping unnecessary patient records."],
+          "L3": ["Capture a small sample, the affected table, and the remediation path: parameterized queries plus credential rotation."]
+        },
+        "branch_lfi": {
+          "L1": ["For the LFI branch, impact comes from sensitive file disclosure and credential exposure."],
+          "L2": ["Prioritize config files and environment backups over broad filesystem browsing."],
+          "L3": ["Capture only the necessary secret-bearing lines and tag them as evidence."]
+        },
+        "branch_redis": {
+          "L1": ["For the Redis branch, impact is configuration control of an unauthenticated service."],
+          "L2": ["Show what Redis lets you change, then explain why binding and authentication controls matter."],
+          "L3": ["Document the unsafe Redis setting, network exposure, and a safe rollback/remediation recommendation."]
+        }
+      }
+    }
+  },
+  "SC-02": {
+    "red": {
+      "2": {
+        "branch_kerberoast": {
+          "L1": ["Kerberoasting focuses on SPN-bearing service accounts and service ticket encryption."],
+          "L2": ["Track which account owns the SPN and whether the requested ticket uses weak encryption."],
+          "L3": ["Capture the SPN, encryption type, and cracked-account impact as separate evidence items."]
+        },
+        "branch_asrep": {
+          "L1": ["AS-REP roasting focuses on users without Kerberos pre-authentication."],
+          "L2": ["Verify the user attribute before treating the hash as exploitable evidence."],
+          "L3": ["Record the roastable username, proof of no-preauth, and defensive fix: require Kerberos pre-authentication."]
+        },
+        "branch_gpp": {
+          "L1": ["GPP abuse starts with SYSVOL policy discovery rather than ticket abuse."],
+          "L2": ["Find the policy path, then determine whether the credential is still valid."],
+          "L3": ["Document the Groups.xml path, account name, and remediation: remove legacy GPP passwords and rotate the credential."]
+        }
+      }
+    },
+    "blue": {
+      "1": {
+        "branch_kerberoast": {
+          "L1": ["You are seeing a Kerberoast-shaped trail. Prioritize Event 4769, RC4, and source workstation context."],
+          "L2": ["Correlate service-ticket requests with later 4624 logons by the same account."],
+          "L3": ["Triage the targeted SPN, requesting client, encryption type, and any later credential use."]
+        }
+      }
+    }
+  },
+  "SC-03": {
+    "red": {
+      "2": {
+        "branch_sso": {
+          "L1": ["The SSO branch succeeds or fails on landing-page credibility and credential capture telemetry."],
+          "L2": ["Make sure the pretext, sender, and portal branding match the persona you target."],
+          "L3": ["Document landing-page URL, target group, and submitted-field telemetry."]
+        },
+        "branch_payload": {
+          "L1": ["The payload branch is about delivery-to-execution evidence, not real malware."],
+          "L2": ["Use the harmless scenario payload markers and watch for simulated process events."],
+          "L3": ["Record attachment name, persona response, and resulting synthetic execution event."]
+        }
+      }
+    },
+    "blue": {
+      "2": {
+        "branch_beacon": {
+          "L1": ["Beacon analysis focuses on regular intervals, low data volume, and repeated destination patterns."],
+          "L2": ["Correlate the beacon with the email recipient and the process that initiated it."],
+          "L3": ["Document interval, destination, host, user, and containment recommendation."]
+        }
+      }
+    }
+  }
+}

@@ -24,6 +24,8 @@ from src.scenarios.gatekeeper import check_command
 from src.scenarios.loader import load_scenario
 from src.scenarios.hint_engine import _load_hints
 from src.scenarios.engine import try_advance_phase
+from src.scenarios.output_patterns import scan_output_chunk
+from src.scenarios.branching import infer_active_branch, get_active_branch, get_branch_hint
 
 _GATE_PENALTY = 5  # points deducted per blocked command
 _ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → scenario_id
@@ -97,6 +99,11 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
 
     from src.scenarios.gatekeeper import _parse_tool as _gt
     tool_name = _gt(command)
+    previous_branch = session_state.get("active_branch")
+    active_branch = await infer_active_branch(session_id, session_state["scenario_id"], command)
+    if active_branch and active_branch != previous_branch:
+        session_state["active_branch"] = active_branch
+        await send_json({"type": "branch_update", "data": active_branch})
     async with AsyncSessionLocal() as db:
         db.add(CommandLog(
             session_id=session_id,
@@ -249,6 +256,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             frame = await asyncio.to_thread(_get_frame)
             if frame:
                 await _send_json({"type": "terminal_output", "data": {"data": frame}})
+                for insight in scan_output_chunk(session_id, session_state["scenario_id"], frame):
+                    await _send_json({"type": "output_insight", "data": insight})
 
     async def _command_worker() -> None:
         while True:
@@ -273,27 +282,39 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     async def _send_hint(level: int) -> None:
         hint_text = None
         hint_steps = None
+        active_branch = session_state.get("active_branch") or await get_active_branch(session_id)
 
         ai_hint = await get_ai_hint(session_id, session_state, None, level)
         if ai_hint:
             hint_text = ai_hint
             hint_steps = [ai_hint]
         else:
-            hints_data = _load_hints(session_state["scenario_id"])
-            sc_hints = hints_data.get(session_state["scenario_id"], {})
-            role_hints = sc_hints.get(session_state.get("role", "red"), {})
-            phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
-            static_hint = phase_hints.get(f"L{level}")
+            branch_steps = get_branch_hint(
+                session_state["scenario_id"],
+                session_state.get("role", "red"),
+                session_state.get("phase", 1),
+                active_branch.get("id") if active_branch else None,
+                level,
+            )
+            if branch_steps:
+                hint_text = "\n".join(branch_steps)
+                hint_steps = branch_steps
+            else:
+                hints_data = _load_hints(session_state["scenario_id"])
+                sc_hints = hints_data.get(session_state["scenario_id"], {})
+                role_hints = sc_hints.get(session_state.get("role", "red"), {})
+                phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
+                static_hint = phase_hints.get(f"L{level}")
 
-            if isinstance(static_hint, list):
-                hint_text = "\n".join(static_hint)
-                hint_steps = static_hint
-            elif static_hint:
-                hint_text = static_hint
-                hint_steps = [static_hint]
+                if isinstance(static_hint, list):
+                    hint_text = "\n".join(static_hint)
+                    hint_steps = static_hint
+                elif static_hint:
+                    hint_text = static_hint
+                    hint_steps = [static_hint]
 
         if hint_text:
-            await _send_json({"type": "ai_hint", "data": {"text": hint_text, "steps": hint_steps, "level": level}})
+            await _send_json({"type": "ai_hint", "data": {"text": hint_text, "steps": hint_steps, "level": level, "branch": active_branch}})
         else:
             await _send_json({"type": "ai_hint", "data": {"text": "No hint available for this phase yet. Try progressing to the next step.", "steps": [], "level": level}})
 

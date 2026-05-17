@@ -1,0 +1,3 @@
+Synthetic payload marker: Invoice_2024.pdf
+Behavior simulated by victim-simulator.py: document-open telemetry only.
+No embedded JavaScript PDF is present in this repository.

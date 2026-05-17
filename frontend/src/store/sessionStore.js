@@ -8,6 +8,7 @@ export const useSessionStore = create((set, get) => ({
   score: 100,
   siemEvents: [],
   aiMode: 'learn',
+  activeBranch: null,
   discoveries: { services: [], paths: [], vulns: [], credentials: [] },
   pendingEvidence: null, // auto-evidence waiting for user confirmation
 
@@ -24,6 +25,7 @@ export const useSessionStore = create((set, get) => ({
       score: res.data.score,
       siemEvents: [],
       aiMode: res.data.ai_mode || 'learn',
+      activeBranch: null,
       discoveries: { services: [], paths: [], vulns: [], credentials: [] },
       pendingEvidence: null,
     })
@@ -38,6 +40,7 @@ export const useSessionStore = create((set, get) => ({
   setPhase: (phase) => set({ phase }),
   setScore: (score) => set({ score }),
   setAiMode: (mode) => set({ aiMode: mode }),
+  setActiveBranch: (branch) => set({ activeBranch: branch }),
   setSiemEvents: (events) => set({ siemEvents: events || [] }),
 
   addSiemEvent: (event) => set((s) => {
@@ -65,7 +68,7 @@ export const useSessionStore = create((set, get) => ({
 
   clearSession: () => set({
     currentSession: null, phase: 1, score: 100, siemEvents: [],
-    aiMode: 'learn', discoveries: { services: [], paths: [], vulns: [], credentials: [] },
+    aiMode: 'learn', activeBranch: null, discoveries: { services: [], paths: [], vulns: [], credentials: [] },
     pendingEvidence: null,
   }),
 }))

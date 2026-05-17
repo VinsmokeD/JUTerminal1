@@ -72,6 +72,27 @@ docker compose --profile sc02 up -d
 docker compose --profile sc03 up -d
 ```
 
+## Demo-Day HTTPS Deployment
+
+For the graduation-defense version, use the checked-in demo deployment layer instead of manually translating the runbook:
+
+```bash
+# On a fresh Ubuntu 24.04 VPS as root
+CYBERSIM_DOMAIN=demo.example.com bash scripts/demo-bootstrap.sh
+cd /opt/cybersim
+nano .env
+bash scripts/demo-deploy.sh
+```
+
+The demo layer is:
+
+- `docker-compose.demo.yml` adds Caddy on ports 80/443 and disables the local Nginx proxy.
+- `infrastructure/caddy/Caddyfile` routes `/api`, `/ws`, and `/health` to FastAPI and all other paths to the React frontend.
+- `.env.demo.example` documents the demo-only environment values.
+- `scripts/demo-healthcheck.sh` verifies Compose config plus the public health and scenario endpoints.
+
+If you do not own a domain yet, omit `CYBERSIM_DOMAIN`; the bootstrap script creates an `sslip.io` hostname from the VPS public IP.
+
 ## Local Development
 
 Backend:

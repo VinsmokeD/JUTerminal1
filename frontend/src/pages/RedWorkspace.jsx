@@ -5,6 +5,8 @@ import { useAuthStore } from '../store/authStore'
 import { useWebSocket } from '../hooks/useWebSocket'
 import RoeBriefing from '../components/workspace/RoeBriefing'
 import WorkspaceTopBar from '../components/workspace/WorkspaceTopBar'
+import LayoutPicker from '../components/workspace/LayoutPicker'
+import ResizableSplit from '../components/workspace/ResizableSplit'
 import Terminal from '../components/terminal/Terminal'
 import SiemFeed from '../components/siem/SiemFeed'
 import GuidedNotebook from '../components/notes/GuidedNotebook'
@@ -37,13 +39,11 @@ export default function RedWorkspace() {
     api.get(`/sessions/${sessionId}/events`).then(r => setSiemEvents(r.data || [])).catch(() => {})
   }, [session, sessionId, navigate, setSiemEvents])
 
-  // Session timer
   useEffect(() => {
     const interval = setInterval(() => setElapsed(e => e + 1), 1000)
     return () => clearInterval(interval)
   }, [])
 
-  // Causality flash: when new SIEM events arrive, briefly highlight the panel
   useEffect(() => {
     if (siemEvents.length > siemCountRef.current) {
       siemCountRef.current = siemEvents.length
@@ -53,9 +53,7 @@ export default function RedWorkspace() {
     }
   }, [siemEvents.length])
 
-  // Raw keystrokes → Docker PTY
   const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
-  // Complete command → AI/discovery tracking
   const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
 
   if (!session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading session...</div>
@@ -65,7 +63,6 @@ export default function RedWorkspace() {
 
   return (
     <div className="workspace-shell font-display">
-      {/* Beginner welcome modal */}
       <Modal
         open={showWelcome}
         onClose={() => setShowWelcome(false)}
@@ -79,14 +76,14 @@ export default function RedWorkspace() {
       >
         <div className="space-y-3.5 text-sm text-txt-secondary">
           {[
-            ['cs-red',       'Terminal',  'Type Kali Linux commands here. Every keystroke is sent to your isolated container.'],
-            ['cs-blue',      'AI Tutor',  'Watches your moves and offers guidance. Toggle Learn / Challenge mode in the top bar.'],
-            ['green-signal', 'SIEM Feed', 'Real-time alerts your actions trigger — exactly what the Blue Team sees.'],
-            ['amber-warn',   'Notebook',  'Document findings. Good notes are the difference between a hobbyist and a professional.'],
+            ['cs-red', 'Terminal', 'Type Kali Linux commands here. Every keystroke is sent to your isolated container.'],
+            ['cs-blue', 'AI Tutor', 'Watches your moves and offers guidance. Toggle Learn / Challenge mode in the top bar.'],
+            ['green-signal', 'SIEM Feed', 'Real-time alerts your actions trigger - exactly what the Blue Team sees.'],
+            ['amber-warn', 'Notebook', 'Document findings. Good notes are the difference between a hobbyist and a professional.'],
           ].map(([color, name, body]) => (
             <div key={name} className="flex gap-3 items-start">
               <div className={`w-2.5 h-2.5 mt-1.5 rounded-full flex-shrink-0 bg-${color}`} style={{ boxShadow: `0 0 8px var(--${color === 'cs-red' ? 'red-glow' : color === 'cs-blue' ? 'blue-glow' : color === 'green-signal' ? 'green-signal' : 'amber-warn'})` }} />
-              <div><strong className="text-txt-primary">{name}</strong> — {body}</div>
+              <div><strong className="text-txt-primary">{name}</strong> - {body}</div>
             </div>
           ))}
         </div>
@@ -106,54 +103,71 @@ export default function RedWorkspace() {
         aiMode={aiMode}
         elapsed={elapsed}
         connection={connectionState}
+      >
+        <LayoutPicker role="red" scenarioId={session.scenario_id} />
+      </WorkspaceTopBar>
+
+      <ResizableSplit
+        role="red"
+        scenarioId={session.scenario_id}
+        slots={{
+          mainTop: {
+            label: 'Kali Terminal',
+            element: (
+              <div className="workspace-pane workspace-terminal-pane">
+                <div className="absolute inset-0 bg-red-surface opacity-50" />
+                <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
+                  <MitreBadge phase={phase} scenario={session.scenario_id} />
+                </PanelHeader>
+                <div className="flex-1 overflow-hidden relative z-10">
+                  <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
+                </div>
+              </div>
+            ),
+          },
+          sideTop: {
+            label: 'AI Tutor',
+            element: (
+              <div className="workspace-pane workspace-side-pane">
+                <PanelHeader color="blue" title="AI Tutor" />
+                <div className="flex-1 overflow-hidden">
+                  <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
+                </div>
+              </div>
+            ),
+          },
+          sideBottom: {
+            label: 'SIEM Feed',
+            element: (
+              <div className={`workspace-pane workspace-side-pane transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
+                <div className="absolute inset-0 bg-blue-surface opacity-30" />
+                {siemFlash && (
+                  <div className="absolute inset-0 bg-green-signal/5 z-20 pointer-events-none animate-pulse" />
+                )}
+                <PanelHeader color="green" title="SIEM Feed" subtitle={siemFlash ? 'alert triggered' : 'alerts your actions trigger'}>
+                  <LiveDot />
+                </PanelHeader>
+                <div className="flex-1 overflow-hidden relative z-10">
+                  <SiemFeed />
+                </div>
+              </div>
+            ),
+          },
+          mainBottom: {
+            label: 'Pentest Notebook',
+            element: (
+              <div className="workspace-pane workspace-bottom-pane">
+                <PanelHeader color="amber" title="Pentest Notebook" subtitle={`Phase ${phase}`}>
+                  <LearningContextBadge scenario={session.scenario_id} phase={phase} />
+                </PanelHeader>
+                <div className="flex-1 overflow-hidden">
+                  <GuidedNotebook sessionId={sessionId} role="red" phase={phase} />
+                </div>
+              </div>
+            ),
+          },
+        }}
       />
-
-      {/* Main workspace */}
-      <div className="workspace-grid">
-
-        {/* Terminal — left, spans 2 rows */}
-        <div className="workspace-pane workspace-terminal-pane">
-          <div className="absolute inset-0 bg-red-surface opacity-50" />
-          <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
-            <MitreBadge phase={phase} scenario={session.scenario_id} />
-          </PanelHeader>
-          <div className="flex-1 overflow-hidden relative z-10">
-            <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
-          </div>
-        </div>
-
-        {/* AI Tutor — top right */}
-        <div className="workspace-pane workspace-side-pane">
-          <PanelHeader color="blue" title="AI Tutor" />
-          <div className="flex-1 overflow-hidden">
-            <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
-          </div>
-        </div>
-
-        {/* SIEM Peek — middle right */}
-        <div className={`workspace-pane workspace-side-pane transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
-          <div className="absolute inset-0 bg-blue-surface opacity-30" />
-          {siemFlash && (
-            <div className="absolute inset-0 bg-green-signal/5 z-20 pointer-events-none animate-pulse" />
-          )}
-          <PanelHeader color="green" title="SIEM Feed" subtitle={siemFlash ? 'alert triggered' : 'alerts your actions trigger'}>
-            <LiveDot />
-          </PanelHeader>
-          <div className="flex-1 overflow-hidden relative z-10">
-            <SiemFeed />
-          </div>
-        </div>
-
-        {/* Notebook — bottom, full width */}
-        <div className="workspace-pane workspace-bottom-pane">
-          <PanelHeader color="amber" title="Pentest Notebook" subtitle={`Phase ${phase}`}>
-            <LearningContextBadge scenario={session.scenario_id} phase={phase} />
-          </PanelHeader>
-          <div className="flex-1 overflow-hidden">
-            <GuidedNotebook sessionId={sessionId} role="red" phase={phase} />
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

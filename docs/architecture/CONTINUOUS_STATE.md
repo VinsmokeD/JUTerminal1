@@ -13,6 +13,130 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-17 10:45:34 +03:00] - Claude Code (Demo Env DSN Alignment)
+* **Status**: Complete.
+* **Why**: The generated demo `.env` and demo template should match the backend's async SQLAlchemy engine if they are ever used outside the Compose-derived `POSTGRES_URL`. This removes ambiguity during a rushed VPS setup.
+* **Where**:
+  - `.env.demo.example` - changed the demo `POSTGRES_URL` placeholder to `postgresql+asyncpg://...`.
+  - `scripts/demo-bootstrap.sh` - changed the generated `POSTGRES_URL` to `postgresql+asyncpg://...`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this final alignment record.
+* **What & How**: The Compose service already derives an asyncpg database URL from `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB`; the template and bootstrap script now use the same async driver form for consistency. `docker compose --env-file .env.demo.example -f docker-compose.yml -f docker-compose.demo.yml --profile sc01 --profile sc02 --profile sc03 config --quiet` passed, and the rendered config shows `ENVIRONMENT=production`, demo CORS origins, `MAX_CONCURRENT_SESSIONS=5`, Caddy enabled, and Nginx excluded from default demo services.
+
+### [2026-05-17 10:44:16 +03:00] - Claude Code (Demo-Day Deployment Verification)
+* **Status**: Testing complete for static/deploy configuration gates; runtime Caddy/container smoke is blocked locally because Docker Engine is not running.
+* **Why**: After adding the demo deployment artifacts, the stack needed empirical checks that the Compose files merge correctly, Caddy replaces Nginx for demo runs, all three scenario profiles remain selectable, frontend production build still works, and the shell scripts are structurally reviewable before use on the VPS.
+* **Where**:
+  - `docker-compose.demo.yml` - corrected to inherit the base `cybersim` project name so backend sandbox orchestration continues to target the same Compose networks.
+  - `scripts/demo-deploy.sh` - added a targeted stop/remove for the old local `nginx` service before starting Caddy, preventing port 80 conflicts when switching an existing checkout into demo mode.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification record.
+* **What & How**: Verification passed for `docker compose -f docker-compose.yml -f docker-compose.demo.yml config --quiet`, `docker compose -f docker-compose.yml -f docker-compose.demo.yml --profile sc01 --profile sc02 --profile sc03 config --quiet`, demo service selection without `nginx`, all-scenario service selection with `caddy`, and `frontend` `npm run build` after rerunning outside the sandbox because esbuild was blocked by `spawn EPERM`. Local script syntax checks could not execute because both WSL Bash and Git Bash fail with Windows access-denied errors in this environment. Full `docker compose up` and Caddy runtime validation could not run because Docker Desktop/Engine is not currently available (`docker ps` cannot connect to the Docker API). The deploy path is therefore statically verified and build-verified, with live runtime verification deferred to a Docker-enabled machine or the VPS.
+
+### [2026-05-17 10:43:31 +03:00] - Claude Code (WS-D SC-02 Realism Seeds)
+* **Status**: Coding - Nexora AD scenario realism breadcrumbs and branch artifacts added.
+* **Why**: WS-D deepens SC-02 with realistic AD enumeration paths beyond Kerberoasting: GPP in SYSVOL, AS-REP roastable user marker, share content with script credentials, Windows-style audit mapping, and a harmless workstation credential-cache marker.
+* **Where**:
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` - copies SYSVOL seed artifacts into the DC image.
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` - creates `rgreen`, best-effort marks it for AS-REP training, copies SYSVOL seed content, and writes an AS-REP marker note.
+  - `infrastructure/docker/scenarios/sc02/setup-shares.sh` - creates HR and IT share directories and seeds onboarding, public SYSVOL clue, and `backup.ps1` plaintext credential breadcrumb.
+  - `infrastructure/docker/scenarios/sc02/smb.conf` - rewrote the Samba config with Windows Server 2019-style banner, audit event-ID mapping notes, and HR$/IT$ shares.
+  - `infrastructure/docker/scenarios/sc02/sysvol-seed/{31B2F340-016D-11D2-945F-00C04FB984F9}/Machine/Preferences/Groups/Groups.xml` - added GPP training artifact with a marker cpassword.
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.workstation` - added a synthetic workstation image with a harmless LSASS marker file.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the SC-02 edit.
+* **What & How**: The file server now exposes HR and IT administrative breadcrumbs, the DC seeds SYSVOL with a Groups.xml policy artifact, and `rgreen` becomes the AS-REP branch user with a best-effort directory flag plus explicit training marker. The workstation artifact is intentionally not a memory dump; it is a text marker documenting what the scenario should teach.
+
+### [2026-05-17 10:40:26 +03:00] - Claude Code (Demo-Day Deployment Artifacts Implemented)
+* **Status**: Coding complete; verification pending.
+* **Why**: User clarified the deployment goal is a short-lived graduation-defense demo with a stable HTTPS URL, not a production launch. The existing plan needed to become executable project files so the VPS setup can be performed by running scripts instead of manually translating markdown into shell commands.
+* **Where**:
+  - `docker-compose.demo.yml` - added demo override with Caddy, 80/443 exposure, backend demo env overrides, relative frontend build args, and local Nginx disabled behind `local-nginx`.
+  - `infrastructure/caddy/Caddyfile` - added Caddy reverse-proxy config for `/health`, `/ws/*`, `/api/*`, and React SPA traffic.
+  - `.env.demo.example` - added demo environment template with hostname, generated-secret placeholders, CORS, concurrency, and frontend URL defaults.
+  - `scripts/demo-bootstrap.sh` - added Ubuntu VPS bootstrap script for packages, firewall, repo checkout/update, sslip.io fallback domain, and generated `.env`.
+  - `scripts/demo-deploy.sh` - added Compose validation, full-profile build/up, and delegated health check.
+  - `scripts/demo-healthcheck.sh` - added public HTTPS health and scenario-catalog verification.
+  - `frontend/Dockerfile` - added Vite build args for API and WebSocket URL embedding.
+  - `docker-compose.yml` - passed the existing backend/frontend environment knobs into containers and changed frontend defaults to relative `/api`/auto-WebSocket behavior.
+  - `.env.example` - documented `CYBERSIM_DOMAIN`, `VITE_API_URL`, and `VITE_WS_URL`.
+  - `README.md` - added concise demo-day deployment instructions.
+  - `docs/architecture/DEMO_DAY_PLAN.md` - linked the plan to the implemented repo artifacts.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this implementation record.
+* **What & How**: The demo path now layers `docker-compose.demo.yml` on top of the existing single-node stack, replacing the local Nginx edge with Caddy for automatic HTTPS and WebSocket-safe routing. The Caddyfile uses `CYBERSIM_DOMAIN` so the same config works with a real domain or generated sslip.io hostname. The bootstrap script creates a secure `.env` with random JWT and Postgres secrets while leaving the Gemini key editable, and the deploy script runs all three scenario profiles through Compose config validation before starting. Frontend Docker builds now default to relative API paths so the same image works on localhost, a real HTTPS hostname, and sslip.io without hardcoded public origins.
+
+### [2026-05-17 10:39:52 +03:00] - Claude Code (WS-C SC-01 Realism Seeds)
+* **Status**: Coding - NovaMed web scenario realism breadcrumbs and ancillary service markers added.
+* **Why**: WS-C deepens SC-01 from a single vulnerable PHP app into a more realistic healthcare web target with service fingerprints, discoverable artifacts, admin-console breadcrumbs, and alternative methodology branches while remaining inside the existing isolated Docker scenario.
+* **Where**:
+  - `infrastructure/docker/scenarios/sc01/Dockerfile.webapp` - added Redis package, Apache status config, Redis config, artifact copies, upload `.htaccess`, X-Powered-By header, and port 6379 exposure.
+  - `infrastructure/docker/scenarios/sc01/entrypoint.sh` - starts Redis alongside SSH, FTP, and Apache.
+  - `infrastructure/docker/scenarios/sc01/index.php` - updated NovaMed portal branding, added MD5 migration and backup breadcrumbs, recaptcha fallback marker, footer, and existing version disclosure.
+  - `infrastructure/docker/scenarios/sc01/robots.txt`, `swagger.json`, `.env_leak`, `backup.zip`, `uploads.htaccess`, `phpmyadmin/index.php`, `git-seed/config`, `git-seed/HEAD` - created scenario seed artifacts.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the SC-01 edit.
+* **What & How**: The SC-01 image now serves `/robots.txt`, `/swagger.json`, `/.env.bak`, `/backup.zip`, `/phpmyadmin/`, and a seeded `/.git/` directory copied from `git-seed`. Apache mod_status is enabled at `/server-status`, Redis runs unauthenticated inside the internal scenario network, uploads accept `.phtml` through the lab `.htaccess`, and the portal UI now presents a more realistic "NovaMed Patient Portal v3.2.1" surface. The backup artifact is a harmless text seed named `backup.zip`, not a real compressed secret archive.
+
+### [2026-05-17 10:36:01 +03:00] - Claude Code (WS-G Branch-Aware Methodology)
+* **Status**: Coding - active branch inference, branch-specific hints, and frontend branch display added.
+* **Why**: WS-G requires multiple valid student routes through a scenario and hint diversification by observed methodology. The system previously advanced phases linearly and showed the same hint tree regardless of whether the student pursued SQLi, LFI, Redis, Kerberoast, AS-REP, GPP, SSO, payload, or beacon-analysis paths.
+* **Where**:
+  - `backend/src/scenarios/branching.py` - created command-pattern branch inference, Redis-backed active branch cache, and branch-aware hint lookup.
+  - `backend/src/scenarios/hints/branch_hints.json` - added branch-specific L1/L2/L3 hint snippets for SC-01, SC-02, and SC-03.
+  - `backend/src/ws/routes.py` - infers branch after submitted commands, emits `branch_update`, and prefers branch-specific hints before falling back to existing static hints.
+  - `frontend/src/store/sessionStore.js` - added `activeBranch` and setter.
+  - `frontend/src/hooks/useWebSocket.js` - handles `branch_update` frames.
+  - `frontend/src/components/methodology/PhaseTrail.jsx` - displays the active branch chip beside the phase trail.
+  - `frontend/src/components/workspace/WorkspaceTopBar.jsx` - passes active branch state into PhaseTrail.
+  - `frontend/src/components/hints/AiHintPanel.jsx` - shows active branch context and tags branch-aware hint cards.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the WS-G edit.
+* **What & How**: Submitted commands are matched against scenario-specific regex rules and cached in Redis under `session:{id}:active_branch` for the session duration. When a branch changes, the browser receives `branch_update`; when hints are requested, the backend first checks `branch_hints.json` for the current scenario/role/phase/branch/level, then falls back to the existing linear hint JSON. The UI now makes branch context visible in both the shared top bar and AI tutor.
+
+### [2026-05-17 10:33:35 +03:00] - Claude Code (Phase V4 Build Correction and First Verification)
+* **Status**: Testing - first frontend and backend structural checks completed after a resizable-panels API correction.
+* **Why**: The initial build showed that the installed `react-resizable-panels` package exports `Group` and `Separator`, not the older `PanelGroup` and `PanelResizeHandle` names. The wrapper needed to align with the actual package API before more V4 work could safely layer on top.
+* **Where**:
+  - `frontend/src/components/workspace/ResizableSplit.jsx` - changed imports and JSX from `PanelGroup`/`PanelResizeHandle` to `Group`/`Separator`, added panel IDs, percent-based default/min sizes, default layout maps, and layout-map normalization.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification record.
+* **What & How**: `npm run build` first failed in the sandbox with esbuild `spawn EPERM`, then ran outside the sandbox and surfaced the package export mismatch. After adapting `ResizableSplit` to the installed API, `npm run build` passed with production chunks including `RedWorkspace`, `BlueWorkspace`, `vendor-xterm`, and existing lazy three.js chunks. `python -m py_compile backend/src/scenarios/output_patterns.py backend/src/ws/routes.py` also passed, confirming the new backend output scanner and WebSocket integration are syntactically valid.
+
+### [2026-05-17 10:31:14 +03:00] - Claude Code (Phase V4 Implementation Pass - WS-A/WS-B/WS-F)
+* **Status**: Coding - terminal usability, resizable workspace shell, and output insight engine implemented in the working tree; verification pending.
+* **Why**: User asked to start fully implementing the Phase V4 realism, guidance, and usability plan. The initial plan file was absent from this checkout, so the supplied plan was persisted first, then the highest-dependency streams were implemented: terminal controls (WS-A), workspace resizability/persistence (WS-B), and read-the-output guidance plumbing (WS-F).
+* **Where**:
+  - `docs/architecture/PHASE_V4_PLAN.md` - created from the supplied V4 plan.
+  - `frontend/package.json`, `frontend/package-lock.json` - added `xterm-addon-search`, `xterm-addon-webgl`, `react-resizable-panels`, and `jspdf`.
+  - `frontend/src/hooks/useTerminal.js` - added xterm search/WebGL addons, persisted font/theme preferences, native selection support, clipboard helpers, search/clear/reset/scroll controls, and multi-character paste command tracking.
+  - `frontend/src/components/terminal/Terminal.jsx` - removed the full-bleed textarea selection blocker, added Ctrl-Shift-C/V, context-menu/touch/pinch handling, toolbar integration, and output insight rendering.
+  - `frontend/src/components/terminal/TerminalToolbar.jsx`, `TerminalContextMenu.jsx`, `OutputAnnotator.jsx`, `OutputInsightPanel.jsx` - created terminal control and output-guidance UI.
+  - `frontend/src/store/layoutStore.js` - created persisted per-role/per-scenario layout state with Focus/Balanced/Debug presets, collapsed panels, and fullscreen state.
+  - `frontend/src/components/workspace/LayoutPicker.jsx`, `ResizableSplit.jsx`, `WorkspaceTopBar.jsx` - added layout picker slot and resizable/collapsible/fullscreen workspace panel shell.
+  - `frontend/src/pages/RedWorkspace.jsx`, `frontend/src/pages/BlueWorkspace.jsx` - moved both workspaces from fixed `.workspace-grid` into `ResizableSplit` slots while preserving terminal, SIEM, AI tutor, notebook, playbook, IOC, and triage behavior.
+  - `backend/src/scenarios/output_patterns.py` - added cached/scenario-aware PTY output scanner with ANSI cleanup, line buffering, and duplicate throttling.
+  - `backend/src/scenarios/patterns/sc01_outputs.json`, `sc02_outputs.json`, `sc03_outputs.json` - added initial scenario output fingerprint catalogs.
+  - `backend/src/ws/routes.py` - scans live terminal output and emits `output_insight` frames.
+  - `frontend/src/hooks/useWebSocket.js` - dispatches output-insight frames to terminal UI.
+  - `frontend/src/index.css` - added terminal toolbar/context/scrollbar/output-insight styles and resizable workspace styles.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this consolidated implementation record.
+* **What & How**: WS-A now lets xterm receive native pointer selection directly, preserves Ctrl-C as SIGINT, maps Ctrl-Shift-C/V to browser clipboard operations, exposes find/font/clear/copy/scroll/reset controls, and persists terminal preferences under `cs.terminal.*`. WS-B uses `react-resizable-panels` with a Zustand layout store persisted under `cs.workspace.layouts.v1`; Red and Blue workspaces provide named slots so existing mission features remain intact while panel geometry is draggable, collapsible, fullscreenable, and preset-driven. WS-F adds an in-memory output-pattern scanner that only processes completed PTY lines, avoids Postgres raw-output storage, and sends educational insight cards for recognized SC-01/02/03 fingerprints without embedding real exploit payload strings.
+
+### [2026-05-17 11:45:00 +03:00] - Claude Code (Demo-Day Deployment Plan Authored)
+* **Status**: Planning — no code changes yet
+* **Why**: User clarified scope: not a production launch, just a working public URL for the graduation defense (1–3 weeks lead time, ~3 concurrent users including jury members trying it live). The earlier DEPLOYMENT_PLAN.md targets closed-beta/public-launch which is overkill for a one-shot demo. Needed a focused, minimal plan that gets the stack live with HTTPS for the defense day with the least possible operational overhead.
+* **Where**:
+  - `docs/architecture/DEMO_DAY_PLAN.md` (NEW) — focused demo-day plan
+* **What & How**: Plan is 6 phases over 1–3 weeks. Recommends Hetzner CCX13 (€13/mo dedicated-AMD, 8 GB) as primary host, Porkbun domain (~$3) or sslip.io free, Caddy for auto-Let's-Encrypt HTTPS, Cloudflare DNS-only (proxy OFF — WebSockets unreliable through CF proxy at the message volume terminal generates). Phases: (1) local rehearsal to confirm peak RAM stays <6 GB, (2) domain + VPS provisioning ~1 hr, (3) server bootstrap with ufw + docker ~30 min, (4) Caddy + docker-compose.demo.yml override + production .env ~45 min, (5) two rehearsals with full demo script + multi-user concurrent stress test, (6) day-of protocol with morning checks and slide-deck fallback. Total spend ~$15–25. Includes 8-row failure-mode quickfix table, Cloudflare Tunnel backup plan if laptop/VPS dies mid-demo, and explicit list of what is intentionally skipped (backups, monitoring, rate-limiting, ToS, CI/CD) with rationale. Plan deliberately avoids the production hardening in DEPLOYMENT_PLAN.md to stay within demo-only scope.
+
+### [2026-05-17 11:00:00 +03:00] - Claude Code (Deployment Plan Authored)
+* **Status**: Planning — no code changes yet
+* **Why**: User has no prior deployment experience and asked whether the project is launch-ready, what infrastructure to use, and whether AWS is appropriate. Needed a full deployment readiness audit + phased go-live plan covering both closed-beta and public scenarios, with honest cost numbers and concrete first steps.
+* **Where**:
+  - `docs/architecture/DEPLOYMENT_PLAN.md` (NEW) — full plan
+* **What & How**: Plan covers 12 sections: (1) honest readiness gap table, (2) per-user resource math showing why this isn't a normal SaaS deploy (1.5–1.8 GB RAM/user), (3) hosting comparison table — recommended Hetzner over AWS for v1 with concrete cost numbers, (4) security gaps to close pre-launch (docker socket exposure, container egress, resource caps, auth hardening, TLS via Caddy, secrets, backups), (5) domain/DNS/ancillary services bill of materials, (6) 5–7 day closed-beta launch plan day-by-day, (7) 2–3 week public launch plan + when AWS finally becomes worth it with reference architecture, (8) CI/CD pipeline template, (9) pre-launch operational checklist, (10) concrete "what to do this weekend" smallest-step guidance, (11) cost summary (~$70–80/mo closed beta, $200–300/mo public), (12) ranked risk register. Verdict: not ready for public launch, ready for closed beta after ~1 week of hardening. Plan explicitly recommends starting with a $5 throwaway VPS to surface first-deployment surprises before committing to the production host.
+
+### [2026-05-17 10:15:00 +03:00] - Claude Code (Phase v4 Plan Authored)
+* **Status**: Planning — no code changes yet
+* **Why**: User requested a detailed continuation plan covering (a) close-out of v3 design phases, (b) all-three-scenario realism deepening, (c) terminal usability (scroll/copy/paste/resize/find), (d) read-the-output guided panels with annotated outputs, (e) methodology diversification, (f) interactable/customizable/resizable workspace layout. Plan must enumerate workstreams, files, acceptance gates, and risk mitigation before execution begins.
+* **Where**:
+  - `docs/architecture/PHASE_V4_PLAN.md` (NEW) — full plan
+* **What & How**: Plan is organized into 8 workstreams (WS-A terminal usability, WS-B resizable workspace, WS-C/D/E scenario realism for SC-01/02/03, WS-F output-annotator engine + JSON pattern catalogs, WS-G methodology branching with branch-aware hints, WS-H v3 close-out covering Dashboard/Debrief/Settings/Palette/A11y). Each workstream lists exact files touched, effort sizing, acceptance test, and verification command. Order: WS-A+B first (unblocks usability), then C/D/E in parallel (each isolated docker subdir), then F/G layered on top, then H polish. Includes 8-day milestone schedule, risk table, explicit out-of-scope list, and final deliverable checklist. Plan adheres to v2.0 guardrails (no SC-04+, no Internet egress, no real LSASS exposure — uses synthetic markers). Audit section at top reconciles what v3 actually shipped vs. what remains.
+
 ### [2026-05-16 12:00:00 +03:00] - Claude Code (Design System v3 — Phases 1-2, 3, 4 partial, 5, 7 partial)
 * **Status**: Complete — all green builds, three.js code-split verified, workspace bundle unchanged
 * **Why**: User approved the "Operations Center" design plan and asked to proceed. Phases 1+2+3+4(partial)+5+7(partial) shipped in one coherent pass. Workspaces (Phase 3) and Landing (Phase 5) get the biggest visible upgrade; foundation (1+2) underpins every future polish.

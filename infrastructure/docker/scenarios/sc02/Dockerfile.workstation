@@ -1,0 +1,22 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-server \
+    samba-client \
+    net-tools \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /var/run/sshd /opt/nexora/forensics && \
+    useradd -m -s /bin/bash jsmith && \
+    echo 'jsmith:Welcome1!' | chpasswd
+
+RUN cat > /opt/nexora/forensics/lsass_marker.txt << 'EOF'
+Synthetic credential-cache marker for CyberSim SC-02.
+This is not a real LSASS dump.
+Analyst note: cached session belongs to it.admin on NEXORA-WS01.
+EOF
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]

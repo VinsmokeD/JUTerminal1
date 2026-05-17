@@ -108,7 +108,7 @@ if (strpos($_SERVER['REQUEST_URI'], '/api/v1/patients') !== false) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NovaMed Patient Portal</title>
+<title>NovaMed Patient Portal v3.2.1</title>
 <style>
   body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
   .header { background: #1a5f7a; color: white; padding: 15px 20px; border-radius: 4px; margin-bottom: 20px; }
@@ -126,7 +126,7 @@ if (strpos($_SERVER['REQUEST_URI'], '/api/v1/patients') !== false) {
 <body>
 
 <div class="header">
-  NovaMed Healthcare Portal
+  NovaMed Patient Portal v3.2.1&trade;
   <?php if (!empty($_SESSION['user'])): ?>
   <span>Logged in as: <?= htmlspecialchars($_SESSION['user']['username']) ?> | <a href="?page=logout" style="color:#adf">Logout</a></span>
   <?php endif; ?>
@@ -148,12 +148,17 @@ if (strpos($_SERVER['REQUEST_URI'], '/api/v1/patients') !== false) {
 <?php if ($page === 'login'): ?>
 <div class="card">
   <h2>Patient Login</h2>
+  <!-- TODO: migrate from MD5, ticket NM-1284 -->
+  <!-- Legacy backup path moved; verify /backup.zip is no longer public before HIPAA audit. -->
   <?php if ($error): ?><div class="error"><?= $error ?></div><?php endif; ?>
   <form method="POST" action="?page=login">
     <label>Username</label>
     <input type="text" name="username" placeholder="Enter your username" autofocus>
     <label>Password</label>
     <input type="password" name="password" placeholder="Enter your password">
+    <div style="height:46px;border:1px dashed #bbb;background:#fafafa;color:#999;font-size:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+      reCAPTCHA unavailable - fallback mode
+    </div>
     <input type="submit" value="Sign In">
   </form>
   <p style="margin-top:15px; font-size:13px; color:#666">
@@ -220,5 +225,8 @@ if (strpos($_SERVER['REQUEST_URI'], '/api/v1/patients') !== false) {
 
 <!-- INTENTIONAL: Server version disclosure via comment -->
 <!-- Apache/2.4.49 (Ubuntu) PHP/7.4.3 -->
+<footer style="margin-top:24px;color:#777;font-size:12px;text-align:center">
+  &copy; 2023 NovaMed Healthcare LLC | Powered by HealthStack CMS
+</footer>
 </body>
 </html>

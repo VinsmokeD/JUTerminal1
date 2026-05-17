@@ -14,7 +14,7 @@ export function useWebSocket(sessionId) {
   const lastTerminalOutputAtRef = useRef(0)
   const [reconnectTick, setReconnectTick] = useState(0)
   const [connectionState, setConnectionState] = useState('disconnected')
-  const { addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence, setPhase } = useSessionStore()
+  const { addSiemEvent, setScore, setAiMode, setActiveBranch, addDiscoveries, setPendingEvidence, setPhase } = useSessionStore()
 
   useEffect(() => {
     if (!sessionId) return
@@ -80,6 +80,14 @@ export function useWebSocket(sessionId) {
           case 'phase_update':
             setPhase(msg.data.phase)
             break
+          case 'branch_update':
+            setActiveBranch(msg.data)
+            break
+          case 'output_insight':
+            window.dispatchEvent(new CustomEvent('terminal:insight', {
+              detail: { ...msg.data, sessionId },
+            }))
+            break
           case 'auto_evidence':
             addDiscoveries(msg.data.discoveries)
             if (Object.values(msg.data.discoveries).some(arr => arr.length > 0)) {
@@ -117,7 +125,7 @@ export function useWebSocket(sessionId) {
       }
       ws.close()
     }
-  }, [sessionId, reconnectTick, addSiemEvent, setScore, setAiMode, addDiscoveries, setPendingEvidence, setPhase])
+  }, [sessionId, reconnectTick, addSiemEvent, setScore, setAiMode, setActiveBranch, addDiscoveries, setPendingEvidence, setPhase])
 
   useEffect(() => {
     if (!sessionId) return

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "sc03-gophish",
+    "regex": "GoPhish|campaign|landing page",
+    "what": "The phishing campaign infrastructure is responding.",
+    "why": "Campaign setup output is the bridge between OSINT/pretext work and victim telemetry.",
+    "next": "Confirm landing page, recipient group, and sending profile before launching.",
+    "tags": ["phishing", "campaign"]
+  },
+  {
+    "id": "sc03-spf-softfail",
+    "regex": "v=spf1\\s+~all|softfail|DMARC.*not found|No DMARC",
+    "what": "The mail domain has weak SPF or missing DMARC policy.",
+    "why": "Email authentication gaps are both an attacker breadcrumb and a defender remediation item.",
+    "next": "Record the DNS evidence and include it in the final phishing IR report.",
+    "tags": ["osint", "email-auth"]
+  },
+  {
+    "id": "sc03-beacon",
+    "regex": "beacon|check-in|/api/(cmd|check-in)|low data volume",
+    "what": "The output resembles a beacon/check-in pattern.",
+    "why": "Regular small callbacks after delivery indicate command-and-control style behavior.",
+    "next": "Correlate interval, destination, process context, and recipient persona in the SIEM timeline.",
+    "tags": ["c2", "detection"]
+  },
+  {
+    "id": "sc03-office-exec",
+    "regex": "WINWORD|macro|4688|PowerShell|4104",
+    "what": "Office or script execution evidence is present.",
+    "why": "Process-creation and script-block telemetry prove whether delivery became execution.",
+    "next": "Tie the process event back to the email recipient and attachment name.",
+    "tags": ["execution", "blue-team"]
+  }
+]

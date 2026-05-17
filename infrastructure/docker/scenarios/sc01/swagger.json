@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "NovaMed Patient API",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/v1/patients": {
+      "get": {
+        "summary": "List visible patient records"
+      }
+    },
+    "/api/v1/patients/{id}": {
+      "get": {
+        "summary": "Fetch patient record by id",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ]
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "summary": "Legacy user profile lookup"
+      }
+    }
+  }
+}

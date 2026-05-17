@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTerminal } from '../../hooks/useTerminal'
+import TerminalContextMenu from './TerminalContextMenu'
+import TerminalToolbar from './TerminalToolbar'
+import OutputAnnotator from './OutputAnnotator'
+import OutputInsightPanel from './OutputInsightPanel'
 
 /**
  * Real PTY terminal component.
@@ -9,103 +13,62 @@ import { useTerminal } from '../../hooks/useTerminal'
  */
 export default function Terminal({ onData, onCommand, pendingOutput, connectionState = 'connected', sessionId }) {
   const containerRef = useRef(null)
-  const captureRef = useRef(null)
-  const lineBufferRef = useRef('')
+  const touchTimerRef = useRef(null)
+  const pinchDistanceRef = useRef(null)
   const [isFocused, setIsFocused] = useState(false)
-  const { writeOutput } = useTerminal({ containerRef, onData, onCommand, sessionId })
+  const [menu, setMenu] = useState(null)
+  const [insights, setInsights] = useState([])
+  const [activeInsight, setActiveInsight] = useState(null)
+  const [autoCopy, setAutoCopy] = useState(() => {
+    try {
+      return localStorage.getItem('cs.terminal.autoCopy') === 'true'
+    } catch {
+      return false
+    }
+  })
+  const terminal = useTerminal({ containerRef, onData, onCommand, sessionId, autoCopySelection: autoCopy })
 
   // Expose writeOutput via ref so parent can push output
   if (pendingOutput) {
-    pendingOutput.current = writeOutput
+    pendingOutput.current = terminal.writeOutput
   }
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      captureRef.current?.focus({ preventScroll: true })
+      terminal.focus()
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [])
+  }, [terminal.focus])
 
-  const rememberInput = (data) => {
-    const chars = data.replace(/\r\n/g, '\n').split('')
-    chars.forEach((char) => {
-      if (char === '\r' || char === '\n') {
-        const cmd = lineBufferRef.current.trim()
-        if (cmd && onCommand) onCommand(cmd)
-        lineBufferRef.current = ''
-      } else if (char === '\x7f' || char === '\b') {
-        lineBufferRef.current = lineBufferRef.current.slice(0, -1)
-      } else if (char === '\x03' || char === '\x04') {
-        lineBufferRef.current = ''
-      } else if (char >= ' ' && char !== '\x1b') {
-        lineBufferRef.current += char
-      }
-    })
-  }
-
-  const sendInput = (data, trackCommand = true) => {
-    if (onData) onData(data)
-    if (trackCommand) rememberInput(data)
-  }
-
-  const keyToTerminalData = (evt) => {
-    if (evt.ctrlKey && !evt.metaKey && !evt.altKey) {
-      const key = evt.key.toLowerCase()
-      if (key === 'c') return { data: '\x03', trackCommand: true }
-      if (key === 'd') return { data: '\x04', trackCommand: true }
-      if (key === 'l') return { data: '\x0c', trackCommand: false }
-      if (key === 'r') return { data: '\x12', trackCommand: false }
-      return null
+  useEffect(() => {
+    const handler = (evt) => {
+      if (evt.detail?.sessionId && evt.detail.sessionId !== sessionId) return
+      setInsights((current) => {
+        const next = [evt.detail, ...current.filter((item) => item.id !== evt.detail.id)].slice(0, 6)
+        setActiveInsight(evt.detail.id)
+        return next
+      })
     }
-    if (evt.metaKey || evt.altKey) return null
-
-    const specialKeys = {
-      Enter: '\r',
-      Backspace: '\x7f',
-      Tab: '\t',
-      Escape: '\x1b',
-      ArrowUp: '\x1b[A',
-      ArrowDown: '\x1b[B',
-      ArrowRight: '\x1b[C',
-      ArrowLeft: '\x1b[D',
-      Home: '\x1b[H',
-      End: '\x1b[F',
-      Delete: '\x1b[3~',
-      PageUp: '\x1b[5~',
-      PageDown: '\x1b[6~',
-    }
-    if (specialKeys[evt.key]) {
-      return { data: specialKeys[evt.key], trackCommand: !evt.key.startsWith('Arrow') && evt.key !== 'Home' && evt.key !== 'End' && evt.key !== 'Delete' && evt.key !== 'PageUp' && evt.key !== 'PageDown' && evt.key !== 'Escape' }
-    }
-    if (evt.key.length === 1) return { data: evt.key, trackCommand: true }
-    return null
-  }
+    window.addEventListener('terminal:insight', handler)
+    return () => window.removeEventListener('terminal:insight', handler)
+  }, [sessionId])
 
   const handleKeyDown = (evt) => {
-    const mapped = keyToTerminalData(evt)
-    if (!mapped) return
-    evt.preventDefault()
-    sendInput(mapped.data, mapped.trackCommand)
-    evt.currentTarget.value = ''
-  }
-
-  const handleInput = (evt) => {
-    const text = evt.currentTarget.value
-    if (!text) return
-    sendInput(text)
-    evt.currentTarget.value = ''
-  }
-
-  const handlePaste = (evt) => {
-    const text = evt.clipboardData?.getData('text')
-    if (!text) return
-    evt.preventDefault()
-    sendInput(text)
-    evt.currentTarget.value = ''
-  }
-
-  const focusCapture = () => {
-    captureRef.current?.focus({ preventScroll: true })
+    if (evt.ctrlKey && evt.shiftKey && evt.key.toLowerCase() === 'c') {
+      evt.preventDefault()
+      terminal.copySelection()
+      return
+    }
+    if (evt.ctrlKey && evt.shiftKey && evt.key.toLowerCase() === 'v') {
+      evt.preventDefault()
+      terminal.pasteClipboard()
+      return
+    }
+    if ((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === 'f') {
+      evt.preventDefault()
+      setMenu(null)
+      window.dispatchEvent(new CustomEvent('terminal:focus-find'))
+    }
   }
 
   const statusLabel = {
@@ -116,35 +79,124 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
   }[connectionState] || 'Terminal offline'
   const statusTone = connectionState === 'connected' ? 'border-green-signal/40 text-green-signal' : 'border-cs-red/40 text-cs-red'
 
+  const showMenu = (x, y) => {
+    setMenu({ x: Math.min(x, window.innerWidth - 180), y: Math.min(y, window.innerHeight - 210) })
+  }
+
+  const handleContextMenu = (evt) => {
+    evt.preventDefault()
+    showMenu(evt.clientX, evt.clientY)
+  }
+
+  const handleTouchStart = (evt) => {
+    terminal.focus()
+    if (evt.touches.length === 2) {
+      pinchDistanceRef.current = getTouchDistance(evt.touches)
+      return
+    }
+    window.clearTimeout(touchTimerRef.current)
+    const touch = evt.touches[0]
+    touchTimerRef.current = window.setTimeout(() => {
+      showMenu(touch.clientX, touch.clientY)
+    }, 560)
+  }
+
+  const handleTouchMove = (evt) => {
+    if (evt.touches.length === 2 && pinchDistanceRef.current) {
+      const next = getTouchDistance(evt.touches)
+      const delta = next - pinchDistanceRef.current
+      if (Math.abs(delta) > 24) {
+        if (delta > 0) terminal.increaseFont()
+        else terminal.decreaseFont()
+        pinchDistanceRef.current = next
+      }
+      return
+    }
+    window.clearTimeout(touchTimerRef.current)
+  }
+
+  const handleTouchEnd = () => {
+    window.clearTimeout(touchTimerRef.current)
+    pinchDistanceRef.current = null
+  }
+
+  const handleAutoCopyChange = (enabled) => {
+    setAutoCopy(enabled)
+    try {
+      localStorage.setItem('cs.terminal.autoCopy', String(enabled))
+    } catch {
+      // ignore persistence failures
+    }
+  }
+
   return (
     <div
-      className={`relative h-full w-full rounded-cs-sm transition-shadow ${isFocused ? 'ring-1 ring-cs-red/45' : 'ring-1 ring-transparent'}`}
-      onMouseDown={focusCapture}
-      onTouchStart={focusCapture}
+      className={`relative flex h-full w-full flex-col rounded-cs-sm transition-shadow ${isFocused ? 'ring-1 ring-cs-red/45' : 'ring-1 ring-transparent'}`}
+      onKeyDown={handleKeyDown}
+      onContextMenu={handleContextMenu}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
+      <TerminalToolbar
+        fontSize={terminal.fontSize}
+        renderer={terminal.renderer}
+        selection={terminal.selection}
+        autoCopy={autoCopy}
+        onAutoCopyChange={handleAutoCopyChange}
+        onFontDown={terminal.decreaseFont}
+        onFontUp={terminal.increaseFont}
+        onFindNext={terminal.findNext}
+        onFindPrev={terminal.findPrev}
+        onClear={terminal.clear}
+        onCopySelection={terminal.copySelection}
+        onCopyAll={terminal.copyAll}
+        onPaste={terminal.pasteClipboard}
+        onScrollTop={terminal.scrollToTop}
+        onScrollBottom={terminal.scrollToBottom}
+        onReset={terminal.reset}
+        onNewTab={() => window.open(window.location.href, '_blank', 'noopener,noreferrer')}
+      />
+      <OutputAnnotator
+        insight={insights.find((item) => item.id === activeInsight) || insights[0]}
+        onOpen={() => setActiveInsight((insights.find((item) => item.id === activeInsight) || insights[0])?.id)}
+      />
       <div
         ref={containerRef}
-        className="w-full h-full terminal"
+        className="min-h-0 flex-1 terminal"
         style={{ padding: '16px', background: 'transparent' }}
-      />
-      <textarea
-        ref={captureRef}
-        aria-label="Terminal keyboard capture"
-        autoCapitalize="off"
-        autoComplete="off"
-        autoCorrect="off"
-        spellCheck={false}
-        inputMode="text"
-        className="absolute inset-0 z-20 h-full w-full resize-none border-0 bg-transparent p-0 text-transparent outline-none caret-transparent"
-        onKeyDown={handleKeyDown}
-        onInput={handleInput}
-        onPaste={handlePaste}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
+        onMouseDown={() => terminal.focus()}
       />
       <div className={`pointer-events-none absolute right-3 top-3 z-30 rounded-cs-sm border bg-surface-1/90 px-2.5 py-1 text-[10px] font-mono uppercase ${statusTone}`}>
         {statusLabel}
       </div>
+      <TerminalContextMenu
+        menu={menu}
+        selection={terminal.selection}
+        onClose={() => setMenu(null)}
+        onCopy={terminal.copySelection}
+        onPaste={terminal.pasteClipboard}
+        onClear={terminal.clear}
+        onFind={() => window.dispatchEvent(new CustomEvent('terminal:focus-find'))}
+        onReset={terminal.reset}
+      />
+      <OutputInsightPanel
+        insights={insights}
+        activeId={activeInsight}
+        onSelect={setActiveInsight}
+        onDismiss={(id) => {
+          setInsights((current) => current.filter((item) => item.id !== id))
+          setActiveInsight((current) => current === id ? null : current)
+        }}
+      />
     </div>
   )
+}
+
+function getTouchDistance(touches) {
+  const [a, b] = touches
+  if (!a || !b) return 0
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
 }

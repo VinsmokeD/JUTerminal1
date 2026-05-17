@@ -24,7 +24,7 @@ const PHASE_CONTEXT = {
 export default function AiHintPanel({ onRequestHint, onToggleMode }) {
   const [hints, setHints] = useState([])
   const [loading, setLoading] = useState(false)
-  const { aiMode, phase, currentSession } = useSessionStore()
+  const { aiMode, phase, currentSession, activeBranch } = useSessionStore()
   const { skillLevel } = useAuthStore()
 
   const role = currentSession?.role || 'red'
@@ -40,6 +40,7 @@ export default function AiHintPanel({ onRequestHint, onToggleMode }) {
         text: evt.detail.text,
         steps: evt.detail.steps || null,
         level: evt.detail.level || null,
+        branch: evt.detail.branch || null,
         ts: new Date().toLocaleTimeString(),
       }, ...p].slice(0, 30))
       setLoading(false)
@@ -101,6 +102,11 @@ export default function AiHintPanel({ onRequestHint, onToggleMode }) {
           </span>
           {scenarioId && <span className="ml-auto flex-shrink-0 text-xs text-txt-dim font-mono">{scenarioId}</span>}
         </div>
+        {activeBranch?.label && (
+          <div className="mb-1.5 inline-flex max-w-full rounded-full border border-green-signal/20 bg-green-signal/8 px-2 py-0.5 text-[10px] font-mono text-green-signal">
+            Active branch: {activeBranch.label}
+          </div>
+        )}
         <p className="text-xs text-txt-secondary leading-relaxed">{ctx.prompt}</p>
       </div>
 
@@ -174,6 +180,7 @@ function HintCard({ hint }) {
         <span className={`text-xs font-mono font-semibold ${style.color}`}>
           {hint.level ? `L${hint.level} ${style.label}` : style.label}
         </span>
+        {hint.branch?.label && <span className="text-xs text-green-signal font-mono">{hint.branch.label}</span>}
         {hasSteps && <span className="text-xs text-txt-dim font-mono">{hint.steps.length} steps</span>}
         <span className="text-xs text-txt-dim font-mono ml-auto">{hint.ts}</span>
       </div>

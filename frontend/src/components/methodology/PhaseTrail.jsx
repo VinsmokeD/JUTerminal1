@@ -6,7 +6,7 @@ const PHASES = {
   custom: ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5', 'Phase 6'],
 }
 
-export default function PhaseTrail({ methodology = 'ptes', role = 'red', currentPhase = 1 }) {
+export default function PhaseTrail({ methodology = 'ptes', role = 'red', currentPhase = 1, activeBranch = null }) {
   const key = role === 'blue' ? 'nist' : (methodology || 'ptes')
   const phases = PHASES[key] || PHASES.ptes
   const visiblePhases = phases.filter(Boolean)
@@ -52,6 +52,11 @@ export default function PhaseTrail({ methodology = 'ptes', role = 'red', current
       }`}>
         {phases[currentPhase - 1] || ''}
       </span>
+      {activeBranch?.label && (
+        <span className="ml-2 hidden max-w-[180px] truncate rounded-full border border-green-signal/20 bg-green-signal/8 px-2 py-0.5 text-[10px] font-mono text-green-signal sm:inline-block">
+          {activeBranch.label}
+        </span>
+      )}
     </div>
   )
 }

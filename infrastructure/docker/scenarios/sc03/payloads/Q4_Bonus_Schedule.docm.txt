@@ -1,0 +1,3 @@
+Synthetic payload marker: Q4_Bonus_Schedule.docm
+Behavior simulated by victim-simulator.py: Office macro execution and beacon events.
+No executable macro content is present in this repository.

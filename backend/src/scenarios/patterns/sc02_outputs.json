@@ -1,0 +1,34 @@
+[
+  {
+    "id": "sc02-samba-domain",
+    "regex": "nexora\\.local|Samba\\s+4|Windows Server 2019",
+    "what": "The host is presenting as a Samba-backed Windows domain environment.",
+    "why": "Domain fingerprints tell you which identity and Kerberos workflows are relevant.",
+    "next": "Move from host discovery into user, share, and Kerberos enumeration.",
+    "tags": ["recon", "ad"]
+  },
+  {
+    "id": "sc02-kerberos-4769",
+    "regex": "4769|TGS|Kerberoast|RC4|0x17",
+    "what": "The output references Kerberos service-ticket activity.",
+    "why": "RC4 service tickets and Event 4769 are key evidence for Kerberoasting analysis.",
+    "next": "Capture the account, encryption type, source host, and time window for your IR timeline.",
+    "tags": ["kerberos", "blue-team"]
+  },
+  {
+    "id": "sc02-gpp-cpassword",
+    "regex": "Groups\\.xml|cpassword",
+    "what": "SYSVOL Group Policy Preferences content is present.",
+    "why": "Legacy GPP artifacts can expose reusable local-admin credentials in many AD labs.",
+    "next": "Document the policy path and validate the account scope before using it in the scenario.",
+    "tags": ["gpp", "credentials"]
+  },
+  {
+    "id": "sc02-asrep",
+    "regex": "AS-REP|DONT_REQ_PREAUTH|GetNPUsers|KRB5ASREP",
+    "what": "An AS-REP roasting path may be available.",
+    "why": "Users without Kerberos pre-authentication can reveal crackable authentication material.",
+    "next": "Verify the user attribute and keep this branch separate from Kerberoasting evidence.",
+    "tags": ["kerberos", "branch"]
+  }
+]

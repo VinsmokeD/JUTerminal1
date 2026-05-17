@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import ConnectionPill from './ConnectionPill'
 import PhaseTrail from '../methodology/PhaseTrail'
+import { useSessionStore } from '../../store/sessionStore'
 
 /**
  * WorkspaceTopBar — refined session header used by both Red and Blue workspaces.
@@ -40,9 +41,11 @@ export default function WorkspaceTopBar({
   aiMode,
   elapsed,
   connection,
+  children,
 }) {
   const navigate = useNavigate()
   const tokens = ROLE_TOKENS[role] || ROLE_TOKENS.red
+  const activeBranch = useSessionStore((state) => state.activeBranch)
 
   return (
     <div
@@ -90,11 +93,12 @@ export default function WorkspaceTopBar({
 
       {/* Phase trail (flex grows to fill) */}
       <div className="hidden md:flex flex-1 min-w-0 overflow-x-auto">
-        <PhaseTrail methodology={methodology} role={role} currentPhase={phase} />
+        <PhaseTrail methodology={methodology} role={role} currentPhase={phase} activeBranch={activeBranch} />
       </div>
 
       {/* Right cluster */}
       <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+        {children}
         <ConnectionPill state={connection} />
 
         {aiMode && (

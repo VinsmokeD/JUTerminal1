@@ -1,0 +1,5 @@
+PK-SIMULATED-ZIP
+This is a text seed intentionally served as backup.zip for the lab.
+db_backup.sql:
+  admin_hash: 0192023a7bbd73250516f069df18b500
+  note: migrate away from MD5 after NM-1284

@@ -38,6 +38,21 @@ PROCESSED_RESULTS = set()
 GOPHISH_API_URL = os.environ.get('GOPHISH_API_URL', 'http://172.20.3.10:3333')
 GOPHISH_API_KEY = os.environ.get('GOPHISH_API_KEY', 'admin')
 POLL_INTERVAL = int(os.environ.get('POLL_INTERVAL', '10'))  # seconds
+PERSONAS_PATH = os.environ.get('PERSONAS_PATH', '/personas.json')
+
+def load_personas():
+    try:
+        with open(PERSONAS_PATH, 'r', encoding='utf-8') as handle:
+            return json.load(handle)
+    except Exception as exc:
+        logger.warning(f"[PERSONAS] Failed to load {PERSONAS_PATH}: {exc}")
+        return {
+            "average": {"open_delay": [15, 60], "click_delay": [10, 30], "macro_probability": 0.5, "beacon_count": 3},
+            "aware": {"open_delay": [60, 120], "click_delay": [30, 90], "macro_probability": 0.1, "beacon_count": 1},
+            "cfo": {"open_delay": [10, 30], "click_delay": [5, 20], "macro_probability": 0.7, "beacon_count": 4}
+        }
+
+PERSONAS = load_personas()
 
 class VictimSimulator:
     """Simulates victim endpoint behavior"""
@@ -45,6 +60,15 @@ class VictimSimulator:
     def __init__(self):
         self.processed_emails = set()
         self.active_simulations = {}
+
+    def choose_persona(self, email_to):
+        """Pick a deterministic persona class from the target identity."""
+        identity = (email_to or "").lower()
+        if "cfo" in identity or "finance" in identity or "chief" in identity:
+            return "cfo", PERSONAS.get("cfo", PERSONAS["average"])
+        if "security" in identity or "it." in identity or "admin" in identity:
+            return "aware", PERSONAS.get("aware", PERSONAS["average"])
+        return "average", PERSONAS.get("average", {})
 
     def poll_gophish_campaigns(self):
         """Poll GoPhish API for active campaigns and their status"""
@@ -202,7 +226,7 @@ class VictimSimulator:
             'process': 'powershell.exe',
             'event_details': 'C2 beacon callback detected',
             'mitre_technique': 'T1071.001',
-            'raw_log': 'Network Connection: powershell.exe -> 172.20.3.10:4444 (ESTABLISHED)',
+            'raw_log': 'HTTPS beacon /api/check-in low_data_volume powershell.exe -> attacker.local:443',
             'victim_hostname': 'target-ws-sc03'
         }
 
@@ -254,18 +278,21 @@ def gophish_polling_loop():
                     # Simulate victim chain in background
                     def victim_chain(cid, cname, email):
                         try:
-                            # Open email after 15-60s
-                            delay = random.randint(15, 60)
+                            persona_name, persona = simulator.choose_persona(email)
+                            logger.info(f"[PERSONA] {email} classified as {persona_name}")
+
+                            # Open email after persona-specific delay
+                            delay = random.randint(*persona.get('open_delay', [15, 60]))
                             time.sleep(delay)
                             simulator.simulate_email_open(cid, email, cname)
 
-                            # Click link after 10-30s more
-                            delay = random.randint(10, 30)
+                            # Click link after persona-specific delay
+                            delay = random.randint(*persona.get('click_delay', [10, 30]))
                             time.sleep(delay)
                             simulator.simulate_link_click(cid, email, cname)
 
-                            # Macro execution after 5-15s more (50% chance)
-                            if random.random() > 0.5:
+                            # Synthetic payload execution based on persona probability
+                            if random.random() < float(persona.get('macro_probability', 0.5)):
                                 delay = random.randint(5, 15)
                                 time.sleep(delay)
                                 simulator.simulate_macro_execution(cid, email, cname)
@@ -275,10 +302,11 @@ def gophish_polling_loop():
                                 time.sleep(delay)
                                 simulator.simulate_powershell_payload(cid, email, cname)
 
-                                # C2 callback after 2-8s more
-                                delay = random.randint(2, 8)
-                                time.sleep(delay)
-                                simulator.simulate_callback_beacon(cid, email, cname)
+                                # C2 callback beacons with regular low-volume intervals
+                                for _ in range(int(persona.get('beacon_count', 3))):
+                                    delay = random.randint(8, 16)
+                                    time.sleep(delay)
+                                    simulator.simulate_callback_beacon(cid, email, cname)
                         except Exception as e:
                             logger.error(f"[VICTIM_CHAIN_ERROR] {e}")
 

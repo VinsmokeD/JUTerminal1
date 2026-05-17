@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Domain provisioning script (Kerberos config handled inline in script)
 COPY provision-dc.sh /provision-dc.sh
+COPY sysvol-seed/ /opt/cybersim/sysvol-seed/
 RUN chmod +x /provision-dc.sh
 
 # Expose required ports for AD services

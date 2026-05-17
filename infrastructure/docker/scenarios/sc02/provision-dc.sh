@@ -83,6 +83,23 @@ for user in "mross:Winter2024!" "bclark:Spring2024!" "ajones:Summer2024!" "lwill
     fi
 done
 
+# AS-REP roastable training user marker. The ldbmodify step is best-effort
+# because Samba schema behavior differs across image builds.
+if samba-tool user create rgreen "Spring2024!" 2>/dev/null; then
+    echo "[+] Created user: rgreen (AS-REP training path)"
+else
+    echo "[*] User rgreen already exists"
+fi
+samba-tool user setexpiry rgreen --noexpiry 2>/dev/null || true
+cat > /tmp/rgreen-no-preauth.ldif << 'EOF'
+dn: CN=rgreen,CN=Users,DC=nexora,DC=local
+changetype: modify
+replace: userAccountControl
+userAccountControl: 4194816
+EOF
+ldbmodify -H /var/lib/samba/private/sam.ldb /tmp/rgreen-no-preauth.ldif 2>/dev/null || \
+    echo "[*] AS-REP flag best-effort marker retained for rgreen"
+
 # Create service account for Kerberoasting (SPN-based vulnerability)
 if samba-tool user create svc_backup "Backup2023!" 2>/dev/null; then
     echo "[+] Created user: svc_backup (service account)"
@@ -136,6 +153,15 @@ chmod 755 /var/log/samba/audit
 # Configure Samba audit logging in smb.conf
 # Note: Full Windows Event ID mapping requires Samba 4.14+ with full audit plugin
 echo "[+] Audit directories prepared"
+
+# Seed SYSVOL artifacts for GPP and AS-REP methodology branches
+echo "[+] Seeding SYSVOL training artifacts..."
+mkdir -p /var/lib/samba/sysvol/$DOMAIN/Policies
+cp -R /opt/cybersim/sysvol-seed/* /var/lib/samba/sysvol/$DOMAIN/Policies/ 2>/dev/null || true
+cat > /var/lib/samba/sysvol/$DOMAIN/ASREP_ROASTABLE_rgreen.txt << 'EOF'
+Training marker: rgreen is configured as the AS-REP roasting branch user.
+Expected defensive finding: require Kerberos pre-authentication.
+EOF
 
 echo "[+] DC Setup Complete — Starting Samba"
 exec samba -i

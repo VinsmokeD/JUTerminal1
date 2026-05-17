@@ -1,0 +1,8 @@
+[core]
+    repositoryformatversion = 0
+    filemode = true
+[remote "origin"]
+    url = ssh://git.novamed.local/healthstack/patient-portal.git
+[branch "legacy-md5-login"]
+    remote = origin
+    merge = refs/heads/legacy-md5-login

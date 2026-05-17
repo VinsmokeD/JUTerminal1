@@ -1,0 +1,34 @@
+[
+  {
+    "id": "sc01-apache-2449",
+    "regex": "Apache/(2\\.4\\.49|2\\.4\\.50)",
+    "what": "Apache 2.4.49/2.4.50 is a high-value version fingerprint in NovaMed.",
+    "why": "Version-specific regressions can turn normal web enumeration into a path-traversal investigation inside this isolated lab.",
+    "next": "Record the version, inspect exposed web paths, and compare it with the SC-01 playbook branch for traversal testing.",
+    "tags": ["recon", "web", "cve"]
+  },
+  {
+    "id": "sc01-redis-open",
+    "regex": "6379/tcp\\s+open\\s+redis|Redis server v=4",
+    "what": "Unauthenticated Redis is exposed on the scenario network.",
+    "why": "Redis configuration access can become an alternate post-exploitation path when it is reachable without authentication.",
+    "next": "Validate whether Redis requires auth, then decide whether your branch is web exploitation or service abuse.",
+    "tags": ["recon", "redis", "branch"]
+  },
+  {
+    "id": "sc01-phpmyadmin",
+    "regex": "phpMyAdmin|/phpmyadmin",
+    "what": "phpMyAdmin is a credential and database-administration breadcrumb.",
+    "why": "Admin panels often connect weak credentials, exposed configs, and database impact evidence.",
+    "next": "Capture the path in notes and look for credential clues before attempting authentication.",
+    "tags": ["enumeration", "database"]
+  },
+  {
+    "id": "sc01-env-leak",
+    "regex": "DB_PASS|JWT_SECRET|\\.env",
+    "what": "The output references environment-style secrets.",
+    "why": "Leaked configuration can explain how a low-privilege web finding becomes authenticated application access.",
+    "next": "Treat the value as sensitive evidence and document where it was found.",
+    "tags": ["evidence", "credentials"]
+  }
+]

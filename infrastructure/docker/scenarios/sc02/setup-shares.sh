@@ -31,11 +31,15 @@ mkdir -p /srv/shares/public
 mkdir -p /srv/shares/finance
 mkdir -p /srv/shares/backups
 mkdir -p /srv/shares/admin
+mkdir -p /srv/shares/hr/onboarding
+mkdir -p /srv/shares/it/scripts
 
 chmod 755 /srv/shares/public
 chmod 750 /srv/shares/finance
 chmod 750 /srv/shares/backups
 chmod 750 /srv/shares/admin
+chmod 750 /srv/shares/hr
+chmod 750 /srv/shares/it
 
 # Seed realistic files
 echo "[+] Seeding files..."
@@ -84,6 +88,27 @@ For assistance, contact IT Help Desk
 helpdesk@nexora.local | ext. 2000
 EOF
 
+cat > /srv/shares/public/readme.txt << 'EOF'
+NEXORA-FS01 public notice
+Legacy workstation build notes moved to SYSVOL during the last GPO cleanup.
+If troubleshooting old local-admin policy, check Groups.xml under SYSVOL.
+EOF
+
+cat > /srv/shares/hr/onboarding/new_hire_checklist.docx << 'EOF'
+NEXORA HR ONBOARDING CHECKLIST
+- Badge request
+- Payroll profile
+- VPN enrollment
+- Security awareness module
+EOF
+
+cat > /srv/shares/it/scripts/backup.ps1 << 'EOF'
+# NEXORA backup helper - training artifact
+$Server = "NEXORA-SQL01"
+$Cred = "svc_sql:SqlPass456!"
+Write-Host "Starting nightly backup job for $Server"
+EOF
+
 cat > /srv/shares/backups/db_backup_20240115.bak << 'EOF'
 NEXORA DATABASE BACKUP
 Date: 2024-01-15
@@ -111,6 +136,8 @@ chmod 640 /srv/shares/finance/*
 chmod 640 /srv/shares/backups/*
 chmod 640 /srv/shares/admin/*
 chmod 644 /srv/shares/public/*
+chmod 640 /srv/shares/hr/onboarding/*
+chmod 640 /srv/shares/it/scripts/*
 
 # Configure Kerberos client for domain join (with RC4 support for Kerberoasting)
 echo "[+] Configuring Kerberos..."

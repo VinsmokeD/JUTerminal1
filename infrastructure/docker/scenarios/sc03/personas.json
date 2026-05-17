@@ -1,0 +1,23 @@
+{
+  "cfo": {
+    "description": "Fast clicker: high-volume executive persona with urgent invoice context.",
+    "open_delay": [10, 30],
+    "click_delay": [5, 20],
+    "macro_probability": 0.72,
+    "beacon_count": 4
+  },
+  "aware": {
+    "description": "Security-aware user: slower, often reports suspicious mail.",
+    "open_delay": [60, 120],
+    "click_delay": [30, 90],
+    "macro_probability": 0.12,
+    "beacon_count": 1
+  },
+  "average": {
+    "description": "Average user: moderate delay and moderate execution likelihood.",
+    "open_delay": [15, 60],
+    "click_delay": [10, 30],
+    "macro_probability": 0.48,
+    "beacon_count": 3
+  }
+}

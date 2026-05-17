@@ -1,0 +1,52 @@
+# Demo-day override for a public HTTPS URL.
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+#     --profile sc01 --profile sc02 --profile sc03 up -d --build
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      - CYBERSIM_DOMAIN=${CYBERSIM_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
+  backend:
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost,http://localhost:3000}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - GEMINI_MAX_TOKENS=${GEMINI_MAX_TOKENS:-150}
+      - AI_CALL_COOLDOWN_SECONDS=${AI_CALL_COOLDOWN_SECONDS:-10}
+      - MAX_CONCURRENT_SESSIONS=${MAX_CONCURRENT_SESSIONS:-5}
+      - CONTAINER_CPU_LIMIT=${CONTAINER_CPU_LIMIT:-0.5}
+      - CONTAINER_MEMORY_LIMIT=${CONTAINER_MEMORY_LIMIT:-512m}
+
+  frontend:
+    build:
+      args:
+        - VITE_API_URL=${VITE_API_URL:-/api}
+        - VITE_WS_URL=${VITE_WS_URL:-}
+
+  # Keep the local Nginx service out of demo runs; Caddy owns 80/443.
+  nginx:
+    profiles: ["local-nginx"]
+
+volumes:
+  caddy_data:
+  caddy_config:

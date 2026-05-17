@@ -7,6 +7,7 @@ RUN a2enmod rewrite headers
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-server \
     vsftpd \
+    redis-server \
     sudo \
     netcat \
     && docker-php-ext-install pdo pdo_mysql \
@@ -25,12 +26,24 @@ RUN useradd -m -s /bin/bash sysadmin && echo 'sysadmin:admin123' | chpasswd
 COPY vsftpd.conf /etc/vsftpd.conf
 RUN mkdir -p /var/run/vsftpd/empty
 
+# Expose Apache status and unauthenticated Redis for controlled lab enumeration
+RUN a2enmod status && \
+    printf '<Location "/server-status">\\n    SetHandler server-status\\n    Require all granted\\n</Location>\\nExtendedStatus On\\n' > /etc/apache2/conf-enabled/server-status.conf && \
+    printf 'bind 0.0.0.0\\nprotected-mode no\\nappendonly no\\nsave ""\\n' > /etc/redis/redis.conf
+
 # Copy intentionally vulnerable application
 COPY index.php /var/www/html/index.php
 COPY init.sql /docker-entrypoint-initdb.d/
+COPY robots.txt /var/www/html/robots.txt
+COPY swagger.json /var/www/html/swagger.json
+COPY .env_leak /var/www/html/.env.bak
+COPY backup.zip /var/www/html/backup.zip
+COPY phpmyadmin/ /var/www/html/phpmyadmin/
+COPY git-seed/ /var/www/html/.git/
 
 # Create upload directory (writable — intentional for file upload vuln)
 RUN mkdir -p /var/www/html/uploads && chmod 777 /var/www/html/uploads
+COPY uploads.htaccess /var/www/html/uploads/.htaccess
 
 # Create fake records
 RUN mkdir -p /var/www/html/records && \
@@ -39,13 +52,14 @@ RUN mkdir -p /var/www/html/records && \
 
 # Apache ServerTokens — intentional information disclosure for training
 RUN echo "ServerSignature On" >> /etc/apache2/apache2.conf && \
-    echo "ServerTokens Full" >> /etc/apache2/apache2.conf
+    echo "ServerTokens Full" >> /etc/apache2/apache2.conf && \
+    echo 'Header set X-Powered-By "PHP/7.4.3"' > /etc/apache2/conf-enabled/novamed-headers.conf
 
 # Add entrypoint script
 COPY entrypoint.sh /usr/local/bin/
 RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 # Non-root execution is NOT done here intentionally — old Apache/PHP setup for realism
-EXPOSE 80 21 22
+EXPOSE 80 21 22 6379
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

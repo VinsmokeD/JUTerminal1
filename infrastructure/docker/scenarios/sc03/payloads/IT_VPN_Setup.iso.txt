@@ -1,0 +1,3 @@
+Synthetic payload marker: IT_VPN_Setup.iso
+Behavior simulated by victim-simulator.py: user execution and network check-in events.
+No disk image or LNK payload is present in this repository.
