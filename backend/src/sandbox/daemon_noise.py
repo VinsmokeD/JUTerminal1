@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import json
 import random
+import time
 import uuid
 from datetime import datetime, timezone
 
@@ -118,6 +119,8 @@ _NOISE_PROFILES: dict[str, dict] = {
 }
 
 _HTTP_TIMEOUT = httpx.Timeout(3.0)  # short timeout — containers may be down
+_MIN_SECONDS_AFTER_COMMAND = 90.0
+_MIN_SECONDS_BETWEEN_NOISE = 150.0
 
 
 async def _probe_http(url: str) -> None:
@@ -155,7 +158,9 @@ async def _publish_noise_event(session_id: str, scenario_id: str) -> None:
         "severity": severity,
         "message": event["message"],
         "mitre_technique": event.get("mitre"),
-        "source": event.get("source", "system"),
+        "source": "background",
+        "source_type": "background",
+        "sensor": event.get("source", "system"),
         "noise": True,  # flag so frontend can optionally dim noise events
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -177,6 +182,11 @@ async def _run_noise_loop() -> None:
     haven't typed any commands yet. Noise events are also dimmed in the UI.
     """
     http_tick = 0
+    try:
+        redis = get_redis_client()
+        await redis.delete(_ACTIVE_SESSIONS_KEY)
+    except Exception:
+        pass
 
     while True:
         sleep_secs = random.uniform(30.0, 60.0)
@@ -196,7 +206,28 @@ async def _run_noise_loop() -> None:
             session_id = session_id_raw.decode() if isinstance(session_id_raw, bytes) else session_id_raw
             scenario_id = scenario_id_raw.decode() if isinstance(scenario_id_raw, bytes) else scenario_id_raw
 
+            now = time.time()
+            try:
+                last_cmd_raw = await redis.get(f"session:{session_id}:last_cmd_time")
+                if not last_cmd_raw:
+                    continue
+                last_cmd = float(last_cmd_raw.decode() if isinstance(last_cmd_raw, bytes) else last_cmd_raw)
+                if now - last_cmd < _MIN_SECONDS_AFTER_COMMAND:
+                    continue
+
+                last_noise_raw = await redis.get(f"noise:{session_id}:last_event_time")
+                if last_noise_raw:
+                    last_noise = float(last_noise_raw.decode() if isinstance(last_noise_raw, bytes) else last_noise_raw)
+                    if now - last_noise < _MIN_SECONDS_BETWEEN_NOISE:
+                        continue
+            except Exception:
+                continue
+
             await _publish_noise_event(session_id, scenario_id)
+            try:
+                await redis.set(f"noise:{session_id}:last_event_time", str(now), ex=7200)
+            except Exception:
+                pass
 
             # HTTP probes: run much less frequently than SIEM events
             if http_tick >= random.uniform(90.0, 180.0):

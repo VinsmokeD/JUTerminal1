@@ -20,24 +20,56 @@ export default function RedWorkspace() {
   const navigate = useNavigate()
   const { currentSession, phase, score, aiMode, siemEvents, setSiemEvents, setCurrentSession } = useSessionStore()
   const { skillLevel } = useAuthStore()
-  const [session, setSession] = useState(currentSession)
-  const [roeAcked, setRoeAcked] = useState(currentSession?.roe_acknowledged ?? false)
+  const cachedSession = currentSession?.id === sessionId ? currentSession : null
+  const [session, setSession] = useState(cachedSession)
+  const [loadingSession, setLoadingSession] = useState(!cachedSession)
+  const [roeAcked, setRoeAcked] = useState(cachedSession?.roe_acknowledged ?? false)
   const [showWelcome, setShowWelcome] = useState(skillLevel === 'beginner')
   const [elapsed, setElapsed] = useState(0)
   const [siemFlash, setSiemFlash] = useState(false)
   const siemCountRef = useRef(0)
   const writeOutputRef = useRef(null)
 
-  const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(sessionId)
+  const wsSessionId = session && roeAcked ? sessionId : null
+  const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(wsSessionId)
 
   useEffect(() => {
-    if (!session) {
-      api.get(`/sessions/${sessionId}`)
-        .then(r => { setCurrentSession(r.data); setSession(r.data); setRoeAcked(r.data.roe_acknowledged) })
-        .catch(() => navigate('/dashboard'))
+    let cancelled = false
+    const cached = useSessionStore.getState().currentSession
+
+    if (cached?.id === sessionId) {
+      setSession(cached)
+      setRoeAcked(Boolean(cached.roe_acknowledged))
+      setLoadingSession(false)
+    } else {
+      setSession(null)
+      setRoeAcked(false)
+      setLoadingSession(true)
     }
-    api.get(`/sessions/${sessionId}/events`).then(r => setSiemEvents(r.data || [])).catch(() => {})
-  }, [session, sessionId, navigate, setSiemEvents, setCurrentSession])
+    setSiemEvents([])
+
+    api.get(`/sessions/${sessionId}`)
+      .then(r => {
+        if (cancelled) return
+        setCurrentSession(r.data)
+        setSession(r.data)
+        setRoeAcked(Boolean(r.data.roe_acknowledged))
+      })
+      .catch(() => {
+        if (!cancelled) navigate('/dashboard')
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSession(false)
+      })
+
+    api.get(`/sessions/${sessionId}/events`)
+      .then(r => {
+        if (!cancelled) setSiemEvents(r.data || [])
+      })
+      .catch(() => {})
+
+    return () => { cancelled = true }
+  }, [sessionId, navigate, setSiemEvents, setCurrentSession])
 
   useEffect(() => {
     const onHint = (event) => requestHint(event.detail?.level || 1)
@@ -67,7 +99,7 @@ export default function RedWorkspace() {
   const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
   const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
 
-  if (!session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading session...</div>
+  if (loadingSession || !session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading session...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   const firstTargetIp = session.scenario_id === 'SC-01' ? '172.20.1.20' : session.scenario_id === 'SC-02' ? '172.20.2.20' : '172.20.3.40'

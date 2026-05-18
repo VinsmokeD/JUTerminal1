@@ -223,7 +223,7 @@
   "file_upload": [
     {
       "id": "sc01_upload_executable",
-      "trigger_pattern": "\\.php|\\.jsp|\\.asp|\\.exe|\\.sh",
+      "trigger_pattern": "(upload|multipart|filename=|file=|profile_image|avatar).*\\.(php|jsp|asp|exe|sh)|\\.(php|jsp|asp|exe|sh).*(upload|multipart|filename=|profile_image|avatar)",
       "severity": "CRITICAL",
       "message": "Malicious upload: PHP web shell upload attempt via patient portal",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"modsecurity.audit\",\n  \"rule.id\": \"933100\",\n  \"rule.description\": \"PHP Injection Attack: PHP Open Tag Found\",\n  \"http.request.method\": \"POST\",\n  \"url.path\": \"/api/v1/upload\",\n  \"modsecurity.matched_data\": \"<?php system($_GET['cmd']); ?>\",\n  \"modsecurity.matched_var_name\": \"FILES:profile_image.content\",\n  \"file.name\": \"profile.php\",\n  \"file.mime_type\": \"application/x-php\",\n  \"modsecurity.action\": \"BLOCKED\",\n  \"modsecurity.anomaly_score\": 40,\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.1.1\",\n  \"host.hostname\": \"novamed-waf\"\n}",

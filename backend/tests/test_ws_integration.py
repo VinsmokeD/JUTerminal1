@@ -255,3 +255,85 @@ async def test_websocket_rejects_invalid_token():
     from src.ws.routes import router
     routes = [r.path for r in router.routes]
     assert any("session_id" in r for r in routes)
+
+
+@pytest.mark.asyncio
+async def test_session_start_is_lazy_about_container_provision(client: AsyncClient, auth_token: str):
+    """Mission launch returns the session immediately; WS attach provisions the PTY."""
+    import time
+
+    started = time.perf_counter()
+    r = await client.post(
+        "/api/sessions/start",
+        json={"scenario_id": "SC-01", "role": "red"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    elapsed = time.perf_counter() - started
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["session_id"]
+    assert body["container_id"] is None
+    assert elapsed < 2.0
+
+
+@pytest.mark.asyncio
+async def test_live_siem_generation_does_not_double_publish(monkeypatch):
+    from src.siem import engine
+
+    calls: list[tuple[str, dict]] = []
+
+    async def fake_queue_event(session_id: str, event: dict) -> None:
+        calls.append((session_id, event))
+
+    monkeypatch.setattr(engine, "queue_event", fake_queue_event)
+    engine._events_cache.clear()
+
+    events = await engine.process_command_for_siem(
+        "test-session",
+        {"scenario_id": "SC-01", "source_ip": "172.20.1.10"},
+        "nmap -sV 172.20.1.20",
+        publish_events=False,
+    )
+
+    assert events
+    assert calls == []
+    assert events[0]["rule_id"]
+    assert events[0]["id"].startswith(f"{events[0]['rule_id']}-")
+
+
+@pytest.mark.asyncio
+async def test_sc01_php_page_probe_does_not_trigger_upload_alert():
+    from src.siem import engine
+
+    engine._events_cache.clear()
+    events = await engine.process_command_for_siem(
+        "test-session",
+        {"scenario_id": "SC-01", "source_ip": "172.20.1.10"},
+        "curl http://172.20.1.20/index.php",
+        publish_events=False,
+    )
+
+    assert all(event.get("rule_id") != "sc01_upload_executable" for event in events)
+
+
+@pytest.mark.asyncio
+async def test_noise_events_are_marked_as_background(monkeypatch):
+    from src.sandbox import daemon_noise
+
+    published: list[tuple[str, dict]] = []
+
+    class FakeRedis:
+        async def publish(self, channel: str, body: str) -> None:
+            published.append((channel, json.loads(body)))
+
+    monkeypatch.setattr(daemon_noise, "get_redis_client", lambda: FakeRedis())
+
+    await daemon_noise._publish_noise_event("test-session", "SC-01")
+
+    assert published
+    _, event = published[0]
+    assert event["noise"] is True
+    assert event["source"] == "background"
+    assert event["source_type"] == "background"
+    assert event["sensor"]

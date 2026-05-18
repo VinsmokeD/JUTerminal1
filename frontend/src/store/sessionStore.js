@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import api from '../lib/api'
 
+const eventTime = (event) => Date.parse(event?.timestamp || event?.created_at || '') || 0
+const newestFirst = (events = []) => [...events].sort((a, b) => eventTime(b) - eventTime(a))
+
 export const useSessionStore = create((set, get) => ({
   scenarios: [],
   currentSession: null,
@@ -47,7 +50,7 @@ export const useSessionStore = create((set, get) => ({
   setScore: (score) => set({ score }),
   setAiMode: (mode) => set({ aiMode: mode }),
   setActiveBranch: (branch) => set({ activeBranch: branch }),
-  setSiemEvents: (events) => set({ siemEvents: events || [] }),
+  setSiemEvents: (events) => set({ siemEvents: newestFirst(events || []).slice(0, 200) }),
 
   addSiemEvent: (event) => set((s) => {
     const eventKey = `${event?.id || event?.message || 'event'}:${event?.timestamp || event?.created_at || ''}`
@@ -56,7 +59,7 @@ export const useSessionStore = create((set, get) => ({
       return existingKey === eventKey
     })
     if (alreadyPresent) return s
-    return { siemEvents: [event, ...s.siemEvents].slice(0, 200) }
+    return { siemEvents: newestFirst([event, ...s.siemEvents]).slice(0, 200) }
   }),
 
   addDiscoveries: (newDiscoveries) => set((s) => {

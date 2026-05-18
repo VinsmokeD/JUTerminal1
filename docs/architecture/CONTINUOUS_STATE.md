@@ -1583,6 +1583,37 @@ Every update must follow this strict format. Do not skip any fields.
 
 ---
 
+## 2026-05-18 00:00 +03:00 - Codex Mission Launch Hydration + SIEM Noise Control
+
+**Status:** In progress. Mission creation now returns immediately without blocking on Docker provisioning, workspace pages hydrate from the route session id instead of stale dashboard state, and background SIEM noise is gated behind real command activity so fresh missions do not fill with unrelated alerts.
+
+**Why:** Users reported that Red/Blue mission pages sometimes stayed blank until a manual refresh after launch and that SIEM logs appeared for activity they had not run. The root causes were synchronous container provisioning during `POST /api/sessions/start`, WebSocket connections opening before RoE acknowledgement, stale frontend session reuse across route transitions, broad SC-01 upload matching, and background noise publishing to any active socket regardless of command history.
+
+**Exact files modified:**
+
+- `backend/src/sessions/routes.py` - removed Docker provisioning from the session-start API and changed stored SIEM event history to newest-first ordering.
+- `backend/src/sandbox/manager.py` - changed WebSocket reattach target checks to use `--no-recreate` so refreshes do not force-reset scenario targets.
+- `backend/src/sandbox/daemon_noise.py` - marked generated noise as `source=background`, clears stale active-session state on daemon start, waits for recent real command activity, and rate-limits per-session noise.
+- `backend/src/siem/engine.py` - added `publish_events=False` support for WebSocket-owned delivery, generates unique live event ids, and preserves static detection ids as `rule_id`.
+- `backend/src/ws/routes.py` - disabled duplicate SIEM publishing on command processing and persists the same event id sent to the browser.
+- `backend/src/siem/events/sc01_events.json` - narrowed executable upload detection so normal `.php` page probes do not trigger upload alerts.
+- `frontend/src/store/sessionStore.js` - normalizes SIEM events newest-first and deduplicates before capping history.
+- `frontend/src/pages/RedWorkspace.jsx` - hydrates session data by route id, clears stale SIEM events on route changes, and delays WebSocket connection until RoE is acknowledged.
+- `frontend/src/pages/BlueWorkspace.jsx` - applies the same route-safe hydration and WebSocket gate, hides noise by default, and excludes noise from active alert counts.
+- `frontend/src/components/siem/SiemFeed.jsx` - renders newest-first without reversing, scrolls to the newest row, and reads persisted triage state from the nested `triage` object.
+- `backend/tests/test_ws_integration.py` - added regression coverage for lazy session start, duplicate SIEM publish suppression, narrowed upload matching, and background noise tagging.
+
+**Technical breakdown:**
+
+- `POST /api/sessions/start` now only creates/caches the session. The first post-RoE WebSocket attach still calls `ensure_scenario_container`, so terminal access remains real but route transitions no longer wait on Docker target creation.
+- Red and Blue workspaces now treat `sessionId` from the URL as authoritative, clear stale event state immediately, fetch the matching session/events, and pass `null` into `useWebSocket` until the RoE screen is acknowledged.
+- Command-triggered SIEM events are now built once, persisted with the same id, and sent directly over the command WebSocket path. Redis queued delivery remains available for non-WebSocket producers.
+- Background noise is tagged consistently for UI filtering and requires `session:{id}:last_cmd_time`, a 90-second quiet period after the command, and a 150-second per-session cooldown.
+
+**Verification evidence:** Pending final test pass in this iteration.
+
+---
+
 ### [2026-04-04 12:55:00 → 13:30:00] - Claude Code (Full Project Bootstrap — Session 1)
 * **Status**: Complete — Phases 0, 1, and 2 fully coded
 * **Why**: The project existed only as flat files in the root directory with broken import paths. All code was referencing module paths (e.g. `from src.cache.redis import ...`) that had no corresponding directory structure. The CI would fail, Docker builds would fail, and the app would not start. The entire directory scaffold, all backend modules, all frontend components, and all infrastructure files had to be created in one comprehensive pass.
@@ -3287,5 +3318,38 @@ $ python3 -m py_compile src/main.py  # ✓
 - WS-H Design v3 close-out: Settings page shipped; Debrief uses three.js Kill Chain timeline; SIEM triage controls live; command palette has Mission/Terminal/Copy actions.
 
 **Next step:** Commit the SC-02 DC fix and the deployed Phase v4 working-tree changes as one cohesive batch (`fix(sc02): patch samba.ntacls so docker overlay xattr rejection no longer breaks DC provisioning`), then continue WS-B/F/G work or focus on hardening the demo-day rehearsal scripts depending on user direction.
+
+---
+
+## 2026-05-18 19:56 +03:00 - Codex Final Verification for Mission Launch + SIEM Noise Fix
+
+**Status:** Complete. The mission launch blank-page regression and premature SIEM noise issue are fixed, tested, rebuilt into the running backend/frontend containers, and verified against the live API/static frontend path.
+
+**Why:** The earlier in-progress state entry captured the implementation. This follow-up records the physical verification required before handing the state back.
+
+**Exact files modified:** Same file set as the in-progress entry: `backend/src/sessions/routes.py`, `backend/src/sandbox/manager.py`, `backend/src/sandbox/daemon_noise.py`, `backend/src/siem/engine.py`, `backend/src/ws/routes.py`, `backend/src/siem/events/sc01_events.json`, `frontend/src/store/sessionStore.js`, `frontend/src/pages/RedWorkspace.jsx`, `frontend/src/pages/BlueWorkspace.jsx`, `frontend/src/components/siem/SiemFeed.jsx`, `backend/tests/test_ws_integration.py`, and `docs/architecture/CONTINUOUS_STATE.md`.
+
+**Technical breakdown:**
+
+- Launch-time session creation is now DB/cache-only and returns before Docker target/Kali provisioning. Provisioning remains real and happens on post-RoE WebSocket attach.
+- Route hydration is deterministic for Red and Blue workspaces, preventing a stale `currentSession` from rendering the wrong/blank mission until refresh.
+- Background noise is consistently marked as background/noise and cannot publish for a fresh mission without `last_cmd_time`.
+- Command SIEM events are delivered once through the WebSocket command path, persisted with the same live event id, and retain their static rule id separately.
+
+**Verification evidence:**
+
+- `python -m py_compile backend/src/sessions/routes.py backend/src/sandbox/manager.py backend/src/sandbox/daemon_noise.py backend/src/siem/engine.py backend/src/ws/routes.py` passed.
+- `python -c "import json, pathlib; ... sc*_events.json ..."` passed for all scenario SIEM JSON files.
+- `docker compose config --quiet` passed.
+- `python -m pytest -q -p no:cacheprovider backend/tests/test_ws_integration.py` passed: `16 passed, 1 warning in 10.29s`.
+- `python -m pytest -q -p no:cacheprovider backend/tests` passed: `85 passed, 1 warning in 8.55s`.
+- `cd frontend && npm run build` initially hit sandbox `spawn EPERM`; rerun with approval passed: `541 modules transformed`, `built in 6.54s`.
+- `docker compose up -d --build backend frontend` rebuilt both images and restarted both services successfully.
+- Live API smoke on `http://localhost:8001`: registered a fresh user, started SC-01 red mission in `24 ms`, confirmed `container_id: null`, `initial_events: 0`, RoE acknowledgement persisted, and session fetch returned `roe_acknowledged: true`.
+- Redis noise state check `docker compose exec -T redis redis-cli hgetall cybersim:active_sessions` returned empty after fresh launch without WebSocket activity.
+- HTTPS/static verification through the deployed frontend path returned HTTP 200 for `/`, confirmed root markup was served, and fetched lazy chunks `RedWorkspace-BoC8mG4D.js`, `BlueWorkspace-CFN8GTZH.js`, and `KillChainTimeline-B_9QSLCA.js` with HTTP 200.
+- Recent backend/frontend logs showed successful fresh-session API calls and static chunk delivery without application errors.
+- In-app Browser plugin smoke was attempted but the Codex browser client still blocks local URLs with `net::ERR_BLOCKED_BY_CLIENT`; validation continued through production build, deployed static fetches, live API smoke, Redis checks, and container logs.
+- `npm run lint` remains project-config blocked because the frontend has no ESLint configuration file; this is unchanged from the existing repo state.
 
 ---

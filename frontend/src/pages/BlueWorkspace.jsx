@@ -59,14 +59,20 @@ const NIST_PHASES = {
   6: { name: 'Post-Incident', desc: 'Write your IR report: full timeline, IOC list, root cause, prevention recommendations.' },
 }
 
+const isNoiseEvent = (event) =>
+  event?.noise === true || event?.source === 'background' || event?.source_type === 'background'
+
 export default function BlueWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
   const { currentSession, phase, score, siemEvents, aiMode, setSiemEvents, setCurrentSession } = useSessionStore()
   const { skillLevel } = useAuthStore()
-  const [session, setSession] = useState(currentSession)
-  const [roeAcked, setRoeAcked] = useState(currentSession?.roe_acknowledged ?? false)
+  const cachedSession = currentSession?.id === sessionId ? currentSession : null
+  const [session, setSession] = useState(cachedSession)
+  const [loadingSession, setLoadingSession] = useState(!cachedSession)
+  const [roeAcked, setRoeAcked] = useState(cachedSession?.roe_acknowledged ?? false)
   const [siemFilter, setSiemFilter] = useState('')
+  const [hideNoise, setHideNoise] = useState(true)
   const [checkedSteps, setCheckedSteps] = useState({})
   const [iocs, setIocs] = useState([])
   const [iocInput, setIocInput] = useState('')
@@ -76,19 +82,49 @@ export default function BlueWorkspace() {
   const [triageSaving, setTriageSaving] = useState(null)
   const writeOutputRef = useRef(null)
 
-  const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(sessionId)
+  const wsSessionId = session && roeAcked ? sessionId : null
+  const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(wsSessionId)
 
   const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
   const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
 
   useEffect(() => {
-    if (!session) {
-      api.get(`/sessions/${sessionId}`)
-        .then(r => { setCurrentSession(r.data); setSession(r.data); setRoeAcked(r.data.roe_acknowledged) })
-        .catch(() => navigate('/dashboard'))
+    let cancelled = false
+    const cached = useSessionStore.getState().currentSession
+
+    if (cached?.id === sessionId) {
+      setSession(cached)
+      setRoeAcked(Boolean(cached.roe_acknowledged))
+      setLoadingSession(false)
+    } else {
+      setSession(null)
+      setRoeAcked(false)
+      setLoadingSession(true)
     }
-    api.get(`/sessions/${sessionId}/events`).then(r => setSiemEvents(r.data || [])).catch(() => {})
-  }, [session, sessionId, navigate, setSiemEvents, setCurrentSession])
+    setSiemEvents([])
+
+    api.get(`/sessions/${sessionId}`)
+      .then(r => {
+        if (cancelled) return
+        setCurrentSession(r.data)
+        setSession(r.data)
+        setRoeAcked(Boolean(r.data.roe_acknowledged))
+      })
+      .catch(() => {
+        if (!cancelled) navigate('/dashboard')
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSession(false)
+      })
+
+    api.get(`/sessions/${sessionId}/events`)
+      .then(r => {
+        if (!cancelled) setSiemEvents(r.data || [])
+      })
+      .catch(() => {})
+
+    return () => { cancelled = true }
+  }, [sessionId, navigate, setSiemEvents, setCurrentSession])
 
   useEffect(() => {
     const onHint = (event) => requestHint(event.detail?.level || 1)
@@ -106,10 +142,13 @@ export default function BlueWorkspace() {
     return () => clearInterval(interval)
   }, [])
 
-  const criticalCount = siemEvents.filter(e => e.severity === 'CRITICAL').length
-  const highCount = siemEvents.filter(e => e.severity === 'HIGH').length
+  const signalEvents = siemEvents.filter(e => !isNoiseEvent(e))
+  const criticalCount = signalEvents.filter(e => e.severity === 'CRITICAL').length
+  const highCount = signalEvents.filter(e => e.severity === 'HIGH').length
+  const noiseCount = siemEvents.length - signalEvents.length
 
   const filteredEvents = siemEvents.filter(e => {
+    if (hideNoise && isNoiseEvent(e)) return false
     if (!siemFilter) return true
     const q = siemFilter.toLowerCase()
     if (q.includes(':')) {
@@ -143,7 +182,7 @@ export default function BlueWorkspace() {
     }
   }
 
-  if (!session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading...</div>
+  if (loadingSession || !session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   const playbook = PLAYBOOKS[session.scenario_id] || PLAYBOOKS['SC-01']
@@ -216,6 +255,16 @@ export default function BlueWorkspace() {
                         <span className="dot-live" />
                         <span className="text-green-signal text-xs font-mono">live</span>
                       </div>
+                      <button
+                        onClick={() => setHideNoise(v => !v)}
+                        className={`text-[10.5px] px-2 py-1 rounded-cs-sm border transition-colors font-mono ${
+                          hideNoise
+                            ? 'text-cs-blue border-cs-blue/30 bg-cs-blue/10'
+                            : 'text-txt-dim border-cs-border hover:text-txt-secondary'
+                        }`}
+                      >
+                        {hideNoise ? `noise hidden (${noiseCount})` : `showing noise (${noiseCount})`}
+                      </button>
                       <span className="text-xs text-txt-dim font-mono">{filteredEvents.length} events</span>
                     </>
                   )}
@@ -363,7 +412,7 @@ function SiemEventRow({ event, expanded, onToggle, onExtractIoc, onTriageSave, t
     LOW: 'sev-low',
     INFO: 'sev-info',
   }
-  const isBackground = event.source === 'background'
+  const isBackground = isNoiseEvent(event)
   const ts = new Date(event.timestamp || event.created_at || Date.now()).toLocaleTimeString('en-US', {
     hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit',
   })

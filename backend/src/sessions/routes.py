@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from src.auth.routes import get_current_user
 from src.db.database import get_db, Session, User, CommandLog, SiemEvent, SiemTriage
-from src.sandbox.manager import start_scenario_container, stop_scenario_container
+from src.sandbox.manager import stop_scenario_container
 from src.cache.redis import cache_set, cache_get, cache_delete
 
 router = APIRouter()
@@ -59,15 +59,6 @@ async def start_session(
     db.add(session)
     await db.commit()
     await db.refresh(session)
-
-    # Provision Kali container for both red and blue teams
-    # Red team gets offensive tools; Blue team gets the same Kali with
-    # defensive tools (tshark, Splunk forwarder, log access) on the same
-    # scenario network so they can analyze real traffic and run IR commands.
-    container_id, network_name = await start_scenario_container(session.id, scenario_id)
-    session.container_id = container_id
-    session.network_name = network_name
-    await db.commit()
 
     # Cache session state for fast access
     state = {
@@ -194,7 +185,7 @@ async def get_session_events(
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Session not found")
     evts = await db.execute(
-        select(SiemEvent).where(SiemEvent.session_id == session_id).order_by(SiemEvent.created_at)
+        select(SiemEvent).where(SiemEvent.session_id == session_id).order_by(SiemEvent.created_at.desc())
     )
     triage_rows = await db.execute(
         select(SiemTriage).where(SiemTriage.session_id == session_id)

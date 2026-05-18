@@ -96,7 +96,12 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
                 await send_json({"type": "score_update", "data": {"score": new_score}})
             return
 
-    siem_events = await process_command_for_siem(session_id, session_state, command)
+    siem_events = await process_command_for_siem(
+        session_id,
+        session_state,
+        command,
+        publish_events=False,
+    )
 
     from src.scenarios.gatekeeper import _parse_tool as _gt
     tool_name = _gt(command)
@@ -115,7 +120,7 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
         ))
         for ev in siem_events:
             db.add(SiemEvent(
-                id=str(uuid.uuid4()),
+                id=ev.get("id") or str(uuid.uuid4()),
                 session_id=session_id,
                 severity=ev.get("severity", "LOW"),
                 message=ev.get("message", "SIEM event detected"),

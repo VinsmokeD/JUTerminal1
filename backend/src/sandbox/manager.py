@@ -61,7 +61,7 @@ async def start_scenario_container(
     """
     loop = asyncio.get_running_loop()
     # Start target containers in parallel with the Kali container
-    await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id)
+    await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id, False)
     return await loop.run_in_executor(None, _start_sync, session_id, scenario_id)
 
 
@@ -76,7 +76,7 @@ async def ensure_scenario_container(
     Returns (container_id, network_name, changed).
     """
     loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id)
+    await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id, False)
     return await loop.run_in_executor(
         None, _ensure_sync, session_id, scenario_id, container_id
     )

@@ -62,13 +62,13 @@ function HighlightedJson({ text }) {
 
 export default function SiemFeed() {
   const events = useSessionStore((s) => s.siemEvents)
-  const bottomRef = useRef(null)
+  const listRef = useRef(null)
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
   const [hideNoise, setHideNoise] = useState(true)    // default hide noise
 
   const filtered = useMemo(() => {
-    return [...events].reverse().filter((ev) => {
+    return events.filter((ev) => {
       if (hideNoise && isNoiseEvent(ev)) return false
       if (filter !== 'ALL') {
         const sev = (ev.severity || 'INFO').toUpperCase()
@@ -91,7 +91,7 @@ export default function SiemFeed() {
   // Auto-scroll to newest unless user filtered
   useEffect(() => {
     if (filter === 'ALL' && !search) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      listRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }, [events.length, filter, search])
 
@@ -165,14 +165,13 @@ export default function SiemFeed() {
       </div>
 
       {/* ── Event list ────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto space-y-px p-2 pb-4">
+      <div ref={listRef} className="flex-1 overflow-y-auto space-y-px p-2 pb-4">
         {events.length === 0
           ? <EmptyState />
           : filtered.length === 0
             ? <div className="flex items-center justify-center h-32 text-txt-dim text-xs font-mono">No events match your filter</div>
             : filtered.map((ev, i) => <EventRow key={ev.id || i} event={ev} />)
         }
-        <div ref={bottomRef} />
       </div>
     </div>
   )
@@ -205,7 +204,8 @@ function EventRow({ event }) {
   const [expanded, setExpanded] = useState(false)
   const sev   = getSev(event.severity)
   const noise = isNoiseEvent(event)
-  const triageCfg = TRIAGE_CFG[event.triage_state]
+  const triageState = event.triage?.classification || event.triage_state
+  const triageCfg = TRIAGE_CFG[triageState]
 
   const ts = new Date(event.timestamp || event.created_at || Date.now())
     .toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })

@@ -221,7 +221,12 @@ async def close_siem_batch() -> None:
         pass
 
 
-async def process_command_for_siem(session_id: str, state: dict, command: str) -> list[dict]:
+async def process_command_for_siem(
+    session_id: str,
+    state: dict,
+    command: str,
+    publish_events: bool = True,
+) -> list[dict]:
     """
     Match terminal commands against SIEM event definitions and queue triggered events.
 
@@ -281,7 +286,8 @@ async def process_command_for_siem(session_id: str, state: dict, command: str) -
                 if re.search(trigger_pattern, command, re.IGNORECASE):
                     # Event triggered! Clone the event and add metadata
                     triggered_event = event.copy()
-                    triggered_event["id"] = event.get("id", f"event_{uuid.uuid4().hex[:8]}")
+                    triggered_event["rule_id"] = event.get("id")
+                    triggered_event["id"] = f"{event.get('id', 'event')}-{uuid.uuid4().hex[:8]}"
                     triggered_event["timestamp"] = datetime.now(timezone.utc).isoformat()
                     triggered_event["created_at"] = datetime.now(timezone.utc).isoformat()
                     triggered_event.setdefault("source", "attacker")
@@ -293,8 +299,10 @@ async def process_command_for_siem(session_id: str, state: dict, command: str) -
                             .replace("{source_ip}", triggered_event["source_ip"])
                         )
 
-                    # Queue the event for Redis pub/sub broadcast
-                    await queue_event(session_id, triggered_event)
+                    # Queue the event for Redis pub/sub broadcast when this
+                    # function is used outside the WebSocket command path.
+                    if publish_events:
+                        await queue_event(session_id, triggered_event)
                     triggered_events.append(triggered_event)
 
             except re.error:
