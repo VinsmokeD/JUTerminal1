@@ -1,34 +1,106 @@
 [
   {
     "id": "sc02-samba-domain",
-    "regex": "nexora\\.local|Samba\\s+4|Windows Server 2019",
+    "regex": "nexora\\.local|NEXORA|Samba\\s+4|Windows Server 2019|domain.*NEXORA",
     "what": "The host is presenting as a Samba-backed Windows domain environment.",
-    "why": "Domain fingerprints tell you which identity and Kerberos workflows are relevant.",
-    "next": "Move from host discovery into user, share, and Kerberos enumeration.",
+    "why": "Domain fingerprints tell you which identity and Kerberos workflows are relevant for this scenario.",
+    "next": "Move from host discovery into user, share, and Kerberos enumeration while recording each identity breadcrumb.",
     "tags": ["recon", "ad"]
   },
   {
-    "id": "sc02-kerberos-4769",
-    "regex": "4769|TGS|Kerberoast|RC4|0x17",
-    "what": "The output references Kerberos service-ticket activity.",
-    "why": "RC4 service tickets and Event 4769 are key evidence for Kerberoasting analysis.",
-    "next": "Capture the account, encryption type, source host, and time window for your IR timeline.",
-    "tags": ["kerberos", "blue-team"]
+    "id": "sc02-smb-shares",
+    "regex": "Disk|IPC\\$|ADMIN\\$|SYSVOL|NETLOGON|\\\\\\\\.*\\\\|share.*READ|Sharename",
+    "what": "SMB shares enumerated on the target domain controller.",
+    "why": "SYSVOL and NETLOGON contain Group Policy scripts and preferences, including GPP artifacts with encrypted credentials.",
+    "next": "Review SYSVOL and NETLOGON evidence for legacy policy artifacts, especially Groups.xml references.",
+    "tags": ["enumeration", "smb"]
   },
   {
     "id": "sc02-gpp-cpassword",
-    "regex": "Groups\\.xml|cpassword",
-    "what": "SYSVOL Group Policy Preferences content is present.",
-    "why": "Legacy GPP artifacts can expose reusable local-admin credentials in many AD labs.",
-    "next": "Document the policy path and validate the account scope before using it in the scenario.",
-    "tags": ["gpp", "credentials"]
+    "regex": "Groups\\.xml|cpassword|gpp-decrypt|<Password>|SYSVOL.*Groups",
+    "what": "SYSVOL Group Policy Preferences content is present - potential GPP credential exposure.",
+    "why": "Legacy GPP artifacts can expose reusable local-admin credentials encrypted with a publicly known AES key.",
+    "next": "Document the policy path, account name, and credential exposure context before using this branch.",
+    "tags": ["gpp", "credentials", "finding"]
+  },
+  {
+    "id": "sc02-kerberoast",
+    "regex": "4769|TGS.*RC4|Kerberoast|\\$krb5tgs\\$23\\$|etype.*17|EncryptionType.*RC4|GetUserSPNs",
+    "what": "Kerberoasting activity detected - RC4 TGS ticket or service account SPN found.",
+    "why": "RC4-encrypted Kerberos service tickets (etype 0x17) can be offline-cracked to reveal service account passwords.",
+    "next": "Record the service account, encryption type, source host, and time window for both red-team evidence and blue-team correlation.",
+    "tags": ["kerberos", "finding", "branch"]
   },
   {
     "id": "sc02-asrep",
-    "regex": "AS-REP|DONT_REQ_PREAUTH|GetNPUsers|KRB5ASREP",
-    "what": "An AS-REP roasting path may be available.",
-    "why": "Users without Kerberos pre-authentication can reveal crackable authentication material.",
-    "next": "Verify the user attribute and keep this branch separate from Kerberoasting evidence.",
-    "tags": ["kerberos", "branch"]
+    "regex": "AS-REP|DONT_REQ_PREAUTH|GetNPUsers|KRB5ASREP|\\$krb5asrep\\$23\\$|rgreen|PreAuth.*0",
+    "what": "An AS-REP roastable account found - user has pre-authentication disabled.",
+    "why": "Users without Kerberos pre-authentication return an AS-REP with encrypted material crackable without a valid ticket exchange.",
+    "next": "Keep this branch separate from Kerberoasting evidence and document the affected user attribute and event timing.",
+    "tags": ["kerberos", "branch", "finding"]
+  },
+  {
+    "id": "sc02-dcsync",
+    "regex": "DCSync|4662|DS-Replication-Get-Changes|DRSUAPI|secretsdump|Administrator.*:.*aad3b|ntds\\.dit",
+    "what": "DCSync activity or NTDS extraction is in progress - highest impact action in SC-02.",
+    "why": "DCSync replicates all AD password hashes to the attacker, including krbtgt. This is complete domain compromise.",
+    "next": "If directory replication evidence appears, document the affected account, privilege path, and detection event as final-stage impact.",
+    "tags": ["exploitation", "finding", "impact"]
+  },
+  {
+    "id": "sc02-bloodhound",
+    "regex": "SharpHound|BloodHound|collection.*complete|zip.*bloodhound|neo4j|ldap.*query.*[0-9]{3}",
+    "what": "BloodHound/SharpHound Active Directory enumeration is running.",
+    "why": "BloodHound maps attack paths from owned accounts to Domain Admin using ACL, group membership, and delegation analysis.",
+    "next": "Analyze the path graph for privilege edges and roastable accounts, then connect each finding to a specific evidence artifact.",
+    "tags": ["enumeration", "ad", "branch"]
+  },
+  {
+    "id": "sc02-ldap-users",
+    "regex": "sAMAccountName|userPrincipalName|Distinguished Name|CN=Users|memberOf|objectClass.*user|ldap.*search",
+    "what": "LDAP query results showing Active Directory user attributes.",
+    "why": "User enumeration reveals service accounts, admin accounts, and account attributes (disabled, password policies, SPNs set).",
+    "next": "Filter for service-principal attributes and pre-authentication flags, then record the account scope and source query.",
+    "tags": ["enumeration", "ad"]
+  },
+  {
+    "id": "sc02-password-spray",
+    "regex": "4625|\\[\\+\\].*valid|STATUS_LOGON_FAILURE|VALID.*CREDENTIALS|spray.*success|crackmapexec.*\\[\\+\\]",
+    "what": "Password spray or brute force attempt results visible.",
+    "why": "Successful credential hits from spraying indicate weak password policy and provide initial access or lateral movement capability.",
+    "next": "For each valid credential, document the account name, service scope, timestamp, and how it changes the attack path.",
+    "tags": ["exploitation", "credentials"]
+  },
+  {
+    "id": "sc02-lateral-movement",
+    "regex": "psexec|wmiexec|smbexec|winrm|Pass.*Hash|pth|--hashes.*LM:NT|NTLM.*relay|[A-Z]{1}\\$.*admin",
+    "what": "Lateral movement technique output detected - PTH, PSExec, or WMI execution.",
+    "why": "Lateral movement shows the blast radius of compromised credentials and the attacker's ability to pivot through the domain.",
+    "next": "Document the source host, destination host, and credential used for each hop. This builds the kill chain for your IR report.",
+    "tags": ["exploitation", "lateral-movement", "finding"]
+  },
+  {
+    "id": "sc02-hash-cracked",
+    "regex": "Cracking.*password|\\$HEX\\[|P@ssw0rd|Password1|Winter2024|P@ss.*!|hash.*cracked|Recovered.*[0-9]+/[0-9]+",
+    "what": "A password hash has been cracked successfully.",
+    "why": "Cracked hashes enable direct authentication instead of pass-the-hash, broadening access paths.",
+    "next": "Validate the credential only in-scope, then document where it works and which privilege boundary it crosses.",
+    "tags": ["exploitation", "credentials", "finding"]
+  },
+  {
+    "id": "sc02-ntlm-relay",
+    "regex": "Responder|ntlmrelayx|NTLMSSP|AUTHENTICATE|captured.*NTLM|SMB.*NTLM.*relay|relay.*success",
+    "what": "NTLM capture or relay activity detected.",
+    "why": "NTLM relay attacks can escalate from network access to authenticated sessions without cracking any password.",
+    "next": "If relay succeeds, check what privileges were granted. Document the relay chain from victim to attacker to target as #finding.",
+    "tags": ["exploitation", "credentials", "branch"]
+  },
+  {
+    "id": "sc02-domain-admin",
+    "regex": "Domain Admins|Domain Admin|Administrators.*domain|DOMAIN\\\\Administrator|privileged.*domain|da.*compromise",
+    "what": "Domain Administrator group membership or privilege context is visible.",
+    "why": "Domain Admin access is the final objective indicator for SC-02 - this is the maximum impact evidence.",
+    "next": "Document the privileged group evidence and tie it to the exact account, host, and preceding escalation path.",
+    "tags": ["post-exploitation", "finding", "impact"]
   }
 ]

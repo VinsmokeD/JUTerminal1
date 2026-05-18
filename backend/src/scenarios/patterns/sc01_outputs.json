@@ -1,34 +1,130 @@
 [
   {
     "id": "sc01-apache-2449",
-    "regex": "Apache/(2\\.4\\.49|2\\.4\\.50)",
+    "regex": "Apache/(2\\.4\\.4[0-9]|2\\.4\\.50)",
     "what": "Apache 2.4.49/2.4.50 is a high-value version fingerprint in NovaMed.",
-    "why": "Version-specific regressions can turn normal web enumeration into a path-traversal investigation inside this isolated lab.",
-    "next": "Record the version, inspect exposed web paths, and compare it with the SC-01 playbook branch for traversal testing.",
-    "tags": ["recon", "web", "cve"]
+    "why": "Those versions are known in this lab for traversal-style regressions, making version evidence a useful branch signal.",
+    "next": "Record the exact banner, affected virtual host, and any abnormal path-normalization behavior before choosing the traversal branch.",
+    "tags": ["recon", "web", "cve", "branch"]
+  },
+  {
+    "id": "sc01-nmap-open-ports",
+    "regex": "80/tcp\\s+open|443/tcp\\s+open|21/tcp\\s+open.*ftp|22/tcp\\s+open.*ssh|6379/tcp\\s+open",
+    "what": "Target port scan results are visible - open services identified.",
+    "why": "Port enumeration results are the foundation of the attack surface map. Each open port is a potential entry vector.",
+    "next": "Follow with service and version enumeration inside the lab, then document each open service and evidence source.",
+    "tags": ["recon", "nmap", "branch"]
   },
   {
     "id": "sc01-redis-open",
-    "regex": "6379/tcp\\s+open\\s+redis|Redis server v=4",
+    "regex": "6379/tcp\\s+open\\s+redis|Redis server v=|redis_version:|\\+PONG",
     "what": "Unauthenticated Redis is exposed on the scenario network.",
-    "why": "Redis configuration access can become an alternate post-exploitation path when it is reachable without authentication.",
-    "next": "Validate whether Redis requires auth, then decide whether your branch is web exploitation or service abuse.",
+    "why": "Redis without authentication can expose data and unsafe configuration state inside the scenario network.",
+    "next": "Validate whether authentication is required and whether writes are allowed; keep this as an alternate service-abuse branch until confirmed.",
     "tags": ["recon", "redis", "branch"]
   },
   {
     "id": "sc01-phpmyadmin",
-    "regex": "phpMyAdmin|/phpmyadmin",
+    "regex": "phpMyAdmin|/phpmyadmin|PMA_VERSION",
     "what": "phpMyAdmin is a credential and database-administration breadcrumb.",
     "why": "Admin panels often connect weak credentials, exposed configs, and database impact evidence.",
-    "next": "Capture the path in notes and look for credential clues before attempting authentication.",
-    "tags": ["enumeration", "database"]
+    "next": "Check for version leaks and credential breadcrumbs in discovered web artifacts before attempting authentication.",
+    "tags": ["enumeration", "database", "branch"]
   },
   {
     "id": "sc01-env-leak",
-    "regex": "DB_PASS|JWT_SECRET|\\.env",
-    "what": "The output references environment-style secrets.",
-    "why": "Leaked configuration can explain how a low-privilege web finding becomes authenticated application access.",
-    "next": "Treat the value as sensitive evidence and document where it was found.",
+    "regex": "DB_PASS|DB_PASSWORD|JWT_SECRET|APP_KEY|\\.env|database\\.php",
+    "what": "The output references environment-style secrets or configuration files.",
+    "why": "Leaked DB credentials give authenticated SQL access. Leaked JWT secrets allow token forgery and auth bypass.",
+    "next": "Treat the value as sensitive evidence and document where it was found. Tag it #credentials in your notebook.",
     "tags": ["evidence", "credentials"]
+  },
+  {
+    "id": "sc01-dirb-found",
+    "regex": "FOUND|==>.*DIRECTORY|Code: 200.*Size|\\+ http",
+    "what": "Directory or file discovery results are appearing.",
+    "why": "Hidden paths like /uploads/, /backup/, /admin/, and /phpmyadmin/ are common entry and evidence points.",
+    "next": "Prioritize admin, backup, upload, and archived paths as evidence; document which returned success and why they matter.",
+    "tags": ["enumeration", "web"]
+  },
+  {
+    "id": "sc01-sqlmap-injectable",
+    "regex": "parameter.*is vulnerable|injectable|Type: boolean-based|Type: time-based|Type: UNION query",
+    "what": "sqlmap confirmed a SQL injection vulnerability.",
+    "why": "SQLi is the primary data exfiltration path in SC-01. This confirms attacker access to patient records and credentials.",
+    "next": "Document the vulnerable parameter and injection family, then continue database impact analysis only within the SC-01 methodology.",
+    "tags": ["exploitation", "sqli", "finding"]
+  },
+  {
+    "id": "sc01-sqlmap-dbs",
+    "regex": "available databases|\\[\\d+\\] databases|novamed|information_schema",
+    "what": "sqlmap enumerated the database schema - NovaMed database identified.",
+    "why": "Schema enumeration shows exactly what tables hold patient records, credentials, and audit logs.",
+    "next": "Map which tables hold patient, user, and audit data; capture minimal evidence needed for the report.",
+    "tags": ["exploitation", "sqli", "evidence"]
+  },
+  {
+    "id": "sc01-webshell-upload",
+    "regex": "upload.*success|file.*uploaded|webshell|shell\\.php|cmd\\.php|/uploads/.*\\.php",
+    "what": "A PHP webshell may have been uploaded to the target.",
+    "why": "Webshell upload + execution escalates from data exfiltration to full RCE on the web server.",
+    "next": "Confirm whether uploaded content executes server-side, then document the URL, process context, and defensive signal as evidence.",
+    "tags": ["exploitation", "rce", "finding"]
+  },
+  {
+    "id": "sc01-ftp-anonymous",
+    "regex": "230.*Anonymous|220.*FTP|ftp>|anonymous.*ok|Login successful.*anonymous",
+    "what": "Anonymous FTP access confirmed on the target.",
+    "why": "Anonymous FTP can expose backup files, configuration exports, or writable upload paths.",
+    "next": "Review accessible file listings, retrieve only scenario evidence artifacts, and look for config or backup naming patterns.",
+    "tags": ["recon", "ftp"]
+  },
+  {
+    "id": "sc01-ssh-login",
+    "regex": "Welcome to.*Linux|Last login:|bash-.*\\$|\\$\\s*$|sysadmin@|root@novamed",
+    "what": "SSH session appears to be established on the target.",
+    "why": "SSH access provides a persistent shell, privilege escalation opportunities, and post-exploitation capability.",
+    "next": "Record user context, host identity, and privilege clues without collecting unnecessary terminal output.",
+    "tags": ["exploitation", "post-exploitation"]
+  },
+  {
+    "id": "sc01-hydra-found",
+    "regex": "\\[22\\].*login:|\\[21\\].*login:|\\[80\\].*login:|\\[443\\].*login:|password:.*found|valid credentials",
+    "what": "Hydra found valid credentials via brute force.",
+    "why": "Credential discovery enables authenticated access and subsequent deeper compromise.",
+    "next": "Validate discovered credentials only against in-scope services, then document the username, service, and evidence source.",
+    "tags": ["exploitation", "credentials"]
+  },
+  {
+    "id": "sc01-nikto-findings",
+    "regex": "OSVDB-|CVE-2|\\+ Server:|\\+ X-Frame-Options|\\+ PHP/|\\+ Retrieved x-powered-by",
+    "what": "Nikto web scanner output visible - vulnerability fingerprints identified.",
+    "why": "Nikto's OSVDB/CVE markers pinpoint specific exploitable misconfigurations and version disclosures.",
+    "next": "Cross-reference CVE identifiers against your scenario playbook. Server version strings belong in your #evidence notes.",
+    "tags": ["recon", "web", "cve"]
+  },
+  {
+    "id": "sc01-patient-data",
+    "regex": "SSN:|Patient:|Diagnosis:|DOB:|patient_[0-9]+|records/patient",
+    "what": "Patient record data is visible in the output.",
+    "why": "This is the impact evidence - demonstration that PII/PHI has been accessed proves the business impact of the attack.",
+    "next": "Copy the record content into your notebook as #evidence. This is the critical proof of impact for your pentest report.",
+    "tags": ["evidence", "impact", "finding"]
+  },
+  {
+    "id": "sc01-git-repo",
+    "regex": "\\.git|git log|commit [a-f0-9]{7}|HEAD -> |On branch",
+    "what": "A Git repository is exposed or accessible on the target.",
+    "why": "Exposed .git directories can leak full source code, commit history, hardcoded credentials, and deleted files.",
+    "next": "Inspect commit metadata and source history for credential or configuration exposure, capturing only relevant evidence.",
+    "tags": ["enumeration", "evidence"]
+  },
+  {
+    "id": "sc01-sql-error",
+    "regex": "SQL syntax.*MySQL|mysql_fetch|You have an error in your SQL|SQLSTATE|ORA-[0-9]",
+    "what": "A raw SQL error is visible in the web application response.",
+    "why": "Database error disclosure confirms SQL injection potential and leaks schema information (table names, column names).",
+    "next": "Use the error as evidence; narrow down the affected parameter and database context before escalating the SQLi branch.",
+    "tags": ["finding", "sqli"]
   }
 ]

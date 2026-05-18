@@ -13,6 +13,28 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-18 19:23:46 +03:00] - Claude Code (Output Insight Pattern Verification)
+* **Status**: Complete - backend verification passed.
+* **Why**: The output-insight pattern safety pass needed empirical proof that the JSON libraries still load, the scanner module still compiles, Compose remains valid, and the backend test suite still passes with required local services running.
+* **Where**:
+  - `backend/src/scenarios/patterns/sc01_outputs.json` - verified JSON syntax and safe emitted guidance.
+  - `backend/src/scenarios/patterns/sc02_outputs.json` - verified JSON syntax and safe emitted guidance.
+  - `backend/src/scenarios/patterns/sc03_outputs.json` - verified JSON syntax and safe emitted guidance.
+  - `backend/src/scenarios/output_patterns.py` - verified bytecode compilation.
+  - `docker-compose.yml` - verified Compose model with `docker compose config --quiet`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification record.
+* **What & How**: Ran `python -c` JSON parsing over all `sc*_outputs.json` files, `python -m py_compile backend/src/scenarios/output_patterns.py`, and `docker compose config --quiet`; all passed. The first `python -m pytest -q backend/tests` run failed because Postgres was stopped and auth/session tests could not connect to `127.0.0.1:5432`. Started `postgres` and `redis` with Docker Compose, confirmed both were healthy, then reran `python -m pytest -q -p no:cacheprovider backend/tests`; result was 81 passed with one third-party `google.genai` deprecation warning.
+
+### [2026-05-18 19:20:52 +03:00] - Claude Code (Output Insight Pattern Safety Pass)
+* **Status**: Coding complete - verification in progress.
+* **Why**: The resumed worktree contained expanded SC-01/SC-02/SC-03 output-insight pattern libraries, but several `next` guidance strings had drifted from Socratic/evidence-oriented coaching into exact command or payload-style instructions. This pass keeps the richer activity fingerprint coverage while aligning emitted terminal insights with CyberSim's isolated-lab, no-real-payload, and AI-monitor safety rules.
+* **Where**:
+  - `backend/src/scenarios/patterns/sc01_outputs.json` - sanitized web, Redis, SQLi, FTP, SSH, credential, Git, and patient-data guidance.
+  - `backend/src/scenarios/patterns/sc02_outputs.json` - sanitized SMB, GPP, Kerberos, AS-REP, DCSync, BloodHound, credential, lateral-movement, relay, and domain-admin guidance.
+  - `backend/src/scenarios/patterns/sc03_outputs.json` - sanitized phishing, credential-submission, simulated-payload, callback, persistence, staging, log-clearing, and DNS-exfil guidance.
+  - `backend/src/scenarios/output_patterns.py` - reviewed only to confirm the JSON `next` field is what gets emitted as `output_insight` WebSocket coaching.
+* **What & How**: Replaced direct command snippets and payload-style next steps with branch-aware evidence prompts. The regex fingerprints still recognize realistic lab output, tool names, telemetry markers, and high-impact milestones, but the student-facing guidance now asks for documentation of banners, affected accounts, event timing, process context, SIEM correlation, and report evidence instead of giving executable commands. Also normalized the touched JSON text to ASCII so these pattern files remain easy to diff and safe to render in terminals.
+
 ### [2026-05-18 — Claude Code (Design + Logging + 3D Improvements)]
 * **Status**: Complete — build verified (541 modules, no errors), Python syntax clean.
 * **Why**: User requested three specific improvements: (1) design/layout polish, (2) real activity logging tied to user actions, (3) better 3D KillChainTimeline. All three address demo-day visual quality and educational feedback-loop depth.
