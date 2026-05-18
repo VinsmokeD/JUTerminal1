@@ -4,7 +4,7 @@ import queue as thread_queue
 import uuid
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
@@ -28,6 +28,7 @@ from src.scenarios.output_patterns import scan_output_chunk
 from src.scenarios.branching import infer_active_branch, get_active_branch, get_branch_hint
 
 _GATE_PENALTY = 5  # points deducted per blocked command
+_HINT_PENALTIES = {1: 5, 2: 10, 3: 20}  # points deducted per hint level (L1/L2/L3)
 _ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → scenario_id
 
 router = APIRouter()
@@ -148,11 +149,30 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
     ai_hint = await get_ai_hint(session_id, session_state, command, None)
     if ai_hint:
         await send_json({"type": "ai_hint", "data": {"text": ai_hint}})
+        # Retroactively mark the CommandLog row as having produced a hint
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                update(CommandLog)
+                .where(CommandLog.session_id == session_id, CommandLog.command == command)
+                .values(ai_hint_given=True)
+            )
+            await db.commit()
 
     async with AsyncSessionLocal() as db:
         new_phase = await try_advance_phase(session_id, session_state["scenario_id"], db)
     if new_phase != session_state["phase"]:
+        old_phase = session_state["phase"]
         session_state["phase"] = new_phase
+        # Log the phase advance as a special activity entry
+        async with AsyncSessionLocal() as db:
+            db.add(CommandLog(
+                session_id=session_id,
+                command=f"[phase_advance] {old_phase} → {new_phase}",
+                tool="phase:advance",
+                phase=new_phase,
+                triggered_siem_events=[],
+            ))
+            await db.commit()
         await send_json({"type": "phase_update", "data": {"phase": new_phase}})
 
 
@@ -313,10 +333,52 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     hint_text = static_hint
                     hint_steps = [static_hint]
 
+        # ── Log hint request + apply score penalty ─────────────────────────
+        penalty = _HINT_PENALTIES.get(int(level), 5)
+        hint_key = f"L{level}_phase{session_state.get('phase', 1)}"
+        new_score: int | None = None
+        try:
+            async with AsyncSessionLocal() as db:
+                # Fetch current session to get hints_used list and current score
+                sess_res = await db.execute(select(Session).where(Session.id == session_id))
+                sess = sess_res.scalar_one_or_none()
+                if sess:
+                    current_hints = list(sess.hints_used or [])
+                    current_hints.append(hint_key)
+                    new_score_val = max(0, (sess.score or 100) - penalty)
+                    await db.execute(
+                        update(Session)
+                        .where(Session.id == session_id)
+                        .values(score=new_score_val, hints_used=current_hints)
+                    )
+                    new_score = new_score_val
+                # Log hint as a CommandLog activity entry
+                db.add(CommandLog(
+                    session_id=session_id,
+                    command=f"[hint_requested] L{level}",
+                    tool=f"hint:L{level}",
+                    phase=session_state.get("phase", 1),
+                    triggered_siem_events=[],
+                    ai_hint_given=True,
+                ))
+                await db.commit()
+        except Exception as _he:
+            import logging
+            logging.getLogger(__name__).warning("[WS] Hint logging failed for %s: %s", session_id[:8], _he)
+
+        if new_score is not None:
+            await _send_json({"type": "score_update", "data": {"score": new_score, "hint_penalty": penalty, "level": level}})
+
         if hint_text:
-            await _send_json({"type": "ai_hint", "data": {"text": hint_text, "steps": hint_steps, "level": level, "branch": active_branch}})
+            await _send_json({"type": "ai_hint", "data": {
+                "text": hint_text, "steps": hint_steps, "level": level,
+                "branch": active_branch, "penalty": penalty,
+            }})
         else:
-            await _send_json({"type": "ai_hint", "data": {"text": "No hint available for this phase yet. Try progressing to the next step.", "steps": [], "level": level}})
+            await _send_json({"type": "ai_hint", "data": {
+                "text": "No hint available for this phase yet. Try progressing to the next step.",
+                "steps": [], "level": level,
+            }})
 
     redis_task = asyncio.create_task(_redis_to_ws())
     terminal_output_task = asyncio.create_task(_terminal_output_to_ws())
@@ -362,6 +424,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                             .where(Session.id == session_id)
                             .values(ai_mode=new_mode)
                         )
+                        db.add(CommandLog(
+                            session_id=session_id,
+                            command=f"[mode_changed] {new_mode}",
+                            tool=f"mode:{new_mode}",
+                            phase=session_state.get("phase", 1),
+                            triggered_siem_events=[],
+                        ))
                         await db.commit()
                     session_state["ai_mode"] = new_mode
                     await _send_json({

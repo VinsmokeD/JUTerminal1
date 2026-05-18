@@ -13,6 +13,49 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-18 — Claude Code (Design + Logging + 3D Improvements)]
+* **Status**: Complete — build verified (541 modules, no errors), Python syntax clean.
+* **Why**: User requested three specific improvements: (1) design/layout polish, (2) real activity logging tied to user actions, (3) better 3D KillChainTimeline. All three address demo-day visual quality and educational feedback-loop depth.
+* **Where**:
+  - `frontend/src/components/debrief/KillChainTimeline.jsx` — full 3D scene rewrite
+  - `frontend/src/components/siem/SiemFeed.jsx` — polished event feed design
+  - `backend/src/ws/routes.py` — hint logging + score penalties + mode-change log
+  - `backend/src/siem/events/sc01_events.json` — realistic ModSecurity/Apache/Suricata logs
+  - `backend/src/siem/events/sc02_events.json` — realistic Windows Security Event Log entries
+  - `backend/src/siem/events/sc03_events.json` — realistic GoPhish/Postfix/Sysmon logs
+* **What & How**:
+  **3D KillChainTimeline** — Complete rewrite of `KillChainTimeline.jsx`:
+  - Grid floor (LineSegments) gives depth perception
+  - Dual-layer tubes (glow outer + bright core) for Red/Blue tracks with per-track PointLights
+  - Double-mesh nodes (glowing outer transparent sphere + solid core) with sine-wave scale pulse
+  - `QuadraticBezierCurve3` arc connections between matched Red/Blue events (replacing straight lines) with mid-arc OctahedronGeometry diamonds
+  - Pulse rings: `RingGeometry` meshes that expand outward from the 6 most recent nodes and fade with opacity
+  - Starfield (280 `Points` sprites) for background atmosphere
+  - Smooth camera orbit with drag-to-rotate via pointer events, pan inertia
+  - CanvasTexture sprite labels with JSON-colored MITRE technique tags and severity dot
+  - Tier-aware: high-tier gets full effects (antialias, 2× DPR, extra glow), low-tier degrades gracefully
+  - 2D fallback for WebGL-disabled or low-perf browsers
+
+  **SIEM Event JSON upgrades** — `raw_log` field now contains realistic structured JSON that looks like actual Filebeat/ECS-normalised SIEM output:
+  - SC-01: ModSecurity CRS audit entries (rule IDs 942100, 930100, 933100), Apache access logs, auditd EXECVE/PATH events, MySQL slow query log, vsftpd/sshd auth logs, Suricata alerts
+  - SC-02: Windows Security Event Log (EventIDs 4625, 4624, 4662, 4768, 4769, 5140, 5145, 4656), Winlogbeat/ECS format with proper winlog.* fields, LDAP rate anomaly notes
+  - SC-03: GoPhish campaign JSON (email opened/clicked/submitted), Postfix SMTP logs with SPF/DKIM results, Sysmon EventID 1 (process create) with Office→cmd.exe parent chain, Suricata Meterpreter detection, Windows 4102 audit log clear event
+
+  **Activity logging in `ws/routes.py`**:
+  - Added `_HINT_PENALTIES = {1: 5, 2: 10, 3: 20}` constant
+  - `_send_hint()`: fetches Session, deducts penalty from `score`, appends hint key to `hints_used` JSON list, writes `CommandLog(tool=hint:L{level})`, sends `score_update` WS message with penalty field
+  - `_handle_terminal_command()`: retroactively sets `ai_hint_given=True` on the most recent CommandLog row when AI hint fires; logs phase advances as `CommandLog(command=[phase_advance] N→M, tool=phase:advance)`
+  - `toggle_mode` handler: now also writes `CommandLog(tool=mode:{new_mode})` for activity history
+
+  **SiemFeed redesign**:
+  - Event rows replaced with card-style layout (border + `bg-surface-1/40` card, rounded)
+  - Left severity stripe (`absolute w-[3px]` with `box-shadow` glow matching severity hex)
+  - Inline chips: timestamp, source IP (`bg-surface-3` pill), MITRE tag (`bg-cs-blue/10`), triage badge
+  - Collapsed row shows message + meta chips; no overflow raw log until expanded
+  - Expanded drawer: JSON syntax highlighter (HTML `dangerouslySetInnerHTML` with regex-colored keys/strings/numbers/booleans), meta grid, triage notes display
+  - `hideNoise` defaults to `true` (less clutter on startup); noise count shown in button
+  - Search now includes `source_ip` and `raw_log` fields
+
 ### [2026-05-17 15:53:00 +03:00] - Claude Code (SC-02 ACL Fix Static Verification)
 * **Status**: Testing partial - static deployment checks passed; live Docker restart blocked by app escalation quota.
 * **Why**: After changing SC-02 domain provisioning, the Compose model and patch hygiene needed immediate verification before handoff. Live container rebuild/restart is still required to empirically confirm the Samba runtime now provisions successfully.

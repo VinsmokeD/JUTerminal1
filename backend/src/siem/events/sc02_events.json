@@ -4,9 +4,10 @@
       "id": "sc02_recon_nmap_syn",
       "trigger_pattern": "nmap\\s+.*-sS|-sT|nmap\\s+172\\.20\\.2",
       "severity": "LOW",
-      "message": "Network reconnaissance: nmap SYN scan detected on domain network",
-      "raw_log": "IDS Alert: SYN scan from {src_ip} to 172.20.2.0/24",
+      "message": "Network reconnaissance: port scan detected on NEXORA domain network segment",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Nmap Scripting Engine User-Agent Detected\",\n  \"alert.severity\": 3,\n  \"alert.category\": \"Attempted Information Leak\",\n  \"alert.signature_id\": \"2009358\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 53621,\n  \"destination.ip\": \"172.20.2.20\",\n  \"destination.port\": 445,\n  \"network.transport\": \"tcp\",\n  \"network.protocol\": \"smb\",\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"observer.product\": \"Suricata\",\n  \"observer.version\": \"7.0.3\"\n}",
       "mitre_technique": "T1046",
+      "mitre_id": "T1046",
       "cwe": "CWE-200",
       "category": "reconnaissance"
     },
@@ -14,9 +15,10 @@
       "id": "sc02_recon_port_scan",
       "trigger_pattern": "nmap\\s+.*-p|--ports",
       "severity": "LOW",
-      "message": "Port scanning: specific port enumeration detected",
-      "raw_log": "IDS Alert: Port scan for domain services",
+      "message": "Port scanning: targeted enumeration of AD service ports (88/389/445/636)",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Potential VNC Scan (5900)\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.2.20\",\n  \"destination.port\": 88,\n  \"network.transport\": \"tcp\",\n  \"network.protocol\": \"kerberos\",\n  \"note\": \"Kerberos port 88 probed — likely domain reconn\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
       "mitre_technique": "T1046",
+      "mitre_id": "T1046",
       "cwe": "CWE-200",
       "category": "reconnaissance"
     }
@@ -26,9 +28,10 @@
       "id": "sc02_enum_enum4linux",
       "trigger_pattern": "enum4linux|enum4linux\\.pl|smbclient|samba",
       "severity": "MED",
-      "message": "Domain enumeration: enum4linux user/share enumeration detected",
-      "raw_log": "Event ID 5140: Network share access from {src_ip}",
-      "mitre_technique": "T1087",
+      "message": "SMB share enumeration: null-session share listing via smbclient / enum4linux",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"network\",\n  \"event.type\": \"access\",\n  \"winlog.event_id\": 5140,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"winlog.channel\": \"Security\",\n  \"user.name\": \"ANONYMOUS LOGON\",\n  \"user.domain\": \"NEXORA\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 49177,\n  \"winlog.event_data.ShareName\": \"IPC$\",\n  \"winlog.event_data.ShareLocalPath\": \"\",\n  \"winlog.event_data.AccessMask\": \"0x1\",\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"log.level\": \"information\"\n}",
+      "mitre_technique": "T1087.002",
+      "mitre_id": "T1087.002",
       "cwe": "CWE-200",
       "category": "enumeration"
     },
@@ -36,9 +39,10 @@
       "id": "sc02_enum_ldap_query",
       "trigger_pattern": "ldapsearch|ldap.*query|ADExplorer",
       "severity": "MED",
-      "message": "Directory enumeration: LDAP queries detected",
-      "raw_log": "Event ID 4662: Directory Service object was modified",
-      "mitre_technique": "T1087",
+      "message": "LDAP enumeration: anonymous LDAP query listing domain users and groups",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"iam\",\n  \"event.type\": \"access\",\n  \"winlog.event_id\": 4662,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"winlog.channel\": \"Security\",\n  \"user.name\": \"jsmith\",\n  \"user.domain\": \"NEXORA\",\n  \"winlog.event_data.ObjectServer\": \"DS\",\n  \"winlog.event_data.ObjectType\": \"%{bf967aba-0de6-11d0-a285-00aa003049e2}\",\n  \"winlog.event_data.ObjectName\": \"CN=Users,DC=nexora,DC=local\",\n  \"winlog.event_data.OperationType\": \"Object Access\",\n  \"winlog.event_data.AccessMask\": \"0x20000\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1087.002",
+      "mitre_id": "T1087.002",
       "cwe": "CWE-200",
       "category": "enumeration"
     }
@@ -48,19 +52,10 @@
       "id": "sc02_bloodhound_collection",
       "trigger_pattern": "BloodHound|bloodhound|Invoke-BloodHound|SharpHound",
       "severity": "HIGH",
-      "message": "AD enumeration: BloodHound collection detected",
-      "raw_log": "Event ID 5140: Sensitive LDAP queries from {src_ip}",
-      "mitre_technique": "T1087",
-      "cwe": "CWE-200",
-      "category": "bloodhound"
-    },
-    {
-      "id": "sc02_bloodhound_acl_query",
-      "trigger_pattern": "ACL.*query|AccessControlList|DACL",
-      "severity": "HIGH",
-      "message": "ACL enumeration: access control list queries detected",
-      "raw_log": "Event ID 4662: Multiple LDAP queries for object properties",
-      "mitre_technique": "T1087",
+      "message": "BloodHound collection: high-volume LDAP queries — AD attack path enumeration",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"iam\",\n  \"winlog.event_id\": 4662,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"user.name\": \"jsmith\",\n  \"user.domain\": \"NEXORA\",\n  \"winlog.event_data.ObjectServer\": \"DS\",\n  \"winlog.event_data.ObjectType\": \"%{19195a5a-6da0-11d0-afd3-00c04fd930c9}\",\n  \"winlog.event_data.ObjectName\": \"DC=nexora,DC=local\",\n  \"winlog.event_data.Properties\": \"member;memberOf;AdminCount;objectSid;sAMAccountName\",\n  \"ldap.queries_per_minute\": 847,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"note\": \"ALERT: LDAP query rate 847/min — SharpHound collection pattern detected\"\n}",
+      "mitre_technique": "T1087.002",
+      "mitre_id": "T1087.002",
       "cwe": "CWE-200",
       "category": "bloodhound"
     },
@@ -68,9 +63,10 @@
       "id": "sc02_bloodhound_spn_query",
       "trigger_pattern": "setspn|SPN|servicePrincipalName",
       "severity": "HIGH",
-      "message": "SPN enumeration: service principal name queries detected",
-      "raw_log": "Event ID 5140: Directory Service object queries",
-      "mitre_technique": "T1087",
+      "message": "SPN enumeration: querying service accounts with SPNs — Kerberoasting preparation",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"winlog.event_id\": 4662,\n  \"winlog.keywords\": \"Audit Success\",\n  \"user.name\": \"jsmith\",\n  \"user.domain\": \"NEXORA\",\n  \"winlog.event_data.ObjectType\": \"%{bf967aba-0de6-11d0-a285-00aa003049e2}\",\n  \"winlog.event_data.ObjectName\": \"CN=svc_backup,CN=Users,DC=nexora,DC=local\",\n  \"winlog.event_data.Properties\": \"servicePrincipalName;userAccountControl\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"note\": \"Querying servicePrincipalName — pre-Kerberoasting enumeration\"\n}",
+      "mitre_technique": "T1087.002",
+      "mitre_id": "T1087.002",
       "cwe": "CWE-200",
       "category": "bloodhound"
     }
@@ -78,11 +74,12 @@
   "kerberos": [
     {
       "id": "sc02_kerberos_tgt_request",
-      "trigger_pattern": "krbtgt|TGT|AS-REQ",
+      "trigger_pattern": "krbtgt|TGT|AS-REQ|kinit",
       "severity": "LOW",
-      "message": "Kerberos: TGT request detected",
-      "raw_log": "Event ID 4768: Kerberos authentication ticket was requested",
+      "message": "Kerberos TGT request: authentication ticket issued for user",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"authentication\",\n  \"event.type\": \"start\",\n  \"winlog.event_id\": 4768,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"winlog.channel\": \"Security\",\n  \"user.name\": \"jsmith\",\n  \"user.domain\": \"NEXORA.LOCAL\",\n  \"winlog.event_data.ServiceName\": \"krbtgt\",\n  \"winlog.event_data.ServiceSid\": \"S-1-5-21-3842939050-3880317879-2865463114-502\",\n  \"winlog.event_data.TicketOptions\": \"0x40810010\",\n  \"winlog.event_data.TicketEncryptionType\": \"0x12\",\n  \"winlog.event_data.Status\": \"0x0\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 55201,\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
       "mitre_technique": "T1558",
+      "mitre_id": "T1558",
       "cwe": "CWE-327",
       "category": "kerberos"
     },
@@ -90,19 +87,21 @@
       "id": "sc02_kerberos_roasting",
       "trigger_pattern": "GetUserSPNs|Invoke-Kerberoast|kerberoast",
       "severity": "CRITICAL",
-      "message": "Kerberoasting: TGS ticket extraction attempt",
-      "raw_log": "Event ID 4769: Kerberos service ticket was requested (RC4 encryption)",
+      "message": "Kerberoasting: RC4 service ticket requested for svc_backup — hash extraction imminent",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"authentication\",\n  \"event.type\": \"access\",\n  \"winlog.event_id\": 4769,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"winlog.channel\": \"Security\",\n  \"user.name\": \"jsmith\",\n  \"user.domain\": \"NEXORA.LOCAL\",\n  \"winlog.event_data.ServiceName\": \"svc_backup\",\n  \"winlog.event_data.ServiceSid\": \"S-1-5-21-3842939050-3880317879-2865463114-1108\",\n  \"winlog.event_data.TicketOptions\": \"0x40810000\",\n  \"winlog.event_data.TicketEncryptionType\": \"0x17\",\n  \"winlog.event_data.Status\": \"0x0\",\n  \"note\": \"CRITICAL: EncryptionType 0x17 = RC4-HMAC — Kerberoastable service ticket issued\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 55341,\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
       "mitre_technique": "T1558.003",
+      "mitre_id": "T1558.003",
       "cwe": "CWE-327",
       "category": "kerberos"
     },
     {
       "id": "sc02_kerberos_asreproast",
-      "trigger_pattern": "AS-REP|Invoke-ASREPRoast|asreproast",
+      "trigger_pattern": "AS-REP|Invoke-ASREPRoast|asreproast|GetNPUsers",
       "severity": "HIGH",
-      "message": "AS-REP roasting: pre-auth bypass attempt",
-      "raw_log": "Event ID 4768: AS-REP message without pre-authentication",
+      "message": "AS-REP Roasting: pre-authentication not required for user rgreen — hash exposed",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"authentication\",\n  \"event.type\": \"start\",\n  \"winlog.event_id\": 4768,\n  \"winlog.keywords\": \"Audit Failure\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"user.name\": \"rgreen\",\n  \"user.domain\": \"NEXORA.LOCAL\",\n  \"winlog.event_data.ServiceName\": \"krbtgt\",\n  \"winlog.event_data.TicketOptions\": \"0x40800010\",\n  \"winlog.event_data.TicketEncryptionType\": \"0x17\",\n  \"winlog.event_data.Status\": \"0x0\",\n  \"winlog.event_data.PreAuthType\": \"0\",\n  \"note\": \"CRITICAL: PreAuthType=0 — DONT_REQUIRE_PREAUTH set on rgreen — AS-REP returned without authentication\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
       "mitre_technique": "T1558.004",
+      "mitre_id": "T1558.004",
       "cwe": "CWE-327",
       "category": "kerberos"
     }
@@ -112,19 +111,10 @@
       "id": "sc02_lateral_psexec",
       "trigger_pattern": "psexec|Invoke-PSExec|paexec",
       "severity": "CRITICAL",
-      "message": "Lateral movement: psexec remote code execution detected",
-      "raw_log": "Event ID 5145: Network share access for admin$ detected",
+      "message": "PsExec lateral movement: admin share (ADMIN$) accessed for remote execution",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"network\",\n  \"event.type\": \"access\",\n  \"winlog.event_id\": 5145,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"user.name\": \"it.admin\",\n  \"user.domain\": \"NEXORA\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 49200,\n  \"winlog.event_data.ShareName\": \"ADMIN$\",\n  \"winlog.event_data.RelativeTargetName\": \"PSEXESVC.exe\",\n  \"winlog.event_data.AccessMask\": \"0x2\",\n  \"host.hostname\": \"NEXORA-FS01\",\n  \"note\": \"ALERT: PsExec service binary written to ADMIN$ — lateral movement to fileserver\"\n}",
       "mitre_technique": "T1021.002",
-      "cwe": "CWE-200",
-      "category": "lateral_movement"
-    },
-    {
-      "id": "sc02_lateral_wmi",
-      "trigger_pattern": "wmi|wmimgmt|Invoke-WMICommand",
-      "severity": "HIGH",
-      "message": "Lateral movement: WMI remote execution detected",
-      "raw_log": "Event ID 4688: Process creation via WMI from {src_ip}",
-      "mitre_technique": "T1047",
+      "mitre_id": "T1021.002",
       "cwe": "CWE-200",
       "category": "lateral_movement"
     },
@@ -132,9 +122,10 @@
       "id": "sc02_lateral_pass_hash",
       "trigger_pattern": "pass.*hash|pth|NTLM.*relay|secretsdump",
       "severity": "CRITICAL",
-      "message": "Lateral movement: pass-the-hash detected",
-      "raw_log": "Event ID 4624: Logon with plaintext equivalent detected",
+      "message": "Pass-the-Hash: NTLM logon with stolen hash — impersonation of domain account",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"authentication\",\n  \"event.type\": \"start\",\n  \"winlog.event_id\": 4624,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"user.name\": \"it.admin\",\n  \"user.domain\": \"NEXORA\",\n  \"winlog.event_data.LogonType\": \"3\",\n  \"winlog.event_data.LogonProcessName\": \"NtLmSsp\",\n  \"winlog.event_data.AuthenticationPackageName\": \"NTLM\",\n  \"winlog.event_data.WorkstationName\": \"-\",\n  \"winlog.event_data.LmPackageName\": \"NTLM V2\",\n  \"winlog.event_data.LogonGuid\": \"{00000000-0000-0000-0000-000000000000}\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 49210,\n  \"host.hostname\": \"NEXORA-FS01\",\n  \"note\": \"CRITICAL: NTLM network logon with null LogonGuid — pass-the-hash attack pattern\"\n}",
       "mitre_technique": "T1550.002",
+      "mitre_id": "T1550.002",
       "cwe": "CWE-327",
       "category": "lateral_movement"
     }
@@ -144,65 +135,23 @@
       "id": "sc02_dcsync_replication",
       "trigger_pattern": "dcsync|GetNCChanges|DCSync|DsGetNCChanges",
       "severity": "CRITICAL",
-      "message": "Domain controller synchronization: DCSync attack detected",
-      "raw_log": "Event ID 4662: Directory Service object was accessed (replication request)",
+      "message": "DCSync attack: replication rights invoked by non-DC machine — all hashes at risk",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"iam\",\n  \"event.type\": \"access\",\n  \"winlog.event_id\": 4662,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"user.name\": \"it.admin\",\n  \"user.domain\": \"NEXORA\",\n  \"winlog.event_data.ObjectServer\": \"DS\",\n  \"winlog.event_data.ObjectType\": \"%{19195a5a-6da0-11d0-afd3-00c04fd930c9}\",\n  \"winlog.event_data.ObjectName\": \"DC=nexora,DC=local\",\n  \"winlog.event_data.Properties\": \"{1131f6aa-9c07-11d1-f79f-00c04fc2dcd2} {1131f6ab-9c07-11d1-f79f-00c04fc2dcd2}\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 49225,\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"note\": \"CRITICAL: DS-Replication-Get-Changes-All rights exercised from non-DC host — DCSync in progress\"\n}",
       "mitre_technique": "T1003.006",
+      "mitre_id": "T1003.006",
       "cwe": "CWE-327",
       "category": "dcsync"
     },
     {
       "id": "sc02_dcsync_krbtgt",
-      "trigger_pattern": "krbtgt|krbtgt.*hash|extract.*domain.*hash",
+      "trigger_pattern": "krbtgt.*hash|extract.*domain.*hash|secretsdump.*krbtgt",
       "severity": "CRITICAL",
-      "message": "Domain hash extraction: krbtgt password hash dumped",
-      "raw_log": "Event ID 4656: Handle requested for privileged object",
+      "message": "krbtgt hash extracted: Golden Ticket attack now possible — full domain compromise",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"winlog.event_id\": 4662,\n  \"winlog.keywords\": \"Audit Success\",\n  \"user.name\": \"it.admin\",\n  \"user.domain\": \"NEXORA\",\n  \"winlog.event_data.ObjectServer\": \"DS\",\n  \"winlog.event_data.ObjectName\": \"CN=krbtgt,CN=Users,DC=nexora,DC=local\",\n  \"winlog.event_data.Properties\": \"unicodePwd;supplementalCredentials\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"note\": \"CRITICAL: krbtgt password attributes read — Golden Ticket material obtained\"\n}",
       "mitre_technique": "T1003.006",
+      "mitre_id": "T1003.006",
       "cwe": "CWE-327",
       "category": "dcsync"
-    }
-  ],
-  "privilege_escalation": [
-    {
-      "id": "sc02_privesc_backup_ops",
-      "trigger_pattern": "Backup.*Operator|SE_BACKUP_NAME",
-      "severity": "HIGH",
-      "message": "Privilege escalation: backup operator privilege assignment",
-      "raw_log": "Event ID 4728: Member was added to global security group (Backup Operators)",
-      "mitre_technique": "T1098.001",
-      "cwe": "CWE-269",
-      "category": "privilege_escalation"
-    },
-    {
-      "id": "sc02_privesc_domain_admin",
-      "trigger_pattern": "Domain.*Admin|domain.*admin.*group",
-      "severity": "CRITICAL",
-      "message": "Privilege escalation: domain admin group membership granted",
-      "raw_log": "Event ID 4728: Member added to Domain Admins global group",
-      "mitre_technique": "T1098.001",
-      "cwe": "CWE-269",
-      "category": "privilege_escalation"
-    }
-  ],
-  "authentication": [
-    {
-      "id": "sc02_auth_failed_logon",
-      "trigger_pattern": "failed.*login|logon.*failed|4625",
-      "severity": "MED",
-      "message": "Authentication failure: failed logon attempt",
-      "raw_log": "Event ID 4625: Account failed to log on",
-      "mitre_technique": "T1110",
-      "cwe": "CWE-307",
-      "category": "authentication"
-    },
-    {
-      "id": "sc02_auth_successful_logon",
-      "trigger_pattern": "successful.*login|logon.*successful|4624",
-      "severity": "LOW",
-      "message": "Authentication: successful logon",
-      "raw_log": "Event ID 4624: Account successfully logged on",
-      "mitre_technique": "T1078",
-      "cwe": "CWE-200",
-      "category": "authentication"
     }
   ],
   "credential_harvesting": [
@@ -210,21 +159,36 @@
       "id": "sc02_cred_spray",
       "trigger_pattern": "spraying|spray.*password|DomainPasswordSpray",
       "severity": "HIGH",
-      "message": "Credential attack: password spraying detected",
-      "raw_log": "Multiple Event ID 4625 (failed logons) from same source in short time",
+      "message": "Password spraying: 24 accounts tested with 'Spring2024!' in 8 seconds",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"authentication\",\n  \"event.type\": \"denied\",\n  \"winlog.event_id\": 4625,\n  \"winlog.keywords\": \"Audit Failure\",\n  \"winlog.event_data.FailureReason\": \"%%2313\",\n  \"winlog.event_data.Status\": \"0xC000006A\",\n  \"winlog.event_data.SubStatus\": \"0xC000006A\",\n  \"winlog.event_data.LogonType\": \"3\",\n  \"user.name\": \"mross\",\n  \"user.domain\": \"NEXORA\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 49301,\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"failed_accounts_count\": 24,\n  \"time_window_seconds\": 8,\n  \"note\": \"ALERT: Spray pattern — same password tested across multiple accounts\"\n}",
       "mitre_technique": "T1110.003",
+      "mitre_id": "T1110.003",
       "cwe": "CWE-307",
       "category": "credential_harvesting"
     },
     {
       "id": "sc02_cred_dumping",
-      "trigger_pattern": "dumping|mimikatz|secretsdump|dumpkeys",
+      "trigger_pattern": "dumping|mimikatz|secretsdump|dumpkeys|lsass",
       "severity": "CRITICAL",
-      "message": "Credential harvesting: password hash dumping detected",
-      "raw_log": "Event ID 4656: Handle to privileged registry key requested",
-      "mitre_technique": "T1003",
+      "message": "Credential dumping: LSASS process memory access — plaintext credentials at risk",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"process\",\n  \"event.type\": \"access\",\n  \"winlog.event_id\": 4656,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Security-Auditing\",\n  \"user.name\": \"it.admin\",\n  \"user.domain\": \"NEXORA\",\n  \"winlog.event_data.ObjectServer\": \"Process\",\n  \"winlog.event_data.ObjectName\": \"C:\\\\Windows\\\\System32\\\\lsass.exe\",\n  \"winlog.event_data.AccessMask\": \"0x1010\",\n  \"winlog.event_data.ProcessName\": \"C:\\\\Windows\\\\System32\\\\cmd.exe\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"note\": \"CRITICAL: LSASS handle opened with PROCESS_VM_READ rights — mimikatz/secretsdump pattern\"\n}",
+      "mitre_technique": "T1003.001",
+      "mitre_id": "T1003.001",
       "cwe": "CWE-327",
       "category": "credential_harvesting"
+    }
+  ],
+  "authentication": [
+    {
+      "id": "sc02_auth_failed_logon",
+      "trigger_pattern": "failed.*login|logon.*failed|wrong.*password",
+      "severity": "MED",
+      "message": "Authentication failure: invalid credentials for domain account",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"authentication\",\n  \"event.type\": \"denied\",\n  \"winlog.event_id\": 4625,\n  \"winlog.keywords\": \"Audit Failure\",\n  \"winlog.event_data.FailureReason\": \"Unknown user name or bad password\",\n  \"winlog.event_data.Status\": \"0xC000006D\",\n  \"winlog.event_data.LogonType\": \"3\",\n  \"user.name\": \"jsmith\",\n  \"user.domain\": \"NEXORA\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 49450,\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1110",
+      "mitre_id": "T1110",
+      "cwe": "CWE-307",
+      "category": "authentication"
     }
   ]
 }

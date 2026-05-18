@@ -4,29 +4,32 @@
       "id": "sc03_osint_domain_enum",
       "trigger_pattern": "whois|nslookup|dig\\s|host\\s|assetfinder",
       "severity": "LOW",
-      "message": "OSINT: domain enumeration and DNS reconnaissance",
-      "raw_log": "DNS Log: Domain queries for orion-logistics.com",
+      "message": "OSINT: DNS/WHOIS reconnaissance of orion-logistics.com infrastructure",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"dns.log\",\n  \"event.category\": \"network\",\n  \"event.type\": \"lookup\",\n  \"dns.question.name\": \"orion-logistics.com\",\n  \"dns.question.type\": \"ANY\",\n  \"dns.answers\": [\n    {\"data\": \"172.20.3.20\", \"type\": \"A\"},\n    {\"data\": \"mail.orion-logistics.com\", \"type\": \"MX\", \"priority\": 10}\n  ],\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 53891,\n  \"destination.ip\": \"8.8.8.8\",\n  \"destination.port\": 53,\n  \"network.transport\": \"udp\",\n  \"network.protocol\": \"dns\",\n  \"host.hostname\": \"dns-resolver\"\n}",
       "mitre_technique": "T1598",
+      "mitre_id": "T1598",
       "cwe": "CWE-200",
       "category": "osint"
     },
     {
       "id": "sc03_osint_mail_probe",
-      "trigger_pattern": "mail.*probe|smtp.*open|mx.*record",
+      "trigger_pattern": "smtp.*probe|telnet.*25|mail.*open|mx.*record|nmap.*-p.*25",
       "severity": "LOW",
-      "message": "OSINT: mail server probing",
-      "raw_log": "Network Log: SMTP port 25 connection attempt",
+      "message": "OSINT: SMTP banner grab on mail relay (172.20.3.20:25)",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"postfix.log\",\n  \"event.category\": \"network\",\n  \"log.level\": \"info\",\n  \"process.name\": \"postfix/smtpd\",\n  \"process.pid\": 1102,\n  \"message\": \"connect from unknown[{src_ip}]\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 48201,\n  \"destination.ip\": \"172.20.3.20\",\n  \"destination.port\": 25,\n  \"service.name\": \"postfix\",\n  \"postfix.smtpd.status\": \"connect\",\n  \"host.hostname\": \"orion-mailrelay\"\n}",
       "mitre_technique": "T1598",
+      "mitre_id": "T1598",
       "cwe": "CWE-200",
       "category": "osint"
     },
     {
       "id": "sc03_osint_port_scan",
-      "trigger_pattern": "nmap|port.*scan|scanner",
+      "trigger_pattern": "nmap|port.*scan",
       "severity": "MED",
-      "message": "OSINT: port scanning of mail/web infrastructure",
-      "raw_log": "IDS Alert: Multiple port connection attempts",
+      "message": "Port scanning: service discovery on Orion Logistics infrastructure",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Nmap Scripting Engine User-Agent\",\n  \"alert.severity\": 3,\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 52890,\n  \"destination.ip\": \"172.20.3.20\",\n  \"destination.port\": 25,\n  \"network.transport\": \"tcp\",\n  \"host.hostname\": \"orion-mailrelay\",\n  \"observer.product\": \"Suricata\"\n}",
       "mitre_technique": "T1046",
+      "mitre_id": "T1046",
       "cwe": "CWE-200",
       "category": "osint"
     }
@@ -34,11 +37,12 @@
   "phishing_prep": [
     {
       "id": "sc03_phishing_gophish_admin",
-      "trigger_pattern": "gophish|phishing.*admin|campaign.*create",
+      "trigger_pattern": "gophish|campaign.*create|:3333",
       "severity": "HIGH",
-      "message": "Phishing infrastructure: GoPhish admin panel access",
-      "raw_log": "Web Server Log: GoPhish admin interface accessed",
+      "message": "GoPhish admin: campaign creation initiated against Orion Logistics employees",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"gophish.log\",\n  \"event.category\": \"web\",\n  \"log.level\": \"info\",\n  \"gophish.level\": \"info\",\n  \"gophish.message\": \"Campaign created\",\n  \"gophish.campaign\": \"Orion-IT-Password-Reset\",\n  \"gophish.smtp\": \"Orion Mail Relay <noreply@orion-logistics.com>\",\n  \"gophish.url\": \"http://172.20.3.10/orion-portal\",\n  \"gophish.targets\": 14,\n  \"gophish.template\": \"IT Department Password Reset\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-phish\"\n}",
       "mitre_technique": "T1583.006",
+      "mitre_id": "T1583.006",
       "cwe": "CWE-200",
       "category": "phishing_prep"
     },
@@ -46,19 +50,10 @@
       "id": "sc03_phishing_landing_page",
       "trigger_pattern": "landing.*page|phishing.*page|credentials.*form",
       "severity": "HIGH",
-      "message": "Phishing infrastructure: phishing landing page created",
-      "raw_log": "GoPhish Log: Landing page deployed",
+      "message": "Phishing page deployed: credential-harvesting form cloned from Orion Logistics portal",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"gophish.log\",\n  \"log.level\": \"info\",\n  \"gophish.message\": \"Landing page deployed\",\n  \"gophish.page_name\": \"Orion Employee Portal - Password Reset\",\n  \"gophish.page_url\": \"http://172.20.3.10/orion-portal/reset\",\n  \"gophish.capture_credentials\": true,\n  \"gophish.capture_passwords\": true,\n  \"gophish.redirect_url\": \"https://orion-logistics.com\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-phish\"\n}",
       "mitre_technique": "T1583.006",
-      "cwe": "CWE-200",
-      "category": "phishing_prep"
-    },
-    {
-      "id": "sc03_phishing_target_list",
-      "trigger_pattern": "recipient|target.*list|email.*list",
-      "severity": "HIGH",
-      "message": "Phishing campaign: target email list compiled",
-      "raw_log": "GoPhish Log: Target list uploaded for campaign",
-      "mitre_technique": "T1598.003",
+      "mitre_id": "T1583.006",
       "cwe": "CWE-200",
       "category": "phishing_prep"
     }
@@ -68,29 +63,21 @@
       "id": "sc03_email_campaign_launch",
       "trigger_pattern": "campaign.*launch|send.*email|campaign.*start",
       "severity": "HIGH",
-      "message": "Phishing campaign: email campaign launched",
-      "raw_log": "Mail Server Log: Bulk email transmission started",
+      "message": "Phishing campaign launched: 14 spear-phishing emails queued via Postfix relay",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"postfix.log\",\n  \"event.category\": \"email\",\n  \"log.level\": \"info\",\n  \"process.name\": \"postfix/smtp\",\n  \"process.pid\": 2281,\n  \"message\": \"to=<j.turner@orion-logistics.com>, relay=172.20.3.30[172.20.3.30]:25, status=sent (250 OK)\",\n  \"email.from.address\": \"it-support@orion-logistics.com\",\n  \"email.to.address\": \"j.turner@orion-logistics.com\",\n  \"email.subject\": \"ACTION REQUIRED: Reset your Orion Employee Portal password\",\n  \"postfix.smtp.status\": \"sent\",\n  \"postfix.smtp.delay\": \"0.8\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-mailrelay\"\n}",
       "mitre_technique": "T1566.002",
-      "cwe": "CWE-200",
-      "category": "email_campaign"
-    },
-    {
-      "id": "sc03_email_dispatch",
-      "trigger_pattern": "mail.*sent|smtp.*send|message.*dispatched",
-      "severity": "HIGH",
-      "message": "Email transmission: phishing emails dispatched",
-      "raw_log": "SMTP Log: Multiple emails sent to external addresses",
-      "mitre_technique": "T1566.002",
+      "mitre_id": "T1566.002",
       "cwe": "CWE-200",
       "category": "email_campaign"
     },
     {
       "id": "sc03_email_suspicious_sender",
-      "trigger_pattern": "spoofed.*sender|fake.*email|impersonat.*email",
+      "trigger_pattern": "spoofed.*sender|fake.*email|impersonat.*email|from.*header",
       "severity": "MED",
-      "message": "Email reputation: suspicious sender address detected",
-      "raw_log": "Email Gateway: SPF/DKIM validation failed for sender",
+      "message": "Email spoofing: SPF check FAIL — sender address impersonates orion-logistics.com",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"postfix.log\",\n  \"event.category\": \"email\",\n  \"log.level\": \"warning\",\n  \"process.name\": \"postfix/cleanup\",\n  \"message\": \"warning: header From: IT Support <it-support@orion-logistics.com> from 172.20.3.10; from=<>, to=<j.turner@orion-logistics.com>\",\n  \"email.from.address\": \"it-support@orion-logistics.com\",\n  \"spf.result\": \"FAIL\",\n  \"dkim.result\": \"NONE\",\n  \"dmarc.result\": \"FAIL\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-mailrelay\"\n}",
       "mitre_technique": "T1598.003",
+      "mitre_id": "T1598.003",
       "cwe": "CWE-640",
       "category": "email_campaign"
     },
@@ -98,9 +85,10 @@
       "id": "sc03_email_macro_attachment",
       "trigger_pattern": "attachment.*macro|doc.*macro|\\.docm|\\.xlsm",
       "severity": "CRITICAL",
-      "message": "Email payload: macro-enabled document attachment detected",
-      "raw_log": "Email Gateway: Suspicious Office document attachment blocked",
+      "message": "Malicious attachment: macro-enabled Office document (.docm) — payload delivery",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"postfix.log\",\n  \"event.category\": \"email\",\n  \"log.level\": \"warning\",\n  \"message\": \"Attachment blocked: Orion_Logistics_Invoice_Jan2024.docm\",\n  \"email.attachments.file.name\": \"Orion_Logistics_Invoice_Jan2024.docm\",\n  \"email.attachments.file.mime_type\": \"application/vnd.ms-word.document.macroEnabled\",\n  \"email.attachments.file.size\": 183291,\n  \"email.from.address\": \"billing@orion-logistics.com\",\n  \"scanner.verdict\": \"Macro-enabled document — VBA code detected\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-mailrelay\"\n}",
       "mitre_technique": "T1566.001",
+      "mitre_id": "T1566.001",
       "cwe": "CWE-94",
       "category": "email_campaign"
     }
@@ -110,19 +98,21 @@
       "id": "sc03_email_opened",
       "trigger_pattern": "email.*open|message.*read|tracking.*pixel",
       "severity": "HIGH",
-      "message": "Email interaction: victim opened phishing email",
-      "raw_log": "Phishing Server Log: Email tracking pixel loaded",
+      "message": "Phishing email opened: tracking pixel loaded by j.turner@orion-logistics.com",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"gophish.log\",\n  \"event.category\": \"web\",\n  \"gophish.message\": \"Email opened\",\n  \"gophish.campaign\": \"Orion-IT-Password-Reset\",\n  \"gophish.email\": \"j.turner@orion-logistics.com\",\n  \"gophish.first_name\": \"James\",\n  \"gophish.last_name\": \"Turner\",\n  \"http.request.method\": \"GET\",\n  \"url.path\": \"/track/open/abc123\",\n  \"user_agent.original\": \"Microsoft Office/16.0 (Windows NT 10.0; Microsoft Outlook 16.0)\",\n  \"source.ip\": \"172.20.3.30\",\n  \"host.hostname\": \"orion-phish\"\n}",
       "mitre_technique": "T1598.003",
+      "mitre_id": "T1598.003",
       "cwe": "CWE-200",
       "category": "email_interaction"
     },
     {
       "id": "sc03_link_clicked",
-      "trigger_pattern": "link.*click|phishing.*link.*click|clicked",
+      "trigger_pattern": "link.*click|phishing.*link|clicked",
       "severity": "HIGH",
-      "message": "Email interaction: victim clicked phishing link",
-      "raw_log": "Web Server Log: Phishing link accessed from victim IP",
+      "message": "Phishing link clicked: victim navigated to credential-harvesting landing page",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"gophish.log\",\n  \"gophish.message\": \"Clicked Link\",\n  \"gophish.campaign\": \"Orion-IT-Password-Reset\",\n  \"gophish.email\": \"j.turner@orion-logistics.com\",\n  \"http.request.method\": \"GET\",\n  \"url.path\": \"/orion-portal/reset\",\n  \"url.query\": \"rid=abc123\",\n  \"user_agent.original\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\",\n  \"source.ip\": \"172.20.3.30\",\n  \"http.response.status_code\": 200,\n  \"host.hostname\": \"orion-phish\"\n}",
       "mitre_technique": "T1598.003",
+      "mitre_id": "T1598.003",
       "cwe": "CWE-200",
       "category": "email_interaction"
     },
@@ -130,9 +120,10 @@
       "id": "sc03_credentials_submitted",
       "trigger_pattern": "credential.*submit|password.*enter|form.*submit",
       "severity": "CRITICAL",
-      "message": "Email interaction: victim submitted credentials to phishing site",
-      "raw_log": "Phishing Server Log: Credentials captured",
+      "message": "Credentials captured: j.turner submitted username/password to phishing portal",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"gophish.log\",\n  \"event.category\": \"authentication\",\n  \"gophish.message\": \"Submitted Data\",\n  \"gophish.campaign\": \"Orion-IT-Password-Reset\",\n  \"gophish.email\": \"j.turner@orion-logistics.com\",\n  \"gophish.captured.username\": \"j.turner\",\n  \"gophish.captured.password\": \"[REDACTED — CAPTURED]\",\n  \"http.request.method\": \"POST\",\n  \"url.path\": \"/orion-portal/reset\",\n  \"source.ip\": \"172.20.3.30\",\n  \"host.hostname\": \"orion-phish\",\n  \"note\": \"CRITICAL: Valid Orion corporate credentials obtained via phishing\"\n}",
       "mitre_technique": "T1598.003",
+      "mitre_id": "T1598.003",
       "cwe": "CWE-522",
       "category": "email_interaction"
     }
@@ -140,31 +131,23 @@
   "payload_execution": [
     {
       "id": "sc03_macro_execution",
-      "trigger_pattern": "macro.*exec|vba.*exec|document.*open",
+      "trigger_pattern": "macro.*exec|vba.*exec|document.*open|mshta|wscript",
       "severity": "CRITICAL",
-      "message": "Payload execution: Office macro executed",
-      "raw_log": "Endpoint Log: Office application spawned unusual process",
+      "message": "Macro execution: VBA payload spawned cmd.exe — code execution on victim host",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"sysmon\",\n  \"event.category\": \"process\",\n  \"event.type\": \"start\",\n  \"winlog.event_id\": 1,\n  \"winlog.provider_name\": \"Microsoft-Windows-Sysmon\",\n  \"process.name\": \"cmd.exe\",\n  \"process.command_line\": \"cmd.exe /c powershell -nop -w hidden -enc JABjAGwAaQBlAG4AdA...\",\n  \"process.parent.name\": \"WINWORD.EXE\",\n  \"process.parent.command_line\": \"\\\"C:\\\\Program Files\\\\Microsoft Office\\\\Office16\\\\WINWORD.EXE\\\" Orion_Invoice.docm\",\n  \"process.pid\": 4821,\n  \"process.parent.pid\": 3912,\n  \"user.name\": \"j.turner\",\n  \"user.domain\": \"ORION\",\n  \"host.hostname\": \"ORION-WS-42\",\n  \"note\": \"CRITICAL: Office macro spawned cmd.exe — malicious document opened by victim\"\n}",
       "mitre_technique": "T1203",
+      "mitre_id": "T1059.005",
       "cwe": "CWE-94",
       "category": "payload_execution"
     },
     {
       "id": "sc03_vba_obfuscation",
-      "trigger_pattern": "obfuscat|encoded.*vba|scrambled.*macro",
+      "trigger_pattern": "obfuscat|encoded.*vba|base64.*decode|certutil",
       "severity": "HIGH",
-      "message": "Payload evasion: obfuscated VBA macro detected",
-      "raw_log": "Endpoint Log: Office macro analysis detected obfuscation",
+      "message": "Obfuscated payload: Base64-encoded PowerShell detected — AV evasion technique",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"defender.log\",\n  \"event.category\": \"malware\",\n  \"log.level\": \"warning\",\n  \"windefender.threat_name\": \"Behavior:Win32/Obfuscated.A\",\n  \"windefender.action\": \"DETECT\",\n  \"windefender.status\": \"Active\",\n  \"process.name\": \"powershell.exe\",\n  \"process.command_line\": \"powershell.exe -nop -w hidden -enc JABjAGwAaQBlAG4AdA==\",\n  \"file.path\": \"C:\\\\Users\\\\j.turner\\\\AppData\\\\Roaming\\\\Temp\\\\stage2.ps1\",\n  \"user.name\": \"j.turner\",\n  \"host.hostname\": \"ORION-WS-42\"\n}",
       "mitre_technique": "T1027",
-      "cwe": "CWE-94",
-      "category": "payload_execution"
-    },
-    {
-      "id": "sc03_document_exploit",
-      "trigger_pattern": "exploit.*document|cve.*document|shellcode",
-      "severity": "CRITICAL",
-      "message": "Payload execution: document exploit triggered",
-      "raw_log": "Endpoint Log: Memory corruption detected in Office process",
-      "mitre_technique": "T1203",
+      "mitre_id": "T1027",
       "cwe": "CWE-94",
       "category": "payload_execution"
     }
@@ -172,31 +155,34 @@
   "c2_communication": [
     {
       "id": "sc03_c2_outbound",
-      "trigger_pattern": "outbound.*connect|callback.*connect|reverse.*shell",
+      "trigger_pattern": "outbound.*connect|callback.*connect|reverse.*shell|nc.*-e|ncat",
       "severity": "CRITICAL",
-      "message": "C2 communication: outbound connection detected",
-      "raw_log": "Network Log: Unusual outbound connection from victim host",
+      "message": "C2 callback: reverse shell connection from ORION-WS-42 to attacker infrastructure",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET POLICY Reverse Shell - Netcat or ncat\",\n  \"alert.severity\": 1,\n  \"alert.category\": \"Potentially Bad Traffic\",\n  \"source.ip\": \"172.20.3.30\",\n  \"source.port\": 54901,\n  \"destination.ip\": \"{src_ip}\",\n  \"destination.port\": 4444,\n  \"network.transport\": \"tcp\",\n  \"network.bytes\": 4821,\n  \"host.hostname\": \"ORION-WS-42\",\n  \"observer.product\": \"Suricata\",\n  \"note\": \"CRITICAL: Outbound raw TCP connection on port 4444 — active reverse shell\"\n}",
       "mitre_technique": "T1071.001",
+      "mitre_id": "T1071.001",
       "cwe": "CWE-200",
       "category": "c2_communication"
     },
     {
       "id": "sc03_c2_beacon",
-      "trigger_pattern": "beacon|c2|command.*control|c&c",
+      "trigger_pattern": "beacon|c2|command.*control|metasploit.*handler|meterpreter",
       "severity": "CRITICAL",
-      "message": "C2 communication: C2 beacon detected",
-      "raw_log": "IDS Alert: Known C2 traffic pattern detected",
+      "message": "C2 beacon: periodic Meterpreter check-in detected — host under attacker control",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"alert.signature\": \"ET POLICY Metasploit Payload: METERPRETER\",\n  \"alert.severity\": 1,\n  \"alert.category\": \"Malware Command and Control Activity Detected\",\n  \"source.ip\": \"172.20.3.30\",\n  \"source.port\": 49510,\n  \"destination.ip\": \"{src_ip}\",\n  \"destination.port\": 4444,\n  \"network.transport\": \"tcp\",\n  \"network.bytes\": 1248,\n  \"network.protocol\": \"meterpreter\",\n  \"host.hostname\": \"ORION-WS-42\",\n  \"note\": \"CRITICAL: Meterpreter session active — attacker has interactive shell\"\n}",
       "mitre_technique": "T1071.001",
+      "mitre_id": "T1071.001",
       "cwe": "CWE-200",
       "category": "c2_communication"
     },
     {
       "id": "sc03_dns_tunneling",
-      "trigger_pattern": "dns.*tunnel|dns.*exfil|dga|domain.*generation",
+      "trigger_pattern": "dns.*tunnel|dns.*exfil|dga|iodine|dnscat",
       "severity": "HIGH",
-      "message": "C2 communication: DNS tunneling detected",
-      "raw_log": "DNS Log: Suspicious DNS query pattern (DGA)",
+      "message": "DNS tunneling: high-entropy subdomain queries — data exfil over DNS detected",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"dns.log\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET DNS Non-DNS or Non-HTTP on port 53\",\n  \"dns.question.name\": \"ZmFsc2VkYXRhZXhhbXBsZQ.attacker-c2.com\",\n  \"dns.question.type\": \"TXT\",\n  \"dns.question.entropy\": 4.87,\n  \"source.ip\": \"172.20.3.30\",\n  \"destination.ip\": \"8.8.8.8\",\n  \"destination.port\": 53,\n  \"note\": \"ALERT: High-entropy subdomain — DNS tunneling / C2 over DNS\",\n  \"host.hostname\": \"ORION-WS-42\"\n}",
       "mitre_technique": "T1568",
+      "mitre_id": "T1071.004",
       "cwe": "CWE-200",
       "category": "c2_communication"
     }
@@ -206,71 +192,34 @@
       "id": "sc03_persistence_scheduled_task",
       "trigger_pattern": "schtasks|scheduled.*task|task.*create",
       "severity": "CRITICAL",
-      "message": "Persistence: scheduled task created",
-      "raw_log": "Endpoint Log: New scheduled task registered",
+      "message": "Persistence: scheduled task 'WindowsUpdateHelper' created — runs payload at startup",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"sysmon\",\n  \"event.category\": \"process\",\n  \"winlog.event_id\": 1,\n  \"process.name\": \"schtasks.exe\",\n  \"process.command_line\": \"schtasks /create /tn WindowsUpdateHelper /tr C:\\\\ProgramData\\\\update.exe /sc onlogon /ru SYSTEM\",\n  \"process.parent.name\": \"cmd.exe\",\n  \"user.name\": \"j.turner\",\n  \"host.hostname\": \"ORION-WS-42\",\n  \"note\": \"CRITICAL: Scheduled task created for persistence — runs as SYSTEM on logon\"\n}",
       "mitre_technique": "T1053.005",
+      "mitre_id": "T1053.005",
       "cwe": "CWE-200",
       "category": "persistence"
     },
     {
       "id": "sc03_persistence_registry_run",
-      "trigger_pattern": "registry.*run|runkey|hklm.*software.*run",
+      "trigger_pattern": "registry.*run|runkey|hklm.*software.*run|reg.*add",
       "severity": "CRITICAL",
-      "message": "Persistence: Registry Run key modified",
-      "raw_log": "Endpoint Log: Registry HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run modified",
+      "message": "Persistence: Registry Run key modified — malware added to autostart",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"sysmon\",\n  \"event.category\": \"registry\",\n  \"winlog.event_id\": 13,\n  \"winlog.event_data.EventType\": \"SetValue\",\n  \"winlog.event_data.TargetObject\": \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\\\\WindowsSecurityUpdate\",\n  \"winlog.event_data.Details\": \"C:\\\\ProgramData\\\\update.exe\",\n  \"process.name\": \"reg.exe\",\n  \"user.name\": \"j.turner\",\n  \"host.hostname\": \"ORION-WS-42\",\n  \"note\": \"CRITICAL: Registry Run key modified — payload will execute on every user login\"\n}",
       "mitre_technique": "T1547.001",
-      "cwe": "CWE-200",
-      "category": "persistence"
-    },
-    {
-      "id": "sc03_persistence_wmi",
-      "trigger_pattern": "wmi.*subscription|WMIEvent|event.*consumer",
-      "severity": "CRITICAL",
-      "message": "Persistence: WMI subscription created",
-      "raw_log": "Endpoint Log: WMI event subscription detected",
-      "mitre_technique": "T1547.020",
+      "mitre_id": "T1547.001",
       "cwe": "CWE-200",
       "category": "persistence"
     }
   ],
   "defense_evasion": [
     {
-      "id": "sc03_evasion_tamper_protect",
-      "trigger_pattern": "tamper.*protect|disable.*protection",
-      "severity": "CRITICAL",
-      "message": "Defense evasion: tamper protection disabled",
-      "raw_log": "Endpoint Log: Windows Defender tamper protection disabled",
-      "mitre_technique": "T1562.001",
-      "cwe": "CWE-200",
-      "category": "defense_evasion"
-    },
-    {
-      "id": "sc03_evasion_realtime_protect",
-      "trigger_pattern": "real.*time.*protection|disable.*av|antivirus.*off",
-      "severity": "CRITICAL",
-      "message": "Defense evasion: real-time protection disabled",
-      "raw_log": "Endpoint Log: Real-time protection disabled in Windows Defender",
-      "mitre_technique": "T1562.004",
-      "cwe": "CWE-200",
-      "category": "defense_evasion"
-    },
-    {
-      "id": "sc03_evasion_firewall_rule",
-      "trigger_pattern": "firewall.*rule|netsh.*advfirewall|firewall.*add",
-      "severity": "HIGH",
-      "message": "Defense evasion: firewall rule added",
-      "raw_log": "Endpoint Log: Firewall rule modified to allow outbound traffic",
-      "mitre_technique": "T1562.001",
-      "cwe": "CWE-200",
-      "category": "defense_evasion"
-    },
-    {
       "id": "sc03_evasion_logs_cleared",
-      "trigger_pattern": "clear.*log|event.*log.*clear|wevtutil",
+      "trigger_pattern": "clear.*log|event.*log.*clear|wevtutil|Clear-EventLog",
       "severity": "CRITICAL",
-      "message": "Defense evasion: event logs cleared",
-      "raw_log": "Endpoint Log: Security event logs cleared by administrator",
+      "message": "Defense evasion: Security event log cleared — attacker covering tracks",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"configuration\",\n  \"winlog.event_id\": 1102,\n  \"winlog.keywords\": \"Audit Success\",\n  \"winlog.provider_name\": \"Microsoft-Windows-Eventlog\",\n  \"winlog.channel\": \"Security\",\n  \"winlog.event_data.SubjectUserName\": \"j.turner\",\n  \"winlog.event_data.SubjectDomainName\": \"ORION\",\n  \"winlog.event_data.SubjectLogonId\": \"0x3f2a1\",\n  \"message\": \"The audit log was cleared.\",\n  \"host.hostname\": \"ORION-WS-42\",\n  \"note\": \"CRITICAL: Security log manually cleared — active incident response evasion\"\n}",
       "mitre_technique": "T1070.001",
+      "mitre_id": "T1070.001",
       "cwe": "CWE-200",
       "category": "defense_evasion"
     }
@@ -278,31 +227,23 @@
   "exfiltration": [
     {
       "id": "sc03_exfil_staging",
-      "trigger_pattern": "staging.*data|compress.*file|archive",
+      "trigger_pattern": "staging.*data|compress.*file|archive|7z.*a|zip.*-r",
       "severity": "HIGH",
-      "message": "Exfiltration: data staging detected",
-      "raw_log": "Endpoint Log: Large file compression detected",
+      "message": "Data staging: employee PII archive created — 847 MB ZIP in Temp directory",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"sysmon\",\n  \"event.category\": \"file\",\n  \"event.type\": \"creation\",\n  \"winlog.event_id\": 11,\n  \"file.path\": \"C:\\\\Users\\\\j.turner\\\\AppData\\\\Local\\\\Temp\\\\orion_data_export.zip\",\n  \"file.size\": 887459840,\n  \"file.extension\": \"zip\",\n  \"process.name\": \"7z.exe\",\n  \"process.command_line\": \"7z a orion_data_export.zip C:\\\\Users\\\\j.turner\\\\Documents\\\\HR\\\\ -r\",\n  \"user.name\": \"j.turner\",\n  \"host.hostname\": \"ORION-WS-42\",\n  \"note\": \"ALERT: 847 MB archive created from HR docs — staged for exfiltration\"\n}",
       "mitre_technique": "T1074.001",
+      "mitre_id": "T1560.001",
       "cwe": "CWE-200",
       "category": "exfiltration"
     },
     {
       "id": "sc03_exfil_transfer",
-      "trigger_pattern": "large.*transfer|unusual.*outbound|transfer.*bytes",
+      "trigger_pattern": "large.*transfer|unusual.*outbound|curl.*-T|wget.*post|scp.*upload",
       "severity": "CRITICAL",
-      "message": "Exfiltration: unusual outbound data transfer detected",
-      "raw_log": "Network Log: Large volume of data transferred outbound",
+      "message": "Data exfiltration: 847 MB transferred to external IP — active breach in progress",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET POLICY Large Outbound Transfer\",\n  \"alert.severity\": 1,\n  \"source.ip\": \"172.20.3.30\",\n  \"source.port\": 54200,\n  \"destination.ip\": \"{src_ip}\",\n  \"destination.port\": 8080,\n  \"network.transport\": \"tcp\",\n  \"network.bytes\": 887459840,\n  \"network.direction\": \"outbound\",\n  \"host.hostname\": \"ORION-WS-42\",\n  \"note\": \"CRITICAL: 847 MB exfiltrated to external attacker IP — data breach confirmed\"\n}",
       "mitre_technique": "T1041",
-      "cwe": "CWE-200",
-      "category": "exfiltration"
-    },
-    {
-      "id": "sc03_exfil_compression",
-      "trigger_pattern": "zip.*file|rar.*file|compression|7z",
-      "severity": "HIGH",
-      "message": "Exfiltration: data compression detected",
-      "raw_log": "Endpoint Log: Archive file created for data transfer",
-      "mitre_technique": "T1560",
+      "mitre_id": "T1041",
       "cwe": "CWE-200",
       "category": "exfiltration"
     }
