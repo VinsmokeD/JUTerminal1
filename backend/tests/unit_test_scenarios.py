@@ -134,6 +134,49 @@ def test_09_scenario_has_siem_rules():
 # SECTION 2: METHODOLOGY GATES
 # ────────────────────────────────────────────────────────────────────────────
 
+@pytest.mark.asyncio
+async def test_ai_missing_key_returns_static_socratic_command_hint(monkeypatch):
+    """Missing Gemini key should not leave meaningful command observations blank."""
+    from src.ai import monitor
+
+    monkeypatch.setattr(monitor.settings, "GEMINI_API_KEY", "")
+
+    hint = await monitor.get_ai_hint(
+        "test-session",
+        {"scenario_id": "SC-01", "role": "red", "phase": 1},
+        "nmap -sV 172.20.1.20",
+        None,
+    )
+
+    assert hint
+    assert "After using nmap" in hint
+    assert "curl -I" not in hint
+    assert "Run " not in hint
+
+
+@pytest.mark.asyncio
+async def test_ai_rate_limit_returns_static_socratic_command_hint(monkeypatch):
+    """Rate-limited unprompted Gemini calls should degrade to static guidance."""
+    from src.ai import monitor
+
+    async def fake_cache_get(_key):
+        return "recent"
+
+    monkeypatch.setattr(monitor.settings, "GEMINI_API_KEY", "demo-key")
+    monkeypatch.setattr(monitor, "cache_get", fake_cache_get)
+
+    hint = await monitor.get_ai_hint(
+        "test-session",
+        {"scenario_id": "SC-01", "role": "red", "phase": 2},
+        "gobuster dir -u http://172.20.1.20",
+        None,
+    )
+
+    assert hint
+    assert "After using gobuster" in hint
+    assert "What question" not in hint
+
+
 def test_10_sc01_gates_sqlmap_at_phase_3():
     """SC-01: sqlmap should require phase >= 3."""
     from src.scenarios.loader import load_scenario, get_methodology_gate

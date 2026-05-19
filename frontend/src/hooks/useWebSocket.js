@@ -4,12 +4,17 @@ import { useSessionStore } from '../store/sessionStore'
 const DEFAULT_WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
 const WS_URL = import.meta.env.VITE_WS_URL || DEFAULT_WS_URL
 const terminalBacklogs = new Map()
+const MAX_PENDING_FRAMES = 500
+const RECONNECT_BASE_DELAY_MS = 800
+const RECONNECT_MAX_DELAY_MS = 15000
 
 export function useWebSocket(sessionId) {
   const wsRef = useRef(null)
   const pendingFramesRef = useRef([])
   const pendingSessionRef = useRef(null)
   const reconnectTimerRef = useRef(null)
+  const reconnectAttemptRef = useRef(0)
+  const unauthorizedRef = useRef(false)
   const lastRawInputAtRef = useRef(0)
   const lastTerminalOutputAtRef = useRef(0)
   const [reconnectTick, setReconnectTick] = useState(0)
@@ -22,6 +27,8 @@ export function useWebSocket(sessionId) {
     if (pendingSessionRef.current !== sessionId) {
       pendingFramesRef.current = []
       pendingSessionRef.current = sessionId
+      reconnectAttemptRef.current = 0
+      unauthorizedRef.current = false
     }
     lastRawInputAtRef.current = 0
     lastTerminalOutputAtRef.current = 0
@@ -34,9 +41,27 @@ export function useWebSocket(sessionId) {
 
     ws.onopen = () => {
       ws.send(JSON.stringify({ token }))
+      reconnectAttemptRef.current = 0
       setConnectionState('connected')
-      pendingFramesRef.current.forEach((frame) => ws.send(JSON.stringify(frame)))
+      const queuedFrames = pendingFramesRef.current
+      const failedFrames = []
       pendingFramesRef.current = []
+      queuedFrames.forEach((frame) => {
+        try {
+          ws.send(JSON.stringify(frame))
+        } catch {
+          failedFrames.push(frame)
+        }
+      })
+      if (failedFrames.length > 0) {
+        pendingFramesRef.current = failedFrames.slice(-MAX_PENDING_FRAMES)
+        setConnectionState('disconnected')
+        try {
+          ws.close(4000, 'queued frame flush failed')
+        } catch {
+          // reconnect will be handled by onclose
+        }
+      }
     }
 
     ws.onmessage = (evt) => {
@@ -108,12 +133,20 @@ export function useWebSocket(sessionId) {
     ws.onclose = (evt) => {
       wsRef.current = null
       const unauthorized = evt.code === 4001
-      if (unauthorized) pendingFramesRef.current = []
+      if (unauthorized) {
+        unauthorizedRef.current = true
+        pendingFramesRef.current = []
+      }
       setConnectionState(unauthorized ? 'unauthorized' : 'disconnected')
       if (!disposed && !unauthorized) {
+        const attempt = reconnectAttemptRef.current + 1
+        reconnectAttemptRef.current = attempt
+        const exponent = Math.min(attempt - 1, 6)
+        const baseDelay = Math.min(RECONNECT_MAX_DELAY_MS, RECONNECT_BASE_DELAY_MS * (2 ** exponent))
+        const jitter = Math.round(baseDelay * 0.2 * Math.random())
         reconnectTimerRef.current = window.setTimeout(() => {
           setReconnectTick((tick) => tick + 1)
-        }, 1200)
+        }, baseDelay + jitter)
       }
     }
 
@@ -147,9 +180,15 @@ export function useWebSocket(sessionId) {
   }, [sessionId, connectionState])
 
   const sendFrame = useCallback((frame) => {
+    if (unauthorizedRef.current) return
     const ws = wsRef.current
     if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(frame))
+      try {
+        ws.send(JSON.stringify(frame))
+      } catch {
+        pendingFramesRef.current = [...pendingFramesRef.current, frame].slice(-MAX_PENDING_FRAMES)
+        setConnectionState('disconnected')
+      }
       return
     }
     if (
@@ -158,7 +197,7 @@ export function useWebSocket(sessionId) {
       !ws ||
       ws.readyState === WebSocket.CLOSED
     ) {
-      pendingFramesRef.current = [...pendingFramesRef.current, frame].slice(-500)
+      pendingFramesRef.current = [...pendingFramesRef.current, frame].slice(-MAX_PENDING_FRAMES)
     }
   }, [])
 

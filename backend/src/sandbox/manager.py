@@ -1,4 +1,5 @@
 """Docker container lifecycle manager for scenario sandboxes."""
+
 from __future__ import annotations
 
 import asyncio
@@ -9,6 +10,7 @@ from typing import Tuple, Optional
 try:
     import docker
     from docker.errors import NotFound
+
     _docker_available = True
 except ImportError:
     _docker_available = False
@@ -17,7 +19,7 @@ from src.config import settings
 
 # v2.0 guardrail — hardcoded, not configurable at runtime
 _CPU_PERIOD = 100000
-_CPU_QUOTA = 50000   # 0.5 cores
+_CPU_QUOTA = 50000  # 0.5 cores
 _MEM_LIMIT = "512m"
 
 # Scenario profile → target services that must be running
@@ -47,6 +49,7 @@ def _get_client() -> "docker.DockerClient":
 # ---------------------------------------------------------------------------
 # Public async API
 # ---------------------------------------------------------------------------
+
 
 async def start_scenario_container(
     session_id: str,
@@ -82,7 +85,9 @@ async def ensure_scenario_container(
     )
 
 
-async def stop_scenario_container(container_id: str, scenario_id: str | None = None) -> None:
+async def stop_scenario_container(
+    container_id: str, scenario_id: str | None = None
+) -> None:
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, _stop_sync, container_id)
     if scenario_id:
@@ -101,6 +106,7 @@ async def exec_command(container_id: str, command: str) -> str:
 # Sync implementations (run in thread pool to avoid blocking event loop)
 # ---------------------------------------------------------------------------
 
+
 def _ensure_scenario_targets(scenario_id: str, force_reset: bool = True) -> None:
     """Bring up scenario-specific target containers using docker-compose.
 
@@ -114,21 +120,26 @@ def _ensure_scenario_targets(scenario_id: str, force_reset: bool = True) -> None
     try:
         cmd = [
             "docker-compose",
-            "--project-name", "cybersim",
-            "-f", str(_COMPOSE_FILE),
-            "up", "-d", "--no-deps",
+            "--project-name",
+            "cybersim",
+            "-f",
+            str(_COMPOSE_FILE),
+            "up",
+            "-d",
+            "--no-deps",
         ]
         if force_reset:
             cmd.append("--force-recreate")
         else:
             cmd.append("--no-recreate")
-        
+
         # Explicitly target only the scenario services
         cmd.extend(targets)
 
         subprocess.run(cmd, capture_output=True, timeout=60)
     except Exception as exc:
         print(f"[Sandbox] Scenario targets for {profile} unavailable: {exc}")
+
 
 def _teardown_scenario_targets(scenario_id: str) -> None:
     """Stop scenario-specific targets."""
@@ -141,10 +152,13 @@ def _teardown_scenario_targets(scenario_id: str) -> None:
         subprocess.run(
             [
                 "docker-compose",
-                "--project-name", "cybersim",
-                "-f", str(_COMPOSE_FILE),
+                "--project-name",
+                "cybersim",
+                "-f",
+                str(_COMPOSE_FILE),
                 "stop",
-            ] + targets,
+            ]
+            + targets,
             capture_output=True,
             timeout=60,
         )
@@ -225,6 +239,12 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
             mem_limit=_MEM_LIMIT,
             cap_drop=["ALL"],
             security_opt=["no-new-privileges"],
+            labels={
+                "cybersim_managed": "true",
+                "cybersim_role": "kali",
+                "cybersim_session": session_id,
+                "cybersim_scenario": scenario_id,
+            },
             remove=False,
         )
         _repair_kali_tools(container)
@@ -232,7 +252,9 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
 
     except Exception as exc:
         if settings.ENVIRONMENT == "development":
-            print(f"[Sandbox] Docker unavailable; using mock container for {session_id}: {exc}")
+            print(
+                f"[Sandbox] Docker unavailable; using mock container for {session_id}: {exc}"
+            )
             return f"mock-{session_id[:8]}", network_name
         raise
 

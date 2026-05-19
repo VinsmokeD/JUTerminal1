@@ -13,6 +13,106 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-19 10:10:52 +03:00] - Claude Code (Reliability Batch C2 WebSocket Reconnect Hardening)
+* **Status**: Coding in progress - frontend WebSocket reconnect behavior patched; verification pending.
+* **Why**: The consolidated plan's C2 reliability item calls for exponential reconnect backoff and queued frames during disconnects so demo sessions do not drop terminal commands during transient WebSocket interruptions.
+* **Where**:
+  - `frontend/src/hooks/useWebSocket.js` - added bounded queue constants, reconnect attempt tracking, unauthorized queue clearing, exponential backoff with jitter, send-failure requeueing, and reconnect reset on successful open.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the WebSocket edit.
+* **What & How**: The hook now keeps up to 500 outbound frames while the socket is connecting, closing, closed, or recovering from a send exception. Non-auth close events schedule reconnects with an 800 ms base delay, capped at 15 seconds with small jitter to avoid reconnect bursts. A successful open resets the attempt counter and drains the queue in order; an auth close clears pending frames and prevents further queue growth for that session.
+
+### [2026-05-19 10:11:18 +03:00] - Claude Code (Reliability Batch C2 Queue Flush Safety)
+* **Status**: Coding in progress - queued frame flush made loss-resistant; verification pending.
+* **Why**: During review of the WebSocket reconnect patch, the queue-drain path needed to preserve any frame that fails to send after the socket reports open, rather than clearing the queue unconditionally.
+* **Where**:
+  - `frontend/src/hooks/useWebSocket.js` - changed reconnect queue flushing to snapshot queued frames, collect failed sends, requeue failures, and close the socket to trigger another reconnect attempt.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the queue flush edit.
+* **What & How**: On WebSocket open, the hook now drains a snapshot of pending frames. If a send throws mid-flush, failed frames are kept in the bounded queue, the connection state returns to disconnected, and the socket is closed with a recoverable code so the normal reconnect path retries delivery.
+
+### [2026-05-19 10:12:04 +03:00] - Claude Code (Reliability Batch C3 Session Container Labels)
+* **Status**: Coding in progress - Kali session containers now carry cleanup labels; verification pending.
+* **Why**: The C3 cleanup robustness item depends on Docker labels so the backend can find orphaned per-session Kali containers after restarts without relying on fragile name matching.
+* **Where**:
+  - `backend/src/sandbox/manager.py` - added `cybersim_managed`, `cybersim_role`, `cybersim_session`, and `cybersim_scenario` labels to dynamically created Kali containers.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the container label edit.
+* **What & How**: Every new Kali sandbox container created by `_start_sync()` is now labeled with its owning session and scenario. Cleanup code can query Docker with `label=cybersim_session` and decide whether the matching database session still exists, is active, or points at the same live container.
+
+### [2026-05-19 10:12:46 +03:00] - Claude Code (Reliability Batch C3 Orphan Cleanup)
+* **Status**: Coding in progress - cleanup loop now reconciles labeled orphan containers; verification pending.
+* **Why**: The cleanup task needed restart resilience. If the backend restarts after creating a Kali container, Docker can retain a labeled container that no longer matches an active database pointer, and that should be cleaned without manual `docker ps` inspection.
+* **Where**:
+  - `backend/src/sandbox/container_cleanup.py` - added labeled orphan discovery/removal, immediate cleanup-loop execution before sleeping, and stale DB pointer clearing when Docker reports a stored container id is missing.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the cleanup edit.
+* **What & How**: The cleanup module now lists Docker containers with `label=cybersim_session`, filters to `cybersim_role=kali`, and removes containers whose session is missing, completed, has no active `container_id`, or points at a different container id. The periodic loop runs cleanup immediately on startup and then sleeps, so backend restarts reconcile orphaned containers right away. Idle-session cleanup also clears stale database container pointers on Docker `NotFound`.
+
+### [2026-05-19 10:14:02 +03:00] - Claude Code (Reliability Batch C4 Static AI Fallback)
+* **Status**: Coding in progress - Gemini missing-key/rate-limit fallback now returns safe Socratic guidance; verification pending.
+* **Why**: The C4 reliability item requires the AI tutor to avoid blank demo hints when `GEMINI_API_KEY` is absent or unprompted Gemini calls are rate-limited, while preserving the no-direct-answer AI monitor guardrail.
+* **Where**:
+  - `backend/src/ai/monitor.py` - added meaningful-tool routing helpers, changed missing-key and rate-limited paths to return deterministic static hints, and introduced `_get_static_fallback_hint()` with bounded Socratic scenario guidance.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the AI fallback edit.
+* **What & How**: Explicit hint requests now receive static fallback text if Gemini is unavailable. Unprompted command observations only fall back for recognized training tools, keeping noise low while preventing silent tutor behavior during demos. The fallback text asks for evidence, context, and methodology reasoning rather than giving exact exploit commands or payloads.
+
+### [2026-05-19 10:15:31 +03:00] - Claude Code (Reliability Batch C4 Fallback Tests)
+* **Status**: Coding in progress - AI fallback regression tests added; verification pending.
+* **Why**: The missing-key and rate-limit fallback behavior should be locked by tests so future AI monitor edits do not reintroduce blank hints during demo conditions.
+* **Where**:
+  - `backend/tests/unit_test_scenarios.py` - added async tests for missing `GEMINI_API_KEY` command fallback and rate-limited unprompted command fallback.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the test edit.
+* **What & How**: The new tests monkeypatch the AI monitor settings/cache path so no external Gemini call is possible. They assert recognized training tools receive static Socratic text and that the fallback does not emit the old direct command wording checked by the regression assertions.
+
+### [2026-05-19 10:16:12 +03:00] - Claude Code (Reliability Batch C5 ESLint Config)
+* **Status**: Coding in progress - frontend lint configuration added; verification pending.
+* **Why**: The C5 reliability item calls out that the frontend had an npm lint script but no usable ESLint configuration, leaving lint regressions invisible.
+* **Where**:
+  - `frontend/eslint.config.js` - created a flat ESLint config for React JSX, browser globals, React hooks rules, undefined symbol errors, and unused variable warnings.
+  - `frontend/package.json` - changed `npm run lint` from `eslint src --ext .js,.jsx` to `eslint src`, which is compatible with flat config.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the ESLint edits.
+* **What & How**: The new config imports the already-installed React and React Hooks plugins, declares browser/runtime globals used by the Vite app, turns React 17+ JSX runtime rules off, enforces hook rules as errors, and keeps unused variables as warnings so lint can gate real breakage without forcing a broad cleanup of existing non-critical warnings.
+
+### [2026-05-19 10:17:08 +03:00] - Claude Code (Reliability Batch C5 Browser Global Fix)
+* **Status**: Coding in progress - ESLint browser globals corrected after first lint run; verification pending.
+* **Why**: The first `npm run lint` execution proved the config loads and found one actual undefined browser API: `URLSearchParams` in the auth store.
+* **Where**:
+  - `frontend/eslint.config.js` - added `URLSearchParams` to browser globals.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the ESLint global edit.
+* **What & How**: `URLSearchParams` is a browser-provided constructor used by the Vite frontend during profile/login routing. Declaring it as read-only keeps `no-undef` useful while avoiding a false positive.
+
+### [2026-05-19 10:22:41 +03:00] - Claude Code (Reliability Batch Python Formatting)
+* **Status**: Formatting complete - backend Python files normalized with Black; verification rerun pending.
+* **Why**: The local Python runtime lacked Black, but the backend container had the project dev dependency installed and reported formatting drift in the touched backend source files.
+* **Where**:
+  - `backend/src/ai/monitor.py` - Black-normalized fallback helper and AI monitor edits.
+  - `backend/src/sandbox/manager.py` - Black-normalized container label edit.
+  - `backend/src/sandbox/container_cleanup.py` - Black-normalized cleanup helper edits.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record after the formatting command modified files.
+* **What & How**: Ran `docker compose exec -T backend python -m black src/ai/monitor.py src/sandbox/manager.py src/sandbox/container_cleanup.py`. The command reformatted the three touched backend source files using the same Black version pinned in `backend/requirements.txt`.
+
+### [2026-05-19 10:26:48 +03:00] - Claude Code (Reliability Foundation Batch C2-C5 Complete)
+* **Status**: Complete - reliability foundation batch implemented and empirically verified.
+* **Why**: The consolidated plan's first execution batch prioritizes demo reliability: WebSocket reconnects should tolerate transient disconnects, sandbox cleanup should survive backend restarts, AI hints should degrade gracefully without a Gemini key or during rate limiting, and frontend linting should become a usable regression gate.
+* **Where**:
+  - `frontend/src/hooks/useWebSocket.js` - exponential reconnect backoff, bounded frame queue, send-failure requeueing, unauthorized queue clearing, and queue flush retry behavior.
+  - `backend/src/sandbox/manager.py` - Docker labels added to dynamic Kali containers for session-aware cleanup.
+  - `backend/src/sandbox/container_cleanup.py` - immediate startup cleanup, labeled orphan removal, completed/missing/stale session reconciliation, and missing-container DB pointer clearing.
+  - `backend/src/ai/monitor.py` - meaningful-tool detection plus static Socratic fallback for missing-key and rate-limited Gemini paths.
+  - `backend/tests/unit_test_scenarios.py` - regression tests covering missing-key and rate-limited AI fallback behavior.
+  - `frontend/eslint.config.js` - new flat ESLint config for React/browser code and hook validation.
+  - `frontend/package.json` - lint script updated for flat config.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended the reliability batch progress and completion records.
+* **What & How**: The WebSocket hook now queues up to 500 outbound frames during disconnect/reconnect windows and retries with an 800 ms exponential backoff capped at 15 seconds. Kali containers now carry `cybersim_session`/`cybersim_scenario` labels, and the cleanup loop runs immediately on startup before entering its interval cycle, removing labeled orphans whose database session is missing, completed, unpointed, or pointing at another container. The AI monitor now returns static Socratic guidance for recognized training commands when Gemini is unavailable or rate-limited, while explicit hint requests still receive deterministic fallback text. ESLint now loads and exits successfully with existing warnings, restoring `npm run lint` as a usable frontend check.
+* **Verification evidence**:
+  - `python -m py_compile backend/src/ai/monitor.py backend/src/sandbox/manager.py backend/src/sandbox/container_cleanup.py` passed.
+  - `docker compose config --quiet` passed.
+  - `docker compose up -d postgres redis` started the required test dependencies after the first full test run showed Postgres refused connections.
+  - `docker compose ps postgres redis` showed both containers healthy on `127.0.0.1:5432` and `127.0.0.1:6379`.
+  - `python -m pytest -q -p no:cacheprovider backend/tests/unit_test_scenarios.py` passed: `32 passed, 1 warning in 5.63s`.
+  - Final `python -m pytest -q -p no:cacheprovider backend/tests` passed: `87 passed, 1 warning in 8.89s`.
+  - `npm run lint` passed with `0 errors` and existing warning-only cleanup backlog.
+  - `npm run build` passed outside the sandbox after the known Vite/esbuild `spawn EPERM` sandbox issue: `541 modules transformed`, built in `7.49s`.
+  - `docker compose exec -T backend python -m black --check src/ai/monitor.py src/sandbox/manager.py src/sandbox/container_cleanup.py` passed after formatting those source files in the backend container.
+  - `git diff --check` passed.
+
 ### [2026-05-18 19:23:46 +03:00] - Claude Code (Output Insight Pattern Verification)
 * **Status**: Complete - backend verification passed.
 * **Why**: The output-insight pattern safety pass needed empirical proof that the JSON libraries still load, the scanner module still compiles, Compose remains valid, and the backend test suite still passes with required local services running.
