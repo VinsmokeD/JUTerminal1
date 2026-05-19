@@ -13,42 +13,6 @@ import AiHintPanel from '../components/hints/AiHintPanel'
 import Badge from '../components/ui/Badge'
 import api from '../lib/api'
 
-const PLAYBOOKS = {
-  'SC-01': [
-    { step: 'Identify source IP of all HIGH/CRITICAL WAF alerts', hint: 'Look at the source_ip field in SIEM events' },
-    { step: 'Correlate WAF events with Apache access log timestamps', hint: 'Events within seconds of each other likely share a cause' },
-    { step: 'Determine if SQLi attempt resulted in a 200 response', hint: 'A 200 response to a SQL injection attempt means it succeeded' },
-    { step: 'Check if any PHP files were uploaded to /uploads/', hint: 'File upload plus PHP indicates a potential webshell' },
-    { step: 'Identify affected patient record IDs via IDOR alerts', hint: 'Sequential ID access patterns indicate IDOR exploitation' },
-    { step: 'Block source IP at WAF level', hint: 'Document the exact firewall rule you would create' },
-    { step: 'Reset any exposed credentials', hint: 'Any credentials visible in SQLi output are compromised' },
-    { step: 'Write IR report: timeline, IOCs, affected data, RCA', hint: 'The report is the deliverable - structure it with clear sections' },
-  ],
-  'SC-02': [
-    { step: 'Identify Event 4769 with RC4 encryption (0x17)', hint: 'RC4 in Kerberos TGS requests is the signature of Kerberoasting' },
-    { step: 'Determine which account was Kerberoasted', hint: 'Check the TargetUserName field in Event 4769' },
-    { step: 'Correlate 4769 with 4768 (TGT request) timestamps', hint: 'TGT request immediately before TGS request confirms the chain' },
-    { step: 'Identify lateral movement: Event 4624 Type 3', hint: 'Type 3 logons from non-standard IPs indicate lateral movement' },
-    { step: 'Alert on Event 4625 bursts (credential spray)', hint: 'Multiple 4625 events from one IP indicate credential spray or brute force' },
-    { step: 'CRITICAL: Event 4662 with replication rights = DCSync', hint: 'DCSync is the final stage - escalate immediately' },
-    { step: 'Disable compromised svc_backup account', hint: 'Any Kerberoasted account with cracked password must be disabled' },
-    { step: 'Force Kerberos ticket expiry (purge all TGTs)', hint: 'Prevents use of stolen tickets' },
-    { step: 'Document full lateral movement path', hint: 'Source host -> destination -> technique used for each hop' },
-    { step: 'Write IR report with AD hardening recommendations', hint: 'Include: disable RC4, SPN cleanup, tiered admin model' },
-  ],
-  'SC-03': [
-    { step: 'Review email headers: SPF, DKIM, DMARC results', hint: 'Headers reveal whether the email passed authentication checks' },
-    { step: 'Check if sending IP is in SPF record', hint: 'SPF failures mean the sender is unauthorized' },
-    { step: 'Check DMARC alignment', hint: 'From domain vs envelope sender mismatch indicates spoofing' },
-    { step: 'Identify which recipients opened the email', hint: 'Tracking pixel SIEM events show who opened it' },
-    { step: 'Check for macro execution (Event 4688)', hint: 'Office process spawning cmd.exe is the indicator' },
-    { step: 'Identify PowerShell download cradle (Event 4104)', hint: 'Script block logging captures PowerShell command activity' },
-    { step: 'Look for scheduled task creation (persistence)', hint: 'Attackers create scheduled tasks to survive reboot' },
-    { step: 'Block external C2 IP at perimeter firewall', hint: 'The reverse shell destination IP is the C2 server' },
-    { step: 'Isolate endpoints that executed the payload', hint: 'Any host that ran the macro needs isolation' },
-    { step: 'Write phishing IR report with IOC list', hint: 'Include sender domain, attachment hash, C2 IP, and email security recommendations' },
-  ],
-}
 
 const NIST_PHASES = {
   1: { name: 'Identify', desc: 'Determine what assets are affected. Correlate source IPs across events.' },
@@ -74,6 +38,7 @@ export default function BlueWorkspace() {
   const [siemFilter, setSiemFilter] = useState('')
   const [hideNoise, setHideNoise] = useState(true)
   const [checkedSteps, setCheckedSteps] = useState({})
+  const [playbook, setPlaybook] = useState([])
   const [iocs, setIocs] = useState([])
   const [iocInput, setIocInput] = useState('')
   const [expandedEvent, setExpandedEvent] = useState(null)
@@ -138,6 +103,13 @@ export default function BlueWorkspace() {
   }, [requestHint, toggleMode])
 
   useEffect(() => {
+    if (!session?.scenario_id) return
+    api.get(`/api/playbooks?scenario=${session.scenario_id}`)
+      .then(r => setPlaybook(r.data?.steps || []))
+      .catch(() => {})
+  }, [session?.scenario_id])
+
+  useEffect(() => {
     const interval = setInterval(() => setElapsed(e => e + 1), 1000)
     return () => clearInterval(interval)
   }, [])
@@ -185,7 +157,6 @@ export default function BlueWorkspace() {
   if (loadingSession || !session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
-  const playbook = PLAYBOOKS[session.scenario_id] || PLAYBOOKS['SC-01']
   const nist = NIST_PHASES[phase] || NIST_PHASES[1]
 
   return (

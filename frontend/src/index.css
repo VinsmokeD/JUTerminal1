@@ -1309,12 +1309,14 @@
 }
 
 .output-insight-panel {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
+  position: relative;
   z-index: 45;
-  width: min(390px, calc(100% - 20px));
+  width: 100%;
+  max-width: 540px;
+  align-self: flex-end;
   pointer-events: auto;
+  flex-shrink: 0;
+  padding: 0 10px 8px;
 }
 
 .output-insight-tabs {
@@ -1434,3 +1436,43 @@
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
   .stat:nth-child(2) { border-right: none; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   SCORE TOAST — transient deduction notification
+   ═══════════════════════════════════════════════════════ */
+.score-toast {
+  position: fixed;
+  top: 68px;
+  right: 20px;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(13,15,20,0.95);
+  border: 1px solid rgba(255,59,59,0.5);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(255,59,59,0.2), 0 2px 8px rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  animation: toastSlideIn 0.2s ease-out;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+@keyframes toastSlideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);   opacity: 1; }
+}
+
+.score-toast-delta {
+  color: var(--red-primary);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.score-toast-reason {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+

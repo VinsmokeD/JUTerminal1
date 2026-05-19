@@ -94,7 +94,6 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
   const webglRef = useRef(null)
   const lineBufferRef = useRef('')
   const historyRestoredRef = useRef(false)
-  const lastXtermDataAtRef = useRef(0)
   const onDataRef = useRef(onData)
   const onCommandRef = useRef(onCommand)
   const autoCopyRef = useRef(autoCopySelection)
@@ -184,7 +183,6 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
     searchRef.current = searchAddon
 
     term.onData((data) => {
-      lastXtermDataAtRef.current = Date.now()
       sendInput(data)
     })
 
@@ -235,37 +233,8 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
     }
 
     const focusTerminal = () => term.focus()
-    const fallbackKeyDown = (evt) => {
-      if (evt.ctrlKey || evt.metaKey || evt.altKey) return
-
-      let data = ''
-      if (evt.key === 'Enter') data = '\r'
-      else if (evt.key === 'Backspace') data = '\x7f'
-      else if (evt.key === 'Tab') data = '\t'
-      else if (evt.key.length === 1) data = evt.key
-
-      if (!data) return
-      const before = lastXtermDataAtRef.current
-      window.setTimeout(() => {
-        if (lastXtermDataAtRef.current === before) {
-          sendInput(data)
-        }
-      }, 0)
-    }
-    const fallbackPaste = (evt) => {
-      const text = evt.clipboardData?.getData('text')
-      if (!text) return
-      const before = lastXtermDataAtRef.current
-      window.setTimeout(() => {
-        if (lastXtermDataAtRef.current === before) {
-          sendInput(text)
-        }
-      }, 0)
-    }
     containerRef.current.addEventListener('mousedown', focusTerminal)
     containerRef.current.addEventListener('touchstart', focusTerminal)
-    containerRef.current.addEventListener('keydown', fallbackKeyDown, true)
-    containerRef.current.addEventListener('paste', fallbackPaste, true)
 
     const ro = new ResizeObserver(() => fitAddon.fit())
     ro.observe(containerRef.current)
@@ -276,8 +245,6 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
       window.clearTimeout(copyTimerRef.current)
       containerRef.current?.removeEventListener('mousedown', focusTerminal)
       containerRef.current?.removeEventListener('touchstart', focusTerminal)
-      containerRef.current?.removeEventListener('keydown', fallbackKeyDown, true)
-      containerRef.current?.removeEventListener('paste', fallbackPaste, true)
       ro.disconnect()
       searchRef.current = null
       webglRef.current = null

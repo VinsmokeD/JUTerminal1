@@ -64,6 +64,17 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
     if not command.strip():
         return
 
+    # ── ROE gate: backend hard-check before any processing ────────────────
+    async with AsyncSessionLocal() as db:
+        roe_result = await db.execute(select(Session).where(Session.id == session_id))
+        roe_session = roe_result.scalar_one_or_none()
+        if roe_session is None or not roe_session.roe_acknowledged:
+            await send_json({
+                "type": "error",
+                "data": {"message": "ROE acknowledgment required before issuing commands."},
+            })
+            return
+
     current_phase: int = session_state["phase"]
     try:
         spec = load_scenario(session_state["scenario_id"])
@@ -372,7 +383,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             logging.getLogger(__name__).warning("[WS] Hint logging failed for %s: %s", session_id[:8], _he)
 
         if new_score is not None:
-            await _send_json({"type": "score_update", "data": {"score": new_score, "hint_penalty": penalty, "level": level}})
+            await _send_json({"type": "score_update", "data": {"score": new_score, "delta": -penalty, "reason": f"Hint L{level}: phase {session_state.get('phase', 1)}"}})
 
         if hint_text:
             await _send_json({"type": "ai_hint", "data": {

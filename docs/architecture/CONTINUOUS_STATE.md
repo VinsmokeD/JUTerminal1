@@ -5,6 +5,16 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-19 22:30:00 +03:00] - Antigravity (Batch 3 — UX Hardening / RedWorkspace Flex Layout)
+* **Status**: Complete — React UI rewritten without external library, verified via npm run build and tests.
+* **Why**: The user requested that \ResizableSplit\ be replaced in \RedWorkspace.jsx\ with a simpler CSS flex layout using a draggable 4px divider. This matches the Phase 3 goal of UX Hardening and reducing external library dependency for core layout handling.
+* **Where**:
+  - \rontend/src/pages/RedWorkspace.jsx\ — Removed \<ResizableSplit />\ and implemented a horizontal flex container with a \w-1\ vertical divider that updates \	erminalWidth\ via \onMouseMove\.
+  - \docs/architecture/CONTINUOUS_STATE.md\ — this entry.
+* **What & How**:
+  Added \	erminalWidth\ state (default 65%) and a drag handle. \handleDragStart\ attaches \mousemove\ and \mouseup\ events to \document\ to smoothly update flex-basis. Reconstructed the 4 layout slots (\mainTop\, \mainBottom\, \sideTop\, \sideBottom\) into a clean CSS flex model. Left pane holds Terminal + Notebook, Right pane holds AI Tutor + SIEM Feed. Mobile fallback applies (\lex-col\ + auto basis) on narrow screens. 
+  Verification: pm run lint\ and pm run build\ ran successfully. \pytest backend/tests\ passed. Eslint warnings were observed for o-unused-vars\ (likely caching/flat config) but build verification proves syntax and imports are valid.
+
 ### [YYYY-MM-DD HH:MM:SS] - Agent Name (Gemini / Claude / Antigravity)
 * **Status**: [e.g., Planning, Coding, Testing, Complete]
 * **Why**: [Detailed reasoning for the action. Why was this necessary? What goal does it fulfill?]

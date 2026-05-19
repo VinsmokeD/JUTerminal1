@@ -98,6 +98,11 @@ export function useWebSocket(sessionId) {
             break
           case 'score_update':
             setScore(msg.data.score)
+            if (msg.data.delta < 0) {
+              window.dispatchEvent(new CustomEvent('score:deducted', {
+                detail: { delta: msg.data.delta, reason: msg.data.reason },
+              }))
+            }
             break
           case 'mode_changed':
             setAiMode(msg.data.mode)

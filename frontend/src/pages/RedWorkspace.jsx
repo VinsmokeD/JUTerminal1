@@ -6,13 +6,13 @@ import { useWebSocket } from '../hooks/useWebSocket'
 import RoeBriefing from '../components/workspace/RoeBriefing'
 import WorkspaceTopBar from '../components/workspace/WorkspaceTopBar'
 import LayoutPicker from '../components/workspace/LayoutPicker'
-import ResizableSplit from '../components/workspace/ResizableSplit'
 import Terminal from '../components/terminal/Terminal'
 import SiemFeed from '../components/siem/SiemFeed'
 import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
+import ScoreToast from '../components/ui/ScoreToast'
 import api from '../lib/api'
 
 export default function RedWorkspace() {
@@ -27,8 +27,27 @@ export default function RedWorkspace() {
   const [showWelcome, setShowWelcome] = useState(skillLevel === 'beginner')
   const [elapsed, setElapsed] = useState(0)
   const [siemFlash, setSiemFlash] = useState(false)
+  const [toast, setToast] = useState(null)
+  const [terminalWidth, setTerminalWidth] = useState(65)
   const siemCountRef = useRef(0)
   const writeOutputRef = useRef(null)
+  const containerRef = useRef(null)
+
+  const handleDragStart = useCallback((e) => {
+    e.preventDefault()
+    const handleDrag = (moveEvent) => {
+      if (!containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const newWidth = ((moveEvent.clientX - rect.left) / rect.width) * 100
+      if (newWidth > 20 && newWidth < 80) setTerminalWidth(newWidth)
+    }
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleDrag)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+    document.addEventListener('mousemove', handleDrag)
+    document.addEventListener('mouseup', handleMouseUp)
+  }, [])
 
   const wsSessionId = session && roeAcked ? sessionId : null
   const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(wsSessionId)
@@ -83,6 +102,12 @@ export default function RedWorkspace() {
   }, [requestHint, toggleMode])
 
   useEffect(() => {
+    const onDeduct = (evt) => setToast({ delta: evt.detail.delta, reason: evt.detail.reason })
+    window.addEventListener('score:deducted', onDeduct)
+    return () => window.removeEventListener('score:deducted', onDeduct)
+  }, [])
+
+  useEffect(() => {
     const interval = setInterval(() => setElapsed(e => e + 1), 1000)
     return () => clearInterval(interval)
   }, [])
@@ -106,6 +131,13 @@ export default function RedWorkspace() {
 
   return (
     <div className="workspace-shell font-display">
+      {toast && (
+        <ScoreToast
+          delta={toast.delta}
+          reason={toast.reason}
+          onExpire={() => setToast(null)}
+        />
+      )}
       <Modal
         open={showWelcome}
         onClose={() => setShowWelcome(false)}
@@ -150,67 +182,59 @@ export default function RedWorkspace() {
         <LayoutPicker role="red" scenarioId={session.scenario_id} />
       </WorkspaceTopBar>
 
-      <ResizableSplit
-        role="red"
-        scenarioId={session.scenario_id}
-        slots={{
-          mainTop: {
-            label: 'Kali Terminal',
-            element: (
-              <div className="workspace-pane workspace-terminal-pane">
-                <div className="absolute inset-0 bg-red-surface opacity-50" />
-                <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
-                  <MitreBadge phase={phase} scenario={session.scenario_id} />
-                </PanelHeader>
-                <div className="flex-1 overflow-hidden relative z-10">
-                  <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
-                </div>
-              </div>
-            ),
-          },
-          sideTop: {
-            label: 'AI Tutor',
-            element: (
-              <div className="workspace-pane workspace-side-pane">
-                <PanelHeader color="blue" title="AI Tutor" />
-                <div className="flex-1 overflow-hidden">
-                  <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
-                </div>
-              </div>
-            ),
-          },
-          sideBottom: {
-            label: 'SIEM Feed',
-            element: (
-              <div className={`workspace-pane workspace-side-pane transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
-                <div className="absolute inset-0 bg-blue-surface opacity-30" />
-                {siemFlash && (
-                  <div className="absolute inset-0 bg-green-signal/5 z-20 pointer-events-none animate-pulse" />
-                )}
-                <PanelHeader color="green" title="SIEM Feed" subtitle={siemFlash ? 'alert triggered' : 'alerts your actions trigger'}>
-                  <LiveDot />
-                </PanelHeader>
-                <div className="flex-1 overflow-hidden relative z-10">
-                  <SiemFeed />
-                </div>
-              </div>
-            ),
-          },
-          mainBottom: {
-            label: 'Pentest Notebook',
-            element: (
-              <div className="workspace-pane workspace-bottom-pane">
-                <PanelHeader color="amber" title="Pentest Notebook" subtitle={`Phase ${phase}`}>
-                  <LearningContextBadge scenario={session.scenario_id} phase={phase} />
-                </PanelHeader>
-                <div className="flex-1 overflow-hidden">
-                  <GuidedNotebook sessionId={sessionId} role="red" phase={phase} />
-                </div>
-              </div>
-            ),
-          },
-        }}
-      />
+      <div ref={containerRef} className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
+        {/* LEFT PANE */}
+        <div 
+          className="flex flex-col flex-shrink-0 h-[50vh] md:h-full min-w-0" 
+          style={{ flexBasis: typeof window !== 'undefined' && window.innerWidth < 768 ? 'auto' : `${terminalWidth}%` }}
+        >
+          <div className="flex-1 flex flex-col min-h-0 relative mb-1 md:mb-0">
+            <div className="absolute inset-0 bg-red-surface opacity-50 pointer-events-none" />
+            <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
+              <MitreBadge phase={phase} scenario={session.scenario_id} />
+            </PanelHeader>
+            <div className="flex-1 overflow-hidden relative z-10 flex flex-col">
+              <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
+            </div>
+          </div>
+          <div className="h-1/3 min-h-[250px] flex flex-col mt-1 md:mt-0 relative border-t border-cs-border bg-surface-1">
+            <PanelHeader color="amber" title="Pentest Notebook" subtitle={`Phase ${phase}`}>
+              <LearningContextBadge scenario={session.scenario_id} phase={phase} />
+            </PanelHeader>
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <GuidedNotebook sessionId={sessionId} role="red" phase={phase} />
+            </div>
+          </div>
+        </div>
+
+        {/* DRAG DIVIDER */}
+        <div
+          className="hidden md:block w-1 bg-surface-3 hover:bg-cs-red cursor-col-resize flex-shrink-0 z-20 transition-colors"
+          onMouseDown={handleDragStart}
+        />
+
+        {/* RIGHT PANE */}
+        <div className="flex-1 flex flex-col min-w-0 h-[50vh] md:h-full">
+          <div className="flex-1 flex flex-col min-h-0 mb-1 md:mb-0 relative border-l border-cs-border bg-surface-1">
+            <PanelHeader color="blue" title="AI Tutor" />
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
+            </div>
+          </div>
+          <div className={`flex-1 flex flex-col min-h-0 mt-1 md:mt-0 relative border-l border-t border-cs-border bg-surface-1 transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
+            <div className="absolute inset-0 bg-blue-surface opacity-30 pointer-events-none" />
+            {siemFlash && (
+              <div className="absolute inset-0 bg-green-signal/5 z-20 pointer-events-none animate-pulse" />
+            )}
+            <PanelHeader color="green" title="SIEM Feed" subtitle={siemFlash ? 'alert triggered' : 'alerts your actions trigger'}>
+              <LiveDot />
+            </PanelHeader>
+            <div className="flex-1 overflow-hidden relative z-10 flex flex-col">
+              <SiemFeed />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

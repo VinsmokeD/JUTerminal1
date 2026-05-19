@@ -192,6 +192,15 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
         onBlur={() => setIsFocused(false)}
         onMouseDown={() => terminal.focus()}
       />
+      <OutputInsightPanel
+        insights={insights}
+        activeId={activeInsight}
+        onSelect={setActiveInsight}
+        onDismiss={(id) => {
+          setInsights((current) => current.filter((item) => item.id !== id))
+          setActiveInsight((current) => current === id ? null : current)
+        }}
+      />
       <div className={`pointer-events-none absolute right-3 top-3 z-30 rounded-cs-sm border bg-surface-1/90 px-2.5 py-1 text-[10px] font-mono uppercase ${statusTone}`}>
         {statusLabel}
       </div>
@@ -204,15 +213,6 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
         onClear={terminal.clear}
         onFind={() => window.dispatchEvent(new CustomEvent('terminal:focus-find'))}
         onReset={terminal.reset}
-      />
-      <OutputInsightPanel
-        insights={insights}
-        activeId={activeInsight}
-        onSelect={setActiveInsight}
-        onDismiss={(id) => {
-          setInsights((current) => current.filter((item) => item.id !== id))
-          setActiveInsight((current) => current === id ? null : current)
-        }}
       />
     </div>
   )
