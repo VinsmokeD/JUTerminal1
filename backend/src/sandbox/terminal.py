@@ -30,6 +30,7 @@ import redis as sync_redis  # synchronous client, part of redis[hiredis] already
 
 from src.config import settings
 from src.cache.redis import _get as get_async_redis
+from src.scenarios.loader import load_scenario
 
 # Track active proxy threads — prevent duplicate sessions
 _active_sessions: set[str] = set()
@@ -297,71 +298,52 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
 # Mock stream (dev without Docker)
 # ---------------------------------------------------------------------------
 
-# Scenario target metadata used by both mock terminal and banner
-SCENARIO_TARGETS: dict[str, dict] = {
-    "SC-01": {
-        "name": "NovaMed Healthcare",
-        "network": "172.20.1.0/24",
-        "targets": [
-            ("172.20.1.20", "PHP/Apache webapp (NovaMed Patient Portal)"),
-            ("172.20.1.21", "MySQL Database Server"),
-            ("172.20.1.1", "ModSecurity WAF / Gateway"),
-        ],
-        "objective_red": "Achieve RCE via chained OWASP vulnerabilities (SQLi, LFI, File Upload)",
-        "objective_blue": "Monitor WAF logs, triage alerts, write IR report",
-        "domain": None,
-    },
-    "SC-02": {
-        "name": "Nexora Financial",
-        "network": "172.20.2.0/24",
-        "targets": [
-            ("172.20.2.20", "Samba4 Active Directory Domain Controller (nexora.local)"),
-            ("172.20.2.40", "File Server — Finance + Public shares"),
-        ],
-        "objective_red": "Kerberoast svc_backup, crack hash, DCSync as Domain Admin",
-        "objective_blue": "Detect Event 4769 RC4 downgrades, track lateral movement",
-        "domain": "nexora.local",
-        "creds": "jsmith : Password123",
-    },
-    "SC-03": {
-        "name": "Orion Logistics",
-        "network": "172.20.3.0/24",
-        "targets": [
-            ("172.20.3.40", "GoPhish (Phishing campaign management)"),
-            ("172.20.3.20", "Postfix Mail Server"),
-            ("172.20.3.30", "Simulated Windows endpoint"),
-        ],
-        "objective_red": "Craft phishing campaign, achieve callback from victim endpoint",
-        "objective_blue": "Email header analysis, SPF/DKIM validation, detect macro execution",
-        "domain": None,
-    },
-}
-
-
 def _build_banner(scenario_id: str) -> str:
-    """Build a Kali-style MOTD banner showing scenario targets and objectives."""
-    info = SCENARIO_TARGETS.get(scenario_id.upper(), SCENARIO_TARGETS["SC-01"])
+    try:
+        spec = load_scenario(scenario_id)
+    except Exception:
+        return ""
+    net_raw = spec.get("network", {}) or {}
+    if isinstance(net_raw, str):
+        net = {"cidr": net_raw, "hosts": spec.get("containers", [])}
+    else:
+        net = net_raw
+    domain = spec.get("domain", {}) or {}
+    creds = spec.get("credentials_initial", {}) or {}
+    objs = spec.get("objectives", {}) or {}
+    tools = spec.get("tools_expected", []) or []
+
     lines = [
         "",
         "\x1b[1;34m" + "=" * 68 + "\x1b[0m",
-        f"\x1b[1;37m  CyberSim Training Platform — \x1b[1;31m{info['name']}\x1b[0m",
+        f"\x1b[1;37m  CyberSim Training - \x1b[1;31m{spec.get('display_name') or spec.get('title') or scenario_id}\x1b[0m",
         "\x1b[1;34m" + "=" * 68 + "\x1b[0m",
         "",
-        f"\x1b[1;33m  NETWORK:\x1b[0m  {info['network']}",
+        f"\x1b[1;33m  NETWORK:\x1b[0m  {net.get('cidr','')}",
         "\x1b[1;33m  TARGETS:\x1b[0m",
     ]
-    for ip, desc in info["targets"]:
-        lines.append(f"    \x1b[1;32m{ip:<18}\x1b[0;36m{desc}\x1b[0m")
-    if info.get("domain"):
-        lines.append(f"\x1b[1;33m  DOMAIN:\x1b[0m   {info['domain']}")
-    if info.get("creds"):
-        lines.append(f"\x1b[1;33m  CREDS:\x1b[0m    {info['creds']}")
+    for host in net.get("hosts", []):
+        lines.append(
+            f"    \x1b[1;32m{host.get('ip',''):<18}\x1b[0;36m{host.get('fqdn','')} - {host.get('role','')}\x1b[0m"
+        )
+    if domain.get("fqdn"):
+        lines.append(f"\x1b[1;33m  DOMAIN:\x1b[0m   {domain['fqdn']}")
+    if creds.get("user"):
+        lines.append(
+            f"\x1b[1;33m  CREDS:\x1b[0m    {creds['user']} : {creds.get('password','')}  ({creds.get('note','')})"
+        )
     lines.append("")
-    lines.append(f"\x1b[1;31m  RED OBJECTIVE:\x1b[0m  {info['objective_red']}")
-    lines.append(f"\x1b[1;36m  BLUE OBJECTIVE:\x1b[0m {info['objective_blue']}")
+    red_list = objs.get("red") or []
+    blue_list = objs.get("blue") or []
+    if red_list:
+        lines.append(f"\x1b[1;31m  RED OBJECTIVE:\x1b[0m  {', '.join(red_list)}")
+    if blue_list:
+        lines.append(f"\x1b[1;36m  BLUE OBJECTIVE:\x1b[0m {', '.join(blue_list)}")
     lines.append("")
     lines.append("\x1b[1;34m" + "-" * 68 + "\x1b[0m")
-    lines.append("\x1b[0;33m  Type commands to interact. Tools: nmap, gobuster, sqlmap, etc.\x1b[0m")
+    if tools:
+        tool_str = ", ".join(tools[:8])
+        lines.append(f"\x1b[0;33m  Tools available: {tool_str}\x1b[0m")
     lines.append("\x1b[1;34m" + "-" * 68 + "\x1b[0m")
     lines.append("")
     return "\r\n".join(lines)

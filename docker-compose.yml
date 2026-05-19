@@ -95,6 +95,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - ./infrastructure/docker/siem/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - sc01_waf_logs:/waf-logs:ro
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -191,10 +192,45 @@ services:
 
   # ── SC-01: NovaMed Web App Pentest ────────────────────────────────
   # Start with: docker-compose --profile sc01 up -d
+  sc01-db:
+    image: mariadb:11
+    hostname: sc01-db
+    env_file:
+      - ./infrastructure/docker/scenarios/sc01/db.env
+    environment:
+      MARIADB_ROOT_PASSWORD: NovaMedRoot2024!
+      MARIADB_DATABASE: novamed
+      MARIADB_USER: webapp
+      MARIADB_PASSWORD: WebAppPass2024!
+    volumes:
+      - ./infrastructure/docker/scenarios/sc01/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      sc01-net:
+        ipv4_address: 172.20.1.21
+    profiles: ["sc01"]
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1", "-uroot", "-pNovaMedRoot2024!"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512m
+
   sc01-webapp:
     build:
       context: ./infrastructure/docker/scenarios/sc01
       dockerfile: Dockerfile.webapp
+    environment:
+      DB_HOST: sc01-db
+      DB_USER: webapp
+      DB_PASS: WebAppPass2024!
+      DB_NAME: novamed
+    depends_on:
+      sc01-db:
+        condition: service_healthy
     networks:
       sc01-net:
         ipv4_address: 172.20.1.20
@@ -208,6 +244,22 @@ services:
 
   sc01-waf:
     image: owasp/modsecurity-crs:nginx
+    user: root
+    entrypoint: ["/bin/sh", "/waf-entrypoint.sh"]
+    environment:
+      BACKEND: http://172.20.1.20:80
+      SERVER_NAME: novamed.local
+      MODSEC_AUDIT_ENGINE: "On"
+      MODSEC_AUDIT_LOG_TYPE: Serial
+      MODSEC_AUDIT_LOG: /var/log/modsec/audit.log
+      PARANOIA: "2"
+    volumes:
+      - ./infrastructure/docker/scenarios/sc01/waf-entrypoint.sh:/waf-entrypoint.sh:ro
+      - ./infrastructure/docker/scenarios/sc01/waf-nginx.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
+      - sc01_waf_logs:/var/log/modsec
+    depends_on:
+      sc01-webapp:
+        condition: service_started
     networks:
       sc01-net:
         ipv4_address: 172.20.1.1
@@ -262,6 +314,7 @@ services:
       - DOMAIN=nexora.local
       - REALM=NEXORA.LOCAL
       - NETBIOS_NAME=NEXORA
+      - ADMINPASS=${SC02_ADMIN_PASS:-NexoraAdmin2024!}
     depends_on:
       sc02-dc:
         condition: service_healthy
@@ -359,6 +412,7 @@ volumes:
   postgres_data:
   redis_data:
   elastic_data:
+  sc01_waf_logs:
   sc02_samba_lib:
   sc02_samba_cache:
 

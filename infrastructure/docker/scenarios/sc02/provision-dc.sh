@@ -7,156 +7,103 @@ REALM="${REALM:-NEXORA.LOCAL}"
 NETBIOS_NAME="${NETBIOS_NAME:-NEXORA}"
 ADMIN_PASS="${ADMINPASS:-NexoraAdmin2024!}"
 
-echo "[*] Domain Controller Provisioning Script"
-echo "[*] Domain: $DOMAIN"
+echo "[*] CyberSim SC-02 Domain Controller Provisioner"
 echo "[*] Realm: $REALM"
+echo "[*] Domain: $DOMAIN"
 echo "[*] NetBIOS: $NETBIOS_NAME"
 
 PROVISION_MARKER="/var/lib/samba/private/.cybersim_provisioned"
 
-# Provision the domain. A plain sam.ldb file can exist after a failed partial
-# provision, so use an explicit marker written only after success.
 if [ ! -f "$PROVISION_MARKER" ]; then
-    echo "[+] Provisioning Samba4 AD DC..."
-    # Clean up default/partial/corrupted state before provisioning.
-    rm -rf /var/lib/samba/private /var/lib/samba/sysvol /var/cache/samba/*
-    mkdir -p /var/lib/samba/private
-    rm -f /etc/samba/smb.conf
+    echo "[+] Initializing Samba AD DC Provisioning..."
 
-    # NOTE: On Docker/WSL2 overlay filesystems the kernel may reject the NT
-    # ACL system xattr set during sysvol setup with NT_STATUS_ACCESS_DENIED.
-    # Telling Samba to ignore system ACLs sidesteps the xattr write path while
-    # keeping the AD database functional for the training scenario.
+    # Remove existing samba config to ensure clean provision
+    rm -f /etc/samba/smb.conf
+    rm -rf /var/lib/samba/private/*
+
+    # Provision Domain
     if samba-tool domain provision \
-        --use-rfc2307 \
         --realm=$REALM \
         --domain=$NETBIOS_NAME \
         --server-role=dc \
         --dns-backend=SAMBA_INTERNAL \
         --adminpass="$ADMIN_PASS" \
-        --option="acl_xattr:ignore system acls=yes" \
-        --option="vfs objects = "; then
+        --option="acl_xattr:ignore system acls=yes"; then
+        echo "[+] Provision command succeeded"
         touch "$PROVISION_MARKER"
+        # Ensure we know where smb.conf actually is
+        if [ ! -f /etc/samba/smb.conf ] && [ -f /var/lib/samba/private/smb.conf ]; then
+            echo "[*] Linking /var/lib/samba/private/smb.conf to /etc/samba/smb.conf"
+            ln -sf /var/lib/samba/private/smb.conf /etc/samba/smb.conf
+        fi
+        cp /etc/samba/smb.conf /var/lib/samba/private/smb.conf.bak 2>/dev/null || true
     else
-        echo "[!] Samba domain provision failed; removing partial state before exit"
-        rm -rf /var/lib/samba/private /var/lib/samba/sysvol /var/cache/samba/*
+        echo "[!] Samba domain provision failed"
         exit 1
     fi
-
-    # Persist the ACL workaround into smb.conf so subsequent Samba runs do not
-    # try to read/write system NT ACLs on directories that lack xattr support.
-    if [ -f /etc/samba/smb.conf ] && ! grep -q "ignore system acls" /etc/samba/smb.conf; then
-        sed -i '/^\[global\]/a\        acl_xattr:ignore system acls = yes\n        vfs objects =' /etc/samba/smb.conf
+else
+    echo "[*] Domain already provisioned, ensuring smb.conf exists..."
+    if [ ! -f /etc/samba/smb.conf ] || ! grep -qi "^[[:space:]]*server role[[:space:]]*=[[:space:]]*active directory domain controller" /etc/samba/smb.conf; then
+        if [ -f /var/lib/samba/private/smb.conf.bak ]; then
+            cp /var/lib/samba/private/smb.conf.bak /etc/samba/smb.conf
+        elif [ -f /var/lib/samba/private/smb.conf ]; then
+            ln -sf /var/lib/samba/private/smb.conf /etc/samba/smb.conf
+        fi
     fi
-    echo "[+] Domain provisioned successfully"
-else
-    echo "[*] Domain already provisioned (success marker exists), skipping provision step"
 fi
 
-# Configure Kerberos for RC4 (weaker, for educational context - enables Kerberoasting)
-echo "[+] Configuring Kerberos with RC4 support for educational vulnerability testing..."
-cat > /etc/krb5.conf << 'EOF'
-[libdefaults]
-    default_realm = NEXORA.LOCAL
-    rdns = false
-    fcc_mit_compatibility = true
-    dns_lookup_realm = false
-    dns_lookup_kdc = false
-    ignore_acceptor_hostname = true
-    # Enable RC4 for Kerberoasting vulnerability demonstration
-    default_tkt_enctypes = aes256-cts rc4-hmac des-cbc-md5
-    default_tgs_enctypes = aes256-cts rc4-hmac des-cbc-md5
-    permitted_enctypes = aes256-cts rc4-hmac des-cbc-md5
-    # Allow weaker algorithms for testing
-    allow_weak_crypto = true
-
-[realms]
-    NEXORA.LOCAL = {
-        kdc = 127.0.0.1:88
-        admin_server = 127.0.0.1:749
-        master_kdc = 127.0.0.1:88
-        # Allow RC4 tickets for service requests
-        tkt_enctypes = aes256-cts rc4-hmac des-cbc-md5
-        tgs_enctypes = aes256-cts rc4-hmac des-cbc-md5
-    }
-
-[domain_realm]
-    .nexora.local = NEXORA.LOCAL
-    nexora.local = NEXORA.LOCAL
-EOF
-
-# Setup users and SPNs
-echo "[+] Setting up users and service accounts..."
-
-# Create low-privilege user: jsmith
-if samba-tool user create jsmith "Password123" 2>/dev/null; then
-    echo "[+] Created user: jsmith (low-privilege)"
-else
-    echo "[*] User jsmith already exists"
+# Verify 'server role' is correct
+if ! grep -qi "^[[:space:]]*server role[[:space:]]*=[[:space:]]*active directory domain controller" /etc/samba/smb.conf; then
+    echo "[!] WARNING: smb.conf does not have DC role set correctly!"
+    grep "server role" /etc/samba/smb.conf || echo "No server role found"
+    exit 1
 fi
 
-# Create more realistic users
-for user in "mross:Winter2024!" "bclark:Spring2024!" "ajones:Summer2024!" "lwilliams:Autumn2024!"; do
-    username=$(echo $user | cut -d: -f1)
-    password=$(echo $user | cut -d: -f2)
-    if samba-tool user create $username "$password" 2>/dev/null; then
-        echo "[+] Created user: $username"
-    else
-        echo "[*] User $username already exists"
+# Persist the ACL workaround if not present
+if [ -f /etc/samba/smb.conf ] && ! grep -q "ignore system acls" /etc/samba/smb.conf; then
+    sed -i '/^\[global\]/a\        acl_xattr:ignore system acls = yes' /etc/samba/smb.conf
+fi
+
+# ── Seed Users ───────────────────────────────────────────────────────
+# We seed users regardless of marker to ensure session-consistency
+echo "[+] Seeding users and service accounts..."
+
+function add_user() {
+    local username=$1
+    local password=$2
+    if ! samba-tool user show "$username" >/dev/null 2>&1; then
+        echo "    Adding user: $username"
+        samba-tool user add "$username" "$password"
     fi
-done
+}
 
-# AS-REP roastable training user marker. The ldbmodify step is best-effort
-# because Samba schema behavior differs across image builds.
-if samba-tool user create rgreen "Spring2024!" 2>/dev/null; then
-    echo "[+] Created user: rgreen (AS-REP training path)"
-else
-    echo "[*] User rgreen already exists"
-fi
-samba-tool user setexpiry rgreen --noexpiry 2>/dev/null || true
-cat > /tmp/rgreen-no-preauth.ldif << 'EOF'
+add_user "jsmith" "Password123"
+add_user "svc_backup" "Backup2023!"
+add_user "it.admin" "DomainAdmin2024!"
+add_user "rgreen" "Summer2024!"
+
+# ── Configure AS-REP Roasting (rgreen) ─────────────────────────────
+# Set DONT_REQ_PREAUTH (0x00400000) bit in userAccountControl
+echo "[+] Configuring AS-REP Roasting for 'rgreen'..."
+SAM_PATH="/var/lib/samba/private/sam.ldb"
+UAC_VAL=$(ldbsearch -H "$SAM_PATH" "CN=rgreen,CN=Users,DC=nexora,DC=local" userAccountControl | grep userAccountControl | awk '{print $2}')
+if [ -n "$UAC_VAL" ]; then
+    NEW_UAC=$((UAC_VAL | 4194304))
+    cat <<EOF | ldbmodify -H "$SAM_PATH"
 dn: CN=rgreen,CN=Users,DC=nexora,DC=local
 changetype: modify
 replace: userAccountControl
-userAccountControl: 4194816
+userAccountControl: $NEW_UAC
 EOF
-ldbmodify -H /var/lib/samba/private/sam.ldb /tmp/rgreen-no-preauth.ldif 2>/dev/null || \
-    echo "[*] AS-REP flag best-effort marker retained for rgreen"
-
-# Create service account for Kerberoasting (SPN-based vulnerability)
-if samba-tool user create svc_backup "Backup2023!" 2>/dev/null; then
-    echo "[+] Created user: svc_backup (service account)"
+    echo "    Success: rgreen UAC updated to $NEW_UAC"
 else
-    echo "[*] User svc_backup already exists"
+    echo "    [!] Could not find rgreen user for UAC update"
 fi
 
-# Add SPN (Service Principal Name) to svc_backup for Kerberoasting vulnerability
-if ! samba-tool user addspn svc_backup "CIFS/NEXORA-FS01.nexora.local" 2>/dev/null; then
-    echo "[*] SPN CIFS/NEXORA-FS01.nexora.local already exists for svc_backup"
-fi
-
-# Add another SPN for SQL service
-if samba-tool user create svc_sql "SqlPass456!" 2>/dev/null; then
-    samba-tool user addspn svc_sql "MSSQLSvc/NEXORA-SQL01.nexora.local:1433" 2>/dev/null || true
-    echo "[+] Created user: svc_sql with SPN"
-fi
-
-# Create domain admin user
-if samba-tool user create it.admin "DomainAdmin2024!" 2>/dev/null; then
-    echo "[+] Created user: it.admin"
-else
-    echo "[*] User it.admin already exists"
-fi
-
-# Add it.admin to Domain Admins group
-if ! samba-tool group addmembers "Domain Admins" it.admin 2>/dev/null; then
-    echo "[*] User it.admin already in Domain Admins"
-fi
-
-# Reset administrator account password (built-in, created during provision)
-echo "[+] Configuring Administrator account..."
-samba-tool user setpassword Administrator --newpassword="$ADMIN_PASS" 2>/dev/null || true
-samba-tool user setexpiry Administrator --noexpiry 2>/dev/null || true
+# ── Configure Kerberoasting (svc_backup) ───────────────────────────
+# Add an SPN for the service account
+echo "[+] Configuring Kerberoasting for 'svc_backup'..."
+samba-tool spn add "MSSQLSvc/nexora-fs01.nexora.local:1433" svc_backup 2>/dev/null || true
 
 # Set password expiry policy for all users (never expire for testing)
 echo "[+] Setting password expiry policies..."
@@ -186,5 +133,5 @@ Training marker: rgreen is configured as the AS-REP roasting branch user.
 Expected defensive finding: require Kerberos pre-authentication.
 EOF
 
-echo "[+] DC Setup Complete — Starting Samba"
-exec samba -i
+echo "[+] DC Setup Complete — Starting Samba via Supervisord"
+exec /usr/bin/supervisord -n

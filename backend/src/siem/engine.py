@@ -16,9 +16,6 @@ _elk_poll_task: Optional[asyncio.Task] = None
 # Track last polled timestamp to avoid duplicate events
 _last_poll_time: str = "now-1m"
 
-# Track active sessions for routing logs
-_active_sessions: Dict[str, str] = {}  # session_id -> scenario_id
-
 # Cache loaded event definition files to avoid repeated disk reads per command
 _events_cache: Dict[str, list] = {}
 
@@ -125,16 +122,27 @@ def _infer_scenario(source: dict) -> str | None:
 
 
 async def _poll_elasticsearch() -> None:
-    """Background daemon to poll the Elastic Stack for real target telemetry logs."""
-    global _last_poll_time, _active_sessions
+    global _last_poll_time
+    from src.cache.redis import _get as get_redis_client
+
+    _ACTIVE_KEY = "cybersim:active_sessions"
 
     async with httpx.AsyncClient() as client:
         while True:
-            await asyncio.sleep(2.0)  # Poll every 2 seconds
-
-            if not _active_sessions:
+            await asyncio.sleep(2.0)
+            try:
+                redis = get_redis_client()
+                raw = await redis.hgetall(_ACTIVE_KEY)
+            except Exception:
                 continue
-
+            if not raw:
+                continue
+            active = {
+                (k.decode() if isinstance(k, bytes) else k): (
+                    v.decode() if isinstance(v, bytes) else v
+                )
+                for k, v in raw.items()
+            }
             try:
                 query = {
                     "query": {"range": {"@timestamp": {"gte": _last_poll_time}}},
@@ -151,10 +159,11 @@ async def _poll_elasticsearch() -> None:
                 data = response.json()
                 hits = data.get("hits", {}).get("hits", [])
                 if not hits:
+                    # Advance baseline so we don't replay old docs on first arrival
+                    _last_poll_time = datetime.now(timezone.utc).isoformat()
                     continue
 
                 _last_poll_time = hits[-1]["_source"]["@timestamp"]
-
                 for hit in hits:
                     source = hit["_source"]
                     now = datetime.now(timezone.utc).isoformat()
@@ -167,33 +176,18 @@ async def _poll_elasticsearch() -> None:
                         "raw_log": json.dumps(source),
                         "mitre_technique": source.get("mitre_technique", ""),
                         "source": "elasticsearch",
-                        "source_ip": source.get("source", {}).get("ip", "172.20.0.0/16"),
+                        "source_ip": (source.get("source") or {}).get("ip", ""),
                         "tool_triggered": "filebeat",
                     }
-
-                    # Route only to sessions running the matching scenario;
-                    # fall back to all sessions when scenario can't be inferred.
                     target_scenario = _infer_scenario(source)
-                    for session_id, scenario_id in list(_active_sessions.items()):
+                    for session_id, scenario_id in active.items():
                         if target_scenario is None or scenario_id == target_scenario:
                             await queue_event(session_id, event)
-
             except httpx.RequestError:
                 await asyncio.sleep(5.0)
             except Exception as e:
                 print(f"Elasticsearch polling error: {e}")
                 await asyncio.sleep(5.0)
-
-
-async def register_session(session_id: str, scenario_id: str) -> None:
-    """Register a new session so its logs can be forwarded from Elastic"""
-    _active_sessions[session_id] = scenario_id
-
-
-async def unregister_session(session_id: str) -> None:
-    """Stop forwarding logs for a closed session"""
-    if session_id in _active_sessions:
-        del _active_sessions[session_id]
 
 
 async def init_siem_batch() -> None:

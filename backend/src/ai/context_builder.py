@@ -16,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.cache.redis import _get as get_redis, lrange, cache_get
 from src.db.database import AsyncSessionLocal, Session, Note, CommandLog
 from src.ai.discovery_tracker import get_discoveries
-from src.sandbox.terminal import SCENARIO_TARGETS
 
 
 # ── Full target knowledge per scenario ──────────────────────────────────────

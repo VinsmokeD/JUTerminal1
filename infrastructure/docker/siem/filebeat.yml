@@ -16,6 +16,14 @@ filebeat.autodiscover:
               paths:
                 - /var/lib/docker/containers/${data.docker.container.id}/*.log
 
+filebeat.inputs:
+  - type: filestream
+    id: modsec-audit
+    paths: [/waf-logs/audit.log]
+    parsers:
+      - ndjson:
+          add_error_key: true
+
 processors:
   - add_docker_metadata:
       host: "unix:///var/run/docker.sock"

@@ -4,7 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DC_IP=172.20.2.20 \
     DOMAIN=nexora.local \
     REALM=NEXORA.LOCAL \
-    NETBIOS_NAME=NEXORA
+    NETBIOS_NAME=NEXORA \
+    ADMINPASS=NexoraAdmin2024!
 
 # Samba file server (domain-joined) with audit logging
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -12,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     samba-common \
     samba-common-bin \
     samba-vfs-modules \
+    smbclient \
     winbind \
     krb5-user \
     krb5-config \

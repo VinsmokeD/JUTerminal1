@@ -31,7 +31,7 @@ function nmap() {
 alias cls='clear'
 
 # Pre-configured paths
-export PATH="$PATH:/home/student/tools"
+export PATH="$PATH:/home/student/tools:/home/student/.local/bin"
 
 # Quick targets reminder
 alias scope='echo "Scope: Check /home/student/scope.txt for in-scope targets"'

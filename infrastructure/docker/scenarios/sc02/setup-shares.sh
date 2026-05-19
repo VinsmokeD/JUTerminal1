@@ -13,17 +13,20 @@ echo "[*] Domain: $DOMAIN"
 echo "[*] Realm: $REALM"
 
 # Wait for DC to be available (timeout 60s)
-echo "[*] Waiting for Domain Controller at $DC_IP:389..."
+echo "[*] Waiting for Domain Controller at $DC_IP:445..."
 for i in {1..60}; do
-    if nc -zv -w 2 "$DC_IP" 389 2>/dev/null; then
-        echo "[+] DC is reachable"
+    if nc -zv -w 2 "$DC_IP" 445 2>/dev/null; then
+        echo "[+] DC SMB is reachable"
         break
     fi
     if [ $i -eq 60 ]; then
-        echo "[!] DC did not become reachable, continuing anyway..."
+        echo "[!] DC SMB did not become reachable, continuing anyway..."
     fi
     sleep 1
 done
+
+echo "[*] Verifying DC hostname resolution..."
+getent hosts nexora-dc01.nexora.local || echo "[!] Could not resolve nexora-dc01.nexora.local"
 
 # Create share directories with proper permissions
 echo "[+] Creating share directories..."
@@ -109,15 +112,10 @@ $Cred = "svc_sql:SqlPass456!"
 Write-Host "Starting nightly backup job for $Server"
 EOF
 
-cat > /srv/shares/backups/db_backup_20240115.bak << 'EOF'
-NEXORA DATABASE BACKUP
-Date: 2024-01-15
-Type: Full System Backup
-Location: Production Database Cluster
-
-[BACKUP DATA - ENCRYPTED]
-This backup contains sensitive production data.
-Contact IT for recovery procedures.
+cat > /srv/shares/backups/last_backup.zip << 'EOF'
+PK... (simulated zip magic bytes)
+This archive contains the NTDS.dit backup and is encrypted.
+Requires svc_backup credential context.
 EOF
 
 cat > /srv/shares/admin/audit_log.txt << 'EOF'
@@ -184,18 +182,27 @@ nameserver $DC_IP
 search $DOMAIN
 EOF
 
-# Attempt domain join (may fail initially if DC not ready, that's OK)
+ADMIN_PASS="${ADMINPASS:-NexoraAdmin2024!}"
 echo "[+] Attempting domain join..."
-net ads join -U administrator%NexoraAdmin2024! -d 2>/dev/null || {
-    echo "[*] Domain join may need retrying (DC might not be fully ready)"
+joined=0
+for attempt in 1 2 3 4 5; do
+    if net ads join -U "administrator%${ADMIN_PASS}" --no-dns-updates; then
+        joined=1
+        echo "[+] Domain join succeeded (attempt $attempt)"
+        break
+    fi
+    echo "[!] Domain join attempt $attempt failed; sleeping 5s"
     sleep 5
-    net ads join -U administrator%NexoraAdmin2024! -d 2>/dev/null || echo "[*] Domain join attempted"
-}
+done
+if [ "$joined" -eq 0 ]; then
+    echo "[FATAL] Could not join domain after 5 attempts. Refusing to start."
+    exit 1
+fi
+net ads info
+net ads testjoin
 
-# Check domain membership
-echo "[+] Checking domain status..."
-net ads info 2>/dev/null || echo "[*] Not yet joined, smbd will attempt at startup"
+echo "$DC_IP nexora-dc01.$DOMAIN nexora-dc01" >> /etc/hosts
 
 # Start file server
 echo "[+] Starting Samba file server..."
-exec smbd -F --no-process-group --log-stdout
+exec smbd -F --no-process-group --debug-stdout

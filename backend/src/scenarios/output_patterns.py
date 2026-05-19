@@ -36,6 +36,13 @@ def _clean_output(text: str) -> str:
     return _ANSI_RE.sub("", text).replace("\r", "")
 
 
+_BANNER_GUARD = re.compile(
+    r"RED OBJECTIVE|BLUE OBJECTIVE|CyberSim Training(?: Platform)?|"
+    r"Type 'scope'|Tools(?: available)?:\s*(nmap|gobuster|sqlmap|smbclient|kerbrute)",
+    re.IGNORECASE,
+)
+
+
 def scan_output_chunk(session_id: str, scenario_id: str, chunk: str) -> list[dict[str, Any]]:
     """Return teaching insights found in completed terminal output lines."""
     if not chunk:
@@ -50,6 +57,7 @@ def scan_output_chunk(session_id: str, scenario_id: str, chunk: str) -> list[dic
     parts = buffered.split("\n")
     complete_lines = parts[:-1]
     _buffers[session_id] = parts[-1][-2000:]
+    complete_lines = [ln for ln in complete_lines if not _BANNER_GUARD.search(ln)]
     if not complete_lines:
         return []
 

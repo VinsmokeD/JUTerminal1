@@ -2,6 +2,10 @@ FROM kalilinux/kali-rolling:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Pin apt source to official mirrors to avoid transient mirror failures
+RUN echo "deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" > /etc/apt/sources.list \
+    && echo "deb http://kali.download/kali kali-rolling main contrib non-free non-free-firmware" >> /etc/apt/sources.list
+
 # Suppress tshark/wireshark interactive install prompts
 RUN echo "wireshark-common wireshark-common/install-setuid boolean false" | debconf-set-selections
 
@@ -19,6 +23,8 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     netcat-openbsd tcpdump tshark wireshark-common proxychains4 \
     # Active Directory / SMB
     smbclient crackmapexec impacket-scripts evil-winrm responder \
+    samba-common-bin krb5-user ldap-utils freerdp3-x11 \
+    pipx \
     # Exploitation
     metasploit-framework \
     # Scripting & utilities
@@ -28,6 +34,16 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     # Misc pentest
     medusa \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth=1 https://github.com/fortra/impacket.git /opt/impacket \
+    && pip install --break-system-packages /opt/impacket
+
+# Install AD tools not in apt
+RUN pip install --break-system-packages bloodhound nxc || pip install --break-system-packages bloodhound
+
+# Download Kerbrute binary
+RUN wget https://github.com/ropnop/kerbrute/releases/download/v1.0.3/kerbrute_linux_amd64 -O /usr/local/bin/kerbrute \
+    && chmod +x /usr/local/bin/kerbrute
 
 # Docker uses no-new-privileges for the student sandbox. Kali ships nmap with
 # file capabilities, which the kernel refuses to execute under that policy.

@@ -24,7 +24,7 @@ _MEM_LIMIT = "512m"
 
 # Scenario profile → target services that must be running
 _SCENARIO_TARGETS: dict[str, list[str]] = {
-    "sc01": ["sc01-webapp", "sc01-waf"],
+    "sc01": ["sc01-db", "sc01-webapp", "sc01-waf"],
     "sc02": ["sc02-dc", "sc02-fileserver"],
     "sc03": ["sc03-phish"],
 }
@@ -223,16 +223,27 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
         except NotFound:
             pass
 
+        env_vars = {
+            "SCENARIO_ID": scenario_id,
+            "SESSION_ID": session_id,
+        }
+
+        if sc_num == "sc02":
+            env_vars.update({
+                "SC_DOMAIN": "nexora.local",
+                "SC_REALM": "NEXORA.LOCAL",
+                "SC_DC_IP": "172.20.2.20",
+                "SC_DC_NAME": "nexora-dc01.nexora.local",
+                "SC_FS_IP": "172.20.2.40",
+            })
+
         container = client.containers.run(
             image=settings.KALI_IMAGE,
             name=container_name,
             detach=True,
             network=network_name,
             hostname="kali",
-            environment={
-                "SCENARIO_ID": scenario_id,
-                "SESSION_ID": session_id,
-            },
+            environment=env_vars,
             # v2.0 guardrail — hardcoded, not from settings
             cpu_period=_CPU_PERIOD,
             cpu_quota=_CPU_QUOTA,
@@ -247,6 +258,39 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
             },
             remove=False,
         )
+
+        if sc_num == "sc02":
+            setup_cmd = """cat > /etc/krb5.conf << 'EOF'
+[libdefaults]
+    default_realm = NEXORA.LOCAL
+    rdns = false
+    dns_lookup_realm = false
+    dns_lookup_kdc = false
+    default_tkt_enctypes = aes256-cts rc4-hmac
+    default_tgs_enctypes = aes256-cts rc4-hmac
+    permitted_enctypes = aes256-cts rc4-hmac
+    allow_weak_crypto = true
+
+[realms]
+    NEXORA.LOCAL = {
+        kdc = 172.20.2.20:88
+        admin_server = 172.20.2.20:749
+        master_kdc = 172.20.2.20:88
+    }
+
+[domain_realm]
+    .nexora.local = NEXORA.LOCAL
+    nexora.local = NEXORA.LOCAL
+EOF
+grep -q 'nexora.local' /etc/hosts || cat >> /etc/hosts << 'EOF'
+172.20.2.20 nexora-dc01.nexora.local nexora-dc01 nexora.local
+172.20.2.40 nexora-fs01.nexora.local nexora-fs01
+EOF
+"""
+            result = container.exec_run(["/bin/bash", "-c", setup_cmd], user="root")
+            if result.exit_code != 0:
+                print(f"[Sandbox] krb5/hosts setup failed: {result.output[:200]}")
+
         _repair_kali_tools(container)
         return container.id, network_name
 

@@ -1,48 +1,33 @@
 id: SC-02
-title: "Active Directory Compromise: Nexora Financial"
-difficulty: Advanced
-estimated_duration_minutes: 300
-frameworks: 
-  - PTES
-  - "NIST CSF"
-tactics:
-  - TA0007 Discovery
-  - TA0006 Credential Access
-  - TA0008 Lateral Movement
-  - TA0004 Privilege Escalation
-network: 172.20.2.0/24
-containers:
-  - ip: 172.20.2.20
-    role: "Samba4 AD DC"
-  - ip: 172.20.2.30
-    role: "jsmith workstation"
-  - ip: 172.20.2.31
-    role: "helpdesk workstation"
-  - ip: 172.20.2.40
-    role: "File Server"
-
-briefing: |
-  Client: Nexora Financial Services
-  Type: Internal Network Penetration Test (Gray Box)
-  Starting position: Valid domain credentials provided (jsmith / Welcome1!)
-  Goal: Demonstrate path from low-privilege user to Domain Admin
-
-  1. You have been given credentials for a standard domain user: jsmith / Welcome1!
-  2. You may NOT create new domain admin accounts permanently — document the path only.
-  3. DCSync attack is permitted ONLY against the simulated DC container.
-  4. Stop condition: Once you have DA hash or Golden Ticket material, the engagement ends.
-
+title: "Nexora Financial - Active Directory Compromise"
+display_name: "Nexora Financial — Active Directory Compromise"
+network:
+  cidr: 172.20.2.0/24
+  hosts:
+    - { name: NEXORA-DC01, fqdn: nexora-dc01.nexora.local, ip: 172.20.2.20, role: dc }
+    - { name: NEXORA-FS01, fqdn: nexora-fs01.nexora.local, ip: 172.20.2.40, role: file }
+domain:
+  fqdn: nexora.local
+  realm: NEXORA.LOCAL
+  netbios: NEXORA
+credentials_initial:
+  user: jsmith
+  password: Password123
+  note: "Low-priv domain user — phished email attachment"
+objectives:
+  red: ["enumerate", "kerberoast svc_backup", "crack hash", "dcsync as Domain Admin"]
+  blue: ["detect 4769 RC4", "detect DCSync 4662", "triage lateral movement"]
+tools_expected: [nmap, smbclient, crackmapexec, GetUserSPNs.py, hashcat, secretsdump.py, bloodhound-python, kerbrute]
 flags:
-  - id: FLAG-SC02-1
-    description: "svc_backup plain text password via Kerberoasting"
-    value: "Backup2023"
-  - id: FLAG-SC02-2
-    description: "Domain Administrator NTLM Hash"
+  - id: kerberoast_hash
+    value_pattern: "svc_backup.*\\$23\\$"
+  - id: dcsync_krbtgt_nthash
+    value_pattern: "krbtgt:502:[a-f0-9]{32}"
 
 methodologies:
   branch_kerberoast:
     label: "SPN Kerberoasting"
-    required_tools: ["bloodhound", "GetUserSPNs", "hashcat"]
+    required_tools: ["bloodhound", "GetUserSPNs.py", "hashcat"]
     evidence_chain: ["SPN discovery", "RC4 service ticket", "service account credential use"]
   branch_asrep:
     label: "AS-REP roastable user"
@@ -90,7 +75,7 @@ phases:
       - "Extract RC4-HMAC hash"
       - "Crack hash offline to obtain plaintext"
     completion_signals:
-      flags_captured: ["FLAG-SC02-1"]
+      flags_captured: ["kerberoast_hash"]
       tools_used: ["GetUserSPNs.py", "hashcat"]
 
   3:
@@ -114,7 +99,7 @@ phases:
       - "Extract Domain Admin TGT from memory"
       - "Execute DCSync to dump NTDS.dit"
     completion_signals:
-      flags_captured: ["FLAG-SC02-2"]
+      flags_captured: ["dcsync_krbtgt_nthash"]
 
   5:
     name: "Reporting"
@@ -168,8 +153,8 @@ scoring:
   red:
     base: 100
     flag_bonuses:
-      FLAG-SC02-1: 30
-      FLAG-SC02-2: 40
+      kerberoast_hash: 30
+      dcsync_krbtgt_nthash: 40
     time_bonus_threshold_minutes: 150
     time_bonus_points: 15
   blue:

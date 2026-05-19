@@ -97,7 +97,7 @@
   },
   {
     "id": "sc02-domain-admin",
-    "regex": "Domain Admins|Domain Admin|Administrators.*domain|DOMAIN\\\\Administrator|privileged.*domain|da.*compromise",
+    "regex": "Domain Admins\\s*:|memberOf=.*Domain Admins|CN=Domain Admins,|DOMAIN\\\\Administrator|net group .Domain Admins.",
     "what": "Domain Administrator group membership or privilege context is visible.",
     "why": "Domain Admin access is the final objective indicator for SC-02 - this is the maximum impact evidence.",
     "next": "Document the privileged group evidence and tie it to the exact account, host, and preceding escalation path.",

@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     redis-server \
     sudo \
     netcat \
+    curl \
     && docker-php-ext-install pdo pdo_mysql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -44,7 +45,6 @@ RUN a2enmod status && \
 
 # Copy intentionally vulnerable application
 COPY index.php /var/www/html/index.php
-COPY init.sql /docker-entrypoint-initdb.d/
 COPY robots.txt /var/www/html/robots.txt
 COPY swagger.json /var/www/html/swagger.json
 COPY .env_leak /var/www/html/.env.bak
