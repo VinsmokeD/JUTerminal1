@@ -24,6 +24,40 @@ filebeat.inputs:
       - ndjson:
           add_error_key: true
 
+  - type: filestream
+    id: samba-logs
+    paths: [/samba-logs/log.*]
+    processors:
+      # Parse samba log lines: "timestamp  thread  module:  message"
+      - dissect:
+          tokenizer: "%{samba.timestamp} %{samba.thread} %{samba.module}: %{message}"
+          field: "message"
+          target_prefix: ""
+          ignore_failure: true
+      # Promote RC4 Kerberos TGS requests to proper ECS events
+      - script:
+          lang: javascript
+          id: kerberos_tgs_rc4
+          source: >
+            function process(event) {
+              var msg = event.Get("message") || "";
+              if (msg.indexOf("TGS_REQ") !== -1 && msg.indexOf("0x17") !== -1) {
+                event.Put("event.code", "4769");
+                event.Put("event.category", ["authentication"]);
+                event.Put("event.module", "samba");
+                event.Put("krb.enctype", "0x17");
+                var spnMatch = msg.match(/for\s+([^\s]+)/);
+                if (spnMatch) { event.Put("user.target.name", spnMatch[1]); }
+                event.Put("log.level", "warning");
+              }
+              return event;
+            }
+      # Drop pure DEBUG lines to avoid flooding the index
+      - drop_event:
+          when:
+            regexp:
+              message: "^\\[\\d{4}/\\d{2}/\\d{2} .*\\] .*debug"
+
 processors:
   - add_docker_metadata:
       host: "unix:///var/run/docker.sock"

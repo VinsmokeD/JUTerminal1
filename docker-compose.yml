@@ -96,6 +96,7 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - ./infrastructure/docker/siem/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - sc01_waf_logs:/waf-logs:ro
+      - sc02_samba_logs:/samba-logs:ro
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -291,6 +292,7 @@ services:
     volumes:
       - sc02_samba_lib:/var/lib/samba
       - sc02_samba_cache:/var/cache/samba
+      - sc02_samba_logs:/var/log/samba
     profiles: ["sc02"]
     restart: unless-stopped
     healthcheck:
@@ -415,6 +417,7 @@ volumes:
   sc01_waf_logs:
   sc02_samba_lib:
   sc02_samba_cache:
+  sc02_samba_logs:
 
 networks:
   # Shared internal network for all core services

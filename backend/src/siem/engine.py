@@ -1,32 +1,56 @@
+"""SIEM engine — ES-poll driven, Sigma-style rule matching, Redis dedup."""
+from __future__ import annotations
+
 import asyncio
 import json
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, Dict
+from pathlib import Path
+from typing import Optional
 
 import httpx
+import yaml
 
 from src.cache.redis import _get as get_redis
 
-# Global event batch queue and flush task
+# ---------------------------------------------------------------------------
+# Global task handles
+# ---------------------------------------------------------------------------
 _event_queue: Optional[asyncio.Queue] = None
 _batch_flush_task: Optional[asyncio.Task] = None
 _elk_poll_task: Optional[asyncio.Task] = None
 
-# Track last polled timestamp to avoid duplicate events
+# Baseline timestamp; advances with each poll so no doc is processed twice
 _last_poll_time: str = "now-1m"
 
-# Cache loaded event definition files to avoid repeated disk reads per command
-_events_cache: Dict[str, list] = {}
+# Compiled rule list loaded at startup from backend/src/siem/rules/*.yaml
+_RULES: list[dict] = []
+
+_RULES_DIR = Path(__file__).resolve().parent / "rules"
+_ACTIVE_KEY = "cybersim:active_sessions"
+_DEDUP_TTL = 3600  # 1 hour
 
 
-def _event_file_stem(scenario_id: str) -> str:
-    """Normalize scenario IDs such as SC-01 to event file stems such as sc01."""
-    return scenario_id.lower().replace("-", "")
+# ---------------------------------------------------------------------------
+# Rule loader
+# ---------------------------------------------------------------------------
 
+def _load_rules() -> list[dict]:
+    rules: list[dict] = []
+    for path in sorted(_RULES_DIR.glob("*.yaml")):
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+            rules.extend(data.get("rules", []))
+        except Exception as exc:
+            print(f"[SIEM] Failed to load rule file {path}: {exc}")
+    return rules
+
+
+# ---------------------------------------------------------------------------
+# Batch event publisher
+# ---------------------------------------------------------------------------
 
 async def queue_event(session_id: str, event: dict) -> None:
-    """Queue an event for batched publishing (reduces Redis round-trips)."""
     if _event_queue is None:
         redis = get_redis()
         await redis.publish(f"siem:{session_id}:feed", json.dumps(event))
@@ -35,7 +59,6 @@ async def queue_event(session_id: str, event: dict) -> None:
 
 
 async def _batch_flush() -> None:
-    """Background task that flushes batched events every 100ms or when queue reaches 10 events."""
     global _event_queue
     if _event_queue is None:
         return
@@ -46,43 +69,39 @@ async def _batch_flush() -> None:
             while len(batch) < 10:
                 try:
                     session_id, event = _event_queue.get_nowait()
-                    if session_id not in batch:
-                        batch[session_id] = []
-                    batch[session_id].append(event)
+                    batch.setdefault(session_id, []).append(event)
                 except asyncio.QueueEmpty:
                     if batch:
                         try:
                             session_id, event = await asyncio.wait_for(_event_queue.get(), timeout=0.1)
-                            if session_id not in batch:
-                                batch[session_id] = []
-                            batch[session_id].append(event)
+                            batch.setdefault(session_id, []).append(event)
                         except asyncio.TimeoutError:
                             break
                     else:
                         session_id, event = await _event_queue.get()
-                        if session_id not in batch:
-                            batch[session_id] = []
-                        batch[session_id].append(event)
+                        batch.setdefault(session_id, []).append(event)
                         break
 
             if batch:
                 redis = get_redis()
                 pipe = redis.pipeline()
-                for session_id, events in batch.items():
-                    for event in events:
-                        pipe.publish(f"siem:{session_id}:feed", json.dumps(event))
+                for sid, events in batch.items():
+                    for ev in events:
+                        pipe.publish(f"siem:{sid}:feed", json.dumps(ev))
                 await pipe.execute()
                 batch.clear()
 
-        except Exception as e:
-            print(f"Error in SIEM batch flush: {e}")
+        except Exception as exc:
+            print(f"[SIEM] Batch flush error: {exc}")
             batch.clear()
             await asyncio.sleep(0.1)
 
 
+# ---------------------------------------------------------------------------
+# Severity / scenario inference helpers
+# ---------------------------------------------------------------------------
+
 def _infer_severity(source: dict) -> str:
-    """Derive a severity level from Elasticsearch log fields."""
-    # Filebeat/ECS fields that carry severity info
     level = (
         source.get("log", {}).get("level", "")
         or source.get("log_level", "")
@@ -95,7 +114,6 @@ def _infer_severity(source: dict) -> str:
         return "HIGH"
     if level in ("warning", "warn"):
         return "MED"
-    # Heuristic: WAF block / auth failure keywords → HIGH
     msg = (source.get("message", "") or "").lower()
     if any(kw in msg for kw in ("denied", "blocked", "unauthorized", "failed", "attack", "exploit")):
         return "HIGH"
@@ -105,12 +123,6 @@ def _infer_severity(source: dict) -> str:
 
 
 def _infer_scenario(source: dict) -> str | None:
-    """
-    Guess the scenario a log event belongs to from its content/index.
-
-    Returns a scenario ID string like 'SC-01', 'SC-02', 'SC-03', or None
-    if it cannot be determined (broadcast to all in that case).
-    """
     fields = json.dumps(source).lower()
     if any(kw in fields for kw in ("nexora", "samba", "kerberos", "ldap", "winbind", "domain")):
         return "SC-02"
@@ -121,35 +133,100 @@ def _infer_scenario(source: dict) -> str | None:
     return None
 
 
+# ---------------------------------------------------------------------------
+# Sigma-rule DSL matcher (shallow but sufficient for CyberSim field depth)
+# ---------------------------------------------------------------------------
+
+def _get_field(source: dict, dotted: str) -> object:
+    """Traverse dotted ECS field path in a nested dict."""
+    parts = dotted.split(".")
+    node: object = source
+    for p in parts:
+        if not isinstance(node, dict):
+            return None
+        node = node.get(p)
+    return node
+
+
+def _match_dsl(source: dict, dsl: dict) -> bool:
+    """Recursively evaluate a simplified ES-DSL clause against a log source dict."""
+    for op, value in dsl.items():
+        if op == "bool":
+            must = value.get("must", [])
+            should = value.get("should", [])
+            must_not = value.get("must_not", [])
+            if must and not all(_match_dsl(source, clause) for clause in must):
+                return False
+            if should and not any(_match_dsl(source, clause) for clause in should):
+                return False
+            if must_not and any(_match_dsl(source, clause) for clause in must_not):
+                return False
+        elif op == "term":
+            for field, expected in value.items():
+                if str(_get_field(source, field)) != str(expected):
+                    return False
+        elif op == "match":
+            for field, needle in value.items():
+                haystack = str(_get_field(source, field) or "")
+                if needle.lower() not in haystack.lower():
+                    return False
+        elif op == "range":
+            for field, bounds in value.items():
+                try:
+                    v = float(_get_field(source, field) or 0)
+                    if "gte" in bounds and v < bounds["gte"]:
+                        return False
+                    if "lte" in bounds and v > bounds["lte"]:
+                        return False
+                except (TypeError, ValueError):
+                    return False
+        elif op == "regexp":
+            import re
+            for field, pattern in value.items():
+                if not re.search(pattern, str(_get_field(source, field) or ""), re.IGNORECASE):
+                    return False
+    return True
+
+
+def _render_template(template: str, source: dict) -> str:
+    """Replace {{field.path}} placeholders with source values."""
+    import re
+    def replacer(m: re.Match) -> str:
+        return str(_get_field(source, m.group(1)) or "?")
+    return re.sub(r"\{\{([^}]+)\}\}", replacer, template)
+
+
+# ---------------------------------------------------------------------------
+# Main Elasticsearch poll + rule-match loop
+# ---------------------------------------------------------------------------
+
 async def _poll_elasticsearch() -> None:
     global _last_poll_time
-    from src.cache.redis import _get as get_redis_client
-
-    _ACTIVE_KEY = "cybersim:active_sessions"
 
     async with httpx.AsyncClient() as client:
         while True:
             await asyncio.sleep(2.0)
             try:
-                redis = get_redis_client()
+                redis = get_redis()
                 raw = await redis.hgetall(_ACTIVE_KEY)
             except Exception:
                 continue
+
             if not raw:
+                _last_poll_time = datetime.now(timezone.utc).isoformat()
                 continue
-            active = {
-                (k.decode() if isinstance(k, bytes) else k): (
-                    v.decode() if isinstance(v, bytes) else v
-                )
+
+            active: dict[str, str] = {
+                (k.decode() if isinstance(k, bytes) else k): (v.decode() if isinstance(v, bytes) else v)
                 for k, v in raw.items()
             }
+
             try:
                 query = {
                     "query": {"range": {"@timestamp": {"gte": _last_poll_time}}},
                     "sort": [{"@timestamp": "asc"}],
                     "size": 100,
                 }
-
                 response = await client.post(
                     "http://elasticsearch:9200/_search", json=query, timeout=5.0
                 )
@@ -158,62 +235,110 @@ async def _poll_elasticsearch() -> None:
 
                 data = response.json()
                 hits = data.get("hits", {}).get("hits", [])
+
                 if not hits:
-                    # Advance baseline so we don't replay old docs on first arrival
                     _last_poll_time = datetime.now(timezone.utc).isoformat()
                     continue
 
                 _last_poll_time = hits[-1]["_source"]["@timestamp"]
+
                 for hit in hits:
                     source = hit["_source"]
-                    now = datetime.now(timezone.utc).isoformat()
-                    event = {
-                        "id": hit["_id"],
-                        "timestamp": source.get("@timestamp", now),
-                        "created_at": now,
-                        "severity": _infer_severity(source),
-                        "message": source.get("message", "Log event detected"),
-                        "raw_log": json.dumps(source),
-                        "mitre_technique": source.get("mitre_technique", ""),
-                        "source": "elasticsearch",
-                        "source_ip": (source.get("source") or {}).get("ip", ""),
-                        "tool_triggered": "filebeat",
-                    }
+                    doc_id = hit["_id"]
+                    now = datetime.now(timezone.utc)
+
+                    doc_ts_str = source.get("@timestamp", now.isoformat())
+                    try:
+                        doc_ts = datetime.fromisoformat(doc_ts_str.replace("Z", "+00:00"))
+                        latency_ms = int((now - doc_ts).total_seconds() * 1000)
+                    except Exception:
+                        latency_ms = 0
+
                     target_scenario = _infer_scenario(source)
-                    for session_id, scenario_id in active.items():
-                        if target_scenario is None or scenario_id == target_scenario:
+
+                    for rule in _RULES:
+                        try:
+                            dsl = rule.get("trigger", {}).get("dsl", {})
+                            if not _match_dsl(source, dsl):
+                                continue
+                        except Exception:
+                            continue
+
+                        rule_scenario = rule.get("scenario")
+                        severity = rule.get("severity", _infer_severity(source))
+                        message = _render_template(
+                            rule.get("render", {}).get("template", source.get("message", "SIEM event")),
+                            source,
+                        )
+
+                        for session_id, scenario_id in active.items():
+                            # Skip rules not relevant to this session's scenario
+                            if rule_scenario and rule_scenario != scenario_id:
+                                if target_scenario and target_scenario != scenario_id:
+                                    continue
+
+                            # Redis-based dedup: one emit per (session, rule, doc) per hour
+                            dedup_key = f"cybersim:siem:emitted:{session_id}:{rule['id']}:{doc_id}"
+                            redis = get_redis()
+                            already = await redis.set(dedup_key, "1", ex=_DEDUP_TTL, nx=True)
+                            if not already:
+                                continue
+
+                            event = {
+                                "id": f"{rule['id']}-{uuid.uuid4().hex[:8]}",
+                                "rule_id": rule["id"],
+                                "timestamp": source.get("@timestamp", now.isoformat()),
+                                "created_at": now.isoformat(),
+                                "severity": severity,
+                                "message": message,
+                                "raw_log": json.dumps(source),
+                                "mitre_technique": rule.get("mitre", ""),
+                                "source": "elasticsearch",
+                                "source_ip": str((_get_field(source, "source.ip") or "")),
+                                "tool_triggered": "sigma_rule",
+                                "detection_latency_ms": latency_ms,
+                            }
                             await queue_event(session_id, event)
+
             except httpx.RequestError:
                 await asyncio.sleep(5.0)
-            except Exception as e:
-                print(f"Elasticsearch polling error: {e}")
+            except Exception as exc:
+                print(f"[SIEM] Elasticsearch poll error: {exc}")
                 await asyncio.sleep(5.0)
 
 
+# ---------------------------------------------------------------------------
+# Lifecycle
+# ---------------------------------------------------------------------------
+
 async def init_siem_batch() -> None:
-    """Initialize the SIEM batch system (call from main.py lifespan)."""
-    global _event_queue, _batch_flush_task, _elk_poll_task
+    global _event_queue, _batch_flush_task, _elk_poll_task, _RULES
+    _RULES = _load_rules()
+    print(f"[SIEM] Loaded {len(_RULES)} Sigma rules from {_RULES_DIR}")
     _event_queue = asyncio.Queue(maxsize=1000)
     _batch_flush_task = asyncio.create_task(_batch_flush())
     _elk_poll_task = asyncio.create_task(_poll_elasticsearch())
 
 
 async def close_siem_batch() -> None:
-    """Close the SIEM batch system (call from main.py lifespan)."""
     global _batch_flush_task, _elk_poll_task
-    if _batch_flush_task:
-        _batch_flush_task.cancel()
-    if _elk_poll_task:
-        _elk_poll_task.cancel()
-        
+    for task in (_batch_flush_task, _elk_poll_task):
+        if task:
+            task.cancel()
     try:
         if _batch_flush_task:
             await _batch_flush_task
         if _elk_poll_task:
             await _elk_poll_task
-    except asyncio.CancelledError:
-        pass
+    except (asyncio.CancelledError, Exception) as exc:
+        if not isinstance(exc, asyncio.CancelledError):
+            print(f"[SIEM] Shutdown error: {exc}")
 
+
+# ---------------------------------------------------------------------------
+# Legacy stub — kept so existing callers in ws/routes.py don't break.
+# Returns empty list; real detection now comes from the ES poll loop.
+# ---------------------------------------------------------------------------
 
 async def process_command_for_siem(
     session_id: str,
@@ -221,90 +346,5 @@ async def process_command_for_siem(
     command: str,
     publish_events: bool = True,
 ) -> list[dict]:
-    """
-    Match terminal commands against SIEM event definitions and queue triggered events.
-
-    For SC-01: SQL injection, LFI, IDOR, file upload, XSS, authentication, etc.
-    For SC-02: AD enumeration, Kerberoasting, lateral movement, DCSync, etc.
-    For SC-03: OSINT, phishing campaign, payload execution, C2 callback, etc.
-
-    Returns list of triggered events.
-    """
-    import os
-    import re
-    import json as json_lib
-
-    triggered_events = []
-    scenario_id = state.get("scenario_id", "sc01")
-
-    try:
-        stem = _event_file_stem(scenario_id)
-        if stem not in _events_cache:
-            # Load scenario-specific SIEM event definitions
-            events_file = os.path.join(
-                os.path.dirname(__file__),
-                "events",
-                f"{stem}_events.json"
-            )
-
-            if not os.path.exists(events_file):
-                _events_cache[stem] = []
-                return []
-
-            with open(events_file, 'r') as f:
-                events_data = json_lib.load(f)
-
-            # Flatten all event categories into a single list
-            flat: list = []
-            if isinstance(events_data, dict):
-                for _cat, evts in events_data.items():
-                    if isinstance(evts, list):
-                        flat.extend(evts)
-            else:
-                flat = events_data if isinstance(events_data, list) else []
-            _events_cache[stem] = flat
-
-        all_events = _events_cache[stem]
-
-        # Match command against each event's trigger pattern
-        for event in all_events:
-            if not isinstance(event, dict):
-                continue
-
-            trigger_pattern = event.get("trigger_pattern", "")
-            if not trigger_pattern:
-                continue
-
-            # Case-insensitive regex matching
-            try:
-                if re.search(trigger_pattern, command, re.IGNORECASE):
-                    # Event triggered! Clone the event and add metadata
-                    triggered_event = event.copy()
-                    triggered_event["rule_id"] = event.get("id")
-                    triggered_event["id"] = f"{event.get('id', 'event')}-{uuid.uuid4().hex[:8]}"
-                    triggered_event["timestamp"] = datetime.now(timezone.utc).isoformat()
-                    triggered_event["created_at"] = datetime.now(timezone.utc).isoformat()
-                    triggered_event.setdefault("source", "attacker")
-                    triggered_event.setdefault("source_ip", state.get("source_ip", "172.20.1.10"))
-                    if triggered_event.get("raw_log"):
-                        triggered_event["raw_log"] = (
-                            triggered_event["raw_log"]
-                            .replace("{src_ip}", triggered_event["source_ip"])
-                            .replace("{source_ip}", triggered_event["source_ip"])
-                        )
-
-                    # Queue the event for Redis pub/sub broadcast when this
-                    # function is used outside the WebSocket command path.
-                    if publish_events:
-                        await queue_event(session_id, triggered_event)
-                    triggered_events.append(triggered_event)
-
-            except re.error:
-                # Skip malformed regex patterns
-                continue
-
-        return triggered_events
-
-    except Exception as e:
-        print(f"Error processing SIEM events for {scenario_id}: {e}")
-        return []
+    """No-op stub. Real SIEM events are emitted by _poll_elasticsearch via Sigma rules."""
+    return []

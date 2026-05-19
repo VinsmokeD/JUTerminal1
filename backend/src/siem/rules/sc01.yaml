@@ -1,0 +1,94 @@
+rules:
+  - id: sc01.sqli_detected
+    title: "SQL Injection attempt detected by WAF"
+    severity: HIGH
+    mitre: T1190
+    scenario: SC-01
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.module: "modsecurity"
+            - range:
+                http.response.status_code:
+                  gte: 400
+                  lte: 403
+    render:
+      template: "WAF blocked SQLi: {{http.request.method}} {{url.path}} from {{source.ip}}"
+    expected_latency_s: 10
+
+  - id: sc01.lfi_detected
+    title: "Local File Inclusion attempt"
+    severity: HIGH
+    mitre: T1083
+    scenario: SC-01
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - match:
+                message: "../"
+            - term:
+                event.module: "modsecurity"
+    render:
+      template: "LFI attempt: {{url.path}} from {{source.ip}}"
+    expected_latency_s: 10
+
+  - id: sc01.shell_upload
+    title: "Web shell file upload detected"
+    severity: CRITICAL
+    mitre: T1505.003
+    scenario: SC-01
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                http.request.method: "POST"
+            - match:
+                message: "php"
+            - term:
+                event.module: "modsecurity"
+    render:
+      template: "Shell upload: POST to {{url.path}} from {{source.ip}}"
+    expected_latency_s: 10
+
+  - id: sc01.auth_failure
+    title: "Authentication failure on web login"
+    severity: MED
+    mitre: T1110
+    scenario: SC-01
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - match:
+                message: "Invalid credentials"
+            - term:
+                log.file.path: "/var/log/apache2/access.log"
+    render:
+      template: "Login failure from {{source.ip}} on {{url.path}}"
+    expected_latency_s: 15
+
+  - id: sc01.rce_command
+    title: "Remote command execution via webshell"
+    severity: CRITICAL
+    mitre: T1059
+    scenario: SC-01
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - match:
+                process.command_line: "cmd="
+            - term:
+                event.category: "process"
+    render:
+      template: "RCE via webshell: cmd={{process.args}} on {{host.name}}"
+    expected_latency_s: 20

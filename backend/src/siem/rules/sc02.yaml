@@ -1,0 +1,102 @@
+rules:
+  - id: sc02.kerberoast
+    title: "Kerberoasting (RC4 TGS request)"
+    severity: CRITICAL
+    mitre: T1558.003
+    scenario: SC-02
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.code: "4769"
+            - term:
+                krb.enctype: "0x17"
+    render:
+      template: "Kerberoasting: RC4 TGS for {{user.target.name}} from {{source.ip}}"
+    expected_latency_s: 15
+
+  - id: sc02.dcsync
+    title: "DCSync (DS-Replication-Get-Changes-All)"
+    severity: CRITICAL
+    mitre: T1003.006
+    scenario: SC-02
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.code: "4662"
+            - term:
+                winlog.event_data.Properties: "{1131f6ad-9c07-11d1-f79f-00c04fc2dcd2}"
+    render:
+      template: "DCSync detected: {{winlog.event_data.SubjectUserName}} replicating directory"
+    expected_latency_s: 15
+
+  - id: sc02.lateral_movement_4624
+    title: "Lateral movement — successful logon type 3"
+    severity: HIGH
+    mitre: T1021.002
+    scenario: SC-02
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.code: "4624"
+            - term:
+                winlog.event_data.LogonType: "3"
+    render:
+      template: "SMB/network logon: {{winlog.event_data.TargetUserName}} from {{source.ip}}"
+    expected_latency_s: 20
+
+  - id: sc02.brute_force_4625
+    title: "Authentication failure spray"
+    severity: HIGH
+    mitre: T1110
+    scenario: SC-02
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.code: "4625"
+    render:
+      template: "Auth failure: {{winlog.event_data.TargetUserName}} from {{source.ip}}"
+    expected_latency_s: 10
+
+  - id: sc02.tgt_request_4768
+    title: "Kerberos TGT requested"
+    severity: LOW
+    mitre: T1558.001
+    scenario: SC-02
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.code: "4768"
+    render:
+      template: "TGT request: {{winlog.event_data.TargetUserName}} from {{source.ip}}"
+    expected_latency_s: 30
+
+  - id: sc02.share_access_5140
+    title: "Network share accessed"
+    severity: MED
+    mitre: T1039
+    scenario: SC-02
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.code: "5140"
+    render:
+      template: "Share access: {{winlog.event_data.ShareName}} by {{winlog.event_data.SubjectUserName}}"
+    expected_latency_s: 15

@@ -1,0 +1,108 @@
+rules:
+  - id: sc03.phish_email_open
+    title: "Phishing email opened by target"
+    severity: MED
+    mitre: T1566.001
+    scenario: SC-03
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.module: "gophish"
+            - term:
+                gophish.event: "Email Opened"
+    render:
+      template: "Phish email opened: campaign {{gophish.campaign_name}} by {{user.email}}"
+    expected_latency_s: 10
+
+  - id: sc03.phish_link_click
+    title: "Target clicked phishing link"
+    severity: HIGH
+    mitre: T1566.001
+    scenario: SC-03
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.module: "gophish"
+            - term:
+                gophish.event: "Clicked Link"
+    render:
+      template: "Phish link clicked: {{user.email}} from {{source.ip}}"
+    expected_latency_s: 10
+
+  - id: sc03.credentials_submitted
+    title: "Phishing credentials submitted"
+    severity: CRITICAL
+    mitre: T1056.003
+    scenario: SC-03
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.module: "gophish"
+            - term:
+                gophish.event: "Submitted Data"
+    render:
+      template: "Credentials harvested: {{user.email}} submitted to {{url.domain}}"
+    expected_latency_s: 10
+
+  - id: sc03.macro_execution
+    title: "Malicious macro executed by Office application"
+    severity: CRITICAL
+    mitre: T1137
+    scenario: SC-03
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.code: "1"
+            - term:
+                process.parent.name: "WINWORD.EXE"
+            - term:
+                process.name: "cmd.exe"
+    render:
+      template: "Macro exec: {{process.parent.name}} spawned {{process.name}} on {{host.name}}"
+    expected_latency_s: 15
+
+  - id: sc03.c2_beacon
+    title: "C2 beacon / PowerShell download cradle"
+    severity: CRITICAL
+    mitre: T1059.001
+    scenario: SC-03
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.category: "process"
+            - match:
+                process.command_line: "DownloadString"
+    render:
+      template: "C2 cradle: {{process.command_line}} on {{host.name}}"
+    expected_latency_s: 15
+
+  - id: sc03.persistence_schtask
+    title: "Scheduled task created for persistence"
+    severity: HIGH
+    mitre: T1053.005
+    scenario: SC-03
+    trigger:
+      index: "cybersim-logs-*"
+      dsl:
+        bool:
+          must:
+            - term:
+                event.code: "4698"
+    render:
+      template: "Sched task created: {{winlog.event_data.TaskName}} by {{winlog.event_data.SubjectUserName}}"
+    expected_latency_s: 20
