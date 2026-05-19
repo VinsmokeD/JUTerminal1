@@ -121,14 +121,16 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
     if active_branch and active_branch != previous_branch:
         session_state["active_branch"] = active_branch
         await send_json({"type": "branch_update", "data": active_branch})
+    cmd_log_id: str | None = None
     async with AsyncSessionLocal() as db:
-        db.add(CommandLog(
+        cmd_row = CommandLog(
             session_id=session_id,
             command=command,
             tool=tool_name or None,
             phase=session_state.get("phase", 1),
             triggered_siem_events=[ev.get("id") for ev in siem_events],
-        ))
+        )
+        db.add(cmd_row)
         for ev in siem_events:
             db.add(SiemEvent(
                 id=ev.get("id") or str(uuid.uuid4()),
@@ -141,11 +143,13 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
                 source=ev.get("source", "attacker"),
             ))
         await db.commit()
+        await db.refresh(cmd_row)
+        cmd_log_id = cmd_row.id
 
     for ev in siem_events:
         await send_json({"type": "siem_event", "data": ev})
 
-    await lpush_capped(f"session:{session_id}:commands", command, max_len=10)
+    await lpush_capped(f"session:{session_id}:commands", command, max_len=50)
     await cache_set(f"session:{session_id}:last_cmd_time", str(__import__('time').time()), ttl=7200)
 
     recent_output = await lrange(f"terminal:{session_id}:history", 0, 2)
@@ -165,14 +169,14 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
     ai_hint = await get_ai_hint(session_id, session_state, command, None)
     if ai_hint:
         await send_json({"type": "ai_hint", "data": {"text": ai_hint}})
-        # Retroactively mark the CommandLog row as having produced a hint
-        async with AsyncSessionLocal() as db:
-            await db.execute(
-                update(CommandLog)
-                .where(CommandLog.session_id == session_id, CommandLog.command == command)
-                .values(ai_hint_given=True)
-            )
-            await db.commit()
+        if cmd_log_id is not None:
+            async with AsyncSessionLocal() as db:
+                await db.execute(
+                    update(CommandLog)
+                    .where(CommandLog.id == cmd_log_id)
+                    .values(ai_hint_given=True)
+                )
+                await db.commit()
 
     async with AsyncSessionLocal() as db:
         new_phase = await try_advance_phase(session_id, session_state["scenario_id"], db)

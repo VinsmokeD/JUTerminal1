@@ -45,3 +45,10 @@ class Settings(BaseSettings):
     TIME_BONUS_THRESHOLD_MINUTES: int = 120
 
 settings = Settings()
+
+_INSECURE_SECRET = "change-me-in-production"
+if settings.ENVIRONMENT == "production" and settings.JWT_SECRET == _INSECURE_SECRET:
+    raise RuntimeError(
+        "JWT_SECRET must be changed from the default before running in production. "
+        "Generate one with: openssl rand -hex 32"
+    )

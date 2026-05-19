@@ -73,7 +73,7 @@ _NOISE_PROFILES: dict[str, dict] = {
             },
             {
                 "severity": "low",
-                "message": "EventID 4769 — Kerberos TGS-REQ for HOST/nexora-dc.nexora.local (AES256 — normal)",
+                "message": "EventID 4769 — Kerberos TGS-REQ for HOST/nexora-dc01.nexora.local (AES256 — normal)",
                 "mitre": "T1558",
                 "source": "windows_security",
             },
@@ -85,7 +85,7 @@ _NOISE_PROFILES: dict[str, dict] = {
             },
             {
                 "severity": "low",
-                "message": "DNS query: nexora-dc.nexora.local → 172.20.2.10 (routine lookup)",
+                "message": "DNS query: nexora-dc01.nexora.local → 172.20.2.10 (routine lookup)",
                 "mitre": None,
                 "source": "dns",
             },

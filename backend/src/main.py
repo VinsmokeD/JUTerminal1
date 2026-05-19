@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,8 +52,9 @@ async def lifespan(_app: FastAPI):
         cleanup_task.cancel()
         try:
             await cleanup_task
-        except:
-            pass
+        except (asyncio.CancelledError, Exception) as exc:
+            if not isinstance(exc, asyncio.CancelledError):
+                print(f"[Cleanup] Shutdown error: {exc}")
 
 
 app = FastAPI(

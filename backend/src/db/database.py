@@ -115,8 +115,11 @@ class SiemTriage(Base):
 
 
 async def init_db():
+    # create_all with checkfirst=True is safe alongside Alembic migrations: it only
+    # creates tables that don't exist yet (dev bootstrap / fresh container). New columns
+    # and indexes must still be managed via Alembic migrations in production.
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all, checkfirst=True)
 
 
 async def get_db():

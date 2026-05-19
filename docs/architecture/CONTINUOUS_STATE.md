@@ -5,6 +5,21 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-19 23:00:00 +03:00] - Claude Code (Batch 4 — Code Quality & Reliability Cleanup)
+* **Status**: Complete — 52 unit tests passing; docker compose config valid.
+* **Why**: Eight P1/P2 code-quality bugs from the original review were still open after Batches 1-3: dead code, no JWT prod guard, misaligned command cap, CommandLog UPDATE race, hostname drift in daemon noise, bare except, missing cybersim label, init_db+Alembic co-existence risk.
+* **Where**:
+  - `backend/src/ai/monitor.py` — deleted 62 lines of unreachable dead code after early `return` in `_get_fallback_hint` (#12).
+  - `backend/src/config.py` — startup assertion: production + default JWT_SECRET raises RuntimeError (#19).
+  - `backend/src/main.py` — import asyncio; typed except on cleanup_task shutdown (#30).
+  - `backend/src/ws/routes.py` — command write cap aligned to 50 (#16); CommandLog hint UPDATE now uses captured row id, not command string match (#15).
+  - `backend/src/sandbox/daemon_noise.py` — SC-02 noise hostname corrected to nexora-dc01.nexora.local (#17).
+  - `backend/src/db/database.py` — checkfirst=True on create_all; Alembic co-existence documented (#18).
+  - `docker-compose.yml` — *cybersim-defaults label anchor applied to postgres, redis, elasticsearch, filebeat, backend, frontend (#23).
+  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
+* **What & How**: All surgical edits. JWT guard raises at import time. CommandLog fix: db.add → db.commit → db.refresh(cmd_row) captures server PK, later UPDATE WHERE id = cmd_row.id. checkfirst=True is idempotent; Alembic still owns schema evolution.
+* **Verification**: `python -m py_compile` all 6 touched backend files passed. `docker compose config --quiet` passed. `pytest -q (52 tests, 0 failures)`.
+
 ### [2026-05-19 22:30:00 +03:00] - Antigravity (Batch 3 — UX Hardening / RedWorkspace Flex Layout)
 * **Status**: Complete — React UI rewritten without external library, verified via npm run build and tests.
 * **Why**: The user requested that \ResizableSplit\ be replaced in \RedWorkspace.jsx\ with a simpler CSS flex layout using a draggable 4px divider. This matches the Phase 3 goal of UX Hardening and reducing external library dependency for core layout handling.
