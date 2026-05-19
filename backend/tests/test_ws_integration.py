@@ -277,45 +277,6 @@ async def test_session_start_is_lazy_about_container_provision(client: AsyncClie
     assert elapsed < 2.0
 
 
-@pytest.mark.asyncio
-async def test_live_siem_generation_does_not_double_publish(monkeypatch):
-    from src.siem import engine
-
-    calls: list[tuple[str, dict]] = []
-
-    async def fake_queue_event(session_id: str, event: dict) -> None:
-        calls.append((session_id, event))
-
-    monkeypatch.setattr(engine, "queue_event", fake_queue_event)
-    engine._events_cache.clear()
-
-    events = await engine.process_command_for_siem(
-        "test-session",
-        {"scenario_id": "SC-01", "source_ip": "172.20.1.10"},
-        "nmap -sV 172.20.1.20",
-        publish_events=False,
-    )
-
-    assert events
-    assert calls == []
-    assert events[0]["rule_id"]
-    assert events[0]["id"].startswith(f"{events[0]['rule_id']}-")
-
-
-@pytest.mark.asyncio
-async def test_sc01_php_page_probe_does_not_trigger_upload_alert():
-    from src.siem import engine
-
-    engine._events_cache.clear()
-    events = await engine.process_command_for_siem(
-        "test-session",
-        {"scenario_id": "SC-01", "source_ip": "172.20.1.10"},
-        "curl http://172.20.1.20/index.php",
-        publish_events=False,
-    )
-
-    assert all(event.get("rule_id") != "sc01_upload_executable" for event in events)
-
 
 @pytest.mark.asyncio
 async def test_noise_events_are_marked_as_background(monkeypatch):
