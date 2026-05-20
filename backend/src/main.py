@@ -88,3 +88,53 @@ app.include_router(playbooks_router, tags=["playbooks"])
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": "0.1.0"}
+
+
+@app.get("/api/health/readiness")
+async def readiness():
+    """
+    Deep readiness probe — checks every subsystem.
+    Returns 200 when all are healthy, 503 when any are degraded.
+    Used by the demo-check script and instructor dashboard.
+    """
+    import httpx as _httpx
+    from sqlalchemy import text as _text
+    checks: dict[str, dict] = {}
+
+    # ── Postgres ──────────────────────────────────────────────────────
+    try:
+        async with AsyncSessionLocal() as db:
+            await db.execute(_text("SELECT 1"))
+        checks["postgres"] = {"status": "ok"}
+    except Exception as exc:
+        checks["postgres"] = {"status": "error", "detail": str(exc)[:120]}
+
+    # ── Redis ─────────────────────────────────────────────────────────
+    try:
+        from src.cache.redis import _get as _get_redis
+        r = _get_redis()
+        await r.ping()
+        active = await r.hlen("cybersim:active_sessions")
+        checks["redis"] = {"status": "ok", "active_sessions": active}
+    except Exception as exc:
+        checks["redis"] = {"status": "error", "detail": str(exc)[:120]}
+
+    # ── Elasticsearch ─────────────────────────────────────────────────
+    try:
+        async with _httpx.AsyncClient() as client:
+            resp = await client.get("http://elasticsearch:9200/_cluster/health", timeout=3.0)
+            es_data = resp.json()
+        es_status = es_data.get("status", "unknown")
+        checks["elasticsearch"] = {
+            "status": "ok" if es_status in ("green", "yellow") else "error",
+            "cluster_status": es_status,
+        }
+    except Exception as exc:
+        checks["elasticsearch"] = {"status": "error", "detail": str(exc)[:120]}
+
+    overall = "ok" if all(c["status"] == "ok" for c in checks.values()) else "degraded"
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        content={"status": overall, "checks": checks, "version": "0.1.0"},
+        status_code=200 if overall == "ok" else 503,
+    )

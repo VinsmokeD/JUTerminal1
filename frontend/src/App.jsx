@@ -6,6 +6,7 @@ import Auth from './pages/Auth'
 import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import CommandPalette from './components/palette/CommandPalette'
+import { ErrorBoundary } from './components/ui/ErrorBoundary'
 
 // Lazy-load heavy components with xterm and complex state
 const RedWorkspace = lazy(() => import('./pages/RedWorkspace'))
@@ -72,9 +73,11 @@ export default function App() {
           path="/session/:sessionId/red"
           element={
             <RequireAuth>
-              <Suspense fallback={<LoadingSpinner />}>
-                <RedWorkspace />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <RedWorkspace />
+                </Suspense>
+              </ErrorBoundary>
             </RequireAuth>
           }
         />
@@ -82,9 +85,11 @@ export default function App() {
           path="/session/:sessionId/blue"
           element={
             <RequireAuth>
-              <Suspense fallback={<LoadingSpinner />}>
-                <BlueWorkspace />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <BlueWorkspace />
+                </Suspense>
+              </ErrorBoundary>
             </RequireAuth>
           }
         />
@@ -92,9 +97,11 @@ export default function App() {
           path="/session/:sessionId/debrief"
           element={
             <RequireAuth>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Debrief />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Debrief />
+                </Suspense>
+              </ErrorBoundary>
             </RequireAuth>
           }
         />
@@ -102,9 +109,11 @@ export default function App() {
           path="/instructor"
           element={
             <RequireAuth>
-              <Suspense fallback={<LoadingSpinner />}>
-                <InstructorDashboard />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <InstructorDashboard />
+                </Suspense>
+              </ErrorBoundary>
             </RequireAuth>
           }
         />
@@ -112,9 +121,11 @@ export default function App() {
           path="/settings"
           element={
             <RequireAuth>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Settings />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Settings />
+                </Suspense>
+              </ErrorBoundary>
             </RequireAuth>
           }
         />

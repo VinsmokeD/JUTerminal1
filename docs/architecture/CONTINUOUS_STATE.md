@@ -5,6 +5,22 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-20 01:00:00 +03:00] - Claude Code (Batch 8 — Demo Polish & Observability Gate)
+* **Status**: Complete — 64 tests passing (10 new); frontend build clean 0 errors; docker compose config valid.
+* **Why**: Final batch before graduation demo. Batch 7 landed stability (WS backoff, orphan sweep, ES ILM, Redis TTLs, non-root backend). Batch 8 closes the remaining demo-safety gaps: a blank white screen on any JS error, no feedback during slow data fetches, no single command to verify the platform is ready before a presentation, and missing unit coverage for the session-lifecycle invariants added in Batch 7.
+* **Where**:
+  - `frontend/src/components/ui/ErrorBoundary.jsx` — new class component; catches render errors; shows recovery card with Reload button instead of white screen.
+  - `frontend/src/components/ui/Skeleton.jsx` — new: `Skeleton`, `SkeletonCard`, `SkeletonTable` animate-pulse placeholders.
+  - `frontend/src/components/ui/index.js` — exported ErrorBoundary and Skeleton family.
+  - `frontend/src/App.jsx` — imported ErrorBoundary; wrapped all 5 lazy-loaded pages (RedWorkspace, BlueWorkspace, Debrief, InstructorDashboard, Settings) in `<ErrorBoundary>` inside Suspense.
+  - `frontend/src/pages/Dashboard.jsx` — imported SkeletonCard; added `scenariosLoading` state; `fetchScenarios()` followed by `.finally(() => setScenariosLoading(false))`; renders 3 × SkeletonCard while loading instead of empty grid.
+  - `backend/src/main.py` — added `GET /api/health/readiness` deep probe: checks Postgres (SELECT 1), Redis (PING + active_sessions count), Elasticsearch (cluster health). Returns 200/ok or 503/degraded with per-subsystem detail.
+  - `scripts/demo_check.py` — new standalone CLI script (stdlib only, no deps); checks docker compose service states, backend /health, deep readiness (DB+Redis+ES), frontend HTML, and optional scenario network TCP probes (--scenarios sc01/sc02/sc03/all). Green/yellow/red ANSI output. Exit 0 = all green, 1 = failures.
+  - `backend/tests/test_session_lifecycle.py` — 10 new tests: keepalive TTL=7200; heartbeat idempotency; stale session eviction; live session not evicted; dedup key TTL=3600; dedup NX semantics; command cap/read-window alignment (structural assertion on ws/routes.py source); active-session payload decode (plain string, JSON, malformed JSON).
+  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
+* **What & How**: ErrorBoundary uses React class lifecycle `getDerivedStateFromError` + `componentDidCatch`; the component catches errors in the subtree below it and renders the fallback card. All lazy routes are wrapped so a runtime crash in any workspace doesn't propagate to a blank page. Skeleton uses Tailwind `animate-pulse bg-surface-2`; SkeletonCard and SkeletonTable are composite variants for the dashboard and instructor table. The readiness endpoint does real I/O checks inside the FastAPI event loop using `AsyncSessionLocal` for Postgres and `httpx.AsyncClient` for ES; it returns a structured JSON body usable by the demo script and the instructor dashboard's "platform health" display. `demo_check.py` is pure stdlib (no pip install needed) and works on any OS; it calls docker compose ps via subprocess, then hits /health and /api/health/readiness over HTTP, then does TCP socket probes for scenario container ports. The lifecycle tests use a `FakeRedis` class that mirrors the async SET/GET/HSET/HGETALL/EXISTS/TTL interface without any network dependency. The command cap alignment test reads the ws/routes.py source with a regex to assert that lpush_capped max_len == lrange end+1 — this will catch regressions if either is changed independently.
+* **Verification**: `python -m py_compile scripts/demo_check.py` ✅ | `docker compose config --quiet` ✅ | `pytest -q (64 passed, 1 warning)` ✅ | `npm run build (✓ built in 9.54s, 0 errors)` ✅
+
 ### [2026-05-20 11:17:41 +03:00] - Codex (Batch 7 - Stability, Performance, and WebSocket Hardening)
 * **Status**: Complete - WebSocket reconnect hardening, orphan Kali cleanup, Elasticsearch ILM, Redis TTL audit, compose resource limits, and backend non-root runtime are implemented and verified.
 * **Why**: Batch 7 prepares CyberSim for a 2-hour live demo by preventing silent WebSocket failure loops, limiting reconnect pressure during backend downtime, removing stale Kali containers safely, bounding Redis and Elasticsearch growth, and ensuring service containers have explicit CPU/runtime constraints.

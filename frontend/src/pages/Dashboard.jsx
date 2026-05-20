@@ -5,6 +5,7 @@ import { useAuthStore } from '../store/authStore'
 import CyberSimNav from '../components/nav/CyberSimNav'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 import ScenarioCard from '../components/dashboard/ScenarioCard'
+import { SkeletonCard } from '../components/ui/Skeleton'
 import api from '../lib/api'
 
 const METHODOLOGY_OPTIONS = [
@@ -59,6 +60,7 @@ export default function Dashboard() {
   const location = useLocation()
   const requestedScenarioId = location.state?.scenarioId
   const [mySessions, setMySessions] = useState([])
+  const [scenariosLoading, setScenariosLoading] = useState(true)
   const [launching, setLaunching] = useState(null)
   const [launchError, setLaunchError] = useState(null)
   const [briefing, setBriefing] = useState(null)
@@ -70,7 +72,8 @@ export default function Dashboard() {
   const [difficultyChip, setDifficultyChip] = useState('All')
 
   useEffect(() => {
-    fetchScenarios()
+    setScenariosLoading(true)
+    fetchScenarios().finally(() => setScenariosLoading(false))
     api.get('/sessions/').then(r => setMySessions(r.data)).catch(() => {})
     api.get('/auth/me').then(r => setUserRole(r.data.role)).catch(() => {})
   }, [fetchScenarios])
@@ -206,19 +209,22 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-3">
-          {filteredScenarios.map(sc => {
-            const summary = sc.description || SCENARIO_SUMMARIES[sc.id] || 'Hands-on mission in an isolated CyberSim training network.'
-            return (
-              <ScenarioCard
-                key={sc.id}
-                scenario={sc}
-                summary={summary}
-                learnPoints={LEARN_POINTS[sc.id] || []}
-                showLearnPoints={isBeginner}
-                onClick={() => setBriefing(sc)}
-              />
-            )
-          })}
+          {scenariosLoading
+            ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+            : filteredScenarios.map(sc => {
+                const summary = sc.description || SCENARIO_SUMMARIES[sc.id] || 'Hands-on mission in an isolated CyberSim training network.'
+                return (
+                  <ScenarioCard
+                    key={sc.id}
+                    scenario={sc}
+                    summary={summary}
+                    learnPoints={LEARN_POINTS[sc.id] || []}
+                    showLearnPoints={isBeginner}
+                    onClick={() => setBriefing(sc)}
+                  />
+                )
+              })
+          }
         </div>
         {filteredScenarios.length === 0 && (
           <div className="mt-6 rounded-cs border border-cs-border bg-surface-1 p-6 text-sm text-txt-dim">
