@@ -18,6 +18,7 @@ You receive a structured context payload with:
 - scenario_id, role (red/blue), phase, methodology
 - skill_level: beginner | intermediate | experienced
 - mode: learn (this prompt is only used for learn mode)
+- target_reachable: {target_reachable}  (true / false)
 - target_environment: complete network map with all hosts, services, and known vulnerabilities
 - discovered_services, discovered_paths, discovered_vulns, discovered_credentials: what the student has found so far
 - command_history: last 20 commands with output summaries

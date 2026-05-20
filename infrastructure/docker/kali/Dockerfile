@@ -1,4 +1,4 @@
-FROM kalilinux/kali-rolling:latest
+FROM kalilinux/kali-rolling:latest AS kali-base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -16,14 +16,13 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
     # Web assessment
     gobuster ffuf wfuzz sqlmap dirb wpscan \
     # Password attacks
-    john hashcat hydra \
+    john hydra \
     # Wordlists & payloads
     seclists wordlists exploitdb \
     # Network analysis & pivoting
     netcat-openbsd tcpdump tshark wireshark-common proxychains4 \
     # Active Directory / SMB
-    smbclient crackmapexec impacket-scripts evil-winrm responder \
-    samba-common-bin krb5-user ldap-utils freerdp3-x11 \
+    smbclient impacket-scripts samba-common-bin krb5-user \
     pipx \
     # Exploitation
     metasploit-framework \
@@ -38,13 +37,6 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
 RUN git clone --depth=1 https://github.com/fortra/impacket.git /opt/impacket \
     && pip install --break-system-packages /opt/impacket
 
-# Install AD tools not in apt
-RUN pip install --break-system-packages bloodhound nxc || pip install --break-system-packages bloodhound
-
-# Download Kerbrute binary
-RUN wget https://github.com/ropnop/kerbrute/releases/download/v1.0.3/kerbrute_linux_amd64 -O /usr/local/bin/kerbrute \
-    && chmod +x /usr/local/bin/kerbrute
-
 # Docker uses no-new-privileges for the student sandbox. Kali ships nmap with
 # file capabilities, which the kernel refuses to execute under that policy.
 # Removing them keeps nmap usable as a normal non-root TCP connect scanner.
@@ -55,6 +47,19 @@ RUN if [ -f /usr/lib/nmap/nmap ]; then setcap -r /usr/lib/nmap/nmap 2>/dev/null 
 RUN printf '%s\n' '#!/usr/bin/env sh' 'exec /usr/lib/nmap/nmap "$@"' > /usr/local/bin/nmap \
     && chmod 0755 /usr/local/bin/nmap
 
+FROM kali-base AS kali-ad-tools
+
+# Install heavier AD tools
+RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
+    crackmapexec evil-winrm responder ldap-utils freerdp3-x11 hashcat golang-go \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install AD tools not in apt
+RUN pip install --break-system-packages bloodhound nxc || pip install --break-system-packages bloodhound
+
+# Download Kerbrute binary
+RUN wget https://github.com/ropnop/kerbrute/releases/download/v1.0.3/kerbrute_linux_amd64 -O /usr/local/bin/kerbrute \
+    && chmod +x /usr/local/bin/kerbrute
 
 # Create non-root student user — containers never run as root
 RUN useradd -m -s /bin/bash -u 1000 student \

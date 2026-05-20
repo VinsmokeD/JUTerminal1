@@ -100,6 +100,9 @@ def _format_context_for_ai(
 
     # Target knowledge
     env = context.get("target_environment", {})
+    if "target_reachable" in context:
+        parts.append(f"\nTarget reachable: {context['target_reachable']}")
+
     if env:
         parts.append(f"\n=== TARGET ENVIRONMENT ===")
         parts.append(f"network: {env.get('network')}")
@@ -202,6 +205,31 @@ def _should_emit_static_command_hint(command: str | None) -> bool:
     return _first_tool(command) in _MEANINGFUL_TOOLS
 
 
+import socket
+
+def _probe_target(host: str, port: int, timeout: float = 1.5) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def _get_primary_target(scenario_id: str) -> tuple[str, int] | None:
+    from src.scenarios.loader import load_scenario
+    try:
+        spec = load_scenario(scenario_id)
+        hosts = (spec.get("network") or {}).get("hosts", [])
+        if not hosts:
+            return None
+        ip = hosts[0].get("ip", "")
+        role = hosts[0].get("role", "")
+        port = 445 if "dc" in role.lower() else 80
+        return (ip, port) if ip else None
+    except Exception:
+        return None
+
+
 async def get_ai_hint(
     session_id: str,
     session_state: dict,
@@ -212,6 +240,20 @@ async def get_ai_hint(
     Call Gemini with full context for a learning hint.
     Rate-limited per session. Uses mode-aware system prompt.
     """
+    target = _get_primary_target(session_state.get("scenario_id", ""))
+    target_reachable = _probe_target(*target) if target else True
+
+    # Only bypass Gemini for unprompted observations (hint_level is None).
+    # Explicit hint requests (hint_level 1/2/3) still go through Gemini
+    # because the student asked for help — give it.
+    if not target_reachable and hint_level is None:
+        return (
+            "The scenario target appears to be offline or still starting up. "
+            "Verify with: nc -zv <target_ip> <port>. "
+            "If containers are still provisioning, wait 30 seconds and retry. "
+            "Type 'reset' to restart the scenario if the target stays unreachable."
+        )
+
     if not settings.GEMINI_API_KEY:
         if hint_level or _should_emit_static_command_hint(command):
             return _get_fallback_hint(session_state, command, hint_level)
@@ -235,6 +277,7 @@ async def get_ai_hint(
     try:
         # Build full context
         context = await build_ai_context(session_id)
+        context["target_reachable"] = str(target_reachable).lower()
         mode = context.get("mode", "learn")
 
         client = genai.Client(api_key=settings.GEMINI_API_KEY)

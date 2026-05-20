@@ -38,6 +38,32 @@ Every update must follow this strict format. Do not skip any fields.
 
 ## Change Log
 
+### [2026-05-20 07:35:00 +00:00] - Antigravity (Batch 5 — Phase 2 & 4 Finish: MITRE Refactor + SC-03 Smoke Verification)
+* **Status**: Complete — Frontend MITRE badge refactor complete, SC-03 services fully verified end-to-end.
+* **Why**: Complete the refactoring of MITRE phase badges on the frontend to avoid redundant queries by consuming `phaseMap` in `RedWorkspace.jsx`, and perform the required smoke tests to verify the SC-03 environment.
+* **Where**:
+  - `frontend/src/pages/RedWorkspace.jsx` — Updated `RedWorkspace` to render MITRE badges inline using the scenario's dynamic `phaseMap` state; removed the unused `MitreBadge` subcomponent.
+  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
+* **What & How**:
+  - **MITRE badges**: Cleaned up the redundant component `MitreBadge` which performed fetch operations on every render, instead routing the dynamically fetched phases API data via `phaseMap[phase]` to the panel header.
+  - **SC-03 Verification**: Inspected running containers `cybersim-sc03-phish-1` (172.20.3.10), `cybersim-sc03-mailrelay-1` (172.20.3.20), and `cybersim-sc03-victim-1` (172.20.3.30). Checked that `/etc/postfix/virtual` on the relay maps `@orion-logistics.sim` domains correctly to `victim@172.20.3.30`. Checked SMTP connectivity from `cybersim-sc03-victim-1` to `cybersim-sc03-mailrelay-1` (port 25). Confirmed the victim simulator's Flask API `/health` endpoint is responding correctly with status healthy.
+
+### [2026-05-19 23:45:00 +03:00] - Antigravity (Batch 5 — AI Tutor Intelligence + SC-03 Viability)
+* **Status**: Complete — Kali image built, backend tests pass, SC-03 containers healthy, APIs verified.
+* **Why**: The user requested that the AI tutor short-circuit unprompted hints when the scenario target is unreachable, ensuring no "run nmap" prompts when containers are still provisioning. Additionally, MITRE phase drift in the UI was corrected, and the Kali Dockerfile was split into stages with pinned apt mirrors to improve build reliability. Lastly, SC-03 viability was smoke-tested.
+* **Where**:
+  - `backend/src/ai/monitor.py` — added `_probe_target` and `_get_primary_target` to check target reachability. Unprompted hints short-circuit if offline.
+  - `ai-monitor/system_prompt.md` — exposed `target_reachable` boolean variable to Gemini.
+  - `backend/src/scenarios/routes.py` — added `GET /api/scenarios/{id}/phases`.
+  - `frontend/src/pages/RedWorkspace.jsx` — MitreBadge now fetches MITRE tactics dynamically from the phases API rather than using hardcoded mappings.
+  - `infrastructure/docker/kali/Dockerfile` — split into `kali-base` and `kali-ad-tools` stages, removed unmaintained external mirror pins (reverted to `kali.download`).
+  - `backend/tests/unit_test_scenarios.py` — added `test_ai_hint_returns_offline_message_when_target_unreachable` and mocked `_probe_target` for existing fallback tests.
+  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
+* **What & How**:
+  - **AI Tutor Reachability**: Added `_probe_target()` (TCP socket check with 1.5s timeout). If the target is offline, `get_ai_hint` bypasses Gemini and returns a deterministic "Target appears to be offline" message unless the user explicitly requested a hint. This state is passed to Gemini via `target_reachable` so it can reason about target downtime.
+  - **MITRE API**: `/api/scenarios/{id}/phases` parses the scenario YAML and serves phase metadata. `RedWorkspace.jsx` now mounts and fetches this data.
+  - **Kali Build Hardening**: Built `cybersim-kali:latest` using Docker multi-stage builds. First stage handles `kalilinux/kali-rolling` and core pentest tools, while `kali-ad-tools` installs `bloodhound` and other heavy Python packages. Apt mirrors reverted to default HTTP pool to resolve 404s.
+  - **Verification**: `python -m pytest` passed (53 passed). `docker build` succeeded after apt mirror fix. `docker compose --profile sc03 up -d` brought up all SC-03 containers healthy. `curl` to `/api/scenarios/SC-03/phases` returned the parsed YAML phases correctly.
 ### [2026-05-19 22:00:00 +03:00] - Claude Code (Batch 2 — SIEM Fidelity / Sigma-style Rule Engine)
 * **Status**: Complete — all unit tests passing (52 passed); docker compose config valid; e2e test authored (requires live SC-02 stack).
 * **Why**: Batch 1 used regex-on-stdin SIEM emission: events fired when the command *string* matched a pattern, regardless of whether the command succeeded. A typo like `GetUserSPNz.py` triggered CRITICAL Kerberoasting alerts. This batch replaces that theater with an Elasticsearch-poll + Sigma-DSL engine that only fires when real telemetry (Filebeat → ES docs) matches a structured rule. The Batch 1.5 P0 fixes were also verified already in place (sc01-db, WAF reverse proxy, krb5.conf realms block, smb.conf identity fix, setup-shares.sh retry loop, _poll_elasticsearch reads Redis hash, banner false-positive guard).

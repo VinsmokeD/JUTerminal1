@@ -33,6 +33,21 @@ export default function RedWorkspace() {
   const writeOutputRef = useRef(null)
   const containerRef = useRef(null)
 
+  const [phaseMap, setPhaseMap] = useState({})
+  const scenarioId = session?.scenario_id
+
+  useEffect(() => {
+    if (!scenarioId) return
+    fetch(`/api/scenarios/${scenarioId}/phases`)
+      .then(r => r.ok ? r.json() : [])
+      .then(phases => {
+        const map = {}
+        phases.forEach(p => { map[p.phase] = (p.mitre || [])[0] || null; })
+        setPhaseMap(map)
+      })
+      .catch(() => {})
+  }, [scenarioId])
+
   const handleDragStart = useCallback((e) => {
     e.preventDefault()
     const handleDrag = (moveEvent) => {
@@ -191,7 +206,9 @@ export default function RedWorkspace() {
           <div className="flex-1 flex flex-col min-h-0 relative mb-1 md:mb-0">
             <div className="absolute inset-0 bg-red-surface opacity-50 pointer-events-none" />
             <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
-              <MitreBadge phase={phase} scenario={session.scenario_id} />
+              {phaseMap[phase] && (
+                <span className="siem-mitre font-mono">{phaseMap[phase]}</span>
+              )}
             </PanelHeader>
             <div className="flex-1 overflow-hidden relative z-10 flex flex-col">
               <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
@@ -254,17 +271,6 @@ function PanelHeader({ color, title, subtitle, children }) {
       <div className="ml-auto flex flex-shrink-0 items-center gap-2">{children}</div>
     </div>
   )
-}
-
-function MitreBadge({ phase, scenario }) {
-  const mitre = {
-    'SC-01': { 1: 'T1590', 2: 'T1595', 3: 'T1190', 4: 'T1552', 5: 'T1005', 6: null },
-    'SC-02': { 1: 'T1087', 2: 'T1558', 3: 'T1021', 4: 'T1003' },
-    'SC-03': { 1: 'T1598', 2: 'T1566', 3: 'T1204', 4: 'T1071', 5: null },
-  }
-  const tid = mitre[scenario]?.[phase]
-  if (!tid) return null
-  return <span className="siem-mitre font-mono">{tid}</span>
 }
 
 function LiveDot() {

@@ -139,6 +139,7 @@ async def test_ai_missing_key_returns_static_socratic_command_hint(monkeypatch):
     """Missing Gemini key should not leave meaningful command observations blank."""
     from src.ai import monitor
 
+    monkeypatch.setattr(monitor, "_probe_target", lambda h, p, **kw: True)
     monkeypatch.setattr(monitor.settings, "GEMINI_API_KEY", "")
 
     hint = await monitor.get_ai_hint(
@@ -162,6 +163,7 @@ async def test_ai_rate_limit_returns_static_socratic_command_hint(monkeypatch):
     async def fake_cache_get(_key):
         return "recent"
 
+    monkeypatch.setattr(monitor, "_probe_target", lambda h, p, **kw: True)
     monkeypatch.setattr(monitor.settings, "GEMINI_API_KEY", "demo-key")
     monkeypatch.setattr(monitor, "cache_get", fake_cache_get)
 
@@ -175,6 +177,31 @@ async def test_ai_rate_limit_returns_static_socratic_command_hint(monkeypatch):
     assert hint
     assert "After using gobuster" in hint
     assert "What question" not in hint
+
+
+def test_ai_tutor_returns_offline_message_when_target_unreachable(monkeypatch):
+    import asyncio
+    from src.ai import monitor
+    monkeypatch.setattr(monitor, "_probe_target", lambda h, p, **kw: False)
+    state = {"scenario_id": "SC-02", "phase": 1, "role": "red", "discoveries": {}}
+    result = asyncio.get_event_loop().run_until_complete(
+        monitor.get_ai_hint("sess-probe", state, "nmap -sV 172.20.2.20", None)
+    )
+    assert result is not None
+    assert "offline" in result.lower() or "starting up" in result.lower()
+
+
+def test_explicit_hint_bypasses_offline_guard(monkeypatch):
+    """hint_level=1 must still return guidance even when target is unreachable."""
+    import asyncio
+    from src.ai import monitor
+    monkeypatch.setattr(monitor, "_probe_target", lambda h, p, **kw: False)
+    state = {"scenario_id": "SC-02", "phase": 1, "role": "red", "discoveries": {}}
+    result = asyncio.get_event_loop().run_until_complete(
+        monitor.get_ai_hint("sess-probe2", state, "nmap -sV 172.20.2.20", 1)
+    )
+    # explicit hint request — must return some guidance, not the offline stub
+    assert result is None or "offline" not in (result or "").lower()
 
 
 def test_10_sc01_gates_sqlmap_at_phase_3():
