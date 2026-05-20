@@ -8,6 +8,7 @@ export function useScenario(sessionId) {
   const [error, setError] = useState(null);
 
   const { currentSession, updateScore, setSession } = useSessionStore();
+  const currentScenarioId = currentSession?.scenario_id || "";
 
   // Load scenario metadata + restore session state
   useEffect(() => {
@@ -18,7 +19,7 @@ export function useScenario(sessionId) {
         setLoading(true);
         const [sessionRes, scenarioRes] = await Promise.all([
           api.get(`/api/sessions/${sessionId}`),
-          api.get(`/api/scenarios/${currentSession?.scenario_id || ""}`).catch(() => null),
+          api.get(`/api/scenarios/${currentScenarioId}`).catch(() => null),
         ]);
 
         setSession(sessionRes.data);
@@ -31,13 +32,13 @@ export function useScenario(sessionId) {
     };
 
     load();
-  }, [sessionId]);
+  }, [currentScenarioId, sessionId, setSession]);
 
   // Acknowledge ROE
   const acknowledgeRoe = useCallback(async () => {
     await api.post("/api/sessions/roe-ack", { session_id: sessionId });
     setSession((prev) => ({ ...prev, roe_acknowledged: true }));
-  }, [sessionId]);
+  }, [sessionId, setSession]);
 
   // Submit flag
   const submitFlag = useCallback(

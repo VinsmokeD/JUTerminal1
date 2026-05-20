@@ -28,6 +28,7 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
   })
   const inputDisabled = connectionState === 'failed'
   const terminal = useTerminal({ containerRef, onData, onCommand, sessionId, autoCopySelection: autoCopy, inputDisabled })
+  const focusTerminal = terminal.focus
 
   // Expose writeOutput via ref so parent can push output
   if (pendingOutput) {
@@ -36,10 +37,10 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      terminal.focus()
+      focusTerminal()
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [terminal.focus])
+  }, [focusTerminal])
 
   useEffect(() => {
     const handler = (evt) => {

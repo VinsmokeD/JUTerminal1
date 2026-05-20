@@ -10,8 +10,7 @@ import json
 import time
 from pathlib import Path
 
-from google import genai
-from google.genai import types
+import httpx
 
 from src.config import settings
 from src.cache.redis import cache_get, cache_set
@@ -254,7 +253,7 @@ async def get_ai_hint(
             "Type 'reset' to restart the scenario if the target stays unreachable."
         )
 
-    if not settings.GEMINI_API_KEY:
+    if not settings.OPENROUTER_API_KEY:
         if hint_level or _should_emit_static_command_hint(command):
             return _get_fallback_hint(session_state, command, hint_level)
         return None
@@ -280,28 +279,44 @@ async def get_ai_hint(
         context["target_reachable"] = str(target_reachable).lower()
         mode = context.get("mode", "learn")
 
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
-
         user_msg = _format_context_for_ai(context, command, hint_level)
 
         # Learn mode gets more tokens for detailed explanations
-        max_tokens = 300 if mode == "learn" else settings.GEMINI_MAX_TOKENS
+        max_tokens = 300 if mode == "learn" else settings.OPENROUTER_MAX_TOKENS
         if hint_level and hint_level >= 3:
             max_tokens = 400  # Procedural hints need more space
 
-        gen_config = types.GenerateContentConfig(
-            system_instruction=_load_system_prompt(mode),
-            max_output_tokens=max_tokens,
-            temperature=0.4 if mode == "challenge" else 0.3,
-            thinking_config=types.ThinkingConfig(thinking_budget=0),
-        )
+        payload = {
+            "model": settings.OPENROUTER_MODEL,
+            "max_tokens": max_tokens,
+            "temperature": 0.4 if mode == "challenge" else 0.3,
+            "messages": [
+                {"role": "system", "content": _load_system_prompt(mode)},
+                {"role": "user", "content": user_msg},
+            ],
+        }
+        headers = {
+            "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://cybersim.local",
+            "X-Title": "CyberSim AI Tutor",
+        }
 
-        response = await client.aio.models.generate_content(
-            model=settings.GEMINI_MODEL,
-            contents=user_msg,
-            config=gen_config,
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                json=payload,
+                headers=headers,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+        hint_text = (
+            data.get("choices", [{}])[0]
+            .get("message", {})
+            .get("content", "")
+            .strip()
         )
-        hint_text = (response.text or "").strip()
 
         # Mark rate limit
         if not hint_level:

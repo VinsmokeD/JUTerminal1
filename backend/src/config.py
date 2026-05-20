@@ -24,10 +24,10 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
-    # Gemini AI
-    GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
-    GEMINI_MAX_TOKENS: int = 150
+    # OpenRouter AI (OpenAI-compatible)
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_MODEL: str = "deepseek/deepseek-chat-v3-0324"
+    OPENROUTER_MAX_TOKENS: int = 150
     AI_CALL_COOLDOWN_SECONDS: int = 10
 
     # Docker / Sandbox

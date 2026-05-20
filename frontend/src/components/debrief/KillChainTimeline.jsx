@@ -164,7 +164,6 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
       blueLight.intensity = (tier >= 2 ? 3.5 : 2.0) + Math.sin(elapsed * 1.4 + Math.PI) * 0.6
 
       // Animate node pulse
-      const pulseScale = 1 + Math.sin(elapsed * 2.2) * 0.07
       redMeshes.forEach((m, i) => {
         const phase = elapsed * 2.4 + i * 0.45
         m.scale.setScalar(1 + Math.sin(phase) * 0.08)
@@ -365,7 +364,7 @@ function addEndCap(root, x, y, color, tier) {
 
 function addNodes(root, items, y, color, tier, kind) {
   const meshes = []
-  items.forEach((item, index) => {
+  items.forEach((item) => {
     const r = nodeRadius(item)
 
     // Outer glow sphere
@@ -559,15 +558,15 @@ function FallbackTrack({ color, label, items }) {
   const isRed = color === 'red'
   const textClass = isRed ? 'text-cs-red' : 'text-cs-blue'
   const railClass = isRed ? 'bg-cs-red/40' : 'bg-cs-blue/40'
-  const dotClass = isRed ? 'bg-cs-red shadow-[0_0_6px_theme(colors.cs-red)]' : 'bg-cs-blue shadow-[0_0_6px_theme(colors.cs-blue)]'
+  const dotClass = isRed ? 'bg-cs-red shadow-[0_0_6px_#ff3b3b]' : 'bg-cs-blue shadow-[0_0_6px_#3b8bff]'
   return (
     <div>
       <div className={`mb-2 text-[10px] font-mono uppercase tracking-[0.12em] ${textClass}`}>{label} ({items.length})</div>
       <div className="relative h-8 rounded-full bg-surface-3">
         <div className={`absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 ${railClass}`} />
-        {items.map((item, index) => (
+        {items.map((item, _index) => (
           <div
-            key={`${label}-${item.id || index}`}
+            key={`${label}-${item.id || _index}`}
             className={`absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full ${dotClass}`}
             style={{ left: `${Math.max(2, Math.min(96, ((item.x - X_MIN) / (X_MAX - X_MIN)) * 100))}%` }}
             title={labelFor(item, color === 'red' ? 'command' : 'event')}

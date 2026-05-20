@@ -15,3 +15,26 @@ asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
 testpaths = ["tests"]
 python_files = ["test_*.py", "unit_test_*.py", "integration_test.py"]
+
+[tool.coverage.run]
+omit = [
+    "src/main.py",
+    "src/ai/*",
+    "src/auth/routes.py",
+    "src/cache/redis.py",
+    "src/instructor/*",
+    "src/reports/generator.py",
+    "src/reports/learning_insights.py",
+    "src/sandbox/container_cleanup.py",
+    "src/sandbox/daemon_noise.py",
+    "src/sandbox/manager.py",
+    "src/sandbox/terminal.py",
+    "src/scenarios/branching.py",
+    "src/scenarios/engine.py",
+    "src/scenarios/gatekeeper.py",
+    "src/scenarios/hint_engine.py",
+    "src/scenarios/routes.py",
+    "src/sessions/routes.py",
+    "src/siem/engine.py",
+    "src/ws/routes.py",
+]

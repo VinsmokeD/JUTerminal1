@@ -60,6 +60,7 @@ export default [
         varsIgnorePattern: '^_',
       }],
       'react/jsx-uses-react': 'off',
+      'react/jsx-uses-vars': 'error',
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off',
       'react-hooks/exhaustive-deps': 'warn',

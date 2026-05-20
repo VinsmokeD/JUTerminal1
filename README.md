@@ -30,46 +30,61 @@ Last verified locally on 2026-05-14:
 
 ## Quick Start
 
-Prerequisites:
-
-- Docker Desktop or Docker Engine with Compose v2
-- Node.js 18 or newer for local frontend development
-- Python 3.11 for local backend development
-- A Google AI Studio key for Gemini hints
-
-Configure the environment:
-
-```powershell
-Copy-Item .env.example .env
+```bash
+git clone <repo>
+cd JUTerminal1
+cp .env.example .env
+# Edit .env: set JWT_SECRET, OPENROUTER_API_KEY
+docker compose up -d
+# App: http://localhost:3000  |  API: http://localhost:8001/api/docs
 ```
 
-Edit `.env` and set at least:
+CyberSim uses OpenRouter for the AI monitor. The default budget/performance model is `deepseek/deepseek-chat-v3-0324`.
 
-```env
-GEMINI_API_KEY=your_google_ai_studio_key_here
-JWT_SECRET=replace_with_a_generated_64_character_hex_secret
-POSTGRES_PASSWORD=change_this_password
+## Starting Scenarios
+
+```bash
+docker compose --profile sc01 up -d   # NovaMed Healthcare (Web App Pentest)
+docker compose --profile sc02 up -d   # Nexora Financial (Active Directory)
+docker compose --profile sc03 up -d   # Orion Logistics (Phishing)
 ```
 
-Start the core platform:
+## Default Credentials
 
-```powershell
-docker compose up -d postgres redis elasticsearch filebeat backend frontend nginx
+```text
+Instructor: admin / CyberSimAdmin!
+Students:   self-register at /auth
 ```
 
-Open:
+## Pre-Demo Readiness Check
 
-- Web app: http://localhost
-- Backend health: http://localhost/health
-- API docs in development: http://localhost/api/docs
-- Direct backend port: http://localhost:8001
+```bash
+python scripts/demo_check.py --scenarios all
+```
 
-Start scenario targets only when needed:
+## Architecture (one paragraph)
 
-```powershell
-docker compose --profile sc01 up -d
-docker compose --profile sc02 up -d
-docker compose --profile sc03 up -d
+React frontend -> FastAPI backend -> isolated Docker scenario networks. Terminal keystrokes proxy through the backend to Kali containers via Docker exec API. Attack telemetry flows Filebeat -> Elasticsearch; a Sigma-rule engine polls ES every 2 s and emits matched events to the browser over WebSocket. Scenarios run on internal-only Docker networks (172.20.x.0/24) with no internet access.
+
+## Known Limitations
+
+- Kali image build takes 5-15 minutes on first pull (large layer).
+- Elasticsearch requires >= 2 GB RAM on the Docker host.
+- SC-02 domain controller needs ~90 s to provision on first start.
+- SC-03 e2e test is marked `@pytest.mark.e2e` and requires a live stack.
+
+## Running Tests
+
+```bash
+cd backend
+python -m pytest --ignore=tests/e2e -q          # unit tests
+python -m pytest -m e2e tests/e2e/              # e2e (needs Docker SC-02)
+```
+
+Load tests are run separately with Locust:
+
+```bash
+locust -f backend/tests/load_test.py --host=http://localhost
 ```
 
 ## Demo-Day HTTPS Deployment
@@ -95,63 +110,6 @@ The demo layer is:
 - `scripts/demo-local-rehearsal.ps1` starts the full local stack on Windows and checks `localhost` before you rehearse.
 
 If you do not own a domain yet, omit `CYBERSIM_DOMAIN`; the bootstrap script creates an `sslip.io` hostname from the VPS public IP.
-
-## Local Development
-
-Backend:
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-uvicorn src.main:app --reload --port 8000
-```
-
-Frontend:
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-Verification commands:
-
-```powershell
-docker compose config
-cd backend; python -m pytest
-cd frontend; npm run build
-```
-
-Load tests are run separately with Locust:
-
-```powershell
-locust -f backend/tests/load_test.py --host=http://localhost
-```
-
-## Architecture
-
-```text
-Browser
-  | HTTP + WebSocket
-  v
-Nginx reverse proxy
-  | /api, /ws
-  v
-FastAPI backend
-  |-- PostgreSQL: users, sessions, notes, reports
-  |-- Redis: terminal history, SIEM pub/sub, AI throttling
-  |-- Elasticsearch/Filebeat: log ingestion path
-  |-- Docker SDK: Kali and scenario container lifecycle
-  v
-Internal scenario networks
-  |-- SC-01: web app target
-  |-- SC-02: Samba4 AD + file server
-  |-- SC-03: GoPhish + mail relay + victim simulator
-```
-
-The frontend is React/Vite/Tailwind with Zustand stores, xterm.js for the terminal, and workspace pages for Red Team, Blue Team, Instructor, and Debrief flows. The backend is FastAPI with SQLAlchemy async, JWT auth, scenario loaders, SIEM event mapping, AI hints, scoring, reports, and instructor routes.
 
 ## Documentation
 

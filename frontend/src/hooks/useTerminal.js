@@ -135,7 +135,8 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
   }, [trackCommandInput])
 
   useEffect(() => {
-    if (!containerRef.current) return
+    const terminalElement = containerRef.current
+    if (!terminalElement) return
     historyRestoredRef.current = false
     lineBufferRef.current = ''
 
@@ -163,7 +164,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
     term.loadAddon(linksAddon)
     term.loadAddon(searchAddon)
 
-    term.open(containerRef.current)
+    term.open(terminalElement)
     try {
       const webglAddon = new WebglAddon()
       webglAddon.onContextLoss(() => {
@@ -237,18 +238,18 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
     }
 
     const focusTerminal = () => term.focus()
-    containerRef.current.addEventListener('mousedown', focusTerminal)
-    containerRef.current.addEventListener('touchstart', focusTerminal)
+    terminalElement.addEventListener('mousedown', focusTerminal)
+    terminalElement.addEventListener('touchstart', focusTerminal)
 
     const ro = new ResizeObserver(() => fitAddon.fit())
-    ro.observe(containerRef.current)
+    ro.observe(terminalElement)
 
     return () => {
       window.removeEventListener('terminal:output', handleOutput)
       window.removeEventListener('terminal:history', handleHistory)
       window.clearTimeout(copyTimerRef.current)
-      containerRef.current?.removeEventListener('mousedown', focusTerminal)
-      containerRef.current?.removeEventListener('touchstart', focusTerminal)
+      terminalElement.removeEventListener('mousedown', focusTerminal)
+      terminalElement.removeEventListener('touchstart', focusTerminal)
       ro.disconnect()
       searchRef.current = null
       webglRef.current = null
@@ -256,7 +257,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
       termRef.current = null
       term.dispose()
     }
-  }, [containerRef, sendInput, sessionId])
+  }, [containerRef, fontSize, sendInput, sessionId, themeName])
 
   useEffect(() => {
     const term = termRef.current

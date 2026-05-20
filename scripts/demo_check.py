@@ -21,8 +21,10 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field
-from typing import Callable
+from dataclasses import dataclass
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 
 # ── ANSI colours ──────────────────────────────────────────────────────────────
@@ -52,6 +54,29 @@ def _tcp_open(host: str, port: int, timeout: float = 2.0) -> bool:
         with socket.create_connection((host, port), timeout=timeout):
             return True
     except OSError:
+        return False
+
+
+def _compose_exec_tcp(service: str, port: int, timeout: int = 8) -> bool:
+    """Check a TCP listener from inside a compose service for Docker Desktop hosts."""
+    try:
+        result = subprocess.run(
+            [
+                "docker",
+                "compose",
+                "exec",
+                "-T",
+                service,
+                "sh",
+                "-lc",
+                f"nc -z 127.0.0.1 {port}",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        return result.returncode == 0
+    except Exception:
         return False
 
 
@@ -125,10 +150,21 @@ def check_scenario_sc01() -> list[Result]:
 
 def check_scenario_sc02() -> list[Result]:
     results = []
-    results.append(Result("SC-02 DC  Kerberos 88",  _tcp_open("172.20.2.20", 88)))
-    results.append(Result("SC-02 DC  LDAP     389", _tcp_open("172.20.2.20", 389)))
-    results.append(Result("SC-02 DC  SMB      445", _tcp_open("172.20.2.20", 445)))
-    results.append(Result("SC-02 FS  SMB      445", _tcp_open("172.20.2.40", 445)))
+    results.append(
+        Result("SC-02 DC  Kerberos 88", _tcp_open("172.20.2.20", 88) or _compose_exec_tcp("sc02-dc", 88))
+    )
+    results.append(
+        Result("SC-02 DC  LDAP     389", _tcp_open("172.20.2.20", 389) or _compose_exec_tcp("sc02-dc", 389))
+    )
+    results.append(
+        Result("SC-02 DC  SMB      445", _tcp_open("172.20.2.20", 445) or _compose_exec_tcp("sc02-dc", 445))
+    )
+    results.append(
+        Result(
+            "SC-02 FS  SMB      445",
+            _tcp_open("172.20.2.40", 445) or _compose_exec_tcp("sc02-fileserver", 445),
+        )
+    )
     return results
 
 

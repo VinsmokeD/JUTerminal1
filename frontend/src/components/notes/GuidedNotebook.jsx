@@ -52,7 +52,7 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
       const template = TEMPLATES[role]?.[phase] || TEMPLATES[role]?.[1] || ''
       setDraft(template)
     }
-  }, [phase, mode, skillLevel, role])
+  }, [phase, mode, skillLevel, role, notes.length])
 
   const save = async () => {
     if (!draft.trim()) return

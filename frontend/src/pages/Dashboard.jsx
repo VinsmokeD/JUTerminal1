@@ -55,7 +55,7 @@ const DIFFICULTY_CHIPS = ['All', 'Beginner', 'Intermediate', 'Advanced']
 
 export default function Dashboard() {
   const { scenarios, fetchScenarios, startSession } = useSessionStore()
-  const { username, skillLevel } = useAuthStore()
+  const { skillLevel } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
   const requestedScenarioId = location.state?.scenarioId
@@ -73,7 +73,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     setScenariosLoading(true)
-    fetchScenarios().finally(() => setScenariosLoading(false))
+    const p = fetchScenarios()
+    const settled = p && typeof p.finally === 'function'
+      ? p.finally(() => setScenariosLoading(false))
+      : Promise.resolve().then(() => setScenariosLoading(false))
+    settled.catch(() => setScenariosLoading(false))
     api.get('/sessions/').then(r => setMySessions(r.data)).catch(() => {})
     api.get('/auth/me').then(r => setUserRole(r.data.role)).catch(() => {})
   }, [fetchScenarios])
