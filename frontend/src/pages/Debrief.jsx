@@ -193,7 +193,11 @@ export default function Debrief() {
                   <h3 className="text-sm font-semibold text-txt-secondary font-mono uppercase tracking-wider">Attack Timeline</h3>
                   <Button onClick={() => setActiveTab('timeline')} variant="ghost" size="sm">View full</Button>
                 </div>
-                <Timeline3D commands={commands} siemEvents={siemEvents} />
+                <Timeline3D
+                  commands={commands}
+                  siemEvents={siemEvents}
+                  causeEffect={insights?.cause_effect}
+                />
               </div>
             )}
 
@@ -238,7 +242,11 @@ export default function Debrief() {
             {commands.length === 0 && siemEvents.length === 0 ? (
               <EmptyPanel title="No timeline data recorded for this session." body="Commands and SIEM events are captured as you progress through a scenario." />
             ) : (
-              <Timeline3D commands={commands} siemEvents={siemEvents} />
+              <Timeline3D
+                commands={commands}
+                siemEvents={siemEvents}
+                causeEffect={insights?.cause_effect}
+              />
             )}
           </div>
         )}
@@ -312,10 +320,10 @@ function ScoreRing({ score, gradeColor, gradeLabel }) {
   )
 }
 
-function Timeline3D({ commands, siemEvents }) {
+function Timeline3D({ commands, siemEvents, causeEffect }) {
   return (
     <Suspense fallback={<div className="h-[260px] rounded-cs-lg bg-surface-2/60 border border-cs-border animate-pulse" />}>
-      <KillChainTimeline commands={commands} siemEvents={siemEvents} />
+      <KillChainTimeline commands={commands} siemEvents={siemEvents} causeEffect={causeEffect} />
     </Suspense>
   )
 }

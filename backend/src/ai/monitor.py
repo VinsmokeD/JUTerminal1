@@ -96,6 +96,7 @@ def _format_context_for_ai(
     parts.append(f"methodology: {context.get('methodology')}")
     parts.append(f"skill_level: {context.get('skill_level', 'beginner')}")
     parts.append(f"mode: {context.get('mode', 'learn')}")
+    parts.append(f"verbosity: {context.get('ai_verbosity', 'balanced')}")
 
     # Target knowledge
     env = context.get("target_environment", {})
@@ -277,6 +278,7 @@ async def get_ai_hint(
         # Build full context
         context = await build_ai_context(session_id)
         context["target_reachable"] = str(target_reachable).lower()
+        context["ai_verbosity"] = session_state.get("ai_verbosity", "balanced")
         mode = context.get("mode", "learn")
 
         user_msg = _format_context_for_ai(context, command, hint_level)

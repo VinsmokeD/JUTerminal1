@@ -4082,3 +4082,36 @@ $ python3 -m py_compile src/main.py  # ✓
     - SIEM engine: ES poller reads `cybersim:active_sessions` Redis hash (replaces dead in-memory dict); baseline advances on empty hits to prevent replay.
     - Output scanner: `_BANNER_GUARD` suppresses banner/objective lines before regex matching; `sc02-domain-admin` pattern requires AD-context fingerprints.
   - **Next**: Batch 2 — replace remaining command-regex SIEM triggers with a proper Sigma-style rule engine polling Elasticsearch per-scenario index.
+### [2026-05-20 12:00:00 +03:00] - Gemini (Kill Chain Timeline Enhancements)
+* **Status**: Complete - Enhanced interactivity, backend-driven linking, and 'Detection Links' integrated.
+* **Why**: The user requested improvements and enhancements to the Dual-Axis Kill Chain Timeline, specifically mentioning "Red team commands vs Blue team detections with detection links".
+* **Where**:
+  - `frontend/src/pages/Debrief.jsx` - Passed `cause_effect` data from learning insights to the timeline component.
+  - `frontend/src/components/debrief/KillChainTimeline.jsx` - Rewritten to use `causeEffect` for robust linking, added Three.js raycasting for node selection, and implemented a detailed interactive overlay with jump links between actions and detections.
+  - `backend/src/reports/learning_insights.py` - (Reviewed) Already provides high-quality cause-effect data used to drive the new frontend features.
+* **What & How**:
+  - **Robust Linking**: Replaced the frontend's 30s heuristic with the backend's 120s cause-effect correlation engine (`cause_effect` data).
+  - **3D Interactivity**: Added mouse-picking (Raycasting) to the 3D scene. Users can now click on Red Team nodes (spheres) or Blue Team nodes to select them.
+  - **Interactive Overlay**: Implemented a modern, blurred backdrop overlay that displays metadata for the selected event (Command/Alert text, MITRE technique, severity, timestamp).
+  - **Detection Links**: Added "Detection Links" (Red -> Blue) and "Caused By" (Blue -> Red) buttons in the overlay. Clicking these links automatically selects the related node and pans the camera, allowing for seamless navigation of the attack timeline.
+  - **Visual Polish**: Selected nodes now pulse with higher intensity and scale to provide clear visual feedback. Integrated the standard `Badge` component for UI consistency.
+  - **Regression Safety**: Maintained the 2D SVG/HTML fallback for low-performance tiers while ensuring the main 3D experience is significantly more functional.
+
+### [2026-05-20 21:22:42 +03:00] - Codex (Admin Dashboard Login Flow)
+* **Status**: Complete; verified locally and ready to commit/push.
+* **Why**: The instructor dashboard APIs and `/instructor` page were healthy, but the standard auth flow routed the seeded `admin` account through the student dashboard/onboarding path before an instructor could reach the admin dashboard. That was a demo-readiness problem even though direct `/instructor` access worked.
+* **Where**:
+  - `frontend/src/store/authStore.js` - the `login` action now returns the fetched `/auth/me` profile data along with the token payload, and `register` returns explicit student defaults for role/onboarding metadata.
+  - `frontend/src/pages/Auth.jsx` - successful instructor login now navigates directly to `/instructor`; students keep the existing `/dashboard` path and onboarding guard behavior.
+  - `frontend/src/hooks/useTerminal.js` - restored the stored terminal font/theme readers as the default initial settings so ESLint no longer flags them as unused and user preferences load by default.
+  - `frontend/src/components/debrief/KillChainTimeline.jsx` - moved selected-node animation state into a ref so the Three.js scene is not rebuilt on every node selection while satisfying hook dependency rules.
+* **What & How**: The existing login action already fetched `/api/auth/me` after storing the JWT. The returned profile is now surfaced to the auth page so it can route based on `role === "instructor"` without adding a new backend endpoint or changing the token schema. This keeps student registration/login behavior unchanged while making admin login land on the instructor operations center immediately. While verifying, ESLint exposed three warnings in nearby graduation-era frontend files; those were fixed by using the terminal storage readers and by decoupling the 3D timeline render loop from React selection dependencies via `selectedRef`.
+* **Hygiene**: Removed trailing whitespace from the affected frontend files after `git diff --check` flagged existing whitespace in the local settings/timeline changes.
+* **Verification**:
+  - `npm run lint` in `frontend/` exited 0 with no ESLint warnings.
+  - `npm run build` in `frontend/` exited 0 with `✓ built in 6.67s`.
+  - `python -m pytest -q -p no:cacheprovider backend/tests --ignore=backend/tests/e2e --ignore=backend/tests/integration_test.py --ignore=backend/tests/test_ws_integration.py --ignore=backend/tests/load_test.py` returned `78 passed in 2.70s`.
+  - `docker compose config --quiet` exited 0 with empty output.
+  - `docker compose up -d --build frontend` rebuilt `cybersim-frontend:latest` and restarted `cybersim-frontend-1`.
+  - Browser smoke from a fresh `http://127.0.0.1:3000/auth` origin: logging in as `admin` navigated directly to `http://127.0.0.1:3000/instructor`, rendered the instructor metrics/table, and browser console logs were `[]`.
+  - `git diff --check` exited 0; only standard CRLF conversion warnings were printed.

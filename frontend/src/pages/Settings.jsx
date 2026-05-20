@@ -1,69 +1,24 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CyberSimNav from '../components/nav/CyberSimNav'
 import { Button } from '../components/ui'
 import { useAuthStore } from '../store/authStore'
-
-const readSetting = (key, fallback) => {
-  try {
-    return localStorage.getItem(key) ?? fallback
-  } catch {
-    return fallback
-  }
-}
-
-const writeSetting = (key, value) => {
-  try {
-    localStorage.setItem(key, String(value))
-  } catch {
-    // ignore storage failures
-  }
-}
+import { useSettingsStore } from '../store/settingsStore'
 
 export default function Settings() {
   const navigate = useNavigate()
   const { skillLevel, setSkillLevel } = useAuthStore()
-  const [terminalTheme, setTerminalTheme] = useState(() => readSetting('cs.terminal.theme', 'dark'))
-  const [terminalFont, setTerminalFont] = useState(() => Number(readSetting('cs.terminal.font', '12.5')))
-  const [autoCopy, setAutoCopy] = useState(() => readSetting('cs.terminal.autoCopy', 'false') === 'true')
-  const [animations, setAnimations] = useState(() => readSetting('cs.ui.animations', 'on'))
-  const [verbosity, setVerbosity] = useState(() => readSetting('cs.ai.verbosity', 'balanced'))
-
-  useEffect(() => {
-    writeSetting('cs.terminal.theme', terminalTheme)
-  }, [terminalTheme])
-
-  useEffect(() => {
-    writeSetting('cs.terminal.font', Math.min(20, Math.max(10, Number(terminalFont) || 12.5)))
-  }, [terminalFont])
-
-  useEffect(() => {
-    writeSetting('cs.terminal.autoCopy', autoCopy)
-  }, [autoCopy])
-
-  useEffect(() => {
-    writeSetting('cs.ui.animations', animations)
-    document.documentElement.dataset.animations = animations
-  }, [animations])
-
-  useEffect(() => {
-    writeSetting('cs.ai.verbosity', verbosity)
-  }, [verbosity])
+  const {
+    terminalTheme, setTerminalTheme,
+    terminalFont, setTerminalFont,
+    autoCopy, setAutoCopy,
+    animations, setAnimations,
+    verbosity, setVerbosity,
+    reset,
+  } = useSettingsStore()
 
   const resetLocalLearningData = () => {
-    ;[
-      'cs.workspace.layouts.v1',
-      'cs.terminal.font',
-      'cs.terminal.theme',
-      'cs.terminal.autoCopy',
-      'cs.ai.verbosity',
-      'cs.ui.animations',
-    ].forEach((key) => localStorage.removeItem(key))
-    setTerminalTheme('dark')
-    setTerminalFont(12.5)
-    setAutoCopy(false)
-    setAnimations('on')
-    setVerbosity('balanced')
+    localStorage.removeItem('cs.workspace.layouts.v1')
+    reset()
   }
 
   return (
@@ -96,7 +51,7 @@ export default function Settings() {
                   step="0.5"
                   value={terminalFont}
                   onChange={(event) => setTerminalFont(Number(event.target.value))}
-                  className="w-full"
+                  className="w-full h-1.5 bg-surface-3 rounded-lg appearance-none cursor-pointer accent-cs-blue"
                 />
               </SettingRow>
               <SettingRow label="Auto-copy selection" note="Copy highlighted terminal text automatically.">
@@ -112,10 +67,10 @@ export default function Settings() {
                 <Segmented value={skillLevel || 'beginner'} onChange={setSkillLevel} options={[
                   ['beginner', 'Beginner'],
                   ['intermediate', 'Intermediate'],
-                  ['advanced', 'Advanced'],
+                  ['experienced', 'Experienced'],
                 ]} />
               </SettingRow>
-              <SettingRow label="AI verbosity" note="Used by local UI preferences and future tutor requests.">
+              <SettingRow label="AI verbosity" note="Controls the depth of AI tutor explanations.">
                 <Segmented value={verbosity} onChange={setVerbosity} options={[
                   ['concise', 'Concise'],
                   ['balanced', 'Balanced'],
@@ -128,7 +83,7 @@ export default function Settings() {
           <section className="card-v3 p-5">
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-txt-secondary font-mono">Interface</h2>
             <div className="mt-4 space-y-4">
-              <SettingRow label="Animations" note="Reduced motion is always respected by the browser media query.">
+              <SettingRow label="Animations" note="Toggle visual transitions and motion effects.">
                 <Segmented value={animations} onChange={setAnimations} options={[
                   ['on', 'On'],
                   ['reduced', 'Reduced'],

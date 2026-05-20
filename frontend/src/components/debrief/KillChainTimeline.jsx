@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { usePerfTier } from '../ui/PerfTier'
+import Badge from '../ui/Badge'
 
 const X_MIN = -18
 const X_MAX = 18
@@ -12,10 +13,16 @@ const MATCH_WINDOW_MS = 30000
 const SEV_RADIUS = { CRITICAL: 0.55, HIGH: 0.42, MED: 0.32, MEDIUM: 0.32, LOW: 0.24, INFO: 0.22 }
 const nodeRadius = (item) => SEV_RADIUS[(item.severity || 'LOW').toUpperCase()] || 0.28
 
-export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
+export default function KillChainTimeline({ commands = [], siemEvents = [], causeEffect = [] }) {
   const containerRef = useRef(null)
   const tier = usePerfTier()
-  const timeline = useMemo(() => buildTimeline(commands, siemEvents), [commands, siemEvents])
+  const [selected, setSelected] = useState(null)
+  const selectedRef = useRef(null)
+  const timeline = useMemo(() => buildTimeline(commands, siemEvents, causeEffect), [commands, siemEvents, causeEffect])
+
+  useEffect(() => {
+    selectedRef.current = selected
+  }, [selected])
 
   useEffect(() => {
     const container = containerRef.current
@@ -102,16 +109,21 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
     // ── Interaction state ─────────────────────────────────────────────────
     let hovered = false
     let dragging = false
+    let dragThreshold = 0
     let lastPointer = { x: 0, y: 0 }
     let pan = { x: 0, y: 0 }
     let panTarget = { x: 0, y: 0 }
     let angle = 0
     let raf
 
+    const raycaster = new THREE.Raycaster()
+    const mouse = new THREE.Vector2()
+
     const onEnter = () => { hovered = true }
     const onLeave = () => { hovered = false; dragging = false }
     const onDown = (e) => {
       dragging = true
+      dragThreshold = 0
       lastPointer = { x: e.clientX, y: e.clientY }
       container.setPointerCapture?.(e.pointerId)
     }
@@ -119,11 +131,26 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
       if (!dragging) return
       const dx = e.clientX - lastPointer.x
       const dy = e.clientY - lastPointer.y
+      dragThreshold += Math.abs(dx) + Math.abs(dy)
       lastPointer = { x: e.clientX, y: e.clientY }
       panTarget.x = THREE.MathUtils.clamp(panTarget.x + dx * 0.03, -6, 6)
       panTarget.y = THREE.MathUtils.clamp(panTarget.y - dy * 0.02, -2.5, 2.5)
     }
     const onUp = (e) => {
+      if (dragging && dragThreshold < 5) {
+        // Handle click/tap as selection
+        const rect = container.getBoundingClientRect()
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+        raycaster.setFromCamera(mouse, camera)
+        const intersects = raycaster.intersectObjects([...redMeshes, ...blueMeshes])
+        if (intersects.length > 0) {
+          const { item, kind } = intersects[0].object.userData
+          setSelected({ item, kind })
+        } else {
+          setSelected(null)
+        }
+      }
       dragging = false
       container.releasePointerCapture?.(e.pointerId)
     }
@@ -164,13 +191,24 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
       blueLight.intensity = (tier >= 2 ? 3.5 : 2.0) + Math.sin(elapsed * 1.4 + Math.PI) * 0.6
 
       // Animate node pulse
+      const currentSelected = selectedRef.current
       redMeshes.forEach((m, i) => {
+        const isSelected = currentSelected?.kind === 'command' && currentSelected?.item.id === m.userData.item.id
         const phase = elapsed * 2.4 + i * 0.45
-        m.scale.setScalar(1 + Math.sin(phase) * 0.08)
+        const baseScale = isSelected ? 1.4 : 1.0
+        m.scale.setScalar(baseScale + Math.sin(phase) * (isSelected ? 0.15 : 0.08))
+        if (m.material) {
+          m.material.emissiveIntensity = isSelected ? 2.5 : (tier >= 2 ? 1.1 : 0.4)
+        }
       })
       blueMeshes.forEach((m, i) => {
+        const isSelected = currentSelected?.kind === 'event' && currentSelected?.item.id === m.userData.item.id
         const phase = elapsed * 2.4 + i * 0.45 + Math.PI
-        m.scale.setScalar(1 + Math.sin(phase) * 0.08)
+        const baseScale = isSelected ? 1.4 : 1.0
+        m.scale.setScalar(baseScale + Math.sin(phase) * (isSelected ? 0.15 : 0.08))
+        if (m.material) {
+          m.material.emissiveIntensity = isSelected ? 2.5 : (tier >= 2 ? 1.1 : 0.4)
+        }
       })
 
       // Animate pulse rings
@@ -234,8 +272,107 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
       </div>
       {/* Drag hint */}
       <div className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-mono text-txt-dim/40 tracking-widest uppercase">
-        drag to rotate
+        {selected ? 'click empty space to clear' : 'drag to rotate · click node for details'}
       </div>
+
+      {/* Detail Overlay */}
+      {selected && (
+        <div className="absolute right-4 bottom-4 w-72 bg-[#0a0c18]/95 border border-[#2244aa]/50 rounded-cs p-4 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="flex items-center justify-between mb-3">
+            <Badge tone={selected.kind === 'command' ? 'red' : 'blue'}>
+              {selected.kind === 'command' ? 'RED TEAM ACTION' : 'BLUE TEAM DETECTION'}
+            </Badge>
+            <button onClick={() => setSelected(null)} className="text-txt-dim hover:text-txt-primary transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <div className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">
+                {selected.kind === 'command' ? 'Command' : 'Alert Message'}
+              </div>
+              <div className="text-xs font-mono text-txt-primary break-all leading-relaxed bg-void/50 p-2 rounded-cs-sm border border-cs-border/30">
+                {selected.item.command || selected.item.message}
+              </div>
+            </div>
+
+            {selected.item.mitre_technique && (
+              <div>
+                <div className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">MITRE ATT&CK</div>
+                <div className="text-[10px] font-mono text-cs-blue">{selected.item.mitre_technique}</div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-2 border-t border-cs-border/30">
+              <div className="text-[10px] font-mono text-txt-dim">
+                {new Date(selected.item.ms).toLocaleTimeString()}
+              </div>
+              {selected.item.severity && (
+                <div className={`text-[10px] font-bold font-mono ${
+                  selected.item.severity === 'CRITICAL' ? 'text-cs-red' :
+                  selected.item.severity === 'HIGH' ? 'text-amber-warn' : 'text-cs-blue'
+                }`}>
+                  {selected.item.severity}
+                </div>
+              )}
+            </div>
+
+            {/* Links Section */}
+            {selected.kind === 'command' && (
+              <div className="pt-2">
+                <div className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-2">Detection Links</div>
+                {timeline.matches.filter(m => m.command.id === selected.item.id).length > 0 ? (
+                  <div className="space-y-1.5">
+                    {timeline.matches.filter(m => m.command.id === selected.item.id).map((m, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelected({ item: m.event, kind: 'event' })}
+                        className="w-full flex items-center gap-2 text-[10px] font-mono text-cs-blue bg-cs-blue/5 border border-cs-blue/20 hover:bg-cs-blue/10 rounded-cs-sm px-2 py-1.5 transition-colors text-left"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-cs-blue" />
+                        <span className="truncate flex-1">{m.event.message}</span>
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[10px] font-mono text-txt-dim italic">No direct detection link found.</div>
+                )}
+              </div>
+            )}
+
+            {selected.kind === 'event' && (
+              <div className="pt-2">
+                <div className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-2">Caused By</div>
+                {timeline.matches.filter(m => m.event.id === selected.item.id).length > 0 ? (
+                  <div className="space-y-1.5">
+                    {timeline.matches.filter(m => m.event.id === selected.item.id).map((m, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelected({ item: m.command, kind: 'command' })}
+                        className="w-full flex items-center gap-2 text-[10px] font-mono text-cs-red bg-cs-red/5 border border-cs-red/20 hover:bg-cs-red/10 rounded-cs-sm px-2 py-1.5 transition-colors text-left"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-cs-red" />
+                        <span className="truncate flex-1">{m.command.command}</span>
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[10px] font-mono text-txt-dim italic">Signal correlation pending.</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -244,7 +381,7 @@ export default function KillChainTimeline({ commands = [], siemEvents = [] }) {
 // Timeline data builder
 // ─────────────────────────────────────────────────────────────────────────────
 
-function buildTimeline(commands, siemEvents) {
+function buildTimeline(commands, siemEvents, causeEffect) {
   const toMs = (v) => v ? new Date(v).getTime() : 0
   const redRaw = commands
     .map((c, i) => ({ ...c, type: 'command', index: i, ms: toMs(c.created_at || c.timestamp) }))
@@ -262,13 +399,29 @@ function buildTimeline(commands, siemEvents) {
   const place = (item) => ({ ...item, x: X_MIN + ((item.ms - min) / range) * (X_MAX - X_MIN) })
   const redItems = redRaw.map(place)
   const blueItems = blueRaw.map(place)
-  const matches = redItems.map((cmd) => {
-    const ev = blueItems
-      .map((c) => ({ ev: c, delta: Math.abs(c.ms - cmd.ms) }))
-      .filter(({ delta }) => delta <= MATCH_WINDOW_MS)
-      .sort((a, b) => a.delta - b.delta)[0]?.ev
-    return ev ? { command: cmd, event: ev } : null
-  }).filter(Boolean)
+
+  // Link using causeEffect data if available, fallback to heuristic
+  const matches = []
+  if (causeEffect && causeEffect.length > 0) {
+    causeEffect.forEach((ce) => {
+      const cmd = redItems.find((r) => r.id === ce.command_id)
+      if (cmd && ce.related_events) {
+        ce.related_events.forEach((re) => {
+          const ev = blueItems.find((b) => b.id === re.id)
+          if (ev) matches.push({ command: cmd, event: ev })
+        })
+      }
+    })
+  } else {
+    redItems.forEach((cmd) => {
+      const ev = blueItems
+        .map((c) => ({ ev: c, delta: Math.abs(c.ms - cmd.ms) }))
+        .filter(({ delta }) => delta <= MATCH_WINDOW_MS)
+        .sort((a, b) => a.delta - b.delta)[0]?.ev
+      if (ev) matches.push({ command: cmd, event: ev })
+    })
+  }
+
   return { redItems, blueItems, matches, isEmpty: redItems.length === 0 && blueItems.length === 0 }
 }
 
@@ -388,6 +541,7 @@ function addNodes(root, items, y, color, tier, kind) {
     })
     const sphere = new THREE.Mesh(geo, mat)
     sphere.position.set(item.x, y, 0)
+    sphere.userData = { item, kind } // CRITICAL FOR INTERACTION
     root.add(sphere)
     meshes.push(sphere)
 

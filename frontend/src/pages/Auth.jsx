@@ -40,12 +40,10 @@ export default function Auth() {
     setError('')
     setLoading(true)
     try {
-      if (mode === 'login') {
-        await login(username, password)
-      } else {
-        await register(username, password)
-      }
-      navigate('/dashboard')
+      const authResult = mode === 'login'
+        ? await login(username, password)
+        : await register(username, password)
+      navigate(authResult?.role === 'instructor' ? '/instructor' : '/dashboard')
     } catch (err) {
       setError(err.response?.data?.detail || 'Authentication failed')
     } finally {

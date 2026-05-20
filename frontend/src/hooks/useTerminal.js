@@ -87,7 +87,13 @@ const THEMES = {
  * Every keystroke is sent immediately to the backend, which forwards to
  * Docker exec PTY. Docker output is written back into xterm.
  */
-export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCopySelection = false, inputDisabled = false }) {
+export function useTerminal({
+  containerRef, onData, onCommand, sessionId,
+  autoCopySelection = false,
+  inputDisabled = false,
+  initialFontSize = readStoredFont(),
+  initialTheme = readStoredTheme()
+}) {
   const termRef = useRef(null)
   const fitRef = useRef(null)
   const searchRef = useRef(null)
@@ -99,8 +105,8 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
   const autoCopyRef = useRef(autoCopySelection)
   const inputDisabledRef = useRef(inputDisabled)
   const copyTimerRef = useRef(null)
-  const [fontSize, setFontSizeState] = useState(readStoredFont)
-  const [themeName, setThemeNameState] = useState(readStoredTheme)
+  const [fontSize, setFontSizeState] = useState(clampFont(initialFontSize))
+  const [themeName, setThemeNameState] = useState(initialTheme)
   const [selection, setSelection] = useState('')
   const [renderer, setRenderer] = useState('dom')
 
@@ -264,22 +270,12 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
     if (!term) return
     term.options.fontSize = fontSize
     fitRef.current?.fit()
-    try {
-      localStorage.setItem(FONT_STORAGE_KEY, String(fontSize))
-    } catch {
-      // ignore persistence failures
-    }
   }, [fontSize])
 
   useEffect(() => {
     const term = termRef.current
     if (!term) return
     term.options.theme = THEMES[themeName] || THEMES.dark
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, themeName)
-    } catch {
-      // ignore persistence failures
-    }
   }, [themeName])
 
   useEffect(() => {

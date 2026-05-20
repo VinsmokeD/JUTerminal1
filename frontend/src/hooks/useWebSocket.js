@@ -231,7 +231,8 @@ export function useWebSocket(sessionId) {
   }, [sendFrame])
 
   const requestHint = useCallback((level) => {
-    sendFrame({ type: 'request_hint', level })
+    const verbosity = localStorage.getItem('cs.ai.verbosity') || 'balanced'
+    sendFrame({ type: 'request_hint', level, verbosity })
   }, [sendFrame])
 
   const toggleMode = useCallback((mode) => {

@@ -18,13 +18,15 @@ export const useAuthStore = create((set) => ({
     localStorage.setItem('username', res.data.username)
     set({ token: res.data.access_token, username: res.data.username })
     // Fetch profile to get skill level
+    let profileData = null
     try {
       const profile = await api.get('/auth/me')
+      profileData = profile.data
       localStorage.setItem('skillLevel', profile.data.skill_level || 'beginner')
       localStorage.setItem('onboardingCompleted', profile.data.onboarding_completed ? 'true' : 'false')
       set({ skillLevel: profile.data.skill_level, onboardingCompleted: profile.data.onboarding_completed })
     } catch {}
-    return res.data
+    return { ...res.data, ...profileData }
   },
 
   register: async (username, password) => {
@@ -34,7 +36,7 @@ export const useAuthStore = create((set) => ({
     localStorage.setItem('skillLevel', 'beginner')
     localStorage.setItem('onboardingCompleted', 'false')
     set({ token: res.data.access_token, username: res.data.username, skillLevel: 'beginner', onboardingCompleted: false })
-    return res.data
+    return { ...res.data, role: 'student', skill_level: 'beginner', onboarding_completed: false }
   },
 
   setSkillLevel: async (level) => {

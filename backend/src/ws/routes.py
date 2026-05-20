@@ -28,7 +28,11 @@ from src.scenarios.output_patterns import scan_output_chunk
 from src.scenarios.branching import infer_active_branch, get_active_branch, get_branch_hint
 
 _GATE_PENALTY = 5  # points deducted per blocked command
-_HINT_PENALTIES = {1: 5, 2: 10, 3: 20}  # points deducted per hint level (L1/L2/L3)
+_HINT_PENALTIES = {
+    "beginner": {1: 2, 2: 5, 3: 10},
+    "intermediate": {1: 5, 2: 10, 3: 20},
+    "experienced": {1: 10, 2: 20, 3: 40},
+}
 _ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → JSON session state
 
 router = APIRouter()
@@ -228,8 +232,11 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
     # Validate session ownership
     async with AsyncSessionLocal() as db:
+        from sqlalchemy.orm import selectinload
         result = await db.execute(
-            select(Session).where(Session.id == session_id, Session.user_id == user_id)
+            select(Session)
+            .options(selectinload(Session.user))
+            .where(Session.id == session_id, Session.user_id == user_id)
         )
         session = result.scalar_one_or_none()
         if not session:
@@ -241,6 +248,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             "phase": session.phase,
             "methodology": session.methodology,
             "container_id": session.container_id,
+            "skill_level": session.user.skill_level,
         }
 
     # Ensure the browser always attaches to a live PTY. Cleanup or Docker
@@ -367,7 +375,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     hint_steps = [static_hint]
 
         # ── Log hint request + apply score penalty ─────────────────────────
-        penalty = _HINT_PENALTIES.get(int(level), 5)
+        skill = session_state.get("skill_level", "beginner")
+        penalties = _HINT_PENALTIES.get(skill, _HINT_PENALTIES["beginner"])
+        penalty = penalties.get(int(level), 5)
         hint_key = f"L{level}_phase{session_state.get('phase', 1)}"
         new_score: int | None = None
         try:
@@ -480,7 +490,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
             elif msg_type == "request_hint":
                 level = msg.get("level", 1)
-                asyncio.create_task(_send_hint(level))
+                verbosity = msg.get("verbosity", "balanced")
+                session_state["ai_verbosity"] = verbosity
+                asyncio.create_task(_send_hint(int(level)))
+
     except WebSocketDisconnect:
         pass
     except Exception as exc:

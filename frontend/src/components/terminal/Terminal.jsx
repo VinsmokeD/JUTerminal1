@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTerminal } from '../../hooks/useTerminal'
+import { useSettingsStore } from '../../store/settingsStore'
 import TerminalContextMenu from './TerminalContextMenu'
 import TerminalToolbar from './TerminalToolbar'
 import OutputAnnotator from './OutputAnnotator'
@@ -19,16 +20,30 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
   const [menu, setMenu] = useState(null)
   const [insights, setInsights] = useState([])
   const [activeInsight, setActiveInsight] = useState(null)
-  const [autoCopy, setAutoCopy] = useState(() => {
-    try {
-      return localStorage.getItem('cs.terminal.autoCopy') === 'true'
-    } catch {
-      return false
-    }
-  })
+
+  const {
+    terminalTheme, terminalFont, autoCopy,
+    setTerminalFont, setAutoCopy
+  } = useSettingsStore()
+
   const inputDisabled = connectionState === 'failed'
-  const terminal = useTerminal({ containerRef, onData, onCommand, sessionId, autoCopySelection: autoCopy, inputDisabled })
+  const terminal = useTerminal({
+    containerRef, onData, onCommand, sessionId,
+    autoCopySelection: autoCopy,
+    inputDisabled,
+    initialFontSize: terminalFont,
+    initialTheme: terminalTheme,
+  })
   const focusTerminal = terminal.focus
+
+  // Sync store updates back to terminal hook
+  useEffect(() => {
+    terminal.setFontSize(terminalFont)
+  }, [terminalFont, terminal])
+
+  useEffect(() => {
+    terminal.setTheme(terminalTheme)
+  }, [terminalTheme, terminal])
 
   // Expose writeOutput via ref so parent can push output
   if (pendingOutput) {
@@ -146,15 +161,6 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
     pinchDistanceRef.current = null
   }
 
-  const handleAutoCopyChange = (enabled) => {
-    setAutoCopy(enabled)
-    try {
-      localStorage.setItem('cs.terminal.autoCopy', String(enabled))
-    } catch {
-      // ignore persistence failures
-    }
-  }
-
   return (
     <div
       className={`relative flex h-full w-full flex-col rounded-cs-sm transition-shadow ${isFocused ? 'ring-1 ring-cs-red/45' : 'ring-1 ring-transparent'}`}
@@ -169,9 +175,9 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
         renderer={terminal.renderer}
         selection={terminal.selection}
         autoCopy={autoCopy}
-        onAutoCopyChange={handleAutoCopyChange}
-        onFontDown={terminal.decreaseFont}
-        onFontUp={terminal.increaseFont}
+        onAutoCopyChange={setAutoCopy}
+        onFontDown={() => setTerminalFont(terminal.fontSize - 1)}
+        onFontUp={() => setTerminalFont(terminal.fontSize + 1)}
         onFindNext={terminal.findNext}
         onFindPrev={terminal.findPrev}
         onClear={terminal.clear}
