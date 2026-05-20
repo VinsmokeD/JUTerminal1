@@ -200,6 +200,16 @@ async def validate_flag(
             session = result.scalar_one_or_none()
             if session:
                 session.score = (session.score or 100) + points
+                # Record flag capture in CommandLog
+                flag_log = CommandLog(
+                    session_id=session_id,
+                    command=f"[flag_captured] {flag_id}",
+                    tool="flag:capture",
+                    phase=session.phase,
+                    triggered_siem_events=[],
+                    ai_hint_given=False
+                )
+                db.add(flag_log)
                 await db.commit()
 
             return {

@@ -5,6 +5,25 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-20 10:59:00 +03:00] - Antigravity (Batch 6 — Debrief Real Data & SC-01 E2E Gate Complete)
+* **Status**: Complete - Consolidated report endpoint, flag validation, Debrief refactoring, and SC-01 E2E checks verified.
+* **Why**: Students need a unified debriefing report showing session metadata, scoring details, command logs, SIEM events, learning insights, and chronological timeline that survives browser refreshes. Instructors need secured, live monitoring.
+* **Where**:
+  - `backend/src/reports/routes.py` - new consolidated `/api/reports/{session_id}/report` endpoint returning unified JSON payloads and timeline, plus restored original Markdown download route.
+  - `backend/src/sessions/routes.py` - implemented Pydantic schema `FlagSubmission` and `POST /api/sessions/{session_id}/flag` route.
+  - `backend/src/scenarios/engine.py` - updated `validate_flag` to persist captured flag events to the database as `CommandLog` records.
+  - `frontend/src/pages/Debrief.jsx` - refactored useEffect to fetch all debriefing data from the single consolidated endpoint instead of making 6 parallel requests.
+  - `backend/tests/integration_test.py` - added integration tests checking `submit_flag` and `get_consolidated_report` routes.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this synchronous state record.
+* **What & How**: Created the unified `/api/reports/{session_id}/report` endpoint which collects session, score, notes, commands, SIEM events, and learning insights, sorts them chronologically into a timeline, and returns them in a single fast call. Added the `/api/sessions/{session_id}/flag` route to validate submissions via the scenario engine. The engine was updated to record first-time captures in `CommandLog` with the `flag:capture` tool tag. The React frontend was streamlined to fetch all data from this single source.
+* **Verification evidence**:
+  - `pytest -v -k "test_09d or test_09e"` passed successfully.
+  - Run `python C:\Users\Mahmo\.gemini\antigravity\brain\de106ea4-a347-49f8-8116-97c7d4f1b4bc\scratch\e2e_verify.py` which completed successfully with correct flag validation results (valid = True for FLAG-SC01-1, duplicate flag captured = True) and returned a fully populated, chronological JSON timeline:
+    - Wrong flag submission returned `{'valid': False}`.
+    - Valid flag submission returned `{'valid': True, 'already_captured': False, 'flag_id': 'FLAG-SC01-1'}`.
+    - Duplicate flag submission returned `{'valid': True, 'already_captured': True, 'flag_id': 'FLAG-SC01-1'}`.
+    - Consolidated report API returned HTTP 200 with all sections (`session`, `score`, `notes`, `commands`, `siem_events`, `learning_insights`, `timeline`) fully populated.
+
 ### [2026-05-19 23:00:00 +03:00] - Claude Code (Batch 4 — Code Quality & Reliability Cleanup)
 * **Status**: Complete — 52 unit tests passing; docker compose config valid.
 * **Why**: Eight P1/P2 code-quality bugs from the original review were still open after Batches 1-3: dead code, no JWT prod guard, misaligned command cap, CommandLog UPDATE race, hostname drift in daemon noise, bare except, missing cybersim label, init_db+Alembic co-existence risk.

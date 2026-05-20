@@ -304,6 +304,72 @@ async def test_09c_learning_insights_links_commands_to_detections(
 
 
 @pytest.mark.asyncio
+async def test_09d_submit_flag_route(
+    client: AsyncClient,
+    auth_token: str,
+    test_session_id: str,
+):
+    """✓ POST /api/sessions/{session_id}/flag validates flag and records command log."""
+    # Submit an invalid flag
+    resp = await client.post(
+        f"/api/sessions/{test_session_id}/flag",
+        json={"flag_value": "wrong_flag"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code == 200
+    assert resp.json() == {"valid": False}
+
+    # Submit a valid flag
+    resp = await client.post(
+        f"/api/sessions/{test_session_id}/flag",
+        json={"flag_value": "LFI confirmed: root:x:0:0"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["valid"] is True
+    assert body["already_captured"] is False
+    assert body["flag_id"] == "FLAG-SC01-1"
+
+    # Submit again to test already captured logic
+    resp = await client.post(
+        f"/api/sessions/{test_session_id}/flag",
+        json={"flag_value": "LFI confirmed: root:x:0:0"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["already_captured"] is True
+
+
+@pytest.mark.asyncio
+async def test_09e_consolidated_report_route(
+    client: AsyncClient,
+    auth_token: str,
+    test_session_id: str,
+):
+    """✓ GET /api/reports/{session_id}/report returns consolidated report data."""
+    resp = await client.get(
+        f"/api/reports/{test_session_id}/report",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "session" in body
+    assert "score" in body
+    assert "notes" in body
+    assert "commands" in body
+    assert "siem_events" in body
+    assert "learning_insights" in body
+    assert "timeline" in body
+
+    # Verify flag capture recorded in command log
+    commands = body["commands"]
+    flag_logs = [c for c in commands if "FLAG-SC01-1" in c["command"]]
+    assert len(flag_logs) == 1
+    assert flag_logs[0]["tool"] == "flag:capture"
+
+
+@pytest.mark.asyncio
 async def test_10_unauthorized_request_rejected(client: AsyncClient):
     """✓ Role-based access enforced (missing token)."""
     resp = await client.get("/api/instructor/sessions")

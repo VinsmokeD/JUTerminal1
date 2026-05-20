@@ -263,6 +263,31 @@ async def upsert_session_triage(
     return _triage_dict(triage)
 
 
+class FlagSubmission(BaseModel):
+    flag_value: str
+
+
+@router.post("/{session_id}/flag")
+async def submit_flag(
+    session_id: str,
+    body: FlagSubmission,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    from src.scenarios.engine import validate_flag, try_advance_phase
+    res = await validate_flag(body.flag_value, session.scenario_id, session.id, db)
+    if res.get("valid") and not res.get("already_captured"):
+        await try_advance_phase(session.id, session.scenario_id, db)
+    return res
+
+
 def _session_dict(s: Session) -> dict:
     return {
         "id": s.id,

@@ -28,21 +28,18 @@ export default function Debrief() {
   const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
-    Promise.all([
-      api.get(`/sessions/${sessionId}`),
-      api.get(`/scoring/${sessionId}`),
-      api.get(`/notes/${sessionId}`).catch(() => ({ data: [] })),
-      api.get(`/sessions/${sessionId}/commands`).catch(() => ({ data: [] })),
-      api.get(`/sessions/${sessionId}/events`).catch(() => ({ data: [] })),
-      api.get(`/reports/${sessionId}/learning-insights`).catch(() => ({ data: null })),
-    ]).then(([sessRes, scoreRes, notesRes, cmdsRes, evtsRes, insightsRes]) => {
-      setSession(sessRes.data)
-      setScore(scoreRes.data)
-      setNotes(notesRes.data || [])
-      setCommands(cmdsRes.data || [])
-      setSiemEvents(evtsRes.data || [])
-      setInsights(insightsRes.data)
-    }).catch(() => navigate('/')).finally(() => setLoading(false))
+    api.get(`/reports/${sessionId}/report`)
+      .then((res) => {
+        const { session, score, notes, commands, siem_events, learning_insights } = res.data
+        setSession(session)
+        setScore(score)
+        setNotes(notes || [])
+        setCommands(commands || [])
+        setSiemEvents(siem_events || [])
+        setInsights(learning_insights)
+      })
+      .catch(() => navigate('/'))
+      .finally(() => setLoading(false))
   }, [sessionId, navigate])
 
   const downloadReport = async () => {
