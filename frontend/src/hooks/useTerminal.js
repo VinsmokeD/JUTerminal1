@@ -87,7 +87,7 @@ const THEMES = {
  * Every keystroke is sent immediately to the backend, which forwards to
  * Docker exec PTY. Docker output is written back into xterm.
  */
-export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCopySelection = false }) {
+export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCopySelection = false, inputDisabled = false }) {
   const termRef = useRef(null)
   const fitRef = useRef(null)
   const searchRef = useRef(null)
@@ -97,6 +97,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
   const onDataRef = useRef(onData)
   const onCommandRef = useRef(onCommand)
   const autoCopyRef = useRef(autoCopySelection)
+  const inputDisabledRef = useRef(inputDisabled)
   const copyTimerRef = useRef(null)
   const [fontSize, setFontSizeState] = useState(readStoredFont)
   const [themeName, setThemeNameState] = useState(readStoredTheme)
@@ -106,6 +107,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
   useEffect(() => { onDataRef.current = onData }, [onData])
   useEffect(() => { onCommandRef.current = onCommand }, [onCommand])
   useEffect(() => { autoCopyRef.current = autoCopySelection }, [autoCopySelection])
+  useEffect(() => { inputDisabledRef.current = inputDisabled }, [inputDisabled])
 
   const trackCommandInput = useCallback((data) => {
     if (!data || data.startsWith('\x1b')) return
@@ -127,6 +129,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
 
   const sendInput = useCallback((data) => {
     if (!data) return
+    if (inputDisabledRef.current) return
     if (onDataRef.current) onDataRef.current(data)
     trackCommandInput(data)
   }, [trackCommandInput])
@@ -149,6 +152,7 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
       theme: THEMES[themeName] || THEMES.dark,
       scrollback: 5000,
       allowProposedApi: true,
+      disableStdin: inputDisabledRef.current,
       convertEol: false,
     })
 
@@ -276,6 +280,12 @@ export function useTerminal({ containerRef, onData, onCommand, sessionId, autoCo
       // ignore persistence failures
     }
   }, [themeName])
+
+  useEffect(() => {
+    const term = termRef.current
+    if (!term) return
+    term.options.disableStdin = inputDisabled
+  }, [inputDisabled])
 
   const writeOutput = useCallback((text) => {
     termRef.current?.write(text)

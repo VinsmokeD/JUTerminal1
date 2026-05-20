@@ -26,7 +26,8 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
       return false
     }
   })
-  const terminal = useTerminal({ containerRef, onData, onCommand, sessionId, autoCopySelection: autoCopy })
+  const inputDisabled = connectionState === 'failed'
+  const terminal = useTerminal({ containerRef, onData, onCommand, sessionId, autoCopySelection: autoCopy, inputDisabled })
 
   // Expose writeOutput via ref so parent can push output
   if (pendingOutput) {
@@ -99,6 +100,7 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
     connecting: 'Connecting terminal...',
     disconnected: 'Reconnecting; input queued',
     unauthorized: 'Terminal auth failed',
+    failed: 'Connection failed',
   }[connectionState] || 'Terminal offline'
   const statusTone = connectionState === 'connected' ? 'border-green-signal/40 text-green-signal' : 'border-cs-red/40 text-cs-red'
 

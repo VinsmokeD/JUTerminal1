@@ -123,6 +123,18 @@ _MIN_SECONDS_AFTER_COMMAND = 90.0
 _MIN_SECONDS_BETWEEN_NOISE = 150.0
 
 
+def _decode_active_session_scenario(value: object) -> str:
+    """Support both legacy scenario_id values and JSON active-session payloads."""
+    raw = value.decode() if isinstance(value, bytes) else str(value)
+    try:
+        payload = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return raw
+    if isinstance(payload, dict):
+        return str(payload.get("scenario_id") or "")
+    return raw
+
+
 async def _probe_http(url: str) -> None:
     """Fire-and-forget HTTP request to populate container access logs."""
     try:
@@ -204,7 +216,7 @@ async def _run_noise_loop() -> None:
 
         for session_id_raw, scenario_id_raw in active.items():
             session_id = session_id_raw.decode() if isinstance(session_id_raw, bytes) else session_id_raw
-            scenario_id = scenario_id_raw.decode() if isinstance(scenario_id_raw, bytes) else scenario_id_raw
+            scenario_id = _decode_active_session_scenario(scenario_id_raw)
 
             now = time.time()
             try:

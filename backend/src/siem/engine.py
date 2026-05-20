@@ -31,6 +31,18 @@ _ACTIVE_KEY = "cybersim:active_sessions"
 _DEDUP_TTL = 3600  # 1 hour
 
 
+def _decode_active_session_scenario(value: object) -> str:
+    """Support both legacy scenario_id values and JSON active-session payloads."""
+    raw = value.decode() if isinstance(value, bytes) else str(value)
+    try:
+        payload = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return raw
+    if isinstance(payload, dict):
+        return str(payload.get("scenario_id") or "")
+    return raw
+
+
 # ---------------------------------------------------------------------------
 # Rule loader
 # ---------------------------------------------------------------------------
@@ -217,7 +229,7 @@ async def _poll_elasticsearch() -> None:
                 continue
 
             active: dict[str, str] = {
-                (k.decode() if isinstance(k, bytes) else k): (v.decode() if isinstance(v, bytes) else v)
+                (k.decode() if isinstance(k, bytes) else k): _decode_active_session_scenario(v)
                 for k, v in raw.items()
             }
 
@@ -311,6 +323,61 @@ async def _poll_elasticsearch() -> None:
 # Lifecycle
 # ---------------------------------------------------------------------------
 
+async def _ensure_es_ilm(client: httpx.AsyncClient) -> None:
+    """
+    Create (or update) an ILM policy + index template on Elasticsearch so
+    cybersim-logs-* and filebeat-* indices roll over at 5 GB / 7 days and
+    are deleted after 30 days.  Runs once at startup; is idempotent (PUT).
+    """
+    policy = {
+        "policy": {
+            "phases": {
+                "hot": {
+                    "min_age": "0ms",
+                    "actions": {
+                        "rollover": {"max_size": "5gb", "max_age": "7d"}
+                    },
+                },
+                "delete": {
+                    "min_age": "30d",
+                    "actions": {"delete": {}},
+                },
+            }
+        }
+    }
+    index_template = {
+        "index_patterns": ["cybersim-logs-*", "filebeat-*"],
+        "template": {
+            "settings": {"index.lifecycle.name": "cybersim-logs"}
+        },
+    }
+    await client.put(
+        "http://elasticsearch:9200/_ilm/policy/cybersim-logs",
+        json=policy,
+        timeout=10.0,
+    )
+    await client.put(
+        "http://elasticsearch:9200/_index_template/cybersim-logs-template",
+        json=index_template,
+        timeout=10.0,
+    )
+
+
+async def _apply_es_ilm_on_startup() -> None:
+    last_error: Exception | None = None
+    for attempt in range(1, 7):
+        try:
+            async with httpx.AsyncClient() as client:
+                await _ensure_es_ilm(client)
+                print("[SIEM] Elasticsearch ILM policy and index template applied.")
+                return
+        except Exception as exc:
+            last_error = exc
+            if attempt < 6:
+                await asyncio.sleep(min(2 * attempt, 10))
+    print(f"[SIEM] Could not apply ES ILM policy (non-fatal): {last_error}")
+
+
 async def init_siem_batch() -> None:
     global _event_queue, _batch_flush_task, _elk_poll_task, _RULES
     _RULES = _load_rules()
@@ -318,6 +385,8 @@ async def init_siem_batch() -> None:
     _event_queue = asyncio.Queue(maxsize=1000)
     _batch_flush_task = asyncio.create_task(_batch_flush())
     _elk_poll_task = asyncio.create_task(_poll_elasticsearch())
+    # Apply ILM policy in the background — failure must not block startup
+    asyncio.create_task(_apply_es_ilm_on_startup())
 
 
 async def close_siem_batch() -> None:

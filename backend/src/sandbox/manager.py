@@ -255,6 +255,10 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
                 "cybersim_role": "kali",
                 "cybersim_session": session_id,
                 "cybersim_scenario": scenario_id,
+                # Canonical labels used by orphan sweep (B7-2)
+                "com.cybersim.project": "JUTerminal1",
+                "com.cybersim.role": "kali",
+                "com.cybersim.session": session_id,
             },
             remove=False,
         )

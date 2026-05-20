@@ -50,8 +50,14 @@ export default function BlueWorkspace() {
   const wsSessionId = session && roeAcked ? sessionId : null
   const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(wsSessionId)
 
-  const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
-  const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
+  const handleRawInput = useCallback((data) => {
+    if (connectionState === 'failed') return
+    sendRawInput(data)
+  }, [connectionState, sendRawInput])
+  const handleCommand = useCallback((cmd) => {
+    if (connectionState === 'failed') return
+    sendCommand(cmd)
+  }, [connectionState, sendCommand])
 
   useEffect(() => {
     let cancelled = false
@@ -174,6 +180,15 @@ export default function BlueWorkspace() {
       >
         <LayoutPicker role="blue" scenarioId={session.scenario_id} />
       </WorkspaceTopBar>
+
+      {connectionState === 'failed' && (
+        <div className="sticky top-14 z-50 flex items-center gap-3 bg-cs-red/10 border-b border-cs-red/40 px-5 py-2.5">
+          <span className="h-2 w-2 rounded-full bg-cs-red shrink-0" />
+          <p className="text-xs font-mono text-cs-red">
+            Connection lost. Please refresh the page or contact your instructor.
+          </p>
+        </div>
+      )}
 
       {(criticalCount > 0 || highCount > 0) && (
         <div className="flex items-center gap-2 px-4 py-1.5 bg-surface-1/60 border-b border-cs-border">

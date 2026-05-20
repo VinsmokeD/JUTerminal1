@@ -89,6 +89,7 @@ async def lpush_capped(key: str, value: Any, max_len: int = 10) -> None:
     async with client.pipeline() as pipe:
         pipe.lpush(key, serialised)
         pipe.ltrim(key, 0, max_len - 1)
+        pipe.expire(key, 86400)  # 1-day TTL — prevents accumulation on abandoned sessions
         await pipe.execute()
 
 

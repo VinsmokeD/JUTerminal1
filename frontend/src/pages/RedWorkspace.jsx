@@ -136,8 +136,14 @@ export default function RedWorkspace() {
     }
   }, [siemEvents.length])
 
-  const handleRawInput = useCallback((data) => { sendRawInput(data) }, [sendRawInput])
-  const handleCommand = useCallback((cmd) => { sendCommand(cmd) }, [sendCommand])
+  const handleRawInput = useCallback((data) => {
+    if (connectionState === 'failed') return
+    sendRawInput(data)
+  }, [connectionState, sendRawInput])
+  const handleCommand = useCallback((cmd) => {
+    if (connectionState === 'failed') return
+    sendCommand(cmd)
+  }, [connectionState, sendCommand])
 
   if (loadingSession || !session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading session...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
@@ -196,6 +202,15 @@ export default function RedWorkspace() {
       >
         <LayoutPicker role="red" scenarioId={session.scenario_id} />
       </WorkspaceTopBar>
+
+      {connectionState === 'failed' && (
+        <div className="sticky top-14 z-50 flex items-center gap-3 bg-cs-red/10 border-b border-cs-red/40 px-5 py-2.5">
+          <span className="h-2 w-2 rounded-full bg-cs-red shrink-0" />
+          <p className="text-xs font-mono text-cs-red">
+            Connection lost. Please refresh the page or contact your instructor.
+          </p>
+        </div>
+      )}
 
       <div ref={containerRef} className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
         {/* LEFT PANE */}

@@ -5,6 +5,96 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-20 11:17:41 +03:00] - Codex (Batch 7 - Stability, Performance, and WebSocket Hardening)
+* **Status**: Complete - WebSocket reconnect hardening, orphan Kali cleanup, Elasticsearch ILM, Redis TTL audit, compose resource limits, and backend non-root runtime are implemented and verified.
+* **Why**: Batch 7 prepares CyberSim for a 2-hour live demo by preventing silent WebSocket failure loops, limiting reconnect pressure during backend downtime, removing stale Kali containers safely, bounding Redis and Elasticsearch growth, and ensuring service containers have explicit CPU/runtime constraints.
+* **Where**:
+  - `frontend/src/hooks/useWebSocket.js` - replaced fixed/jittered reconnect behavior with bounded exponential backoff starting at 1s, capped at 30s, with 10 attempts and a persistent `failed` state.
+  - `frontend/src/hooks/useTerminal.js` and `frontend/src/components/terminal/Terminal.jsx` - added failed-state terminal input disabling via xterm `disableStdin`, with send guards to avoid silently queueing commands after reconnect exhaustion.
+  - `frontend/src/pages/RedWorkspace.jsx` and `frontend/src/pages/BlueWorkspace.jsx` - added the required full-width failed-connection banner and guarded terminal command/raw input dispatch when failed.
+  - `backend/src/sandbox/manager.py` - added canonical `com.cybersim.project`, `com.cybersim.role=kali`, and `com.cybersim.session` labels to Kali containers while preserving legacy cleanup labels.
+  - `backend/src/sandbox/container_cleanup.py` - added canonical orphan sweep, 2-hour age gate, Redis stale-session eviction, Redis active-session container-id extraction, 60-second cleanup cadence, and 5-minute orphan cadence.
+  - `backend/src/ws/routes.py` - stores JSON session state in `cybersim:active_sessions`, refreshes `cybersim:session:{session_id}:alive` with EX 7200 on connect and every message, and removes both active hash entry and alive key on normal disconnect.
+  - `backend/src/cache/redis.py` and `backend/src/sandbox/terminal.py` - added 1-day expiry to capped command and terminal-history Redis lists.
+  - `backend/src/sandbox/daemon_noise.py` and `backend/src/siem/engine.py` - taught active-session consumers to read both legacy raw scenario ids and new JSON active-session payloads.
+  - `backend/src/siem/engine.py` - added startup ILM policy/index-template installation for `cybersim-logs-*` and `filebeat-*`, with retry tolerance while Elasticsearch becomes ready.
+  - `docker-compose.yml` - added CPU limits for backend (`2.0`), frontend (`0.5`), and filebeat (`0.3`) while keeping Redis at 256mb and Elasticsearch at 2g/1g heap.
+  - `backend/Dockerfile` - replaced `appuser` with the non-root `cybersim` system user.
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this Batch 7 state and evidence record.
+* **What & How**: The frontend now stops reconnecting after 10 failed attempts and exposes `connectionState === "failed"` to both workspaces. During transient outages it reconnects at 1s, 2s, 4s, 8s, 16s, then 30s-capped intervals; on success it resets attempts and base delay. After reconnect exhaustion, pending frames are cleared and terminal input is disabled at both the xterm and dispatch layers. Backend active-session state now includes container ids so cleanup can distinguish tracked Kali sandboxes from true orphans. Cleanup runs every 60 seconds, evicts active-session hash entries whose keepalive key is gone, and runs the canonical Kali orphan sweep every 5 minutes while refusing to remove containers younger than 7200 seconds. Redis terminal and command lists remain capped and now expire after one day. SIEM startup applies the ILM policy and index template idempotently, retrying briefly if Elasticsearch is still starting. Docker Compose now reflects the 100-user resource-review CPU limits, and the backend container runs as `cybersim` with Docker socket group access still handled by `group_add`.
+* **Batch 7 Evidence**:
+  - `python -m py_compile backend/src/cache/redis.py backend/src/ws/routes.py backend/src/sandbox/manager.py backend/src/sandbox/terminal.py backend/src/sandbox/container_cleanup.py backend/src/sandbox/daemon_noise.py backend/src/siem/engine.py`
+    - Output: no output; exit 0.
+  - `python -m pytest -q -p no:cacheprovider backend/tests --ignore=backend/tests/e2e --ignore=backend/tests/integration_test.py --ignore=backend/tests/test_ws_integration.py --ignore=backend/tests/load_test.py`
+    ```text
+    ......................................................                   [100%]
+    ============================== warnings summary ===============================
+    tests/unit_test_scenarios.py::test_ai_missing_key_returns_static_socratic_command_hint
+      C:\Users\Mahmo\AppData\Roaming\Python\Python314\site-packages\google\genai\types.py:42: DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+        VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+
+    -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+    54 passed, 1 warning in 3.04s
+    ```
+  - `docker compose config --quiet`
+    - Output: no output; exit 0.
+  - `npm run build` from `frontend/`
+    ```text
+    > cybersim-frontend@0.1.0 build
+    > vite build
+
+    vite v5.4.21 building for production...
+    transforming...
+
+    warn - The utility `shadow-[0_0_6px_theme(colors.cs-blue)]` contains an invalid theme value and was not generated.
+    ✓ 542 modules transformed.
+    rendering chunks...
+    computing gzip size...
+    dist/index.html                                1.29 kB │ gzip:   0.65 kB
+    dist/assets/AiHintPanel-LcAfv9l9.css           4.35 kB │ gzip:   1.68 kB
+    dist/assets/index-DLR8Puxn.css                77.18 kB │ gzip:  15.13 kB
+    dist/assets/Stat-Dro0RGuB.js                   0.45 kB │ gzip:   0.27 kB
+    dist/assets/Settings-BOEK5Zll.js               5.31 kB │ gzip:   1.87 kB
+    dist/assets/HeroScene3D-BklwiJGj.js            5.39 kB │ gzip:   2.39 kB
+    dist/assets/KillChainTimeline-CX2FASxt.js     11.50 kB │ gzip:   4.73 kB
+    dist/assets/InstructorDashboard-QQXsee2T.js   11.55 kB │ gzip:   3.64 kB
+    dist/assets/Debrief-Bf8cP3eL.js               18.29 kB │ gzip:   5.58 kB
+    dist/assets/RedWorkspace-CQPrdACD.js          20.62 kB │ gzip:   6.83 kB
+    dist/assets/purify.es-CLGrRn1w.js             25.32 kB │ gzip:   9.62 kB
+    dist/assets/vendor-ui-DQ_rTDiH.js             42.16 kB │ gzip:  16.78 kB
+    dist/assets/BlueWorkspace-CJpuwMP3.js         54.07 kB │ gzip:  17.56 kB
+    dist/assets/index-BOZZrvfg.js                 72.69 kB │ gzip:  21.42 kB
+    dist/assets/index.es-CFNw19T6.js             150.80 kB │ gzip:  51.61 kB
+    dist/assets/AiHintPanel-Dm4J2CFS.js          159.38 kB │ gzip:  45.26 kB
+    dist/assets/vendor-react-DLKkGc6X.js         160.25 kB │ gzip:  52.34 kB
+    dist/assets/html2canvas.esm-CBrSDip1.js      201.42 kB │ gzip:  48.03 kB
+    dist/assets/vendor-xterm-DWX2dM_j.js         286.27 kB │ gzip:  71.49 kB
+    dist/assets/jspdf.es.min-Dv3iU_Kj.js         390.31 kB │ gzip: 128.75 kB
+    dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
+    ✓ built in 6.31s
+    ```
+  - `docker compose up -d --build backend`
+    - Output summary: backend image rebuilt from the updated Dockerfile, `cybersim-backend:latest` exported, existing postgres/redis were healthy, and `cybersim-backend-1` was recreated and started. Compose also reported pre-existing orphan container `cybersim-caddy-1`; it was not removed.
+  - `docker compose exec -T backend whoami`
+    ```text
+    cybersim
+    ```
+  - `curl.exe -s http://localhost:9200/_ilm/policy/cybersim-logs`
+    ```json
+    {"cybersim-logs":{"version":1,"modified_date":"2026-05-20T08:14:23.153Z","policy":{"phases":{"hot":{"min_age":"0ms","actions":{"rollover":{"max_age":"7d","max_size":"5gb"}}},"delete":{"min_age":"30d","actions":{"delete":{"delete_searchable_snapshot":true}}}}},"in_use_by":{"indices":[],"data_streams":[],"composable_templates":["cybersim-logs-template"]}}}
+    ```
+  - `docker ps --filter label=com.cybersim.role=kali --format "{{.ID}} {{.Names}} {{.Status}}"`
+    - Output: no labeled Kali containers were running before manual orphan verification.
+  - `docker compose exec -T backend python3 -c "import asyncio; from src.sandbox.container_cleanup import _cleanup_orphans; import docker; c = docker.from_env(); print(asyncio.run(_cleanup_orphans(c, set())))"`
+    ```text
+    0
+    ```
+  - `docker compose logs --tail 40 backend`
+    - Evidence included `Application startup complete.`, `[SIEM] Loaded 17 Sigma rules from /app/src/siem/rules`, `[SIEM] Elasticsearch ILM policy and index template applied.`, and cleanup DB queries recurring at 60-second intervals.
+  - `git diff --check`
+    - Output: only Git CRLF normalization warnings for touched files; exit 0 with no whitespace errors.
+* **Residual notes**: Full browser DevTools reconnect observation was not run in this terminal-only pass. The implementation-level behavior is covered by the built frontend bundle, the explicit backoff code path, and backend restart/container checks above.
+
 ### [2026-05-20 10:59:00 +03:00] - Antigravity (Batch 6 — Debrief Real Data & SC-01 E2E Gate Complete)
 * **Status**: Complete - Consolidated report endpoint, flag validation, Debrief refactoring, and SC-01 E2E checks verified.
 * **Why**: Students need a unified debriefing report showing session metadata, scoring details, command logs, SIEM events, learning insights, and chronological timeline that survives browser refreshes. Instructors need secured, live monitoring.

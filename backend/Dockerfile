@@ -23,8 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 
 # Non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+RUN adduser --system --no-create-home --group cybersim \
+    && chown -R cybersim:cybersim /app
+USER cybersim
 
 EXPOSE 8000
 

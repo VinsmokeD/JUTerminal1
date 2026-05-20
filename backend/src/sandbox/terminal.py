@@ -188,6 +188,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
             pipe = r_init.pipeline()
             pipe.lpush(f"terminal:{session_id}:history", banner)
             pipe.ltrim(f"terminal:{session_id}:history", 0, 499)
+            pipe.expire(f"terminal:{session_id}:history", 86400)
             pipe.execute()
             r_init.publish(f"terminal:{session_id}:output", json.dumps({"data": banner}))
             _fanout_terminal_output(session_id, banner)
@@ -218,6 +219,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                     pipe = r.pipeline()
                     pipe.lpush(f"terminal:{session_id}:history", chunk)
                     pipe.ltrim(f"terminal:{session_id}:history", 0, 499)
+                    pipe.expire(f"terminal:{session_id}:history", 86400)
                     pipe.execute()
                 except Exception:
                     break

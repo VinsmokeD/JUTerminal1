@@ -29,9 +29,21 @@ from src.scenarios.branching import infer_active_branch, get_active_branch, get_
 
 _GATE_PENALTY = 5  # points deducted per blocked command
 _HINT_PENALTIES = {1: 5, 2: 10, 3: 20}  # points deducted per hint level (L1/L2/L3)
-_ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → scenario_id
+_ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → JSON session state
 
 router = APIRouter()
+
+
+def _active_session_payload(session_state: dict) -> str:
+    """Return the Redis active-session value used by SIEM, noise, and cleanup."""
+    return json.dumps(
+        {
+            "scenario_id": session_state.get("scenario_id"),
+            "role": session_state.get("role"),
+            "phase": session_state.get("phase"),
+            "container_id": session_state.get("container_id"),
+        }
+    )
 
 
 async def _authenticate(token: str) -> str | None:
@@ -265,7 +277,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         session_state["container_id"] and not session_state["container_id"].startswith("mock-")
     )
     if has_real_container:
-        await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, session_state["scenario_id"])
+        await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, _active_session_payload(session_state))
+        await redis.set(f"cybersim:session:{session_id}:alive", "1", ex=7200)
 
     # Subscribe to SIEM channels via Redis pub/sub. Terminal output is delivered
     # through the direct listener queue and still persisted to Redis for refresh.
@@ -411,6 +424,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             msg = json.loads(raw)
             msg_type = msg.get("type")
 
+            # Keepalive: refresh liveness key on every message so cleanup loop
+            # can evict abandoned sessions from cybersim:active_sessions hash.
+            try:
+                await redis.set(f"cybersim:session:{session_id}:alive", "1", ex=7200)
+            except Exception:
+                pass  # non-fatal; eviction will happen on next cleanup cycle
+
             if msg_type == "terminal_raw":
                 # ── Raw PTY passthrough: every keystroke → Docker ──────────
                 raw_data = msg.get("data", "")
@@ -483,6 +503,10 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             pass
         try:
             await redis.hdel(_ACTIVE_SESSIONS_KEY, session_id)
+        except Exception:
+            pass
+        try:
+            await redis.delete(f"cybersim:session:{session_id}:alive")
         except Exception:
             pass
         unregister_terminal_output_listener(session_id, terminal_output_queue)

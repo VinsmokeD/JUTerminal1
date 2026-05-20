@@ -109,6 +109,7 @@ services:
     deploy:
       resources:
         limits:
+          cpus: '0.3'
           memory: 256m
 
   # ── Application ───────────────────────────────────────────────────
@@ -155,6 +156,7 @@ services:
     deploy:
       resources:
         limits:
+          cpus: '2.0'
           memory: 512m
 
   frontend:
@@ -177,6 +179,7 @@ services:
     deploy:
       resources:
         limits:
+          cpus: '0.5'
           memory: 512m
 
   nginx:

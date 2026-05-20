@@ -5,16 +5,18 @@ const DEFAULT_WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}:
 const WS_URL = import.meta.env.VITE_WS_URL || DEFAULT_WS_URL
 const terminalBacklogs = new Map()
 const MAX_PENDING_FRAMES = 500
-const RECONNECT_BASE_DELAY_MS = 800
-const RECONNECT_MAX_DELAY_MS = 15000
+const MAX_RECONNECT_DELAY = 30000
+const MAX_ATTEMPTS = 10
 
 export function useWebSocket(sessionId) {
   const wsRef = useRef(null)
   const pendingFramesRef = useRef([])
   const pendingSessionRef = useRef(null)
   const reconnectTimerRef = useRef(null)
-  const reconnectAttemptRef = useRef(0)
+  const reconnectDelay = useRef(1000)
+  const reconnectAttempts = useRef(0)
   const unauthorizedRef = useRef(false)
+  const failedRef = useRef(false)
   const lastRawInputAtRef = useRef(0)
   const lastTerminalOutputAtRef = useRef(0)
   const [reconnectTick, setReconnectTick] = useState(0)
@@ -27,8 +29,10 @@ export function useWebSocket(sessionId) {
     if (pendingSessionRef.current !== sessionId) {
       pendingFramesRef.current = []
       pendingSessionRef.current = sessionId
-      reconnectAttemptRef.current = 0
+      reconnectAttempts.current = 0
+      reconnectDelay.current = 1000
       unauthorizedRef.current = false
+      failedRef.current = false
     }
     lastRawInputAtRef.current = 0
     lastTerminalOutputAtRef.current = 0
@@ -41,7 +45,9 @@ export function useWebSocket(sessionId) {
 
     ws.onopen = () => {
       ws.send(JSON.stringify({ token }))
-      reconnectAttemptRef.current = 0
+      reconnectAttempts.current = 0
+      reconnectDelay.current = 1000
+      failedRef.current = false
       setConnectionState('connected')
       const queuedFrames = pendingFramesRef.current
       const failedFrames = []
@@ -144,14 +150,21 @@ export function useWebSocket(sessionId) {
       }
       setConnectionState(unauthorized ? 'unauthorized' : 'disconnected')
       if (!disposed && !unauthorized) {
-        const attempt = reconnectAttemptRef.current + 1
-        reconnectAttemptRef.current = attempt
-        const exponent = Math.min(attempt - 1, 6)
-        const baseDelay = Math.min(RECONNECT_MAX_DELAY_MS, RECONNECT_BASE_DELAY_MS * (2 ** exponent))
-        const jitter = Math.round(baseDelay * 0.2 * Math.random())
+        if (reconnectAttempts.current >= MAX_ATTEMPTS) {
+          failedRef.current = true
+          pendingFramesRef.current = []
+          setConnectionState('failed')
+          return
+        }
+
+        reconnectAttempts.current += 1
+        const delay = Math.min(
+          reconnectDelay.current * 2 ** (reconnectAttempts.current - 1),
+          MAX_RECONNECT_DELAY,
+        )
         reconnectTimerRef.current = window.setTimeout(() => {
           setReconnectTick((tick) => tick + 1)
-        }, baseDelay + jitter)
+        }, delay)
       }
     }
 
@@ -185,7 +198,7 @@ export function useWebSocket(sessionId) {
   }, [sessionId, connectionState])
 
   const sendFrame = useCallback((frame) => {
-    if (unauthorizedRef.current) return
+    if (unauthorizedRef.current || failedRef.current) return
     const ws = wsRef.current
     if (ws?.readyState === WebSocket.OPEN) {
       try {
