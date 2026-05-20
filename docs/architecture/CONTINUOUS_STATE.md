@@ -5,6 +5,21 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-20 21:08:00 +03:00] - Codex (Post-Push Demo Rehearsal - Frontend API Proxy Fix)
+* **Status**: Complete - manual browser rehearsal found and fixed frontend container API proxy 502s caused by stale Docker DNS resolution after backend recreation; rebuilt frontend, retested auth/dashboard/session, and prepared the fix for commit/push.
+* **Why**: User asked to do the full post-push demo checklist. API docs and core readiness passed, but browser registration through `http://localhost:3000/auth` failed because frontend Nginx had cached the old backend container IP after `docker compose up -d` recreated backend.
+* **Where**:
+  - `frontend/nginx-spa.conf` - replaced static `proxy_pass http://backend:8000` with Docker resolver-backed `$backend_upstream` so `/api/` and `/ws/` resolve backend dynamically.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - `curl http://localhost:8001/api/auth/register` succeeded directly, proving FastAPI auth was healthy.
+  - `curl http://localhost:3000/api/health/readiness` returned `502 Bad Gateway`; frontend logs showed `connect() failed (111: Connection refused)` to stale upstream `172.30.0.3:8000` while Docker DNS now resolved `backend` to `172.30.0.6`.
+  - The config now uses `resolver 127.0.0.11 valid=10s ipv6=off; set $backend_upstream backend:8000; proxy_pass http://$backend_upstream;`, forcing runtime DNS refresh for both HTTP API and WebSocket traffic.
+  - Rebuilt frontend with `docker compose up -d --build frontend`; Vite build passed (`544 modules transformed`, `built in 8.63s`), and the container restarted cleanly.
+  - Verified `curl http://localhost:3000/api/health/readiness` returns `{"status":"ok",...}` through the frontend proxy.
+  - Re-ran `python scripts/demo_check.py`; all 11 checks passed.
+  - Browser rehearsal passed: API docs opened, frontend opened, registration succeeded through `localhost:3000`, onboarding completed, Dashboard listed SC-01/SC-02/SC-03, SC-01 Red workspace loaded with `Connection Live`, terminal command `echo CYBERSIM_BROWSER_SMOKE` produced `CYBERSIM_BROWSER_SMOKE` in Redis terminal replay, and Blue workspace loaded with SIEM/IR panels and no browser console errors.
+
 ### [2026-05-20 12:28:00 +03:00] - Antigravity (Batch 7 - Stability & Performance)
 * **Status**: Complete - Implemented WebSocket auto-reconnect backoff, orphan container cleanup, ES ILM policy, Redis TTL, and compose resource limits. Verification passed.
 * **Why**: To make the platform survive a live 2-hour demo without silent failures or resource leaks.
