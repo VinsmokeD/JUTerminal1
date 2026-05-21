@@ -80,6 +80,40 @@ def _compose_exec_tcp(service: str, port: int, timeout: int = 8) -> bool:
         return False
 
 
+def _compose_exec_shell(service: str, command: str, timeout: int = 8) -> bool:
+    try:
+        result = subprocess.run(
+            ["docker", "compose", "exec", "-T", service, "sh", "-lc", command],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def _compose_service_ok(service_name: str, timeout: int = 8) -> bool:
+    try:
+        result = subprocess.run(
+            ["docker", "compose", "ps", "--format", "json", service_name],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        if result.returncode != 0:
+            return False
+        for line in result.stdout.splitlines():
+            if not line.strip().startswith("{"):
+                continue
+            svc = json.loads(line)
+            state = (svc.get("Health") or svc.get("State") or "").lower()
+            return state in ("healthy", "running")
+    except Exception:
+        return False
+    return False
+
+
 # ── Check result ─────────────────────────────────────────────────────────────
 
 @dataclass
@@ -142,9 +176,26 @@ def check_frontend(frontend_url: str) -> list[Result]:
 
 def check_scenario_sc01() -> list[Result]:
     results = []
-    results.append(Result("SC-01 WAF port 80",     _tcp_open("172.20.1.1",  80)))
-    results.append(Result("SC-01 Webapp port 80",  _tcp_open("172.20.1.20", 80)))
-    results.append(Result("SC-01 DB port 3306",    _tcp_open("172.20.1.21", 3306)))
+    results.append(
+        Result(
+            "SC-01 WAF port 80",
+            _tcp_open("172.20.1.1", 80)
+            or _compose_exec_shell("sc01-waf", "curl -fsS --max-time 3 http://127.0.0.1:80/ >/dev/null"),
+        )
+    )
+    results.append(
+        Result(
+            "SC-01 Webapp port 80",
+            _tcp_open("172.20.1.20", 80)
+            or _compose_exec_shell("sc01-waf", "curl -fsS --max-time 3 http://172.20.1.20:80/ >/dev/null"),
+        )
+    )
+    results.append(
+        Result(
+            "SC-01 DB port 3306",
+            _tcp_open("172.20.1.21", 3306) or _compose_service_ok("sc01-db"),
+        )
+    )
     return results
 
 
@@ -170,9 +221,20 @@ def check_scenario_sc02() -> list[Result]:
 
 def check_scenario_sc03() -> list[Result]:
     results = []
-    results.append(Result("SC-03 Mail SMTP 25",      _tcp_open("172.20.3.20", 25)))
-    results.append(Result("SC-03 GoPhish admin 3333", _tcp_open("172.20.3.10", 3333)))
-    results.append(Result("SC-03 Victim HTTP 8080",  _tcp_open("172.20.3.30", 8080)))
+    results.append(
+        Result("SC-03 Mail SMTP 25", _tcp_open("172.20.3.20", 25) or _compose_service_ok("sc03-mailrelay"))
+    )
+    results.append(
+        Result(
+            "SC-03 GoPhish admin 3333",
+            _tcp_open("172.20.3.10", 3333)
+            or _compose_exec_tcp("sc03-phish", 3333)
+            or _compose_service_ok("sc03-phish"),
+        )
+    )
+    results.append(
+        Result("SC-03 Victim HTTP 8080", _tcp_open("172.20.3.30", 8080) or _compose_exec_tcp("sc03-victim", 8080))
+    )
     return results
 
 

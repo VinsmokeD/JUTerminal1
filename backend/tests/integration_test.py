@@ -84,6 +84,21 @@ async def admin_token(client: AsyncClient):
 @pytest_asyncio.fixture(scope="module")
 async def test_session_id(client: AsyncClient, auth_token: str):
     """Create a test session for SC-01."""
+    # End any existing active sessions for this user
+    while True:
+        active_resp = await client.get(
+            "/api/sessions/active",
+            headers={"Authorization": f"Bearer {auth_token}"},
+        )
+        if active_resp.status_code == 200 and active_resp.json():
+            existing_session_id = active_resp.json()["session_id"]
+            await client.post(
+                f"/api/sessions/{existing_session_id}/end",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+        else:
+            break
+
     resp = await client.post(
         "/api/sessions/start",
         json={"scenario_id": "SC-01", "role": "red"},
@@ -91,8 +106,6 @@ async def test_session_id(client: AsyncClient, auth_token: str):
     )
     assert resp.status_code == 200
     return resp.json()["session_id"]
-
-
 # ────────────────────────────────────────────────────────────────────────────
 # SECTION 1: TERMINAL & CONTAINER HEALTH
 # ────────────────────────────────────────────────────────────────────────────
@@ -187,14 +200,22 @@ async def test_06_login_returns_token(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_07_session_persists_with_token(client: AsyncClient, auth_token: str):
     """✓ Session persists across page refresh (token reuse)."""
+    # Cleanup
+    while True:
+        active_resp = await client.get("/api/sessions/active", headers={"Authorization": f"Bearer {auth_token}"})
+        if active_resp.status_code == 200 and active_resp.json():
+            await client.post(f"/api/sessions/{active_resp.json()['session_id']}/end", headers={"Authorization": f"Bearer {auth_token}"})
+        else:
+            break
+
     # Create session
     resp1 = await client.post(
         "/api/sessions/start",
         json={"scenario_id": "SC-02", "role": "blue"},
         headers={"Authorization": f"Bearer {auth_token}"},
     )
+    assert resp1.status_code == 200
     session_id = resp1.json()["session_id"]
-
     # Retrieve session again (simulating page refresh)
     resp2 = await client.get(
         f"/api/sessions/{session_id}",
@@ -398,6 +419,14 @@ async def test_11_get_scenarios_returns_three(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_12_start_session_creates_with_phase_1(client: AsyncClient, auth_token: str):
     """✓ POST /api/sessions/start/{sc01} creates session with phase=1."""
+    # Cleanup
+    while True:
+        active_resp = await client.get("/api/sessions/active", headers={"Authorization": f"Bearer {auth_token}"})
+        if active_resp.status_code == 200 and active_resp.json():
+            await client.post(f"/api/sessions/{active_resp.json()['session_id']}/end", headers={"Authorization": f"Bearer {auth_token}"})
+        else:
+            break
+
     resp = await client.post(
         "/api/sessions/start",
         json={"scenario_id": "SC-01", "role": "red"},

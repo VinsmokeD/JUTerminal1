@@ -204,6 +204,61 @@ def test_explicit_hint_bypasses_offline_guard(monkeypatch):
     assert result is None or "offline" not in (result or "").lower()
 
 
+@pytest.mark.asyncio
+async def test_cache_increment_accepts_ttl_in_memory_fallback(monkeypatch):
+    from src.cache import redis
+
+    monkeypatch.setattr(redis.settings, "ENVIRONMENT", "development")
+    monkeypatch.setattr(redis, "_client", None)
+    redis._memory_cache.clear()
+    redis._memory_expiries.clear()
+
+    now = 1000.0
+    monkeypatch.setattr(redis.time, "time", lambda: now)
+
+    assert await redis.cache_increment("ai:test:tokens", amount=5, ttl=10) == 5
+    assert await redis.cache_get("ai:test:tokens") == 5
+    assert redis._memory_expiries["ai:test:tokens"] == 1010.0
+
+    now = 1011.0
+    assert await redis.cache_get("ai:test:tokens") is None
+
+
+def test_redact_for_ai_handles_dict_key_accounts():
+    from src.ai.security import redact_for_ai
+
+    redacted = redact_for_ai(
+        {
+            "key_accounts": {
+                "svc_backup": {
+                    "role": "Service account",
+                    "password": "Backup2024!",
+                    "hash": "aad3b435b51404ee",
+                    "spn": "CIFS/NEXORA-FS01.nexora.local",
+                }
+            }
+        },
+        current_phase=1,
+    )
+
+    rendered = str(redacted)
+    assert "Backup2024!" not in rendered
+    assert "aad3b435b51404ee" not in rendered
+    assert "svc_backup" in rendered
+
+
+def test_validate_ai_output_rejects_known_secret():
+    from src.ai.security import validate_ai_output
+
+    valid, safe_text = validate_ai_output(
+        "You should try Backup2024! next.",
+        scenario_secrets=["Backup2024!"],
+    )
+
+    assert valid is False
+    assert "sensitive credential" in safe_text
+
+
 def test_10_sc01_gates_sqlmap_at_phase_3():
     """SC-01: sqlmap should require phase >= 3."""
     from src.scenarios.loader import load_scenario, get_methodology_gate

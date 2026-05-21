@@ -231,10 +231,11 @@ services:
           cpus: '0.5'
           memory: 512m
 
-  sc01-webapp:
+  sc01-php:
     build:
       context: ./infrastructure/docker/scenarios/sc01
       dockerfile: Dockerfile.webapp
+    hostname: sc01-php
     environment:
       DB_HOST: sc01-db
       DB_USER: webapp
@@ -245,7 +246,7 @@ services:
         condition: service_healthy
     networks:
       sc01-net:
-        ipv4_address: 172.20.1.20
+        ipv4_address: 172.20.1.22
     profiles: ["sc01"]
     restart: unless-stopped
     deploy:
@@ -253,6 +254,23 @@ services:
         limits:
           cpus: '0.5'
           memory: 512m
+
+  sc01-webapp:
+    build:
+      context: ./infrastructure/docker/scenarios/sc01
+      dockerfile: Dockerfile.apache-vuln
+    depends_on:
+      - sc01-php
+    networks:
+      sc01-net:
+        ipv4_address: 172.20.1.20
+    profiles: ["sc01"]
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256m
 
   sc01-waf:
     image: owasp/modsecurity-crs:nginx

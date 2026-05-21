@@ -1,0 +1,11 @@
+FROM httpd:2.4.49
+
+# Enable required modules for proxying
+RUN sed -i '/LoadModule proxy_module/s/^#//g' /usr/local/apache2/conf/httpd.conf && \
+    sed -i '/LoadModule proxy_http_module/s/^#//g' /usr/local/apache2/conf/httpd.conf && \
+    sed -i '/LoadModule cgid_module/s/^#//g' /usr/local/apache2/conf/httpd.conf
+
+# We need to exclude /cgi-bin/ from the proxy so the exploit hits this server directly
+RUN echo "ProxyPass /cgi-bin/ !" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "ProxyPass / http://sc01-php:80/" >> /usr/local/apache2/conf/httpd.conf && \
+    echo "ProxyPassReverse / http://sc01-php:80/" >> /usr/local/apache2/conf/httpd.conf

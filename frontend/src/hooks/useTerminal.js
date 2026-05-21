@@ -3,7 +3,6 @@ import { Terminal as XTerm } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { SearchAddon } from 'xterm-addon-search'
-import { WebglAddon } from 'xterm-addon-webgl'
 import { getTerminalBacklog } from './useWebSocket'
 import 'xterm/css/xterm.css'
 
@@ -97,7 +96,6 @@ export function useTerminal({
   const termRef = useRef(null)
   const fitRef = useRef(null)
   const searchRef = useRef(null)
-  const webglRef = useRef(null)
   const lineBufferRef = useRef('')
   const historyRestoredRef = useRef(false)
   const onDataRef = useRef(onData)
@@ -171,20 +169,7 @@ export function useTerminal({
     term.loadAddon(searchAddon)
 
     term.open(terminalElement)
-    try {
-      const webglAddon = new WebglAddon()
-      webglAddon.onContextLoss(() => {
-        webglAddon.dispose()
-        webglRef.current = null
-        setRenderer('dom')
-      })
-      term.loadAddon(webglAddon)
-      webglRef.current = webglAddon
-      setRenderer('webgl')
-    } catch {
-      webglRef.current = null
-      setRenderer('dom')
-    }
+    setRenderer('dom')
 
     fitAddon.fit()
     term.focus()
@@ -258,7 +243,6 @@ export function useTerminal({
       terminalElement.removeEventListener('touchstart', focusTerminal)
       ro.disconnect()
       searchRef.current = null
-      webglRef.current = null
       fitRef.current = null
       termRef.current = null
       term.dispose()

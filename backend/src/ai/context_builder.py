@@ -1,7 +1,7 @@
 """
 Context builder: assembles the full AI context payload for a session.
 
-This replaces the minimal context previously sent to Gemini. The AI now
+This replaces the minimal context previously sent to OpenRouter. The AI now
 receives complete target knowledge, student discovery state, command history,
 note summaries, and behavioral signals.
 """
@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.cache.redis import _get as get_redis, lrange, cache_get
 from src.db.database import AsyncSessionLocal, Session, Note, CommandLog
 from src.ai.discovery_tracker import get_discoveries
-
+from src.ai.security import redact_for_ai
 
 # ── Full target knowledge per scenario ──────────────────────────────────────
 # The AI knows EVERYTHING about the environment — all services, all vulns,
@@ -194,6 +194,7 @@ async def build_ai_context(session_id: str) -> dict[str, Any]:
     # ── Assemble full context ───────────────────────────────────────────
     scenario_id = session.scenario_id.upper()
     target_knowledge = SCENARIO_KNOWLEDGE.get(scenario_id, {})
+    redacted_knowledge = redact_for_ai(target_knowledge, current_phase=session.phase)
 
     return {
         "scenario_id": scenario_id,
@@ -206,11 +207,11 @@ async def build_ai_context(session_id: str) -> dict[str, Any]:
 
         # Full target knowledge
         "target_environment": {
-            "network": target_knowledge.get("network", ""),
-            "hosts": target_knowledge.get("hosts", []),
-            "domain": target_knowledge.get("domain"),
-            "initial_creds": target_knowledge.get("initial_creds"),
-            "key_accounts": target_knowledge.get("key_accounts"),
+            "network": redacted_knowledge.get("network", ""),
+            "hosts": redacted_knowledge.get("hosts", []),
+            "domain": redacted_knowledge.get("domain"),
+            "initial_creds": redacted_knowledge.get("initial_creds"),
+            "key_accounts": redacted_knowledge.get("key_accounts"),
         },
 
         # What student has found so far

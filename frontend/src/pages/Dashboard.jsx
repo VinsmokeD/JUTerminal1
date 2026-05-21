@@ -60,8 +60,10 @@ export default function Dashboard() {
   const location = useLocation()
   const requestedScenarioId = location.state?.scenarioId
   const [mySessions, setMySessions] = useState([])
+  const [activeMission, setActiveMission] = useState(null)
   const [scenariosLoading, setScenariosLoading] = useState(true)
   const [launching, setLaunching] = useState(null)
+  const [cancelling, setCancelling] = useState(null)
   const [launchError, setLaunchError] = useState(null)
   const [briefing, setBriefing] = useState(null)
   const [role, setRole] = useState('red')
@@ -71,15 +73,23 @@ export default function Dashboard() {
   const [filterChip, setFilterChip] = useState('all')
   const [difficultyChip, setDifficultyChip] = useState('All')
 
+  const refreshData = async () => {
+    try {
+      const [sessRes, meRes, activeRes] = await Promise.all([
+        api.get('/sessions/'),
+        api.get('/auth/me'),
+        api.get('/sessions/active')
+      ])
+      setMySessions(sessRes.data)
+      setUserRole(meRes.data.role)
+      setActiveMission(activeRes.data)
+    } catch {}
+  }
+
   useEffect(() => {
     setScenariosLoading(true)
-    const p = fetchScenarios()
-    const settled = p && typeof p.finally === 'function'
-      ? p.finally(() => setScenariosLoading(false))
-      : Promise.resolve().then(() => setScenariosLoading(false))
-    settled.catch(() => setScenariosLoading(false))
-    api.get('/sessions/').then(r => setMySessions(r.data)).catch(() => {})
-    api.get('/auth/me').then(r => setUserRole(r.data.role)).catch(() => {})
+    fetchScenarios().finally(() => setScenariosLoading(false))
+    refreshData()
   }, [fetchScenarios])
 
   useEffect(() => {
@@ -98,16 +108,33 @@ export default function Dashboard() {
       const session = await startSession(briefing.id, role, methodology)
       navigate(`/session/${session.id}/${role}`)
     } catch (e) {
-      setLaunchError(e.response?.data?.detail || e.message || 'Failed to start session')
+      const detail = e.response?.data?.detail
+      if (detail?.error === 'active_session_exists') {
+        setLaunchError(`You have an active mission (${detail.scenario_id}). Please complete or cancel it before starting a new one.`)
+      } else {
+        setLaunchError(typeof detail === 'string' ? detail : e.message || 'Failed to start session')
+      }
     } finally {
       setLaunching(null)
     }
   }
 
+  const cancelMission = async (id) => {
+    if (!window.confirm('Are you sure you want to cancel this mission? All progress will be lost.')) return
+    setCancelling(id)
+    try {
+      await api.post(`/sessions/${id}/end`)
+      await refreshData()
+      setLaunchError(null)
+    } catch (e) {
+      window.alert('Failed to cancel mission')
+    } finally {
+      setCancelling(null)
+    }
+  }
+
   const isBeginner = skillLevel === 'beginner'
-  const activeSessions = mySessions.filter(s => !s.completed_at)
   const completedSessions = mySessions.filter(s => s.completed_at)
-  const lastActiveSession = activeSessions[0]
   const activeFilter = FILTER_CHIPS.find(chip => chip.id === filterChip) || FILTER_CHIPS[0]
   const filteredScenarios = scenarios.filter((sc) => {
     const haystack = `${sc.id} ${sc.title || ''} ${sc.description || ''} ${(LEARN_POINTS[sc.id] || []).join(' ')}`.toLowerCase()
@@ -143,35 +170,50 @@ export default function Dashboard() {
               ? 'Choose a scenario to begin your training. Each one teaches different cybersecurity skills through hands-on practice in a safe, sandboxed environment.'
               : 'Select a scenario, choose your role and methodology, then launch your session.'}
           </p>
-          {lastActiveSession && (
-            <button
-              onClick={() => navigate(`/session/${lastActiveSession.id}/${lastActiveSession.role}`)}
-              className="mt-5 inline-flex items-center gap-3 rounded-cs border border-cs-blue/30 bg-cs-blue/10 px-4 py-2.5 text-sm text-cs-blue transition-colors hover:bg-cs-blue/15"
-            >
-              <span className="font-mono text-xs uppercase tracking-[0.12em]">Resume</span>
-              <span>{lastActiveSession.scenario_id} phase {lastActiveSession.phase}</span>
-            </button>
-          )}
         </div>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 pb-12">
-        {/* Active sessions banner */}
-        {activeSessions.length > 0 && (
-          <div className="mb-8 p-4 rounded-cs-lg border border-cs-blue/20 bg-cs-blue-surface">
-            <h3 className="text-sm font-semibold text-cs-blue mb-3 font-mono uppercase tracking-wider">Active Sessions</h3>
-            <div className="flex gap-3 flex-wrap">
-              {activeSessions.slice(0, 3).map(s => (
-                <button key={s.id} onClick={() => navigate(`/session/${s.id}/${s.role}`)}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-cs border border-cs-border bg-surface-1 hover:border-cs-blue/30 transition-all group">
-                  <span className="font-mono text-xs text-cs-blue">{s.scenario_id}</span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded-cs-sm font-mono font-medium ${
-                    s.role === 'red' ? 'text-cs-red bg-cs-red-dim' : 'text-cs-blue bg-cs-blue-dim'
-                  }`}>{s.role}</span>
-                  <span className="text-txt-dim text-xs font-mono">Phase {s.phase}</span>
-                  <span className="text-cs-blue text-xs font-semibold group-hover:underline">Resume →</span>
-                </button>
-              ))}
+        {/* Prominent Active Mission Banner */}
+        {activeMission && (
+          <div className="mb-10 p-6 rounded-cs-lg border border-cs-blue/30 bg-cs-blue/5 shadow-2xl shadow-cs-blue/5 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex gap-5 items-center">
+                <div className="w-12 h-12 rounded-cs bg-cs-blue/10 flex items-center justify-center border border-cs-blue/20">
+                  <svg className="w-6 h-6 text-cs-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-cs-blue font-mono uppercase tracking-[0.2em] mb-1">Active Mission: {activeMission.scenario_id}</h3>
+                  <p className="text-txt-primary font-bold">{scenarios.find(s => s.id === activeMission.scenario_id)?.title || 'Assigned Scenario'}</p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-cs-sm border ${activeMission.role === 'red' ? 'text-cs-red border-cs-red/20 bg-cs-red/5' : 'text-cs-blue border-cs-blue/20 bg-cs-blue/5'}`}>
+                      {activeMission.role.toUpperCase()} TEAM
+                    </span>
+                    <span className="text-[10px] font-mono text-txt-dim uppercase tracking-wider">Phase {activeMission.phase}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-cs-red hover:bg-cs-red/10 border-cs-red/20"
+                  onClick={() => cancelMission(activeMission.id)}
+                  disabled={!!cancelling}
+                >
+                  {cancelling === activeMission.id ? 'Terminating...' : 'Terminate Mission'}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="bg-cs-blue hover:bg-cs-blue/80 shadow-lg shadow-cs-blue/20"
+                  onClick={() => navigate(`/session/${activeMission.id}/${activeMission.role}`)}
+                >
+                  Resume Engagement
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -376,13 +418,23 @@ export default function Dashboard() {
                   {launchError}
                 </div>
               )}
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <button onClick={() => { setBriefing(null); setLaunchError(null) }} className="flex-1 btn btn-ghost justify-center text-sm">Cancel</button>
-                <button onClick={launch} disabled={!!launching}
-                  className="flex-1 btn btn-red justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-                  {launching ? 'Deploying environment...' : 'Start mission'}
-                </button>
-              </div>
+                <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                  <button onClick={() => { setBriefing(null); setLaunchError(null) }} className="flex-1 btn btn-ghost justify-center text-sm">Cancel</button>
+                  {activeMission ? (
+                    <button
+                      onClick={() => cancelMission(activeMission.id)}
+                      disabled={!!cancelling}
+                      className="flex-1 btn btn-ghost justify-center text-sm text-cs-red border-cs-red/20 hover:bg-cs-red/10"
+                    >
+                      {cancelling === activeMission.id ? 'Terminating...' : `Cancel ${activeMission.scenario_id} first`}
+                    </button>
+                  ) : (
+                    <button onClick={launch} disabled={!!launching}
+                      className="flex-1 btn btn-red justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                      {launching ? 'Deploying environment...' : 'Start mission'}
+                    </button>
+                  )}
+                </div>
             </div>
           </div>
         </div>

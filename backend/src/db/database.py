@@ -114,10 +114,52 @@ class SiemTriage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
+class AIInteraction(Base):
+    __tablename__ = "ai_interactions"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    session_id: Mapped[str] = mapped_column(String, ForeignKey("sessions.id"))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    kind: Mapped[str] = mapped_column(String(20), nullable=False)  # unprompted | hint_request | learn
+    hint_level: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    command_context: Mapped[str | None] = mapped_column(String, nullable=True)
+    phase: Mapped[int] = mapped_column(Integer, default=1)
+    prompt_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    completion_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    model: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    response_text: Mapped[str | None] = mapped_column(String, nullable=True)
+    latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    was_fallback: Mapped[bool] = mapped_column(Boolean, default=False)
+    flagged: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class UserActivity(Base):
+    __tablename__ = "user_activity"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"))
+    session_id: Mapped[str | None] = mapped_column(String, ForeignKey("sessions.id"), nullable=True)
+    event_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class ContainmentAction(Base):
+    __tablename__ = "containment_actions"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    session_id: Mapped[str] = mapped_column(String, ForeignKey("sessions.id"))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"))
+    action_type: Mapped[str] = mapped_column(String(50), nullable=False)  # block_ip | kill_pid | isolate_host
+    target_value: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending | success | failed
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
 async def init_db():
-    # create_all with checkfirst=True is safe alongside Alembic migrations: it only
-    # creates tables that don't exist yet (dev bootstrap / fresh container). New columns
-    # and indexes must still be managed via Alembic migrations in production.
+    # Development/test bootstrap only. Production must run Alembic migrations first
+    # (`alembic upgrade head`) and then start the app, so create_all never races
+    # migration-owned table creation.
+    if settings.ENVIRONMENT not in {"development", "test"}:
+        return
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all, checkfirst=True)
 

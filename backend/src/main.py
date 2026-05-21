@@ -19,6 +19,8 @@ from src.scoring.routes import router as scoring_router
 from src.reports.routes import router as reports_router
 from src.instructor.routes import router as instructor_router
 from src.api.playbooks import router as playbooks_router
+from src.ai.routes import router as ai_router
+from src.siem.routes import router as siem_router
 from src.sandbox.daemon_noise import start_noise_daemon
 from src.sandbox.container_cleanup import start_cleanup_loop
 
@@ -83,7 +85,8 @@ app.include_router(scoring_router, prefix="/api/scoring", tags=["scoring"])
 app.include_router(reports_router, prefix="/api/reports", tags=["reports"])
 app.include_router(instructor_router, prefix="/api/instructor", tags=["instructor"])
 app.include_router(playbooks_router, tags=["playbooks"])
-
+app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
+app.include_router(siem_router, prefix="/api/siem", tags=["siem"])
 
 @app.get("/health")
 async def health():
@@ -131,6 +134,29 @@ async def readiness():
         }
     except Exception as exc:
         checks["elasticsearch"] = {"status": "error", "detail": str(exc)[:120]}
+
+    # ── OpenRouter Reachability ───────────────────────────────────────
+    try:
+        if not settings.OPENROUTER_API_KEY:
+            checks["openrouter"] = {
+                "status": "ok",
+                "configured": False,
+                "detail": "OPENROUTER_API_KEY not set; static fallback hints enabled.",
+            }
+        else:
+            # Check cache first (cached 60s)
+            cached_or = await r.get("health:openrouter:status") if checks.get("redis", {}).get("status") == "ok" else None
+            if cached_or:
+                checks["openrouter"] = {"status": "ok", "cached": True}
+            else:
+                async with _httpx.AsyncClient() as client:
+                    resp = await client.get("https://openrouter.ai/api/v1/auth/key", headers={"Authorization": f"Bearer {settings.OPENROUTER_API_KEY}"}, timeout=3.0)
+                    resp.raise_for_status()
+                checks["openrouter"] = {"status": "ok"}
+                if checks.get("redis", {}).get("status") == "ok":
+                    await r.setex("health:openrouter:status", 60, "ok")
+    except Exception as exc:
+        checks["openrouter"] = {"status": "error", "detail": str(exc)[:120]}
 
     overall = "ok" if all(c["status"] == "ok" for c in checks.values()) else "degraded"
     from fastapi.responses import JSONResponse

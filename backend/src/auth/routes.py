@@ -7,10 +7,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from src.config import settings
-from src.db.database import get_db, User
+from src.db.database import get_db, User, Session, CommandLog, Note, SiemEvent
+from src.activity.service import record_activity
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -87,6 +88,8 @@ async def register(body: UserCreate, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already taken")
     user = User(username=body.username, password_hash=hash_password(body.password))
     db.add(user)
+    await db.flush()
+    await record_activity(db, user.id, "register", None, {"username": user.username})
     await db.commit()
     await db.refresh(user)
     return Token(access_token=create_token(user.id, user.username), token_type="bearer", username=user.username)
@@ -98,6 +101,10 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     user = result.scalar_one_or_none()
     if not user or not verify_password(form.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    await record_activity(db, user.id, "login", None, {"username": user.username})
+    await db.commit()
+
     return Token(access_token=create_token(user.id, user.username), token_type="bearer", username=user.username)
 
 
@@ -125,11 +132,89 @@ async def me(user: User = Depends(get_current_user)):
 
 @router.put("/profile")
 async def update_profile(body: ProfileUpdate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    changes = {}
     if body.skill_level and body.skill_level in ("beginner", "intermediate", "experienced"):
         user.skill_level = body.skill_level
+        changes["skill_level"] = body.skill_level
     if body.onboarding_completed is not None:
         user.onboarding_completed = body.onboarding_completed
+        changes["onboarding_completed"] = body.onboarding_completed
     db.add(user)
+    await record_activity(db, user.id, "profile_update", None, changes)
     await db.commit()
     await db.refresh(user)
     return {"id": user.id, "skill_level": user.skill_level, "onboarding_completed": user.onboarding_completed}
+
+
+@router.get("/stats")
+async def get_user_stats(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    # 1. Basic counts
+    sess_res = await db.execute(select(func.count(Session.id)).where(Session.user_id == user.id))
+    total_missions = sess_res.scalar() or 0
+
+    comp_res = await db.execute(select(func.count(Session.id)).where(Session.user_id == user.id, Session.completed_at != None))
+    completed_missions = comp_res.scalar() or 0
+
+    # 2. Score analytics
+    score_res = await db.execute(select(func.avg(Session.score)).where(Session.user_id == user.id, Session.completed_at != None))
+    avg_score = round(float(score_res.scalar() or 0.0), 1)
+
+    # 3. Activity volume
+    cmd_res = await db.execute(
+        select(func.count(CommandLog.id))
+        .join(Session)
+        .where(Session.user_id == user.id)
+    )
+    total_commands = cmd_res.scalar() or 0
+
+    note_res = await db.execute(
+        select(func.count(Note.id))
+        .join(Session)
+        .where(Session.user_id == user.id)
+    )
+    total_notes = note_res.scalar() or 0
+
+    # 4. Role distribution
+    red_res = await db.execute(select(func.count(Session.id)).where(Session.user_id == user.id, Session.role == "red"))
+    red_count = red_res.scalar() or 0
+
+    blue_res = await db.execute(select(func.count(Session.id)).where(Session.user_id == user.id, Session.role == "blue"))
+    blue_count = blue_res.scalar() or 0
+
+    # 5. Recent History
+    history_res = await db.execute(
+        select(Session)
+        .where(Session.user_id == user.id)
+        .order_by(Session.started_at.desc())
+        .limit(10)
+    )
+    history = [
+        {
+            "id": s.id,
+            "scenario_id": s.scenario_id,
+            "role": s.role,
+            "score": s.score,
+            "started_at": s.started_at.isoformat(),
+            "completed_at": s.completed_at.isoformat() if s.completed_at else None,
+        }
+        for s in history_res.scalars()
+    ]
+
+    return {
+        "username": user.username,
+        "skill_level": user.skill_level,
+        "joined_at": user.created_at.isoformat(),
+        "summary": {
+            "total_missions": total_missions,
+            "completed_missions": completed_missions,
+            "avg_score": avg_score,
+            "total_commands": total_commands,
+            "total_notes": total_notes,
+            "red_count": red_count,
+            "blue_count": blue_count,
+        },
+        "history": history
+    }

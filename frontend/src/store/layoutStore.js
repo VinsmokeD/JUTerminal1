@@ -1,127 +1,124 @@
 import { create } from 'zustand'
-
-const STORAGE_KEY = 'cs.workspace.layouts.v1'
+import { persist } from 'zustand/middleware'
 
 export const LAYOUT_PRESETS = {
   balanced: {
     label: 'Balanced',
-    horizontal: [72, 28],
-    main: [70, 30],
+    horizontal: [65, 35],
+    main: [65, 35],
     side: [50, 50],
     collapsed: { sideCol: false, mainBottom: false, sideTop: false, sideBottom: false },
   },
   focus: {
     label: 'Focus',
     horizontal: [100, 0],
-    main: [82, 18],
+    main: [80, 20],
     side: [50, 50],
-    collapsed: { sideCol: true, mainBottom: false, sideTop: true, sideBottom: true },
+    collapsed: { sideCol: true, mainBottom: false, sideTop: false, sideBottom: false },
   },
   debug: {
     label: 'Debug',
-    horizontal: [52, 48],
+    horizontal: [50, 50],
     main: [100, 0],
-    side: [66, 34],
-    collapsed: { sideCol: false, mainBottom: true, sideTop: false, sideBottom: false },
+    side: [0, 100],
+    collapsed: { sideCol: false, mainBottom: true, sideTop: true, sideBottom: false },
   },
 }
 
-export const layoutKeyFor = (role, scenarioId) => `${role || 'red'}:${scenarioId || 'unknown'}`
-
-const clonePreset = (preset = 'balanced') => {
-  const source = LAYOUT_PRESETS[preset] || LAYOUT_PRESETS.balanced
-  return {
-    preset,
-    revision: Date.now(),
-    horizontal: [...source.horizontal],
-    main: [...source.main],
-    side: [...source.side],
-    collapsed: { ...source.collapsed },
-    fullscreen: null,
-  }
+export function layoutKeyFor(role, scenarioId) {
+  return `${role}:${scenarioId || 'global'}`
 }
 
-const readLayouts = () => {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
-    return parsed && typeof parsed === 'object' ? parsed : {}
-  } catch {
-    return {}
-  }
-}
+export const useLayoutStore = create(
+  persist(
+    (set) => ({
+      layouts: {},
 
-const persist = (layouts) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(layouts))
-  } catch {
-    // ignore persistence failures
-  }
-}
+      ensureLayout: (role, scenarioId) => set((state) => {
+        const key = layoutKeyFor(role, scenarioId)
+        if (state.layouts[key]) return state
+        return {
+          layouts: {
+            ...state.layouts,
+            [key]: { ...LAYOUT_PRESETS.balanced, preset: 'balanced', revision: 0, fullscreen: null },
+          },
+        }
+      }),
 
-const updateLayout = (set, key, updater) => {
-  set((state) => {
-    const current = state.layouts[key] || clonePreset('balanced')
-    const next = updater(current)
-    const layouts = { ...state.layouts, [key]: next }
-    persist(layouts)
-    return { layouts }
-  })
-}
+      applyPreset: (role, scenarioId, presetId) => set((state) => {
+        const key = layoutKeyFor(role, scenarioId)
+        const preset = LAYOUT_PRESETS[presetId] || LAYOUT_PRESETS.balanced
+        return {
+          layouts: {
+            ...state.layouts,
+            [key]: { ...preset, preset: presetId, revision: (state.layouts[key]?.revision || 0) + 1, fullscreen: null },
+          },
+        }
+      }),
 
-export const useLayoutStore = create((set, get) => ({
-  layouts: readLayouts(),
+      resetLayout: (role, scenarioId) => set((state) => {
+        const key = layoutKeyFor(role, scenarioId)
+        const presetId = state.layouts[key]?.preset || 'balanced'
+        const preset = LAYOUT_PRESETS[presetId] || LAYOUT_PRESETS.balanced
+        return {
+          layouts: {
+            ...state.layouts,
+            [key]: { ...preset, preset: presetId, revision: (state.layouts[key]?.revision || 0) + 1, fullscreen: null },
+          },
+        }
+      }),
 
-  ensureLayout: (role, scenarioId) => {
-    const key = layoutKeyFor(role, scenarioId)
-    if (get().layouts[key]) return
-    updateLayout(set, key, () => clonePreset('balanced'))
-  },
+      setSizes: (role, scenarioId, region, sizes) => set((state) => {
+        const key = layoutKeyFor(role, scenarioId)
+        const current = state.layouts[key] || { ...LAYOUT_PRESETS.balanced, preset: 'balanced', revision: 0 }
+        return {
+          layouts: {
+            ...state.layouts,
+            [key]: { ...current, [region]: sizes, preset: 'custom' },
+          },
+        }
+      }),
 
-  getLayout: (role, scenarioId) => {
-    const key = layoutKeyFor(role, scenarioId)
-    return get().layouts[key] || clonePreset('balanced')
-  },
+      toggleCollapsed: (role, scenarioId, panelId) => set((state) => {
+        const key = layoutKeyFor(role, scenarioId)
+        const current = state.layouts[key] || { ...LAYOUT_PRESETS.balanced, preset: 'balanced', revision: 0 }
+        return {
+          layouts: {
+            ...state.layouts,
+            [key]: {
+              ...current,
+              collapsed: { ...current.collapsed, [panelId]: !current.collapsed[panelId] },
+              preset: 'custom',
+            },
+          },
+        }
+      }),
 
-  setSizes: (role, scenarioId, region, sizes) => {
-    const key = layoutKeyFor(role, scenarioId)
-    updateLayout(set, key, (layout) => ({
-      ...layout,
-      [region]: sizes.map((size) => Number(size.toFixed(2))),
-    }))
-  },
+      setFullscreen: (role, scenarioId, panelId) => set((state) => {
+        const key = layoutKeyFor(role, scenarioId)
+        const current = state.layouts[key] || { ...LAYOUT_PRESETS.balanced, preset: 'balanced', revision: 0 }
+        return {
+          layouts: {
+            ...state.layouts,
+            [key]: { ...current, fullscreen: panelId },
+          },
+        }
+      }),
 
-  applyPreset: (role, scenarioId, preset) => {
-    const key = layoutKeyFor(role, scenarioId)
-    updateLayout(set, key, () => clonePreset(preset))
-  },
-
-  toggleCollapsed: (role, scenarioId, panelId) => {
-    const key = layoutKeyFor(role, scenarioId)
-    updateLayout(set, key, (layout) => ({
-      ...layout,
-      revision: Date.now(),
-      collapsed: {
-        ...layout.collapsed,
-        [panelId]: !layout.collapsed?.[panelId],
-      },
-    }))
-  },
-
-  setFullscreen: (role, scenarioId, panelId) => {
-    const key = layoutKeyFor(role, scenarioId)
-    updateLayout(set, key, (layout) => ({
-      ...layout,
-      fullscreen: panelId,
-    }))
-  },
-
-  clearFullscreen: (role, scenarioId) => {
-    const key = layoutKeyFor(role, scenarioId)
-    updateLayout(set, key, (layout) => ({ ...layout, fullscreen: null }))
-  },
-
-  resetLayout: (role, scenarioId) => {
-    const key = layoutKeyFor(role, scenarioId)
-    updateLayout(set, key, () => clonePreset('balanced'))
-  },
-}))
+      clearFullscreen: (role, scenarioId) => set((state) => {
+        const key = layoutKeyFor(role, scenarioId)
+        const current = state.layouts[key]
+        if (!current || !current.fullscreen) return state
+        return {
+          layouts: {
+            ...state.layouts,
+            [key]: { ...current, fullscreen: null },
+          },
+        }
+      }),
+    }),
+    {
+      name: 'cybersim-layout-storage-v2',
+    }
+  )
+)

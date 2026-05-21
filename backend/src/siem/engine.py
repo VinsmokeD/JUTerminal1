@@ -402,18 +402,3 @@ async def close_siem_batch() -> None:
     except (asyncio.CancelledError, Exception) as exc:
         if not isinstance(exc, asyncio.CancelledError):
             print(f"[SIEM] Shutdown error: {exc}")
-
-
-# ---------------------------------------------------------------------------
-# Legacy stub — kept so existing callers in ws/routes.py don't break.
-# Returns empty list; real detection now comes from the ES poll loop.
-# ---------------------------------------------------------------------------
-
-async def process_command_for_siem(
-    session_id: str,
-    state: dict,
-    command: str,
-    publish_events: bool = True,
-) -> list[dict]:
-    """No-op stub. Real SIEM events are emitted by _poll_elasticsearch via Sigma rules."""
-    return []

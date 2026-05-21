@@ -161,27 +161,16 @@ def test_infer_scenario_none():
 
 
 # ---------------------------------------------------------------------------
-# process_command_for_siem stub — must return empty list (regex theater dead)
+# Command-string SIEM path must stay removed (regex theater dead)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.asyncio
-async def test_process_command_for_siem_is_noop():
+def test_process_command_for_siem_stub_removed():
     engine = _import_engine()
-    result = await engine.process_command_for_siem(
-        "sess-001",
-        {"scenario_id": "SC-02"},
-        "GetUserSPNs.py nexora.local/jsmith:Password123",
-    )
-    assert result == [], "Regex-on-stdin emission must be dead; stub must return []"
+    assert not hasattr(engine, "process_command_for_siem")
 
 
-@pytest.mark.asyncio
-async def test_typo_command_no_siem_event():
-    """GetUserSPNz.py (typo) must produce zero events — proves regex theater is dead."""
+def test_siem_engine_keeps_sigma_rule_helpers():
+    """Real detection should continue through the ES/Sigma helper path."""
     engine = _import_engine()
-    result = await engine.process_command_for_siem(
-        "sess-002",
-        {"scenario_id": "SC-02"},
-        "GetUserSPNz.py nexora.local/jsmith:Password123",
-    )
-    assert result == []
+    assert callable(engine._poll_elasticsearch)
+    assert callable(engine._match_dsl)

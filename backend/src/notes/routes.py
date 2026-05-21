@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from src.auth.routes import get_current_user
 from src.db.database import get_db, Note, Session, User
+from src.activity.service import record_activity
 
 router = APIRouter()
 
@@ -41,6 +42,7 @@ async def create_note(
         phase=body.phase,
     )
     db.add(note)
+    await record_activity(db, current_user.id, "note_create", body.session_id, {"tag": body.tag})
     await db.commit()
     await db.refresh(note)
     return _note_dict(note)

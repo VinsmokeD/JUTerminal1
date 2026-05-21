@@ -10,7 +10,10 @@ import ResizableSplit from '../components/workspace/ResizableSplit'
 import Terminal from '../components/terminal/Terminal'
 import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
+import ForensicsWorkbench from '../components/siem/ForensicsWorkbench'
+import KillChainView from '../components/killchain/KillChainView'
 import Badge from '../components/ui/Badge'
+import Modal from '../components/ui/Modal'
 import api from '../lib/api'
 
 
@@ -42,8 +45,10 @@ export default function BlueWorkspace() {
   const [iocs, setIocs] = useState([])
   const [iocInput, setIocInput] = useState('')
   const [expandedEvent, setExpandedEvent] = useState(null)
+  const [showKillChain, setShowKillChain] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [activePanel, setActivePanel] = useState('siem')
+  const [activeBottomTab, setActiveBottomTab] = useState('notebook') // notebook | forensics
   const [triageSaving, setTriageSaving] = useState(null)
   const writeOutputRef = useRef(null)
 
@@ -178,8 +183,25 @@ export default function BlueWorkspace() {
         elapsed={elapsed}
         connection={connectionState}
       >
+        <button
+          onClick={() => setShowKillChain(true)}
+          className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 bg-surface-3 border border-cs-border hover:bg-surface-4 hover:text-txt-primary text-txt-secondary rounded-cs-sm transition-colors mr-1"
+        >
+          View Kill Chain
+        </button>
         <LayoutPicker role="blue" scenarioId={session.scenario_id} />
       </WorkspaceTopBar>
+
+      <Modal
+        open={showKillChain}
+        onClose={() => setShowKillChain(false)}
+        title="Live Attack Timeline"
+        size="xl"
+      >
+        <div className="mt-2">
+          <KillChainView sessionId={sessionId} role="blue" />
+        </div>
+      </Modal>
 
       {connectionState === 'failed' && (
         <div className="sticky top-14 z-50 flex items-center gap-3 bg-cs-red/10 border-b border-cs-red/40 px-5 py-2.5">
@@ -273,6 +295,7 @@ export default function BlueWorkspace() {
                               onExtractIoc={(val) => { setIocs(p => [...p, { value: val, ts: new Date().toLocaleTimeString(), type: _classifyIoc(val) }]) }}
                               onTriageSave={saveTriage}
                               triageSaving={triageSaving === event.id}
+                              sessionId={sessionId}
                             />
                           ))}
                         </div>
@@ -331,51 +354,70 @@ export default function BlueWorkspace() {
             ),
           },
           mainBottom: {
-            label: 'IR Notebook and IOCs',
+            label: activeBottomTab === 'notebook' ? 'IR Notebook' : 'Forensics Workbench',
             element: (
-              <div className="workspace-bottom-split">
-                <div className="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-cs-border">
-                  <div className="workspace-panel-header">
-                    <span className="panel-header-dot amber" />
-                    <span className="text-xs font-mono font-semibold uppercase tracking-wider text-amber-warn">IR Notebook</span>
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <GuidedNotebook sessionId={sessionId} role="blue" phase={phase} />
-                  </div>
+              <div className="workspace-bottom-split h-full flex flex-col">
+                <div className="flex bg-surface-2 border-b border-cs-border px-4 py-1 gap-1">
+                  <button onClick={() => setActiveBottomTab('notebook')}
+                    className={`text-[10px] px-3 py-1 rounded-cs-sm transition-all font-mono uppercase tracking-wider ${
+                      activeBottomTab === 'notebook' ? 'bg-cs-blue/10 text-cs-blue font-bold' : 'text-txt-dim hover:text-txt-secondary'
+                    }`}>
+                    Notebook
+                  </button>
+                  <button onClick={() => setActiveBottomTab('forensics')}
+                    className={`text-[10px] px-3 py-1 rounded-cs-sm transition-all font-mono uppercase tracking-wider ${
+                      activeBottomTab === 'forensics' ? 'bg-cs-blue/10 text-cs-blue font-bold' : 'text-txt-dim hover:text-txt-secondary'
+                    }`}>
+                    Forensics
+                  </button>
                 </div>
 
-                <div className="workspace-ioc-panel flex flex-col overflow-hidden">
-                  <div className="workspace-panel-header">
-                    <span className="panel-header-dot purple" />
-                    <span className="text-xs font-mono font-semibold uppercase tracking-wider" style={{ color: '#a855f7' }}>IOCs</span>
-                    <span className="text-xs text-txt-dim ml-auto font-mono">{iocs.length}</span>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-2">
-                    {iocs.length === 0 ? (
-                      <p className="text-xs text-txt-dim p-2 font-mono">Click IPs, hashes, or domains in SIEM events to extract them here.</p>
-                    ) : (
-                      <div className="space-y-1">
-                        {iocs.map((ioc, i) => (
-                          <div key={i} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded-cs-sm border border-purple-500/20 bg-purple-500/5">
-                            <span className={`px-1 py-0.5 rounded-cs-sm text-xs font-mono ${
-                              ioc.type === 'ip' ? 'text-green-signal bg-green-signal/10' :
-                              ioc.type === 'hash' ? 'text-amber-warn bg-amber-warn/10' :
-                              'text-cs-blue bg-cs-blue-dim'
-                            }`}>{ioc.type}</span>
-                            <span className="font-mono text-purple-300 flex-1 truncate">{ioc.value}</span>
-                            <span className="text-txt-dim font-mono">{ioc.ts}</span>
-                          </div>
-                        ))}
+                <div className="flex-1 flex min-h-0 overflow-hidden">
+                  {activeBottomTab === 'notebook' ? (
+                    <div className="flex flex-1 min-w-0 overflow-hidden">
+                      <div className="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-cs-border">
+                        <div className="flex-1 overflow-hidden">
+                          <GuidedNotebook sessionId={sessionId} role="blue" phase={phase} />
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="border-t border-cs-border p-2 flex gap-1.5">
-                    <input value={iocInput} onChange={e => setIocInput(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && addIoc()}
-                      placeholder="Add IOC..."
-                      className="input text-xs py-1.5 font-mono" />
-                    <button onClick={addIoc} className="px-2.5 text-xs bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 rounded-cs-sm transition-colors font-mono">Add</button>
-                  </div>
+
+                      <div className="workspace-ioc-panel flex flex-col overflow-hidden w-64">
+                        <div className="workspace-panel-header">
+                          <span className="panel-header-dot purple" />
+                          <span className="text-xs font-mono font-semibold uppercase tracking-wider" style={{ color: '#a855f7' }}>IOCs</span>
+                          <span className="text-xs text-txt-dim ml-auto font-mono">{iocs.length}</span>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-2">
+                          {iocs.length === 0 ? (
+                            <p className="text-xs text-txt-dim p-2 font-mono">Click IPs, hashes, or domains in SIEM events to extract them here.</p>
+                          ) : (
+                            <div className="space-y-1">
+                              {iocs.map((ioc, i) => (
+                                <div key={i} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded-cs-sm border border-purple-500/20 bg-purple-500/5">
+                                  <span className={`px-1 py-0.5 rounded-cs-sm text-xs font-mono ${
+                                    ioc.type === 'ip' ? 'text-green-signal bg-green-signal/10' :
+                                    ioc.type === 'hash' ? 'text-amber-warn bg-amber-warn/10' :
+                                    'text-cs-blue bg-cs-blue-dim'
+                                  }`}>{ioc.type}</span>
+                                  <span className="font-mono text-purple-300 flex-1 truncate">{ioc.value}</span>
+                                  <span className="text-txt-dim font-mono">{ioc.ts}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="border-t border-cs-border p-2 flex gap-1.5">
+                          <input value={iocInput} onChange={e => setIocInput(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && addIoc()}
+                            placeholder="Add IOC..."
+                            className="input text-xs py-1.5 font-mono" />
+                          <button onClick={addIoc} className="px-2.5 text-xs bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 rounded-cs-sm transition-colors font-mono">Add</button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <ForensicsWorkbench sessionId={sessionId} />
+                  )}
                 </div>
               </div>
             ),
@@ -386,10 +428,33 @@ export default function BlueWorkspace() {
   )
 }
 
-function SiemEventRow({ event, expanded, onToggle, onExtractIoc, onTriageSave, triageSaving }) {
+function SiemEventRow({ event, expanded, onToggle, onExtractIoc, onTriageSave, triageSaving, sessionId }) {
   const [classification, setClassification] = useState(event.triage?.classification || '')
   const [notes, setNotes] = useState(event.triage?.notes || '')
   const [triageError, setTriageError] = useState('')
+  const [containmentStatus, setContainmentStatus] = useState(null)
+
+  const handleContain = async (type, val) => {
+    setContainmentStatus({ status: 'loading', detail: 'Submitting simulated containment...' })
+    try {
+      const res = await api.post(`/siem/${sessionId}/contain`, {
+        action_type: type,
+        target_value: val
+      })
+      setContainmentStatus({
+        status: res.data?.status || 'success',
+        detail: res.data?.detail || 'Simulated containment recorded.',
+      })
+      setTimeout(() => setContainmentStatus(null), 6000)
+    } catch (err) {
+      setContainmentStatus({
+        status: 'failed',
+        detail: err.response?.data?.detail || 'Could not record simulated containment.',
+      })
+      setTimeout(() => setContainmentStatus(null), 6000)
+    }
+  }
+  const containmentState = containmentStatus?.status
   const sevStyles = {
     CRITICAL: 'sev-crit',
     HIGH: 'sev-high',
@@ -454,17 +519,42 @@ function SiemEventRow({ event, expanded, onToggle, onExtractIoc, onTriageSave, t
             {event.raw_log || JSON.stringify(event, null, 2)}
           </pre>
           <div className="mt-2 rounded-cs-sm border border-cs-border bg-surface-1/80 p-3" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-2 flex items-start justify-between gap-3">
+            <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cs-blue">Analyst triage</p>
                 <p className="mt-1 text-xs text-txt-dim">{_triagePrompt(event)}</p>
               </div>
-              {event.triage?.updated_at && (
-                <span className="text-[10px] font-mono text-txt-dim">
-                  saved {new Date(event.triage.updated_at).toLocaleTimeString()}
-                </span>
-              )}
+
+              {/* Quick Containment */}
+              <div className="flex gap-2">
+                {event.source_ip && (
+                  <button
+                    onClick={() => handleContain('block_ip', event.source_ip)}
+                    disabled={containmentState === 'loading'}
+                    className={`px-2 py-1 rounded-cs-sm border text-[10px] font-mono transition-all ${
+                      containmentState === 'success' ? 'bg-green-signal/20 text-green-signal border-green-signal/40' :
+                      containmentState === 'failed' ? 'bg-cs-red/20 text-cs-red border-cs-red/40' :
+                      'bg-cs-red/10 text-cs-red border-cs-red/30 hover:bg-cs-red/20'
+                    }`}
+                  >
+                    {containmentState === 'loading' ? 'Recording...' : `Sim block ${event.source_ip}`}
+                  </button>
+                )}
+                {/* Process-related alerts could have a kill PID button if we extract it from message */}
+              </div>
             </div>
+            {containmentStatus?.detail && (
+              <div className={`mb-3 rounded-cs-sm border px-3 py-2 text-[10.5px] font-mono ${
+                containmentState === 'success'
+                  ? 'border-green-signal/25 bg-green-signal/5 text-green-signal'
+                  : containmentState === 'loading'
+                    ? 'border-cs-blue/25 bg-cs-blue/5 text-cs-blue'
+                    : 'border-cs-red/25 bg-cs-red/5 text-cs-red'
+              }`}>
+                {containmentStatus.detail}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-1.5 md:grid-cols-4">
               {TRIAGE_OPTIONS.map((option) => (
                 <button

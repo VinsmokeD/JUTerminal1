@@ -1,14 +1,14 @@
 import asyncio
 import json
 import queue as thread_queue
-import uuid
+import time
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
 from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
-from src.db.database import AsyncSessionLocal, Session, CommandLog, SiemEvent
+from src.db.database import AsyncSessionLocal, Session, CommandLog
 from src.sandbox.terminal import (
     stream_terminal_output,
     send_terminal_input,
@@ -16,10 +16,10 @@ from src.sandbox.terminal import (
     unregister_terminal_output_listener,
 )
 from src.sandbox.manager import ensure_scenario_container
-from src.siem.engine import process_command_for_siem
 from src.ai.monitor import get_ai_hint
 from src.ai.discovery_tracker import track_command as track_discovery
 from src.cache.redis import cache_get, cache_set, lpush_capped, lrange, _get as get_redis_client
+from src.activity.service import record_activity
 from src.scenarios.gatekeeper import check_command
 from src.scenarios.loader import load_scenario
 from src.scenarios.hint_engine import _load_hints
@@ -123,13 +123,6 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
                 await send_json({"type": "score_update", "data": {"score": new_score}})
             return
 
-    siem_events = await process_command_for_siem(
-        session_id,
-        session_state,
-        command,
-        publish_events=False,
-    )
-
     from src.scenarios.gatekeeper import _parse_tool as _gt
     tool_name = _gt(command)
     previous_branch = session_state.get("active_branch")
@@ -144,29 +137,15 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
             command=command,
             tool=tool_name or None,
             phase=session_state.get("phase", 1),
-            triggered_siem_events=[ev.get("id") for ev in siem_events],
+            triggered_siem_events=[],
         )
         db.add(cmd_row)
-        for ev in siem_events:
-            db.add(SiemEvent(
-                id=ev.get("id") or str(uuid.uuid4()),
-                session_id=session_id,
-                severity=ev.get("severity", "LOW"),
-                message=ev.get("message", "SIEM event detected"),
-                raw_log=ev.get("raw_log"),
-                mitre_technique=ev.get("mitre_technique") or ev.get("mitre_id"),
-                source_ip=ev.get("source_ip"),
-                source=ev.get("source", "attacker"),
-            ))
         await db.commit()
         await db.refresh(cmd_row)
         cmd_log_id = cmd_row.id
 
-    for ev in siem_events:
-        await send_json({"type": "siem_event", "data": ev})
-
     await lpush_capped(f"session:{session_id}:commands", command, max_len=50)
-    await cache_set(f"session:{session_id}:last_cmd_time", str(__import__('time').time()), ttl=7200)
+    await cache_set(f"session:{session_id}:last_cmd_time", str(time.time()), ttl=7200)
 
     recent_output = await lrange(f"terminal:{session_id}:history", 0, 2)
     output_text = " ".join(str(c) for c in recent_output if c) if recent_output else ""
@@ -208,6 +187,13 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
                 phase=new_phase,
                 triggered_siem_events=[],
             ))
+            await record_activity(
+                db,
+                session_state["user_id"],
+                "phase_advance",
+                session_id,
+                {"old_phase": old_phase, "new_phase": new_phase},
+            )
             await db.commit()
         await send_json({"type": "phase_update", "data": {"phase": new_phase}})
 
@@ -244,6 +230,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             return
         session_state = {
             "scenario_id": session.scenario_id,
+            "user_id": user_id,
             "role": session.role,
             "phase": session.phase,
             "methodology": session.methodology,
@@ -404,6 +391,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     triggered_siem_events=[],
                     ai_hint_given=True,
                 ))
+                await record_activity(db, user_id, "hint_request", session_id, {"level": level})
                 await db.commit()
         except Exception as _he:
             import logging
@@ -481,6 +469,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                             phase=session_state.get("phase", 1),
                             triggered_siem_events=[],
                         ))
+                        await record_activity(
+                            db,
+                            user_id,
+                            "mode_toggle",
+                            session_id,
+                            {"mode": new_mode},
+                        )
                         await db.commit()
                     session_state["ai_mode"] = new_mode
                     await _send_json({

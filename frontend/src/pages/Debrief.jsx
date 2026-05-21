@@ -4,7 +4,7 @@ import api from '../lib/api'
 import CyberSimNav from '../components/nav/CyberSimNav'
 import { Badge, Button, Stat } from '../components/ui'
 
-const KillChainTimeline = lazy(() => import('../components/debrief/KillChainTimeline'))
+const KillChainView = lazy(() => import('../components/killchain/KillChainView'))
 
 const TAG_STYLES = {
   finding:     { cls: 'text-cs-red border-cs-red/30 bg-cs-red/5', dot: 'bg-cs-red' },
@@ -193,12 +193,9 @@ export default function Debrief() {
                   <h3 className="text-sm font-semibold text-txt-secondary font-mono uppercase tracking-wider">Attack Timeline</h3>
                   <Button onClick={() => setActiveTab('timeline')} variant="ghost" size="sm">View full</Button>
                 </div>
-                <Timeline3D
-                  commands={commands}
-                  siemEvents={siemEvents}
-                  causeEffect={insights?.cause_effect}
-                />
-              </div>
+                <Suspense fallback={<div className="h-[260px] rounded-cs-lg bg-surface-2/60 border border-cs-border animate-pulse" />}>
+                  <KillChainView sessionId={sessionId} role={session.role} />
+                </Suspense>              </div>
             )}
 
             <div className="card-v3 p-5">
@@ -242,12 +239,9 @@ export default function Debrief() {
             {commands.length === 0 && siemEvents.length === 0 ? (
               <EmptyPanel title="No timeline data recorded for this session." body="Commands and SIEM events are captured as you progress through a scenario." />
             ) : (
-              <Timeline3D
-                commands={commands}
-                siemEvents={siemEvents}
-                causeEffect={insights?.cause_effect}
-              />
-            )}
+              <Suspense fallback={<div className="h-[260px] rounded-cs-lg bg-surface-2/60 border border-cs-border animate-pulse" />}>
+                <KillChainView sessionId={sessionId} role={session.role} />
+              </Suspense>            )}
           </div>
         )}
 
@@ -317,14 +311,6 @@ function ScoreRing({ score, gradeColor, gradeLabel }) {
       </div>
       <div className={`text-sm font-semibold mt-2 ${gradeColor}`}>{gradeLabel}</div>
     </div>
-  )
-}
-
-function Timeline3D({ commands, siemEvents, causeEffect }) {
-  return (
-    <Suspense fallback={<div className="h-[260px] rounded-cs-lg bg-surface-2/60 border border-cs-border animate-pulse" />}>
-      <KillChainTimeline commands={commands} siemEvents={siemEvents} causeEffect={causeEffect} />
-    </Suspense>
   )
 }
 

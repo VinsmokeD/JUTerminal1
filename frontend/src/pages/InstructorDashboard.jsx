@@ -32,20 +32,31 @@ const csvEscape = (value) => {
 export default function InstructorDashboard() {
   const navigate = useNavigate()
   const [sessions, setSessions] = useState([])
+  const [users, setUsers] = useState([])
+  const [activity, setActivity] = useState([])
+  const [aiUsage, setAiUsage] = useState(null)
   const [metrics, setMetrics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState({ scenario: 'all', status: 'all' })
   const [lastRefresh, setLastRefresh] = useState(null)
+  const [activeTab, setActiveTab] = useState('sessions') // 'sessions' | 'users' | 'platform'
+  const [terminating, setTerminating] = useState(null)
 
   const fetchData = useCallback(async () => {
     try {
-      const [sessionsRes, metricsRes] = await Promise.all([
+      const [sessionsRes, metricsRes, usersRes, activityRes, aiUsageRes] = await Promise.all([
         api.get('/instructor/sessions'),
         api.get('/instructor/metrics'),
+        api.get('/instructor/users'),
+        api.get('/instructor/activity'),
+        api.get('/instructor/ai/usage')
       ])
       setSessions(sessionsRes.data)
       setMetrics(metricsRes.data)
+      setUsers(usersRes.data)
+      setActivity(activityRes.data)
+      setAiUsage(aiUsageRes.data)
       setLastRefresh(new Date())
       setError(null)
     } catch (err) {
@@ -58,6 +69,19 @@ export default function InstructorDashboard() {
       setLoading(false)
     }
   }, [navigate])
+
+  const terminateSession = async (sessionId) => {
+    if (!window.confirm('Force terminate this session? Containers will be destroyed.')) return
+    setTerminating(sessionId)
+    try {
+      await api.post(`/instructor/sessions/${sessionId}/terminate`)
+      await fetchData()
+    } catch {
+      window.alert('Failed to terminate session')
+    } finally {
+      setTerminating(null)
+    }
+  }
 
   useEffect(() => {
     fetchData()
@@ -122,8 +146,10 @@ export default function InstructorDashboard() {
         <div className="h-5 w-px bg-cs-border" />
         <Badge tone="blue">Instructor</Badge>
 
-        <div className="hidden flex-1 justify-center md:flex">
-          <span className="text-xs font-mono uppercase tracking-[0.2em] text-txt-dim">Operations Center</span>
+        <div className="hidden flex-1 justify-center md:flex gap-6">
+          <button onClick={() => setActiveTab('sessions')} className={`text-xs font-mono uppercase tracking-[0.1em] transition-colors ${activeTab === 'sessions' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Sessions</button>
+          <button onClick={() => setActiveTab('users')} className={`text-xs font-mono uppercase tracking-[0.1em] transition-colors ${activeTab === 'users' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Users</button>
+          <button onClick={() => setActiveTab('platform')} className={`text-xs font-mono uppercase tracking-[0.1em] transition-colors ${activeTab === 'platform' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Platform & AI</button>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
@@ -155,142 +181,229 @@ export default function InstructorDashboard() {
           </div>
         )}
 
-        {metrics && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat label="Total sessions" value={metrics.total_sessions} accent="neutral" trend={<Sparkline tone="blue" />} />
-            <Stat
-              label="Active now"
-              value={<span className="inline-flex items-center gap-2">{metrics.active_sessions}<span className="h-2 w-2 rounded-full bg-green-signal shadow-[0_0_8px_#00ff88] animate-pulse" /></span>}
-              accent="green"
-              trend={<Sparkline tone="green" />}
-            />
-            <Stat label="Avg score" value={`${metrics.avg_score}pts`} accent="blue" trend={<Sparkline tone="blue" />} />
-            <Stat label="SIEM events" value={metrics.total_siem_events} accent="red" trend={<Sparkline tone="red" />} />
-          </div>
+        {activeTab === 'sessions' && (
+          <>
+            {metrics && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Stat label="Total sessions" value={metrics.total_sessions} accent="neutral" trend={<Sparkline tone="blue" />} />
+                <Stat
+                  label="Active now"
+                  value={<span className="inline-flex items-center gap-2">{metrics.active_sessions}<span className="h-2 w-2 rounded-full bg-green-signal shadow-[0_0_8px_#00ff88] animate-pulse" /></span>}
+                  accent="green"
+                  trend={<Sparkline tone="green" />}
+                />
+                <Stat label="Avg score" value={`${metrics.avg_score}pts`} accent="blue" trend={<Sparkline tone="blue" />} />
+                <Stat label="SIEM events" value={metrics.total_siem_events} accent="red" trend={<Sparkline tone="red" />} />
+              </div>
+            )}
+
+            {metrics && (
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                {SCENARIOS.map((scenario) => {
+                  const row = metrics.by_scenario?.find((item) => item.scenario_id === scenario.id)
+                  const count = row?.session_count ?? 0
+                  const avg = Math.round(row?.avg_score ?? 0)
+                  return (
+                    <div key={scenario.id} className="card-v3 p-5">
+                      <div className="flex items-center justify-between">
+                        <Badge tone={scenario.tone}>{scenario.id}</Badge>
+                        <span className="text-xs text-txt-dim font-mono">{count} sessions</span>
+                      </div>
+                      <p className="mt-2 text-xs text-txt-dim">{scenario.name}</p>
+                      <div className="mt-5 text-3xl font-mono font-bold text-txt-primary">{count}</div>
+                      <div className="mt-4 h-2 rounded-full bg-surface-3 overflow-hidden">
+                        <div className={`h-full rounded-full ${progressClass(avg)}`} style={{ width: `${Math.max(0, Math.min(100, avg))}%` }} />
+                      </div>
+                      <div className="mt-2 flex justify-between text-xs text-txt-dim font-mono">
+                        <span>avg score</span>
+                        <span>{avg}pts</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            <div className="card-v3 flex flex-wrap items-center gap-3 px-4 py-3">
+              <span className="text-xs font-mono uppercase tracking-[0.12em] text-txt-dim">Filter</span>
+              <select
+                value={filter.scenario}
+                onChange={e => setFilter(f => ({ ...f, scenario: e.target.value }))}
+                className="input max-w-[190px] text-xs font-mono"
+              >
+                <option value="all">All scenarios</option>
+                <option value="SC-01">SC-01 NovaMed</option>
+                <option value="SC-02">SC-02 Nexora</option>
+                <option value="SC-03">SC-03 Orion</option>
+              </select>
+              <select
+                value={filter.status}
+                onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
+                className="input max-w-[170px] text-xs font-mono"
+              >
+                <option value="all">All statuses</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+              </select>
+              {hasFilter && (
+                <Button onClick={() => setFilter({ scenario: 'all', status: 'all' })} variant="ghost" size="sm">
+                  Clear filters
+                </Button>
+              )}
+              <div className="ml-auto">
+                <Badge tone="neutral">{filtered.length} sessions</Badge>
+              </div>
+            </div>
+
+            <div className="card-v3 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[960px] text-xs font-mono">
+                  <thead>
+                    <tr className="bg-surface-2 text-[10.5px] font-mono uppercase tracking-[0.12em] text-txt-dim border-b border-cs-border text-left">
+                      <th className="px-4 py-3 font-medium">Student</th>
+                      <th className="px-4 py-3 font-medium">Scenario</th>
+                      <th className="px-4 py-3 font-medium">Role</th>
+                      <th className="px-4 py-3 font-medium">Phase</th>
+                      <th className="px-4 py-3 font-medium">Score</th>
+                      <th className="px-4 py-3 font-medium">Hints</th>
+                      <th className="px-4 py-3 font-medium">Status</th>
+                      <th className="px-4 py-3 font-medium">Started</th>
+                      <th className="px-4 py-3 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={9}>
+                          <EmptyState icon={<TableIcon />} title="No sessions match filters" />
+                        </td>
+                      </tr>
+                    ) : (
+                      filtered.map(s => (
+                        <tr key={s.session_id} className="bg-transparent hover:bg-surface-2/60 transition-colors border-b border-cs-border/40">
+                          <td className="px-4 py-3 text-txt-primary font-semibold">{s.username}</td>
+                          <td className="px-4 py-3">
+                            <Badge tone={SCENARIO_TONES[s.scenario_id] || 'neutral'}>{s.scenario_id}</Badge>
+                            <span className="text-txt-dim text-[10px] ml-1.5">{SCENARIO_LABELS[s.scenario_id]}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge tone={s.role === 'red' ? 'red' : 'blue'}>{s.role}</Badge>
+                          </td>
+                          <td className="px-4 py-3 text-txt-secondary">{s.phase}</td>
+                          <td className="px-4 py-3">
+                            <span className={`font-semibold ${scoreTextClass(s.score)}`}>{s.score}</span>
+                            <div className="mt-1 h-1 w-10 rounded-full bg-surface-3 overflow-hidden">
+                              <div className={`h-full rounded-full ${progressClass(s.score)}`} style={{ width: `${Math.max(0, Math.min(100, s.score))}%` }} />
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-txt-dim">{s.hints_used}</td>
+                          <td className="px-4 py-3">
+                            {s.status === 'active' ? (
+                              <LiveIndicator label="active" />
+                            ) : (
+                              <span className="text-txt-dim">done</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-txt-dim">
+                            {new Date(s.started_at).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex justify-end gap-2">
+                              {s.status === 'active' && (
+                                <Button
+                                  onClick={() => terminateSession(s.session_id)}
+                                  variant="ghost" size="sm" className="text-cs-red hover:bg-cs-red/10"
+                                  disabled={terminating === s.session_id}
+                                >
+                                  Terminate
+                                </Button>
+                              )}
+                              <Button onClick={() => downloadReport(s.session_id)} variant="ghost" size="sm">
+                                ↓ Report
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
         )}
 
-        {metrics && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            {SCENARIOS.map((scenario) => {
-              const row = metrics.by_scenario?.find((item) => item.scenario_id === scenario.id)
-              const count = row?.session_count ?? 0
-              const avg = Math.round(row?.avg_score ?? 0)
-              return (
-                <div key={scenario.id} className="card-v3 p-5">
-                  <div className="flex items-center justify-between">
-                    <Badge tone={scenario.tone}>{scenario.id}</Badge>
-                    <span className="text-xs text-txt-dim font-mono">{count} sessions</span>
-                  </div>
-                  <p className="mt-2 text-xs text-txt-dim">{scenario.name}</p>
-                  <div className="mt-5 text-3xl font-mono font-bold text-txt-primary">{count}</div>
-                  <div className="mt-4 h-2 rounded-full bg-surface-3 overflow-hidden">
-                    <div className={`h-full rounded-full ${progressClass(avg)}`} style={{ width: `${Math.max(0, Math.min(100, avg))}%` }} />
-                  </div>
-                  <div className="mt-2 flex justify-between text-xs text-txt-dim font-mono">
-                    <span>avg score</span>
-                    <span>{avg}pts</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        <div className="card-v3 flex flex-wrap items-center gap-3 px-4 py-3">
-          <span className="text-xs font-mono uppercase tracking-[0.12em] text-txt-dim">Filter</span>
-          <select
-            value={filter.scenario}
-            onChange={e => setFilter(f => ({ ...f, scenario: e.target.value }))}
-            className="input max-w-[190px] text-xs font-mono"
-          >
-            <option value="all">All scenarios</option>
-            <option value="SC-01">SC-01 NovaMed</option>
-            <option value="SC-02">SC-02 Nexora</option>
-            <option value="SC-03">SC-03 Orion</option>
-          </select>
-          <select
-            value={filter.status}
-            onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
-            className="input max-w-[170px] text-xs font-mono"
-          >
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-          </select>
-          {hasFilter && (
-            <Button onClick={() => setFilter({ scenario: 'all', status: 'all' })} variant="ghost" size="sm">
-              Clear filters
-            </Button>
-          )}
-          <div className="ml-auto">
-            <Badge tone="neutral">{filtered.length} sessions</Badge>
-          </div>
-        </div>
-
-        <div className="card-v3 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[960px] text-xs font-mono">
-              <thead>
-                <tr className="bg-surface-2 text-[10.5px] font-mono uppercase tracking-[0.12em] text-txt-dim border-b border-cs-border text-left">
-                  <th className="px-4 py-3 font-medium">Student</th>
-                  <th className="px-4 py-3 font-medium">Scenario</th>
-                  <th className="px-4 py-3 font-medium">Role</th>
-                  <th className="px-4 py-3 font-medium">Phase</th>
-                  <th className="px-4 py-3 font-medium">Score</th>
-                  <th className="px-4 py-3 font-medium">Hints</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Started</th>
-                  <th className="px-4 py-3 font-medium">Report</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={9}>
-                      <EmptyState icon={<TableIcon />} title="No sessions match filters" />
-                    </td>
+        {activeTab === 'users' && (
+          <div className="card-v3 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs font-mono">
+                <thead>
+                  <tr className="bg-surface-2 text-[10.5px] font-mono uppercase tracking-[0.12em] text-txt-dim border-b border-cs-border text-left">
+                    <th className="px-4 py-3 font-medium">Username</th>
+                    <th className="px-4 py-3 font-medium">Role</th>
+                    <th className="px-4 py-3 font-medium">Skill Level</th>
+                    <th className="px-4 py-3 font-medium">Joined</th>
                   </tr>
-                ) : (
-                  filtered.map(s => (
-                    <tr key={s.session_id} className="bg-transparent hover:bg-surface-2/60 transition-colors border-b border-cs-border/40">
-                      <td className="px-4 py-3 text-txt-primary font-semibold">{s.username}</td>
-                      <td className="px-4 py-3">
-                        <Badge tone={SCENARIO_TONES[s.scenario_id] || 'neutral'}>{s.scenario_id}</Badge>
-                        <span className="text-txt-dim text-[10px] ml-1.5">{SCENARIO_LABELS[s.scenario_id]}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge tone={s.role === 'red' ? 'red' : 'blue'}>{s.role}</Badge>
-                      </td>
-                      <td className="px-4 py-3 text-txt-secondary">{s.phase}</td>
-                      <td className="px-4 py-3">
-                        <span className={`font-semibold ${scoreTextClass(s.score)}`}>{s.score}</span>
-                        <div className="mt-1 h-1 w-10 rounded-full bg-surface-3 overflow-hidden">
-                          <div className={`h-full rounded-full ${progressClass(s.score)}`} style={{ width: `${Math.max(0, Math.min(100, s.score))}%` }} />
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-txt-dim">{s.hints_used}</td>
-                      <td className="px-4 py-3">
-                        {s.status === 'active' ? (
-                          <LiveIndicator label="active" />
-                        ) : (
-                          <span className="text-txt-dim">done</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-txt-dim">
-                        {new Date(s.started_at).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Button onClick={() => downloadReport(s.session_id)} variant="ghost" size="sm">
-                          ↓ Report
-                        </Button>
+                </thead>
+                <tbody>
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan={4}>
+                        <EmptyState icon={<TableIcon />} title="No users found" />
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    users.map(u => (
+                      <tr key={u.id} className="bg-transparent hover:bg-surface-2/60 transition-colors border-b border-cs-border/40">
+                        <td className="px-4 py-3 text-txt-primary font-semibold">{u.username}</td>
+                        <td className="px-4 py-3"><Badge tone={u.role === 'instructor' ? 'red' : 'blue'}>{u.role}</Badge></td>
+                        <td className="px-4 py-3 text-txt-dim">{u.skill_level}</td>
+                        <td className="px-4 py-3 text-txt-dim">{new Date(u.created_at).toLocaleDateString()}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'platform' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              <div className="card-v3 p-5 border-cs-blue/30 bg-cs-blue/5">
+                <h3 className="text-sm font-semibold text-cs-blue mb-4 font-mono uppercase tracking-wider">AI Guard & Usage Monitor</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">Global Daily Tokens</div>
+                    <div className="text-2xl font-bold">{aiUsage?.global_daily_tokens_used?.toLocaleString() || 0}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">Flagged Interactions</div>
+                    <div className="text-2xl font-bold text-cs-red">{aiUsage?.total_flagged_interactions || 0}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card-v3 overflow-hidden">
+                <h3 className="p-4 border-b border-cs-border text-xs font-semibold text-txt-secondary font-mono uppercase tracking-wider">Recent Activity Feed</h3>
+                <div className="max-h-[500px] overflow-y-auto p-4 space-y-3">
+                  {activity.map(act => (
+                    <div key={act.id} className="flex gap-3 text-xs border-b border-cs-border/30 pb-3 last:border-0 last:pb-0">
+                      <div className="w-20 text-txt-dim font-mono flex-shrink-0">{new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit'})}</div>
+                      <div>
+                        <span className="font-bold text-cs-blue mr-2">{act.username}</span>
+                        <span className="text-txt-secondary">{act.event_type}</span>
+                        {act.session_id && <span className="text-txt-dim ml-2 font-mono">({act.session_id.substring(0, 8)})</span>}
+                      </div>
+                    </div>
+                  ))}
+                  {activity.length === 0 && <div className="text-txt-dim font-mono text-xs">No recent activity.</div>}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

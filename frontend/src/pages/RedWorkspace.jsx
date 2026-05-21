@@ -10,6 +10,7 @@ import Terminal from '../components/terminal/Terminal'
 import SiemFeed from '../components/siem/SiemFeed'
 import GuidedNotebook from '../components/notes/GuidedNotebook'
 import AiHintPanel from '../components/hints/AiHintPanel'
+import KillChainView from '../components/killchain/KillChainView'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 import ScoreToast from '../components/ui/ScoreToast'
@@ -25,6 +26,7 @@ export default function RedWorkspace() {
   const [loadingSession, setLoadingSession] = useState(!cachedSession)
   const [roeAcked, setRoeAcked] = useState(cachedSession?.roe_acknowledged ?? false)
   const [showWelcome, setShowWelcome] = useState(skillLevel === 'beginner')
+  const [showKillChain, setShowKillChain] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [siemFlash, setSiemFlash] = useState(false)
   const [toast, setToast] = useState(null)
@@ -47,22 +49,6 @@ export default function RedWorkspace() {
       })
       .catch(() => {})
   }, [scenarioId])
-
-  const handleDragStart = useCallback((e) => {
-    e.preventDefault()
-    const handleDrag = (moveEvent) => {
-      if (!containerRef.current) return
-      const rect = containerRef.current.getBoundingClientRect()
-      const newWidth = ((moveEvent.clientX - rect.left) / rect.width) * 100
-      if (newWidth > 20 && newWidth < 80) setTerminalWidth(newWidth)
-    }
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleDrag)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-    document.addEventListener('mousemove', handleDrag)
-    document.addEventListener('mouseup', handleMouseUp)
-  }, [])
 
   const wsSessionId = session && roeAcked ? sessionId : null
   const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(wsSessionId)
@@ -145,6 +131,26 @@ export default function RedWorkspace() {
     sendCommand(cmd)
   }, [connectionState, sendCommand])
 
+  const handleDragStart = useCallback((event) => {
+    event.preventDefault()
+    const container = containerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+
+    const handleMove = (moveEvent) => {
+      const nextWidth = ((moveEvent.clientX - rect.left) / rect.width) * 100
+      setTerminalWidth(Math.min(80, Math.max(35, nextWidth)))
+    }
+
+    const handleUp = () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleUp)
+    }
+
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mouseup', handleUp)
+  }, [])
+
   if (loadingSession || !session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading session...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
@@ -200,8 +206,25 @@ export default function RedWorkspace() {
         elapsed={elapsed}
         connection={connectionState}
       >
+        <button
+          onClick={() => setShowKillChain(true)}
+          className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 bg-surface-3 border border-cs-border hover:bg-surface-4 hover:text-txt-primary text-txt-secondary rounded-cs-sm transition-colors mr-1"
+        >
+          View Kill Chain
+        </button>
         <LayoutPicker role="red" scenarioId={session.scenario_id} />
       </WorkspaceTopBar>
+
+      <Modal
+        open={showKillChain}
+        onClose={() => setShowKillChain(false)}
+        title="Live Attack Timeline"
+        size="xl"
+      >
+        <div className="mt-2">
+          <KillChainView sessionId={sessionId} role="red" />
+        </div>
+      </Modal>
 
       {connectionState === 'failed' && (
         <div className="sticky top-14 z-50 flex items-center gap-3 bg-cs-red/10 border-b border-cs-red/40 px-5 py-2.5">

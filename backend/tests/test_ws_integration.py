@@ -262,6 +262,21 @@ async def test_session_start_is_lazy_about_container_provision(client: AsyncClie
     """Mission launch returns the session immediately; WS attach provisions the PTY."""
     import time
 
+    # End any existing active sessions for this user
+    while True:
+        active_resp = await client.get(
+            "/api/sessions/active",
+            headers={"Authorization": f"Bearer {auth_token}"},
+        )
+        if active_resp.status_code == 200 and active_resp.json():
+            existing_session_id = active_resp.json()["session_id"]
+            await client.post(
+                f"/api/sessions/{existing_session_id}/end",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
+        else:
+            break
+
     started = time.perf_counter()
     r = await client.post(
         "/api/sessions/start",

@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Any
 import redis.asyncio as aioredis
 
@@ -6,6 +7,7 @@ from src.config import settings
 
 _client: aioredis.Redis | None = None
 _memory_cache: dict[str, Any] = {}
+_memory_expiries: dict[str, float] = {}
 _memory_lists: dict[str, list[Any]] = {}
 
 
@@ -27,6 +29,7 @@ async def close_redis() -> None:
         await _client.aclose()
         _client = None
     _memory_cache.clear()
+    _memory_expiries.clear()
     _memory_lists.clear()
 
 
@@ -40,6 +43,16 @@ def _use_memory_fallback() -> bool:
     return _client is None and settings.ENVIRONMENT == "development"
 
 
+def _memory_is_expired(key: str) -> bool:
+    expires_at = _memory_expiries.get(key)
+    if expires_at is None or expires_at > time.time():
+        return False
+    _memory_cache.pop(key, None)
+    _memory_lists.pop(key, None)
+    _memory_expiries.pop(key, None)
+    return True
+
+
 async def publish(channel: str, data: dict) -> None:
     if _use_memory_fallback():
         return
@@ -48,6 +61,8 @@ async def publish(channel: str, data: dict) -> None:
 
 async def cache_get(key: str) -> Any | None:
     if _use_memory_fallback():
+        if _memory_is_expired(key):
+            return None
         return _memory_cache.get(key)
     val = await _get().get(key)
     if val is None:
@@ -61,6 +76,10 @@ async def cache_get(key: str) -> Any | None:
 async def cache_set(key: str, value: Any, ttl: int | None = None) -> None:
     if _use_memory_fallback():
         _memory_cache[key] = value
+        if ttl:
+            _memory_expiries[key] = time.time() + ttl
+        else:
+            _memory_expiries.pop(key, None)
         return
     serialised = json.dumps(value) if not isinstance(value, str) else value
     if ttl:
@@ -72,9 +91,29 @@ async def cache_set(key: str, value: Any, ttl: int | None = None) -> None:
 async def cache_delete(key: str) -> None:
     if _use_memory_fallback():
         _memory_cache.pop(key, None)
+        _memory_expiries.pop(key, None)
         _memory_lists.pop(key, None)
         return
     await _get().delete(key)
+
+
+async def cache_increment(key: str, amount: int = 1, ttl: int | None = None) -> int:
+    if _use_memory_fallback():
+        _memory_is_expired(key)
+        current = _memory_cache.get(key, 0)
+        try:
+            current = int(current)
+        except (ValueError, TypeError):
+            current = 0
+        new_val = current + amount
+        _memory_cache[key] = new_val
+        if ttl:
+            _memory_expiries[key] = time.time() + ttl
+        return new_val
+    new_val = await _get().incrby(key, amount)
+    if ttl:
+        await _get().expire(key, ttl)
+    return new_val
 
 
 async def lpush_capped(key: str, value: Any, max_len: int = 10) -> None:

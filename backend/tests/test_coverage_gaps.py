@@ -387,3 +387,109 @@ def test_container_cleanup_extracts_full_and_short_ids_from_active_sessions():
     }
 
     assert _container_ids_from_active_sessions(active) == {"abcdef1234567890", "abcdef123456"}
+
+
+@pytest.mark.asyncio
+async def test_forensics_simulation_returns_scenario_rows():
+    from src.siem.forensics import list_forensic_targets, run_osquery
+
+    targets = await list_forensic_targets("SC-02")
+    result = await run_osquery("SC-02", "sc02-dc", "SELECT * FROM listening_ports")
+
+    assert "sc02-dc" in targets
+    assert result["status"] == "success"
+    assert result["simulated"] is True
+    assert any(row["port"] == "88" for row in result["rows"])
+
+
+@pytest.mark.asyncio
+async def test_forensics_simulation_rejects_invalid_target_and_query():
+    from src.siem.forensics import run_osquery
+
+    invalid_target = await run_osquery("SC-01", "sc02-dc", "SELECT * FROM processes")
+    invalid_query = await run_osquery("SC-01", "sc01-webapp", "DROP TABLE processes")
+    default_rows = await run_osquery("SC-01", "sc01-webapp", "SELECT * FROM file")
+    process_rows = await run_osquery("SC-01", "sc01-webapp", "SELECT * FROM processes")
+
+    assert invalid_target["status"] == "failed"
+    assert invalid_target["rows"] == []
+    assert invalid_query["status"] == "failed"
+    assert invalid_query["rows"] == []
+    assert default_rows["status"] == "success"
+    assert default_rows["rows"][0]["artifact"] == "web_upload_dir"
+    assert process_rows["rows"][0]["name"] == "apache2"
+
+
+def test_containment_simulation_validates_actions():
+    from src.siem.response import _simulate_containment
+
+    targets = ["sc01-webapp", "sc01-waf"]
+
+    status, detail = _simulate_containment("block_ip", "172.20.1.50", targets)
+    assert status == "success"
+    assert "Simulated containment" in detail
+
+    status, detail = _simulate_containment("kill_pid", "sc01-webapp:123", targets)
+    assert status == "success"
+    assert "PID 123" in detail
+
+    status, detail = _simulate_containment("isolate_host", "bad-target", targets)
+    assert status == "failed"
+    assert "not valid" in detail
+
+    assert _simulate_containment("block_ip", "", targets)[0] == "failed"
+    assert _simulate_containment("kill_pid", "bad-format", targets)[0] == "failed"
+    assert _simulate_containment("kill_pid", "sc01-webapp:abc", targets)[0] == "failed"
+    assert _simulate_containment("isolate_host", "sc01-webapp", targets)[0] == "success"
+    assert _simulate_containment("unknown", "target", targets)[0] == "failed"
+    assert _simulate_containment("block_ip", "172.20.1.50", [])[0] == "failed"
+
+
+@pytest.mark.asyncio
+async def test_execute_containment_logs_simulated_action(monkeypatch):
+    from src.siem import response
+
+    class _ActivityDb:
+        def __init__(self):
+            self.added = []
+            self.commits = 0
+
+        def add(self, item):
+            self.added.append(item)
+
+        async def commit(self):
+            self.commits += 1
+
+    class _SessionContext:
+        def __init__(self, db):
+            self.db = db
+
+        async def __aenter__(self):
+            return self.db
+
+        async def __aexit__(self, *_exc):
+            return False
+
+    db = _ActivityDb()
+    activity_calls = []
+
+    async def fake_record_activity(db_arg, user_id, event_type, session_id, metadata):
+        activity_calls.append((db_arg, user_id, event_type, session_id, metadata))
+
+    monkeypatch.setattr(response, "AsyncSessionLocal", lambda: _SessionContext(db))
+    monkeypatch.setattr(response, "record_activity", fake_record_activity)
+
+    result = await response.execute_containment(
+        session_id="sess-1",
+        user_id="user-1",
+        scenario_id="SC-01",
+        action_type="block_ip",
+        target_value="172.20.1.50",
+    )
+
+    assert result["status"] == "success"
+    assert result["simulated"] is True
+    assert db.commits == 1
+    assert db.added[0].status == "success"
+    assert activity_calls[0][2] == "containment_action"
+    assert activity_calls[0][4]["simulated"] is True

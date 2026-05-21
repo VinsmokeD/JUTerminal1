@@ -8,6 +8,7 @@ from src.auth.routes import get_current_user
 from src.db.database import get_db, Session, User, CommandLog, SiemEvent, SiemTriage
 from src.sandbox.manager import stop_scenario_container
 from src.cache.redis import cache_set, cache_get, cache_delete
+from src.activity.service import record_activity
 
 router = APIRouter()
 
@@ -50,6 +51,22 @@ async def start_session(
     if scenario_id not in valid:
         raise HTTPException(status_code=400, detail="Unknown scenario")
 
+    # Enforce single active session
+    active_result = await db.execute(
+        select(Session).where(Session.user_id == current_user.id, Session.completed_at == None)
+    )
+    active_sessions = list(active_result.scalars().all())
+    if active_sessions:
+        active_session = active_sessions[0]
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "active_session_exists",
+                "session_id": active_session.id,
+                "scenario_id": active_session.scenario_id
+            }
+        )
+
     session = Session(
         user_id=current_user.id,
         scenario_id=scenario_id,
@@ -72,6 +89,9 @@ async def start_session(
         "roe_acknowledged": False,
     }
     await cache_set(f"session:{session.id}:state", state, ttl=28800)
+
+    await record_activity(db, current_user.id, "scenario_start", session.id, {"scenario_id": scenario_id, "role": body.role})
+    await db.commit()
 
     return _session_dict(session)
 
@@ -99,6 +119,20 @@ async def acknowledge_roe(
         await cache_set(f"session:{session.id}:state", cached, ttl=28800)
 
     return {"roe_acknowledged": True}
+
+
+@router.get("/active")
+async def get_active_session(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict | None:
+    result = await db.execute(
+        select(Session).where(Session.user_id == current_user.id, Session.completed_at == None)
+    )
+    session = result.scalars().first()
+    if not session:
+        return None
+    return _session_dict(session)
 
 
 @router.get("/")
@@ -143,6 +177,7 @@ async def end_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
     session.completed_at = datetime.now(timezone.utc)
+    await record_activity(db, current_user.id, "scenario_complete", session.id, {"final_score": session.score})
     await db.commit()
 
     if session.container_id:
@@ -263,6 +298,69 @@ async def upsert_session_triage(
     return _triage_dict(triage)
 
 
+@router.get("/{session_id}/killchain")
+async def get_killchain_data(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    from src.db.database import AIInteraction
+    from src.reports.learning_insights import build_learning_insights
+
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    cmds = await db.execute(
+        select(CommandLog).where(CommandLog.session_id == session_id).order_by(CommandLog.created_at)
+    )
+    commands_list = list(cmds.scalars().all())
+
+    evts = await db.execute(
+        select(SiemEvent).where(SiemEvent.session_id == session_id).order_by(SiemEvent.created_at)
+    )
+    events_list = list(evts.scalars().all())
+
+    ai_interactions = await db.execute(
+        select(AIInteraction).where(AIInteraction.session_id == session_id).order_by(AIInteraction.created_at)
+    )
+    ai_list = list(ai_interactions.scalars().all())
+
+    actions = await db.execute(
+        select(ContainmentAction).where(ContainmentAction.session_id == session_id).order_by(ContainmentAction.created_at)
+    )
+    actions_list = list(actions.scalars().all())
+
+    insights = await build_learning_insights(session, db)
+
+    return {
+        "commands": [
+            {"id": c.id, "command": c.command, "tool": c.tool, "phase": c.phase, "created_at": c.created_at.isoformat()}
+            for c in commands_list
+        ],
+        "siem_events": [
+            {"id": e.id, "severity": e.severity, "message": e.message, "source": e.source, "mitre_technique": e.mitre_technique, "created_at": e.created_at.isoformat()}
+            for e in events_list
+        ],
+        "containment_actions": [
+            {"id": a.id, "action_type": a.action_type, "target_value": a.target_value, "status": a.status, "created_at": a.created_at.isoformat()}
+            for a in actions_list
+        ],
+        "cause_effect": insights.get("cause_effect", []),
+        "ai_interactions": [
+            {
+                "id": a.id, "kind": a.kind, "hint_level": a.hint_level,
+                "command_context": a.command_context, "response_text": a.response_text,
+                "created_at": a.created_at.isoformat(), "flagged": a.flagged
+            }
+            for a in ai_list
+        ],
+        "phases": session.phase
+    }
+
 class FlagSubmission(BaseModel):
     flag_value: str
 
@@ -285,6 +383,19 @@ async def submit_flag(
     res = await validate_flag(body.flag_value, session.scenario_id, session.id, db)
     if res.get("valid") and not res.get("already_captured"):
         await try_advance_phase(session.id, session.scenario_id, db)
+    await record_activity(
+        db,
+        current_user.id,
+        "flag_submit",
+        session.id,
+        {
+            "valid": bool(res.get("valid")),
+            "already_captured": bool(res.get("already_captured")),
+            "flag_id": res.get("flag_id"),
+            "points_awarded": res.get("points_awarded", 0),
+        },
+    )
+    await db.commit()
     return res
 
 

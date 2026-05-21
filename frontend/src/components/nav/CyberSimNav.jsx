@@ -16,6 +16,7 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
   const skillColors = {
     beginner: 'text-green-signal border-green-signal/30 bg-green-signal/5',
     intermediate: 'text-amber-warn border-amber-warn/30 bg-amber-warn/5',
+    experienced: 'text-cs-red border-cs-red/30 bg-cs-red/5',
     advanced: 'text-cs-red border-cs-red/30 bg-cs-red/5',
   }
 
@@ -35,12 +36,15 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
 
         {showUser && username && (
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-surface-3 flex items-center justify-center text-xs text-cs-blue font-bold font-mono">
+            <button
+              onClick={() => navigate('/profile')}
+              className="flex items-center gap-2 group"
+            >
+              <div className="w-7 h-7 rounded-cs-sm bg-surface-3 flex items-center justify-center text-xs text-cs-blue font-bold font-mono group-hover:bg-cs-blue/10 transition-colors">
                 {username?.[0]?.toUpperCase()}
               </div>
-              <span className="text-txt-secondary text-sm hidden sm:inline">{username}</span>
-            </div>
+              <span className="text-txt-secondary text-sm hidden sm:inline group-hover:text-txt-primary transition-colors">{username}</span>
+            </button>
             {skillLevel && (
               <span className={`text-xs px-2 py-0.5 rounded-full border font-mono ${skillColors[skillLevel] || ''}`}>
                 {skillLevel}

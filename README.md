@@ -41,6 +41,17 @@ docker compose up -d
 
 CyberSim uses OpenRouter for the AI monitor. The default budget/performance model is `deepseek/deepseek-chat-v3-0324`.
 
+## Database Migrations
+
+Production deployments should apply the schema before starting FastAPI:
+
+```bash
+cd backend
+alembic upgrade head
+```
+
+`init_db()` only bootstraps tables in `development` and `test`; production relies on Alembic as the schema source of truth.
+
 ## Starting Scenarios
 
 ```bash

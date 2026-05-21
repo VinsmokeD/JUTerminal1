@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     OPENROUTER_MAX_TOKENS: int = 150
     AI_CALL_COOLDOWN_SECONDS: int = 10
 
+    # AI Budgets & Security
+    AI_USER_DAILY_TOKEN_BUDGET: int = 100000
+    AI_USER_HOURLY_CALL_LIMIT: int = 50
+    AI_GLOBAL_DAILY_TOKEN_BUDGET: int = 2000000
+    AI_HTTP_REFERER: str = "https://cybersim.local"
+    AI_X_TITLE: str = "CyberSim AI Tutor"
+
     # Docker / Sandbox
     DOCKER_SOCKET: str = "/var/run/docker.sock"
     SCENARIO_NETWORK_PREFIX: str = "172.20"
@@ -51,4 +58,10 @@ if settings.ENVIRONMENT == "production" and settings.JWT_SECRET == _INSECURE_SEC
     raise RuntimeError(
         "JWT_SECRET must be changed from the default before running in production. "
         "Generate one with: openssl rand -hex 32"
+    )
+
+if settings.ENVIRONMENT != "test" and not settings.OPENROUTER_API_KEY:
+    import logging
+    logging.getLogger(__name__).warning(
+        "OPENROUTER_API_KEY is not set. AI features will use static fallback hints."
     )
