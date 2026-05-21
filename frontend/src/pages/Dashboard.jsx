@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/authStore'
 import CyberSimNav from '../components/nav/CyberSimNav'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 import ScenarioCard from '../components/dashboard/ScenarioCard'
-import { SkeletonCard } from '../components/ui/Skeleton'
+import { SkeletonCard, Button } from '../components/ui'
 import api from '../lib/api'
 
 const METHODOLOGY_OPTIONS = [
@@ -83,7 +83,9 @@ export default function Dashboard() {
       setMySessions(sessRes.data)
       setUserRole(meRes.data.role)
       setActiveMission(activeRes.data)
-    } catch {}
+    } catch (e) {
+      console.error("Dashboard refreshData error:", e)
+    }
   }
 
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function Dashboard() {
   }, [fetchScenarios])
 
   useEffect(() => {
-    if (!requestedScenarioId || scenarios.length === 0) return
+    if (!requestedScenarioId || !Array.isArray(scenarios) || scenarios.length === 0) return
     const requested = scenarios.find((sc) => sc.id === requestedScenarioId)
     if (!requested) return
     setBriefing(requested)
@@ -134,14 +136,15 @@ export default function Dashboard() {
   }
 
   const isBeginner = skillLevel === 'beginner'
-  const completedSessions = mySessions.filter(s => s.completed_at)
+  const completedSessions = Array.isArray(mySessions) ? mySessions.filter(s => s?.completed_at) : []
   const activeFilter = FILTER_CHIPS.find(chip => chip.id === filterChip) || FILTER_CHIPS[0]
-  const filteredScenarios = scenarios.filter((sc) => {
-    const haystack = `${sc.id} ${sc.title || ''} ${sc.description || ''} ${(LEARN_POINTS[sc.id] || []).join(' ')}`.toLowerCase()
+  const filteredScenarios = Array.isArray(scenarios) ? scenarios.filter((sc) => {
+    if (!sc) return false
+    const haystack = `${sc.id || ''} ${sc.title || ''} ${sc.description || ''} ${(LEARN_POINTS[sc.id] || []).join(' ')}`.toLowerCase()
     const matchesQuery = !query.trim() || haystack.includes(query.trim().toLowerCase())
     const matchesDifficulty = difficultyChip === 'All' || String(sc.difficulty || '').toLowerCase() === difficultyChip.toLowerCase()
     return matchesQuery && matchesDifficulty && activeFilter.match(sc)
-  })
+  }) : []
 
   return (
     <div className="min-h-screen bg-void text-txt-primary font-display">
@@ -175,7 +178,7 @@ export default function Dashboard() {
 
       <div className="max-w-[1200px] mx-auto px-6 pb-12">
         {/* Prominent Active Mission Banner */}
-        {activeMission && (
+        {activeMission && activeMission.scenario_id && activeMission.role && (
           <div className="mb-10 p-6 rounded-cs-lg border border-cs-blue/30 bg-cs-blue/5 shadow-2xl shadow-cs-blue/5 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex gap-5 items-center">
@@ -189,9 +192,9 @@ export default function Dashboard() {
                   <p className="text-txt-primary font-bold">{scenarios.find(s => s.id === activeMission.scenario_id)?.title || 'Assigned Scenario'}</p>
                   <div className="flex items-center gap-3 mt-1.5">
                     <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-cs-sm border ${activeMission.role === 'red' ? 'text-cs-red border-cs-red/20 bg-cs-red/5' : 'text-cs-blue border-cs-blue/20 bg-cs-blue/5'}`}>
-                      {activeMission.role.toUpperCase()} TEAM
+                      {(activeMission.role || '').toUpperCase()} TEAM
                     </span>
-                    <span className="text-[10px] font-mono text-txt-dim uppercase tracking-wider">Phase {activeMission.phase}</span>
+                    <span className="text-[10px] font-mono text-txt-dim uppercase tracking-wider">Phase {activeMission.phase || 1}</span>
                   </div>
                 </div>
               </div>
@@ -206,7 +209,7 @@ export default function Dashboard() {
                   {cancelling === activeMission.id ? 'Terminating...' : 'Terminate Mission'}
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="blue"
                   size="md"
                   className="bg-cs-blue hover:bg-cs-blue/80 shadow-lg shadow-cs-blue/20"
                   onClick={() => navigate(`/session/${activeMission.id}/${activeMission.role}`)}
@@ -218,7 +221,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Scenario cards — 2.5D tilt + spotlight */}
+        {/* Scenario filter bar */}
         <div className="mb-5 flex flex-col gap-3 rounded-cs-lg border border-cs-border bg-surface-1/70 p-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-2">
             {FILTER_CHIPS.map((chip) => (
@@ -272,7 +275,7 @@ export default function Dashboard() {
               })
           }
         </div>
-        {filteredScenarios.length === 0 && (
+        {filteredScenarios.length === 0 && !scenariosLoading && (
           <div className="mt-6 rounded-cs border border-cs-border bg-surface-1 p-6 text-sm text-txt-dim">
             No scenarios match the current filters.
           </div>
@@ -303,7 +306,7 @@ export default function Dashboard() {
       {/* Mission Briefing Modal */}
       {briefing && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="mission-modal bg-surface-1 border border-cs-border rounded-cs-lg shadow-2xl">
+          <div className="mission-modal bg-surface-1 border border-cs-border rounded-cs-lg shadow-2xl max-w-4xl w-full">
             {/* Header */}
             <div className="flex-shrink-0 p-5 sm:p-6 border-b border-cs-border relative overflow-hidden">
               <div className="absolute inset-0 opacity-30" style={{

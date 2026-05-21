@@ -68,8 +68,8 @@ export default function App() {
         {/* Public landing page */}
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
-        <Route path="/dashboard" element={<RequireAuth><RequireOnboarding><Dashboard /></RequireOnboarding></RequireAuth>} />
+        <Route path="/onboarding" element={<RequireAuth><ErrorBoundary><Onboarding /></ErrorBoundary></RequireAuth>} />
+        <Route path="/dashboard" element={<RequireAuth><RequireOnboarding><ErrorBoundary><Dashboard /></ErrorBoundary></RequireOnboarding></RequireAuth>} />
         <Route
           path="/session/:sessionId/red"
           element={

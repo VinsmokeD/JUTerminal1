@@ -78,9 +78,14 @@ export default function Onboarding() {
 
   const handleContinue = async () => {
     if (!selected) return
-    await setSkillLevel(selected)
-    await completeOnboarding()
-    navigate('/dashboard')
+    try {
+      await setSkillLevel(selected)
+      await completeOnboarding()
+      navigate('/dashboard')
+    } catch (e) {
+      console.error("Onboarding error:", e)
+      window.alert("Failed to save selection. Please try again.")
+    }
   }
 
   return (
@@ -110,7 +115,7 @@ export default function Onboarding() {
         <div className="grid gap-4 md:grid-cols-3">
           {LEVELS.map((level, index) => {
             const isSelected = selected === level.id
-            const bind = tiltByLevel[level.id]
+            const bind = tiltByLevel[level.id] || { ref: null, onMouseMove: () => {}, onMouseLeave: () => {} }
             return (
               <button
                 key={level.id}
