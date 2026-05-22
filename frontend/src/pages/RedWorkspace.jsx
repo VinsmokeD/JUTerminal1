@@ -15,6 +15,7 @@ import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 import ScoreToast from '../components/ui/ScoreToast'
 import api from '../lib/api'
+import MissionReadinessOverlay from '../components/workspace/MissionReadinessOverlay'
 
 export default function RedWorkspace() {
   const { sessionId } = useParams()
@@ -158,6 +159,7 @@ export default function RedWorkspace() {
 
   return (
     <div className="workspace-shell font-display">
+      <MissionReadinessOverlay sessionId={sessionId} scenarioId={session.scenario_id} />
       {toast && (
         <ScoreToast
           delta={toast.delta}

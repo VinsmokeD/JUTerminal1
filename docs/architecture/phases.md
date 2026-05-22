@@ -291,7 +291,7 @@
 
 ---
 
-## Phase 26 - Mission Shell And Readiness UX - Planned
+## Phase 26 - Mission Shell And Readiness UX - Done ✅
 **Goal**: Make each scenario feel like a coherent mission with readiness states for targets, terminal, SIEM, and AI.
 **Acceptance**: Students can see what is starting, ready, degraded, or blocked before they begin acting.
 

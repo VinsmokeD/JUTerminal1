@@ -256,6 +256,19 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             "skill_level": session.user.skill_level,
         }
 
+    # Print a simulated boot greeting into the terminal on initial connection.
+    greeting = (
+        "\r\n\x1b[32m"
+        "======================================================\r\n"
+        "      CyberSim Secure Sandbox PTY Terminal v2.0       \r\n"
+        "======================================================\r\n"
+        "[*] Booting Kali pentest environment...\r\n"
+        "[*] Initializing network security interfaces...\r\n"
+        "[*] Socratic AI monitor active.\r\n"
+        "======================================================\x1b[0m\r\n\r\n"
+    )
+    await websocket.send_json({"type": "terminal_output", "data": {"data": greeting}})
+
     # Ensure the browser always attaches to a live PTY. Cleanup or Docker
     # restarts can leave the DB pointing at a removed Kali container.
     container_id, network_name, changed = await ensure_scenario_container(
@@ -299,6 +312,43 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     await pubsub.subscribe(f"siem:{session_id}:feed")
     send_lock = asyncio.Lock()
     command_queue: asyncio.Queue[str] = asyncio.Queue(maxsize=50)
+
+    readiness_status = "initializing"
+    force_unlocked = False
+
+    async def _readiness_checker() -> None:
+        nonlocal readiness_status, force_unlocked
+        from src.sandbox.readiness import get_session_readiness
+        while True:
+            try:
+                # Query db to see if force_unlocked is set
+                async with AsyncSessionLocal() as db:
+                    sess_res = await db.execute(select(Session).where(Session.id == session_id))
+                    sess = sess_res.scalar_one_or_none()
+                    if sess:
+                        meta = sess.session_metadata or {}
+                        force_unlocked = meta.get("force_unlocked", False)
+                
+                if force_unlocked:
+                    readiness_status = "ready"
+                    await _send_json({
+                        "type": "readiness_update",
+                        "status": "ready",
+                        "force_unlocked": True,
+                        "checks": {}
+                    })
+                else:
+                    res = await get_session_readiness(session_id, session_state["scenario_id"])
+                    readiness_status = res["status"]
+                    await _send_json({
+                        "type": "readiness_update",
+                        "status": res["status"],
+                        "checks": res["checks"]
+                    })
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning("[WS] Readiness check error: %s", e)
+            await asyncio.sleep(5)
 
     async def _send_json(payload: dict) -> None:
         async with send_lock:
@@ -429,6 +479,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 "steps": [], "level": level,
             }})
 
+    readiness_task = asyncio.create_task(_readiness_checker())
     redis_task = asyncio.create_task(_redis_to_ws())
     terminal_output_task = asyncio.create_task(_terminal_output_to_ws())
     command_task = asyncio.create_task(_command_worker())
@@ -449,11 +500,21 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
             if msg_type == "terminal_raw":
                 # ── Raw PTY passthrough: every keystroke → Docker ──────────
+                if readiness_status != "ready" and not force_unlocked:
+                    continue
                 raw_data = msg.get("data", "")
                 if raw_data:
                     await send_terminal_input(session_id, raw_data)
 
             elif msg_type == "terminal_command":
+                if readiness_status != "ready" and not force_unlocked:
+                    await _send_json({
+                        "type": "terminal_output",
+                        "data": {
+                            "data": "\r\n\x1b[31m[BLOCKED] PTY console is initializing. Please wait for readiness checks to complete.\x1b[0m\r\n",
+                        },
+                    })
+                    continue
                 command = msg.get("data", "")
                 if command.strip():
                     try:
@@ -467,6 +528,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         })
             elif msg_type == "terminal_input":
                 # ── Legacy: line-buffered input (mock terminal fallback) ────
+                if readiness_status != "ready" and not force_unlocked:
+                    continue
                 command = msg.get("data", "")
                 if command:
                     await send_terminal_input(session_id, command)
@@ -515,6 +578,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             "[WS] Unhandled error for session %s: %s", session_id[:8], exc
         )
     finally:
+        readiness_task.cancel()
         redis_task.cancel()
         terminal_output_task.cancel()
         command_task.cancel()

@@ -15,6 +15,7 @@ import KillChainView from '../components/killchain/KillChainView'
 import Badge from '../components/ui/Badge'
 import Modal from '../components/ui/Modal'
 import api from '../lib/api'
+import MissionReadinessOverlay from '../components/workspace/MissionReadinessOverlay'
 
 
 const NIST_PHASES = {
@@ -172,6 +173,7 @@ export default function BlueWorkspace() {
 
   return (
     <div className="workspace-shell font-display">
+      <MissionReadinessOverlay sessionId={sessionId} scenarioId={session.scenario_id} />
       <WorkspaceTopBar
         role="blue"
         sessionId={sessionId}

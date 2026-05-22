@@ -99,6 +99,9 @@ export function useWebSocket(sessionId) {
               }))
             }
             break
+          case 'readiness_update':
+            window.dispatchEvent(new CustomEvent('readiness:update', { detail: msg }))
+            break
           case 'ai_hint':
             window.dispatchEvent(new CustomEvent('ai:hint', { detail: msg.data }))
             break

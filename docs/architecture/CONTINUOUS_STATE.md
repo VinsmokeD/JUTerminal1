@@ -4336,3 +4336,21 @@ $ python3 -m py_compile src/main.py  # ✓
   - Repaired `InstructorDashboard.jsx` to resolve the Vite/esbuild compilation blocker.
   - Verified compilation via `npm run build` in `frontend/`, which now completes successfully without errors.
 
+---
+
+### [2026-05-22 10:00:00 +03:00] - Antigravity (Phase 26 Mission Shell & Readiness UX)
+* **Status**: Complete
+* **Why**: The user requested starting the full implementation of the approved plan. Phase 26 was built to provide diagnostic checks, self-healing mechanics, readiness streams, terminal block inputs, and interactive topology overlays.
+* **Where**:
+  - `backend/src/sandbox/readiness.py` - Created health checks for Kali, target hosts, Elastic, Redis, and OpenRouter, plus container self-healing.
+  - `backend/src/db/database.py` - Integrated metadata schema column.
+  - `backend/src/sessions/routes.py` - Added `/readiness` and `/override` endpoints.
+  - `backend/src/ws/routes.py` - Integrated periodic readiness check loops, simulated boot greetings, keyboard input intercept blocks, and force unlock log handling.
+  - `frontend/src/hooks/useWebSocket.js` - Dispatches readiness update events.
+  - `frontend/src/components/workspace/MissionReadinessOverlay.jsx` - Renders interactive SVG network diagram and checklist bootstrap overlay.
+  - `frontend/src/pages/RedWorkspace.jsx` and `frontend/src/pages/BlueWorkspace.jsx` - Integrated the mission readiness overlay.
+* **What & How**:
+  - Developed and verified a python test suite `backend/tests/test_session_readiness.py` with 6 passing tests validating the APIs and WS readiness routing.
+  - Verified compilation of the integrated overlay component inside the workspaces via `npm run build`.
+
+

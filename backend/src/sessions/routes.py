@@ -361,6 +361,50 @@ async def get_killchain_data(
         "phases": session.phase
     }
 
+
+@router.get("/{session_id}/readiness")
+async def check_session_readiness(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    from src.sandbox.readiness import get_session_readiness
+    res = await get_session_readiness(session.id, session.scenario_id)
+
+    meta = session.session_metadata or {}
+    if meta.get("force_unlocked"):
+        res["status"] = "ready"
+        res["force_unlocked"] = True
+    return res
+
+
+@router.post("/{session_id}/override")
+async def override_readiness(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    meta = session.session_metadata or {}
+    meta["force_unlocked"] = True
+    session.session_metadata = meta
+    await db.commit()
+    return {"force_unlocked": True}
+
+
 class FlagSubmission(BaseModel):
     flag_value: str
 

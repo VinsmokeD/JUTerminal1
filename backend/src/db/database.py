@@ -48,6 +48,7 @@ class Session(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     container_id: Mapped[str | None] = mapped_column(String, nullable=True)
     network_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    session_metadata: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict, nullable=True)
     user: Mapped["User"] = relationship(back_populates="sessions")
     notes: Mapped[list["Note"]] = relationship(back_populates="session")
     commands: Mapped[list["CommandLog"]] = relationship(back_populates="session")
