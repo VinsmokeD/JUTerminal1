@@ -14,11 +14,17 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import subprocess
 import time
 
 import httpx
 import pytest
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("RUN_CYBERSIM_E2E") != "1",
+    reason="End-to-end Docker/Kali scenario test is opt-in; set RUN_CYBERSIM_E2E=1 to run.",
+)
 
 
 # ---------------------------------------------------------------------------

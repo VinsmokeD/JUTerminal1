@@ -115,11 +115,15 @@ Common mistakes:
 ### SC-02 — Active Directory Attack (Nexora Corp)
 Target: 172.20.2.0/24
 - Domain: nexora.local
-- DC: 172.20.2.10 (Kerberos, LDAP, SMB, DNS)
-- Workstation: 172.20.2.20 (SMB, RDP)
-- File server: 172.20.2.30 (SMB)
+- DC: 172.20.2.20 (Kerberos, LDAP, SMB, DNS)
+- File server: 172.20.2.40 (SMB)
+- Initial user: jsmith / Password123
+- Kerberoastable account: svc_backup, expected cracked training password Backup2023!
 Attack path: BloodHound recon → Kerberoasting → crack service ticket → lateral movement → DCSync
 Common mistakes:
+- Splitting Impacket commands incorrectly so the tool prints usage text
+- Pasting placeholders like <NTLM_HASH> into Bash instead of replacing them
+- Assuming a share-access account is already Domain Admin
 - Using Mimikatz before checking if Defender is active
 - Not running BloodHound first (acting without a map)
 - Kerberoasting all accounts instead of targeted (noisy)
@@ -127,9 +131,9 @@ Common mistakes:
 
 ### SC-03 — Social Engineering (Orion Logistics)
 Target: Phishing infrastructure + mail server
-- Mail: 172.20.3.10
-- Web: 172.20.3.20 (corporate portal)
-- Victim workstation: 172.20.3.40
+- Mail relay: 172.20.3.20
+- GoPhish admin: 172.20.3.40
+- Victim endpoint simulator: 172.20.3.30
 Attack path: OSINT → pretext design → payload creation → delivery via GoPhish → post-access
 Common mistakes:
 - Skipping OSINT and using generic pretexts

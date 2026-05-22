@@ -3,112 +3,116 @@
     "red": {
       "1": {
         "L1": [
-          "Step 1: You have valid credentials (jsmith:Welcome1!). Before attacking, map the entire AD environment. Professional red teamers always build a map before choosing targets.",
-          "Step 2: Active Directory stores relationships between users, groups, computers, and permissions. Understanding these relationships reveals the shortest path to Domain Admin.",
-          "Step 3: Focus on identifying: Kerberoastable accounts (service accounts with SPNs), high-privilege group memberships, and computers where admins have logged in."
+          "Step 1: You have valid credentials (jsmith:Password123). Before attacking, map the AD environment. Professional red teamers build a map before choosing a path.",
+          "Step 2: Active Directory is a relationship system: users, groups, computers, services, and permissions. Your job is to find which relationship can lead from a low-privileged user to higher privilege.",
+          "Step 3: Focus on three evidence types: Kerberoastable accounts with SPNs, privileged group membership, and SMB shares that reveal operational context."
         ],
         "L2": [
-          "Step 1: BloodHound collects AD data via LDAP queries and builds an attack path graph. Run it with jsmith's credentials to map the domain.",
-          "Step 2: After collection, look for the 'Shortest Path to Domain Admin' query result. This shows exactly which accounts to compromise and in what order.",
-          "Step 3: Pay special attention to Kerberoastable accounts — these can be attacked entirely offline without alerting the Blue Team."
+          "Step 1: Start with the domain controller at 172.20.2.20. Confirm Kerberos 88, LDAP 389, and SMB 445 are open before treating it as the DC.",
+          "Step 2: Use the provided domain account to enumerate users, groups, shares, and SPNs. Keep the username, password, domain, and DC IP together in one complete command line.",
+          "Step 3: Pay special attention to svc_backup and any servicePrincipalName/SPN value. That account is the likely Kerberoasting target."
         ],
         "L3": [
-          "Step 1: Run the BloodHound collector: `python3 bloodhound.py -u jsmith -p 'Welcome1!' -d nexora.local -dc 172.20.2.20 -c All`",
-          "Step 2: The output is JSON files. In a real engagement, you'd load these into BloodHound GUI. Here, the collector output shows users, groups, and SPNs directly.",
-          "Step 3: Look for 'Kerberoastable user' in the output — this is your escalation target. Note the SPN (Service Principal Name) for the next phase.",
-          "Step 4: Document: AD structure, user count, Kerberoastable accounts found. Tag as #finding."
+          "Step 1: Confirm the DC first: scan 172.20.2.20 for Kerberos 88, LDAP 389, and SMB 445. These ports prove this host is the domain controller.",
+          "Step 2: Enumerate the domain with jsmith / Password123. If you use BloodHound, include user, password, domain, DC IP, and collection method on one complete line.",
+          "Step 3: If BloodHound is unavailable, use SMB and LDAP enumeration and record the same evidence: domain name, users, groups, shares, and service accounts.",
+          "Step 4: Look for svc_backup and any SPN/servicePrincipalName value. This is the account you will test in the Kerberoasting phase.",
+          "Step 5: Document AD structure, user count, Kerberoastable accounts, and share access with #finding and #evidence tags."
         ]
       },
       "2": {
         "L1": [
-          "Step 1: Kerberoasting exploits how Kerberos works. Any domain user can request a service ticket (TGS) for any service account with an SPN set.",
-          "Step 2: The ticket is encrypted with the service account's password hash. If that password is weak, you can crack the ticket offline — no network traffic, no alerts.",
-          "Step 3: This is why service accounts with weak passwords are such a critical finding — they allow privilege escalation without triggering detection."
+          "Step 1: Kerberoasting abuses normal Kerberos behavior. Any authenticated domain user can request a service ticket for an account that has an SPN.",
+          "Step 2: The service ticket is encrypted with the service account password material. If the service account password is weak, the ticket can be cracked offline.",
+          "Step 3: This is why weak service-account passwords are dangerous: the attacker does not need admin rights to collect the crackable material."
         ],
         "L2": [
-          "Step 1: Use an Impacket tool to request TGS tickets for all Kerberoastable accounts. The tool outputs the encrypted tickets in a format ready for hash cracking.",
-          "Step 2: Crack the hash with hashcat using the Kerberos 5 TGS-REP etype 23 mode. Use rockyou.txt as your wordlist — it contains common passwords.",
-          "Step 3: If the password is cracked, you now have the service account's credentials. Check what this account can access in the domain."
+          "Step 1: Use the Impacket SPN enumeration tool to request a TGS for the Kerberoastable account. The output must include a $krb5tgs$23$ hash line.",
+          "Step 2: Save only the hash line to a file. Do not save usage text, banners, shell prompts, or wrapped terminal output.",
+          "Step 3: Crack the hash with hashcat mode 13100. If the expected wordlist path is missing, check whether rockyou is compressed as rockyou.txt.gz or available under SecLists."
         ],
         "L3": [
-          "Step 1: Request Kerberoastable tickets: `impacket-GetUserSPNs nexora.local/jsmith:'Welcome1!' -dc-ip 172.20.2.20 -request`",
-          "Step 2: Save the hash output to a file: `impacket-GetUserSPNs ... -request -outputfile hashes.txt`",
-          "Step 3: Crack with hashcat: `hashcat -m 13100 hashes.txt /usr/share/wordlists/rockyou.txt`",
-          "Step 4: The cracked password gives you svc_backup credentials. Document: the SPN, the hash, the cracked password. Tag as #finding and #evidence."
+          "Step 1: Request the ticket as one complete command line. Do not type a backslash and then press Enter on a blank continuation line; that runs the tool with missing arguments.",
+          "Step 2: The command must contain: the GetUserSPNs tool, -dc-ip 172.20.2.20, -request, optional -outputfile hashes.txt, and the target string nexora.local/jsmith:Password123.",
+          "Step 3: Confirm success by looking for a line that starts with $krb5tgs$23$. Save exactly that hash line into hashes.txt; do not save help text or banners.",
+          "Step 4: Crack with hashcat mode 13100. If /usr/share/wordlists/rockyou.txt is missing, check for /usr/share/wordlists/rockyou.txt.gz or a SecLists password file before retrying.",
+          "Step 5: The cracked password gives you svc_backup credentials. Document the SPN, hash evidence, cracked credential, and expected Blue Team event 4769 with RC4/0x17."
         ]
       },
       "3": {
         "L1": [
-          "Step 1: With the service account's password, you need to determine what it can access. Service accounts often have elevated privileges on specific servers.",
-          "Step 2: Lateral movement means using compromised credentials to access other machines in the network. Each hop should be documented as part of your attack chain.",
-          "Step 3: Before moving laterally, verify your current access level on the target machine. Local admin access gives you much more capability than regular user access."
+          "Step 1: With the service account password, determine what that account can access. Service accounts often have specific rights on specific servers.",
+          "Step 2: Lateral movement means using compromised credentials to access another host. Every hop needs a source host, destination host, account, and observed result.",
+          "Step 3: Do not jump straight to remote execution. First prove authentication and share access, then decide whether local admin testing is justified."
         ],
         "L2": [
-          "Step 1: Use CrackMapExec to test the cracked credentials against all hosts in the subnet. It will show where svc_backup has admin access.",
-          "Step 2: Any host showing (Pwn3d!) means local admin — you can execute commands, dump credentials, and pivot further.",
-          "Step 3: From the compromised host, use Impacket's psexec or wmiexec to get an interactive shell."
+          "Step 1: Test the cracked svc_backup credential against the file server at 172.20.2.40 first. The Backups share is the key access-control test.",
+          "Step 2: If share listing works, record it as lateral movement evidence. If access is denied, record the denial and verify domain formatting and password accuracy.",
+          "Step 3: After SMB access is proven, test whether the account has local admin capability. Successful admin access is a separate, higher-impact finding."
         ],
         "L3": [
-          "Step 1: Test credentials network-wide: `crackmapexec smb 172.20.2.0/24 -u svc_backup -p 'Backup2024!'`",
-          "Step 2: Note which hosts show (Pwn3d!) — these are where svc_backup has admin access.",
-          "Step 3: Get a shell: `impacket-psexec nexora.local/svc_backup:'Backup2024!'@172.20.2.40`",
-          "Step 4: On the target, run `whoami` and `net user svc_backup /domain` to confirm your access level. Document the lateral movement path as #finding."
+          "Step 1: Use the cracked svc_backup credential only after proving the hash was captured and cracked. The expected training credential is Backup2023! when the lab is seeded correctly.",
+          "Step 2: Test SMB access first, not remote execution. List shares on 172.20.2.40 and confirm whether the Backups share is reachable with the domain account context.",
+          "Step 3: If share access works, record exactly which share opened and which account opened it. This is your lateral movement evidence.",
+          "Step 4: Only then test administrative access with a domain-aware SMB tool. If access is denied, that is still useful evidence: svc_backup may have share access without local admin.",
+          "Step 5: Document source host, destination host, credential used, successful share or logon event, and expected Blue Team event 4624 Type 3."
         ]
       },
       "4": {
         "L1": [
-          "Step 1: DCSync is the final objective — it replicates all domain password hashes by pretending to be a domain controller. This requires Domain Admin or specific replication privileges.",
-          "Step 2: LSASS memory on compromised hosts may contain cached credentials of higher-privilege users who logged in previously.",
-          "Step 3: The attack chain: service account → lateral movement → credential dump → find DA hash → DCSync all hashes."
+          "Step 1: DCSync is the final objective. It asks the domain controller to replicate password data, so it requires Domain Admin or specific replication rights.",
+          "Step 2: A placeholder such as <NTLM_HASH> is not a command argument. It means you must paste the real hash value you collected earlier.",
+          "Step 3: The full chain is low-priv user -> service ticket -> cracked service account -> lateral movement -> privileged credential -> DCSync."
         ],
         "L2": [
-          "Step 1: Use secretsdump to extract credentials from the compromised file server's SAM database and cached domain credentials.",
-          "Step 2: If a Domain Admin hash is found, use it for a pass-the-hash DCSync attack against the Domain Controller.",
-          "Step 3: DCSync extracts all domain user hashes — this represents complete domain compromise."
+          "Step 1: Before attempting DCSync, prove which account has Domain Admin or replication rights. Do not assume svc_backup itself can DCSync.",
+          "Step 2: Use a directory-replication-capable tool only against 172.20.2.20, the in-scope simulated domain controller.",
+          "Step 3: The success indicator is domain account hash output, especially krbtgt. The defender success indicator is Event 4662 with replication-rights properties."
         ],
         "L3": [
-          "Step 1: Dump credentials from the file server: `impacket-secretsdump nexora.local/svc_backup:'Backup2024!'@172.20.2.40`",
-          "Step 2: Look for Domain Admin NTLM hashes in the output. The it.admin account hash is the target.",
-          "Step 3: DCSync with the DA hash: `impacket-secretsdump nexora.local/it.admin@172.20.2.20 -hashes :<NTLM_HASH>`",
-          "Step 4: This dumps ALL domain hashes — complete compromise. Document the full attack chain as your primary #finding with CRITICAL severity."
+          "Step 1: DCSync requires Domain Admin or replication rights. Before attempting it, prove which account has that privilege and where the proof came from.",
+          "Step 2: If you have a Domain Admin hash, replace placeholders like <NTLM_HASH> with the real 32-character value. Do not paste angle-bracket placeholders into Bash.",
+          "Step 3: Run the directory replication test only against 172.20.2.20, the in-scope simulated DC. The target string must include the domain, privileged account, DC address, and hash material.",
+          "Step 4: Confirm success by looking for domain account hash output, especially the krbtgt entry. That is the final proof of complete domain compromise.",
+          "Step 5: Document the full attack chain as a CRITICAL #finding: initial user, Kerberoast, cracked svc_backup, lateral movement evidence, privilege escalation, and DCSync 4662 detection."
         ]
       }
     },
     "blue": {
       "1": {
         "L1": [
-          "Step 1: Kerberoasting leaves a specific fingerprint in Windows Event Logs: Event 4769 (Kerberos Service Ticket Request) with encryption type 0x17 (RC4-HMAC).",
-          "Step 2: Modern AD uses AES-256 by default. RC4 tickets are only issued when explicitly requested — which is exactly what Kerberoasting tools do.",
-          "Step 3: A legitimate service-to-service Kerberos request uses AES. An RC4 request from a user workstation to a service account SPN is almost certainly Kerberoasting."
+          "Step 1: Kerberoasting leaves a specific fingerprint: Event 4769, a Kerberos service ticket request, with encryption type 0x17/RC4.",
+          "Step 2: Modern AD should prefer AES. RC4 service-ticket requests from a user workstation are suspicious because Kerberoasting tools often request RC4 material for cracking.",
+          "Step 3: Your first triage question is: which client requested the ticket, and which service account was targeted?"
         ],
         "L2": [
-          "Step 1: Filter SIEM events for Event 4769 with EncryptionType=0x17. This isolates potential Kerberoasting activity.",
-          "Step 2: Cross-reference the client IP and the ServiceName. Is the request coming from a known service, or from a user workstation?",
-          "Step 3: If multiple service tickets are requested in rapid succession from the same IP, it's almost certainly automated Kerberoasting — not normal user behavior."
+          "Step 1: Filter SIEM events for 4769 plus RC4, 0x17, or svc_backup. This isolates likely Kerberoasting.",
+          "Step 2: Cross-reference the client IP and ServiceName. Is the request coming from a workstation or a known service host?",
+          "Step 3: If multiple service tickets are requested quickly from the same source, treat it as automated Kerberoasting and escalate."
         ],
         "L3": [
-          "Step 1: In the SIEM, search for events containing '4769' and 'RC4' or '0x17'.",
-          "Step 2: In the terminal: `grep '4769.*0x17' /var/log/scenario/security.log | awk '{print $NF}' | sort | uniq -c | sort -rn`",
-          "Step 3: Identify the attacker IP and the targeted service account. Document both as #ioc entries.",
-          "Step 4: Check if the targeted service account password was subsequently used: search for Event 4624 with that account name."
+          "Step 1: In the SIEM, search for events containing 4769 plus RC4 or 0x17.",
+          "Step 2: Identify the source IP, target service account, encryption type, and timestamp.",
+          "Step 3: Document the source IP and svc_backup as #ioc entries. Then check whether svc_backup appears in later 4624 Type 3 logons.",
+          "Step 4: Recommended containment: disable or reset the targeted service account, rotate any exposed service credentials, and disable RC4 where possible."
         ]
       },
       "2": {
         "L1": [
-          "Step 1: After Kerberoasting, the attacker cracks the hash offline (invisible to you), then uses the credentials for lateral movement. Event 4624 Type 3 shows network logons.",
-          "Step 2: Track the compromised service account across all hosts. If it logs into machines it normally doesn't access, that's lateral movement.",
-          "Step 3: DCSync is the critical escalation — Event 4662 with replication rights from a non-DC source. This must be caught immediately."
+          "Step 1: After Kerberoasting, cracking happens offline and is invisible to the SIEM. The next visible sign is credential use.",
+          "Step 2: Event 4624 Type 3 shows network logons. Track svc_backup across hosts to see where the attacker moved.",
+          "Step 3: DCSync is the critical end stage: Event 4662 with replication rights from a non-DC source requires immediate escalation."
         ],
         "L2": [
-          "Step 1: Search for the compromised account (svc_backup) in Event 4624 across all hosts. Note which machines it accessed and when.",
-          "Step 2: Build a timeline: Kerberoasting (4769) → credential use (4624 Type 3) → potential privilege escalation (4672) → DCSync (4662).",
-          "Step 3: Event 4662 with 'Replicating Directory Changes' from a non-DC IP is the DCSync indicator. Escalate immediately."
+          "Step 1: Search for svc_backup in 4624 events across all hosts. Note which machines it accessed and when.",
+          "Step 2: Build a timeline: 4769 Kerberoast -> 4624 Type 3 credential use -> privileged activity -> 4662 DCSync.",
+          "Step 3: If 4662 includes Replicating Directory Changes from a non-DC IP, classify it as critical domain compromise."
         ],
         "L3": [
-          "Step 1: Track lateral movement: search for `svc_backup` in SIEM events with type 4624.",
-          "Step 2: In terminal: `grep 'svc_backup' /var/log/scenario/security.log | grep '4624' | awk '{print $1, $2, $NF}'`",
-          "Step 3: Check for DCSync: `grep '4662' /var/log/scenario/security.log | grep -i 'replicat'`",
-          "Step 4: Document the complete attack chain timeline. Containment: disable svc_backup account, force krbtgt password reset (twice), reset all compromised account passwords."
+          "Step 1: Track lateral movement by searching SIEM events for svc_backup and 4624 Type 3.",
+          "Step 2: Check for DCSync by searching for Event 4662 and replication-rights wording such as Replicating Directory Changes.",
+          "Step 3: Document the complete attack-chain timeline with event IDs, accounts, source hosts, destination hosts, and timestamps.",
+          "Step 4: Containment: disable svc_backup, reset exposed accounts, plan krbtgt reset twice, and recommend RC4 disablement plus SPN/service-account review."
         ]
       }
     }

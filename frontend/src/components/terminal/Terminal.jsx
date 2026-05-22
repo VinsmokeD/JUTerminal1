@@ -4,7 +4,6 @@ import { useSettingsStore } from '../../store/settingsStore'
 import TerminalContextMenu from './TerminalContextMenu'
 import TerminalToolbar from './TerminalToolbar'
 import OutputAnnotator from './OutputAnnotator'
-import OutputInsightPanel from './OutputInsightPanel'
 
 /**
  * Real PTY terminal component.
@@ -191,7 +190,12 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
       />
       <OutputAnnotator
         insight={insights.find((item) => item.id === activeInsight) || insights[0]}
-        onOpen={() => setActiveInsight((insights.find((item) => item.id === activeInsight) || insights[0])?.id)}
+        onDismiss={() => {
+          const active = insights.find((item) => item.id === activeInsight) || insights[0]
+          if (!active) return
+          setInsights((current) => current.filter((item) => item.id !== active.id))
+          setActiveInsight((current) => current === active.id ? null : current)
+        }}
       />
       <div
         ref={containerRef}
@@ -200,15 +204,6 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onMouseDown={() => terminal.focus()}
-      />
-      <OutputInsightPanel
-        insights={insights}
-        activeId={activeInsight}
-        onSelect={setActiveInsight}
-        onDismiss={(id) => {
-          setInsights((current) => current.filter((item) => item.id !== id))
-          setActiveInsight((current) => current === id ? null : current)
-        }}
       />
       <div className={`pointer-events-none absolute right-3 top-3 z-30 rounded-cs-sm border bg-surface-1/90 px-2.5 py-1 text-[10px] font-mono uppercase ${statusTone}`}>
         {statusLabel}

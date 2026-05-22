@@ -49,6 +49,27 @@ export default function AiHintPanel({ onRequestHint, onToggleMode }) {
     return () => window.removeEventListener('ai:hint', handler)
   }, [])
 
+  useEffect(() => {
+    const handler = (evt) => {
+      if (evt.detail?.sessionId && currentSession?.id && evt.detail.sessionId !== currentSession.id) return
+      const detail = evt.detail || {}
+      setHints((p) => [{
+        text: detail.next || 'Record the evidence and continue with the scenario methodology.',
+        steps: [
+          detail.what,
+          detail.why,
+          detail.next,
+        ].filter(Boolean),
+        level: null,
+        branch: detail.tags?.length ? { label: detail.tags.join(' / ') } : null,
+        ts: new Date().toLocaleTimeString(),
+        isInsight: true,
+      }, ...p].slice(0, 30))
+    }
+    window.addEventListener('terminal:insight', handler)
+    return () => window.removeEventListener('terminal:insight', handler)
+  }, [currentSession?.id])
+
   const request = (level) => {
     setLoading(true)
     onRequestHint(level)
@@ -170,7 +191,9 @@ function HintCard({ hint }) {
   }
   const style = hint.isError
     ? { border: 'border-cs-border', bg: 'bg-surface-2/50', label: 'System', color: 'text-txt-dim' }
-    : (hint.level ? levelStyle[hint.level] : { border: 'border-cs-blue/25', bg: 'bg-cs-blue/5', label: 'AI Tutor', color: 'text-cs-blue' })
+    : hint.isInsight
+      ? { border: 'border-green-signal/25', bg: 'bg-green-signal/5', label: 'Output Insight', color: 'text-green-signal' }
+      : (hint.level ? levelStyle[hint.level] : { border: 'border-cs-blue/25', bg: 'bg-cs-blue/5', label: 'AI Tutor', color: 'text-cs-blue' })
 
   const hasSteps = hint.steps && hint.steps.length > 1
 

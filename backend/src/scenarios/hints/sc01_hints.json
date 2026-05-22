@@ -3,167 +3,167 @@
     "red": {
       "1": {
         "L1": [
-          "Step 1: Before touching the target, check what it reveals voluntarily. Every web server sends headers with every response — these contain the server software, programming language, and sometimes the framework.",
-          "Step 2: Also check for publicly accessible metadata files. robots.txt tells search engines which paths to avoid — but those 'hidden' paths are often the most interesting.",
-          "Step 3: HTTP cookies can reveal the backend technology (e.g., PHPSESSID = PHP, JSESSIONID = Java). Note everything you find — this is your technology fingerprint."
+          "Step 1: Start slowly. Your job in Phase 1 is not to exploit anything yet; it is to learn what the NovaMed web server willingly reveals.",
+          "Step 2: Identify the web technology from headers and fingerprints. Write down the server, language, framework, cookies, and any version numbers.",
+          "Step 3: Check public metadata paths such as robots.txt and sitemap.xml. Treat each discovered path as a lead for Phase 2, not as proof of a vulnerability yet."
         ],
         "L2": [
-          "Step 1: Use a web technology fingerprinting tool to identify all technologies in a single request. This is faster and more thorough than manual header inspection.",
-          "Step 2: Separately, fetch the raw HTTP headers with curl -I to see exactly what the server sends. Look for Server, X-Powered-By, and Set-Cookie headers.",
-          "Step 3: Check /robots.txt, /sitemap.xml, and /.well-known/ for metadata. These often reveal internal paths the developers wanted to hide from search engines but forgot to actually protect."
+          "Step 1: Work only against the authorized web target: 172.20.1.20. If you are unsure, type scope first and copy the target from the terminal banner.",
+          "Step 2: Use a fingerprinting request, then a raw-header request, then a metadata request. This gives you three kinds of evidence: technology, headers, and hidden paths.",
+          "Step 3: Good notes for this phase should answer: What is the app? What stack is it? What paths are visible? What should I enumerate next?"
         ],
         "L3": [
-          "Step 1: Run `whatweb http://172.20.1.20` — this fingerprints the entire technology stack in one command. Note every technology and version number it reports.",
-          "Step 2: Run `curl -I http://172.20.1.20` to see raw headers. Write down the Server version (Apache 2.4.x) and X-Powered-By (PHP 8.x) — these are your first findings.",
-          "Step 3: Run `curl http://172.20.1.20/robots.txt` — check what paths are listed. Each disallowed path is a directory worth investigating in the next phase.",
-          "Step 4: Document everything in your notebook with #finding tags. A professional report starts with accurate reconnaissance."
+          "Step 1: Run `whatweb http://172.20.1.20` and record the stack and versions it reports.",
+          "Step 2: Run `curl -I http://172.20.1.20` and record useful headers such as Server, X-Powered-By, Location, and Set-Cookie.",
+          "Step 3: Run `curl http://172.20.1.20/robots.txt` and `curl http://172.20.1.20/sitemap.xml`. A 404 is not failure; it is evidence that the path was checked.",
+          "Step 4: Add a #finding note summarizing the target, stack, and interesting paths before moving to active scanning."
         ]
       },
       "2": {
         "L1": [
-          "Step 1: Web applications typically have many more pages than those linked on the homepage. Hidden admin panels, backup files, and API endpoints are common attack surfaces.",
-          "Step 2: Directory brute-forcing tests thousands of common path names against the server. A '200 OK' means the page exists and is accessible. A '403 Forbidden' means it exists but is protected — still valuable information.",
-          "Step 3: Don't forget to test for common file extensions too. PHP applications might have .php, .bak, .txt, or .old files that contain sensitive information."
+          "Step 1: Now move from passive recon to active enumeration. You are looking for real application routes: admin panels, backups, upload pages, record viewers, and APIs.",
+          "Step 2: A 200 status means the path is accessible. A 301/302 means a directory or redirect exists. A 403 means the path exists but access is blocked. All three are useful.",
+          "Step 3: Do not chase every result equally. Prioritize paths that sound sensitive: admin, backup, uploads, records, login, api, config, or phpmyadmin."
         ],
         "L2": [
-          "Step 1: Choose a directory enumeration tool and pair it with a good wordlist. The tool sends HTTP requests for each word in the list and reports which paths return interesting responses.",
-          "Step 2: Use a wordlist designed for web applications — /usr/share/wordlists/dirb/common.txt is a good starting point. For PHP apps, also probe .php, .txt, and .bak extensions.",
-          "Step 3: Pay equal attention to 200 (accessible), 301 (redirect — directory exists), and 403 (forbidden — exists but protected) responses. All confirm the path is real."
+          "Step 1: Use one directory enumeration tool and one web wordlist. Keep the scan simple first so you can understand the output.",
+          "Step 2: For a PHP app, include extensions such as php, txt, bak, old, and zip. Backup or text files often reveal secrets by accident.",
+          "Step 3: If a wordlist path is missing in Kali, look under /usr/share/wordlists, /usr/share/dirb/wordlists, or /usr/share/seclists. Tooling path errors are not methodology failures; fix the path and rerun."
         ],
         "L3": [
-          "Step 1: Run `gobuster dir -u http://172.20.1.20 -w /usr/share/wordlists/dirb/common.txt -x php,txt,bak -t 30` — this tests common paths with PHP-relevant extensions.",
-          "Step 2: Review the output. Look for /admin, /backup, /uploads, /records, /login paths. Each one is a potential attack surface.",
-          "Step 3: Visit each discovered path in your browser or with curl to understand what each page does. /login is where you'll test for injection. /uploads might accept file uploads. /records might have parameters.",
-          "Step 4: For each interesting path, document it as a #finding: path, status code, what it appears to do, and why it might be exploitable."
+          "Step 1: Run `gobuster dir -u http://172.20.1.20 -w /usr/share/wordlists/dirb/common.txt -x php,txt,bak,old,zip -t 30`.",
+          "Step 2: If that wordlist is missing, run `ls /usr/share/wordlists /usr/share/dirb/wordlists /usr/share/seclists 2>/dev/null` and choose an available web content wordlist.",
+          "Step 3: Visit or curl the interesting results. Focus first on /login, /records, /backup, /uploads, /admin, and API-looking paths.",
+          "Step 4: Add a #finding note for each high-value path with status code, purpose, and what you will test next."
         ]
       },
       "3": {
         "L1": [
-          "Step 1: When user input is inserted directly into a SQL query without sanitization, an attacker can modify the query's logic. This is SQL injection — one of the most critical web vulnerabilities.",
-          "Step 2: The simplest test is inserting a single quote (') into an input field. If the application returns a database error message, the parameter is injectable — the quote broke the SQL syntax.",
-          "Step 3: Once confirmed, automated tools can systematically extract all data from the database. But always confirm manually first — automation without understanding teaches nothing."
+          "Step 1: Vulnerability identification means proving a weakness with the smallest safe test before using automation.",
+          "Step 2: Test inputs one at a time. Login fields may expose SQL injection. File parameters may expose local file inclusion. Numeric record IDs may expose IDOR.",
+          "Step 3: A professional tester records the exact request and response that proves the issue. The proof matters more than the tool name."
         ],
         "L2": [
-          "Step 1: Test the login form fields for SQL injection. Try a single quote in the username field and observe the response. An error message containing SQL keywords confirms injection.",
-          "Step 2: If confirmed, use an automated SQL injection tool to enumerate databases and tables. Tell it which parameter is injectable and let it determine the injection type.",
-          "Step 3: While testing, also check other pages for different vulnerability types. The /records page may have a file parameter vulnerable to Local File Inclusion — test with path traversal sequences."
+          "Step 1: For SQL injection, try a harmless quote in the login form and watch for database errors or changed behavior.",
+          "Step 2: For LFI, test the records file parameter with a traversal path and look for a known Linux file marker such as root:x:0:0.",
+          "Step 3: For IDOR, compare record IDs you can access. If changing only the ID exposes another patient's data, document the missing authorization check."
         ],
         "L3": [
-          "Step 1: Enter a single quote (') in the username field of /login and submit. If you see a MySQL error like 'You have an error in your SQL syntax', injection is confirmed.",
-          "Step 2: Run `sqlmap -u 'http://172.20.1.20/login' --data='username=admin&password=test' --level=2 --risk=1 --dbs` to enumerate all databases.",
-          "Step 3: Once you see the database names, run `sqlmap -u 'http://172.20.1.20/login' --data='username=admin&password=test' -D novamed_portal --tables` to list tables.",
-          "Step 4: Test /records for LFI: try `curl 'http://172.20.1.20/records?file=../../../../etc/passwd'` — if you see the passwd file, Local File Inclusion is confirmed.",
-          "Step 5: Document each vulnerability as a separate #finding with the exact request that triggers it, the response, and the severity (SQLi = Critical, LFI = High)."
+          "Step 1: SQLi proof: submit a single quote in the /login username field or use curl to reproduce the request. Save the error or behavior change as evidence.",
+          "Step 2: SQLi enumeration after proof: `sqlmap -u 'http://172.20.1.20/login' --data='username=admin&password=test' --level=2 --risk=1 --dbs`.",
+          "Step 3: LFI proof: `curl 'http://172.20.1.20/records?file=../../../../etc/passwd'`. If you see `root:x:0:0`, submit the LFI flag and document the request.",
+          "Step 4: Backup review: curl or browse discovered backup paths and look for training credentials or configuration leaks.",
+          "Step 5: IDOR proof: try patient record IDs around the one you can access, especially the scenario target record #1042. Document only the minimum data needed to prove impact."
         ]
       },
       "4": {
         "L1": [
-          "Step 1: You've found injection points. Now think about impact — what can an attacker actually achieve? Database access means credential theft. File inclusion means reading server configuration.",
-          "Step 2: PHP application config files often contain database credentials in plaintext. If you can read them via LFI, you have a direct path to the database.",
-          "Step 3: Unrestricted file upload is one of the most dangerous vulnerabilities. If the server executes uploaded PHP files, you can achieve Remote Code Execution — full server control."
+          "Step 1: Exploitation should connect the small proofs into a clear attack chain. Ask: what does this vulnerability let me access, and why does that matter to NovaMed?",
+          "Step 2: SQL injection can expose database tables and credentials. LFI can expose configuration files. Upload flaws can become code execution if uploaded PHP runs.",
+          "Step 3: Stop after proving controlled impact. Do not delete, alter, or mass-dump data. This is a training pentest, not damage."
         ],
         "L2": [
-          "Step 1: Use LFI to read the application's configuration file. PHP apps typically store database credentials in a config.php or .env file in the web root.",
-          "Step 2: Try to access the /uploads/ directory you found during enumeration. If it accepts file uploads, test if you can upload a PHP file — this would give you code execution on the server.",
-          "Step 3: After exploiting SQLi for data and LFI for config files, attempt to upload a simple PHP file that executes system commands. This is the full attack chain: SQLi → LFI → Upload → RCE."
+          "Step 1: Use SQLi to identify the database and sensitive tables. Dump only enough rows to prove impact.",
+          "Step 2: Use LFI to read application config files. In PHP apps, config.php and .env-like files often contain database credentials.",
+          "Step 3: If uploads are in scope, prove whether PHP execution is possible with a minimal command such as whoami, then document the risk and stop."
         ],
         "L3": [
-          "Step 1: Read the config: `curl 'http://172.20.1.20/records?file=../../../../var/www/html/admin/config.php'` — extract the database username and password.",
-          "Step 2: Use sqlmap to dump sensitive tables: `sqlmap -u 'http://172.20.1.20/login' --data='username=admin&password=test' -D novamed_portal -T users --dump`",
-          "Step 3: Test file upload: create a simple PHP test file `echo '<?php echo shell_exec($_GET[\"cmd\"]); ?>' > shell.php` and upload it to /uploads/.",
-          "Step 4: If the upload succeeds, access `http://172.20.1.20/uploads/shell.php?cmd=whoami` — if it returns a username, you have RCE.",
-          "Step 5: Document the complete attack chain as your primary #finding with all evidence. This is a Critical severity finding."
+          "Step 1: Dump a small proof set from SQLi, for example a few rows from a users or patients table. Use start/stop limits where possible.",
+          "Step 2: Read likely config: `curl 'http://172.20.1.20/records?file=../../../../var/www/html/admin/config.php'`.",
+          "Step 3: If the scenario exposes /backup, inspect backup contents for the training admin password and submit the matching flag if found.",
+          "Step 4: If testing upload execution, use a tiny PHP proof and run only `whoami` or `id`. Capture the URL, response, and timestamp.",
+          "Step 5: Write one attack-chain #finding that connects recon -> enumeration -> vulnerability -> impact -> evidence."
         ]
       },
       "5": {
         "L1": [
-          "Step 1: Post-exploitation is about understanding impact. What data can you access? What is the business risk? Patient healthcare data has specific regulatory implications (HIPAA).",
-          "Step 2: A professional penetration test documents everything: what you accessed, how, the business impact in non-technical language, and specific remediation steps for each finding.",
-          "Step 3: Your evidence must be reproducible — another tester should be able to follow your notes and reproduce every finding independently."
+          "Step 1: Post-exploitation in this lab means evidence and impact analysis, not persistence or damage.",
+          "Step 2: For each issue, write what an attacker could access, which business process is affected, and what kind of data is at risk.",
+          "Step 3: Good evidence is reproducible: another student should be able to follow your note and see the same result."
         ],
         "L2": [
-          "Step 1: Use your access to demonstrate impact without causing damage. Read sensitive files, show database contents, prove you can execute commands — but don't modify or delete anything.",
-          "Step 2: Calculate CVSS scores for each finding. SQLi on a healthcare app with patient data: AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H = 9.8 Critical.",
-          "Step 3: Write specific remediation steps: parameterized queries for SQLi, input whitelist for LFI, file type validation for upload, authorization checks for IDOR."
+          "Step 1: Group your proof by finding: SQLi, LFI, backup exposure, IDOR, upload/RCE if confirmed.",
+          "Step 2: Add severity and CVSS reasoning. SQLi with patient data is Critical. LFI with sensitive config is High. IDOR over patient records is at least Medium/High depending on exposure.",
+          "Step 3: Write remediation beside every finding: parameterized queries, path allowlists, access control checks, upload validation, and secret removal from backups."
         ],
         "L3": [
-          "Step 1: Demonstrate access to patient data via SQLi — dump a few rows (not all) to prove the vulnerability's impact: `sqlmap ... -T patients --dump --start=1 --stop=3`",
-          "Step 2: Tag each finding in your notebook with #finding, the evidence with #evidence, and write remediation with #remediation.",
-          "Step 3: CVSS calculator: SQLi = 9.8 Critical, LFI = 7.5 High, IDOR = 6.5 Medium, Unrestricted Upload = 9.8 Critical.",
-          "Step 4: Click 'End & debrief' when ready — the report builder will compile your findings into a structured report."
+          "Step 1: In the notebook, ensure every vulnerability has #finding, every command/result proof has #evidence, and every fix has #remediation.",
+          "Step 2: Write exact reproduction steps for each finding: URL, parameter, payload/test value, expected vulnerable response, and affected data.",
+          "Step 3: Add CVSS examples: SQLi with full database impact 9.8 Critical; LFI sensitive file disclosure 7.5 High; IDOR patient record access 6.5-8.1 depending on scope.",
+          "Step 4: Confirm you have captured all scenario flags you earned before ending the mission."
         ]
       },
       "6": {
         "L1": [
-          "Step 1: The final report is your deliverable. It must be clear, structured, and actionable. Two audiences: executives who fund the fixes, and developers who implement them.",
-          "Step 2: Executive summary: no jargon, focus on business risk. 'An attacker can access all patient records without authentication' is better than 'SQL injection in login parameter.'",
-          "Step 3: Technical details: exact reproduction steps, screenshots/evidence, CVSS scores, and specific code-level remediation for each finding."
+          "Step 1: Reporting is where the technical work becomes useful. The report must help leaders understand risk and help developers fix the exact bug.",
+          "Step 2: Use plain language in the executive summary. Example: 'An unauthenticated attacker could access patient records' is clearer than only saying 'SQL injection'.",
+          "Step 3: Put the most serious findings first and keep evidence concise."
         ],
         "L2": [
-          "Step 1: Structure: Executive Summary → Scope → Methodology (PTES/OWASP) → Findings (sorted by severity) → Recommendations → Appendices.",
-          "Step 2: Each finding needs: title, severity, CVSS, description, evidence (HTTP request/response), business impact, and remediation.",
-          "Step 3: Use the report builder to export — verify all your #finding and #evidence notes are included."
+          "Step 1: Use this structure: Executive Summary, Scope, Methodology, Findings by severity, Evidence, Remediation, Appendix.",
+          "Step 2: Each finding should include title, severity, affected endpoint, reproduction steps, evidence, impact, and remediation.",
+          "Step 3: Before export, check that your notebook tags are complete so the report builder can pull the right material."
         ],
         "L3": [
-          "Step 1: Review all your notebook entries. Ensure every vulnerability has a #finding tag, every proof has an #evidence tag, and every fix has a #remediation tag.",
-          "Step 2: Click 'Export report' on the debrief page. The system compiles your notes into a structured report.",
-          "Step 3: Review the generated report for completeness. A professional report always includes: scope limitations, methodology reference, timeline, and a risk rating matrix."
+          "Step 1: Review all notes and fix missing tags. Use #finding for issue descriptions, #evidence for proof, #ioc for observables, and #remediation for fixes.",
+          "Step 2: Generate the report from the debrief page and scan for missing endpoints, missing severity, or unclear reproduction steps.",
+          "Step 3: Add a final summary of the safest remediation order: fix SQLi first, then LFI/backup exposure, then IDOR/upload hardening, then monitoring improvements."
         ]
       }
     },
     "blue": {
       "1": {
         "L1": [
-          "Step 1: Your SIEM is showing events from the target network. Not all events are attacks — background traffic generates noise. Your first job is to separate signal from noise.",
-          "Step 2: Focus on HIGH and CRITICAL severity events first. These indicate likely attack activity. Check: is the source IP from an expected range, or is it anomalous?",
-          "Step 3: Look for patterns: multiple events from the same source IP in a short time window suggest a single attacker. Build a timeline."
+          "Step 1: Start with the SIEM feed. If it is empty, wait for Red Team activity or run a simple scenario action; alerts appear when commands trigger detections.",
+          "Step 2: Triage high and critical events first. Identify source IP, destination, timestamp, event type, and MITRE technique.",
+          "Step 3: Build a timeline. Web attacks usually progress from recon to directory brute force to injection or traversal to data access."
         ],
         "L2": [
-          "Step 1: Filter SIEM events by severity:HIGH to reduce noise. Identify the attacker's source IP from these events.",
-          "Step 2: Use that IP to filter all events: source_ip:<IP>. This shows the complete picture of what the attacker has done so far.",
-          "Step 3: Check the timeline — what was the first event from this IP? That's when the attack started. Note the progression: recon → enumeration → exploitation."
+          "Step 1: Filter for high-priority web events: directory brute force, SQL injection, path traversal, sensitive artifact access, and webshell upload.",
+          "Step 2: Pick the most common source IP and filter all events by that IP. This shows whether one attacker is responsible for the whole chain.",
+          "Step 3: Record the first event time, latest event time, affected endpoint, and attacker IP as #ioc and #finding notes."
         ],
         "L3": [
-          "Step 1: In the SIEM filter bar, type `severity:HIGH` to see high-priority alerts. Note the source IP that appears most frequently.",
-          "Step 2: Filter by that IP: `source_ip:172.20.1.x` to see the full attack timeline.",
-          "Step 3: Document the first and last event timestamp, the source IP, and the event types as your initial #ioc and #finding entries.",
-          "Step 4: Open the terminal tab and run `tshark -r /var/log/scenario/capture.pcap -Y 'ip.src==<ATTACKER_IP>'` to see the raw traffic."
+          "Step 1: In the SIEM filter, search for high or critical severity alerts first.",
+          "Step 2: For each alert, write: source_ip, target endpoint, rule/message, timestamp, and whether it looks like recon, exploitation, or post-exploitation.",
+          "Step 3: If raw web logs are available, correlate by source IP and URL path to confirm the alert was not just scanner noise.",
+          "Step 4: Create an initial incident timeline note before deciding containment."
         ]
       },
       "2": {
         "L1": [
-          "Step 1: WAF alerts are firing — but are they true positives? A true positive means the attack actually worked. A false positive means the WAF correctly blocked it.",
-          "Step 2: The key indicator is the HTTP response code. A WAF block returns 403. If the application returned 200 to the same attack pattern, the WAF was bypassed.",
-          "Step 3: SQL injection signatures in WAF logs (UNION SELECT, OR 1=1, etc.) need correlation with the actual application response to determine impact."
+          "Step 1: A WAF or web alert is not automatically a breach. Decide whether it was blocked or successful.",
+          "Step 2: Response code matters. 403 usually means blocked. 200/302 on an attack-looking request may mean the app handled it and could be vulnerable.",
+          "Step 3: Large response sizes after SQLi or traversal attempts can indicate data exposure."
         ],
         "L2": [
-          "Step 1: Cross-reference WAF alert timestamps with Apache access log entries. The WAF says 'SQLi detected' — but did Apache return 200 or 403?",
-          "Step 2: A 200 response to a request that triggered a WAF SQLi rule means the injection succeeded. This immediately escalates to CRITICAL.",
-          "Step 3: Check if any data was exfiltrated by looking at response sizes — unusually large responses to /login suggest data extraction."
+          "Step 1: Correlate SIEM alert time with web access logs for the same source IP and endpoint.",
+          "Step 2: Check method, path, status code, and response size. The same payload with status 200 deserves urgent review.",
+          "Step 3: Classify each alert: false positive, blocked true positive, or successful true positive."
         ],
         "L3": [
-          "Step 1: In the SIEM, look for events with 'SQLi' or 'WAF' in the message. Note the timestamps.",
-          "Step 2: In the terminal, check Apache logs: `grep 'login' /var/log/apache2/access.log | grep '200'` — any POST to /login with status 200 after the WAF alert is a confirmed bypass.",
-          "Step 3: Check response sizes: `awk '{print $10}' /var/log/apache2/access.log | sort -rn | head` — unusually large responses indicate data extraction.",
-          "Step 4: Document: True Positive confirmed, SQLi succeeded despite WAF. Tag as #finding with CRITICAL severity."
+          "Step 1: Search for requests to /login, /records, /backup, /uploads, and /api from the suspicious source IP.",
+          "Step 2: For SQLi, look for strings such as UNION, OR 1=1, quotes, or sqlmap user agents near the alert timestamp.",
+          "Step 3: For LFI, look for ../ traversal or encoded traversal in query strings.",
+          "Step 4: Document the classification and severity. A successful SQLi or webshell attempt should be escalated as critical."
         ]
       },
       "3": {
         "L1": [
-          "Step 1: Confirmed attack — now contain it. The sequence matters: preserve evidence FIRST, then block the attacker. If you block first, you might lose volatile evidence.",
-          "Step 2: Containment means: block the source IP at the WAF/firewall level, check if any accounts were compromised, and determine the scope of data access.",
-          "Step 3: After containment, verify it worked. Can the attacker still reach the application? Are there other IPs involved?"
+          "Step 1: Containment order matters: preserve evidence, block attacker path, then verify the block worked.",
+          "Step 2: Preserve enough logs to prove what happened. Do this before restarting services or changing rules.",
+          "Step 3: After containment, keep watching for a second source IP or a different technique."
         ],
         "L2": [
-          "Step 1: Export current logs before any changes — this preserves your evidence chain. Copy Apache access logs and WAF logs to a safe location.",
-          "Step 2: Create a WAF rule to block the attacker IP. Also check if they used multiple IPs (common with VPNs/proxies).",
-          "Step 3: Determine what data was accessed. Check database query logs if available. Identify affected patient records for breach notification."
+          "Step 1: Preserve web access logs, WAF logs, SIEM events, and any suspicious uploaded file metadata.",
+          "Step 2: Contain by blocking the source IP or attack pattern at the WAF/firewall, and disable vulnerable endpoints only if needed.",
+          "Step 3: Verify with SIEM: new alerts from the same source should stop after the containment timestamp."
         ],
         "L3": [
-          "Step 1: Preserve evidence: `cp /var/log/apache2/access.log /home/student/evidence/access.log.$(date +%s)`",
-          "Step 2: Find all URIs the attacker accessed with success: `grep '<ATTACKER_IP>' /var/log/apache2/access.log | grep '200' | awk '{print $7}' | sort -u`",
-          "Step 3: Block at WAF level — document the exact rule you would create as a #remediation note.",
-          "Step 4: Write containment summary: what was blocked, what evidence was preserved, what data was potentially exposed. Tag as #finding."
+          "Step 1: Write a containment note with the source IP, affected endpoints, evidence preserved, and proposed WAF/firewall block.",
+          "Step 2: If a webshell/upload was detected, preserve the file path and hash before removal.",
+          "Step 3: Add remediation: parameterized queries, file path allowlists, upload deny-by-default policy, least privilege DB credentials, and alert tuning.",
+          "Step 4: Finish with an incident summary: root cause, data exposure, containment action, and recovery recommendation."
         ]
       }
     }

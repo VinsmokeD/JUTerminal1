@@ -42,6 +42,12 @@ RUN git clone --depth=1 https://github.com/fortra/impacket.git /opt/impacket \
 # Removing them keeps nmap usable as a normal non-root TCP connect scanner.
 RUN if [ -f /usr/lib/nmap/nmap ]; then setcap -r /usr/lib/nmap/nmap 2>/dev/null || true; fi
 
+# Several Kali builds keep rockyou compressed; expose the expected classroom
+# path so hashcat examples do not fail with a missing wordlist.
+RUN if [ -f /usr/share/wordlists/rockyou.txt.gz ] && [ ! -f /usr/share/wordlists/rockyou.txt ]; then \
+        gzip -dk /usr/share/wordlists/rockyou.txt.gz; \
+    fi
+
 # Kali's /usr/bin/nmap launcher adds --privileged for non-root users. In this
 # sandbox that forces raw socket behavior, so prefer a direct unprivileged shim.
 RUN printf '%s\n' '#!/usr/bin/env sh' 'exec /usr/lib/nmap/nmap "$@"' > /usr/local/bin/nmap \

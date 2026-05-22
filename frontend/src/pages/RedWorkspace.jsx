@@ -31,7 +31,7 @@ export default function RedWorkspace() {
   const [elapsed, setElapsed] = useState(0)
   const [siemFlash, setSiemFlash] = useState(false)
   const [toast, setToast] = useState(null)
-  const [terminalWidth, setTerminalWidth] = useState(65)
+  const [terminalWidth, setTerminalWidth] = useState(58)
   const siemCountRef = useRef(0)
   const writeOutputRef = useRef(null)
   const containerRef = useRef(null)
@@ -140,7 +140,7 @@ export default function RedWorkspace() {
 
     const handleMove = (moveEvent) => {
       const nextWidth = ((moveEvent.clientX - rect.left) / rect.width) * 100
-      setTerminalWidth(Math.min(80, Math.max(35, nextWidth)))
+      setTerminalWidth(Math.min(68, Math.max(42, nextWidth)))
     }
 
     const handleUp = () => {
@@ -156,6 +156,7 @@ export default function RedWorkspace() {
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   const firstTargetIp = session.scenario_id === 'SC-01' ? '172.20.1.20' : session.scenario_id === 'SC-02' ? '172.20.2.20' : '172.20.3.40'
+  const terminalPaneWidth = Math.min(68, Math.max(42, terminalWidth))
 
   return (
     <div className="workspace-shell font-display">
@@ -239,15 +240,28 @@ export default function RedWorkspace() {
 
       <div ref={containerRef} className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
         {/* LEFT PANE */}
-        <div 
-          className="flex flex-col flex-shrink-0 h-[50vh] md:h-full min-w-0" 
-          style={{ flexBasis: typeof window !== 'undefined' && window.innerWidth < 768 ? 'auto' : `${terminalWidth}%` }}
+        <div
+          className="flex flex-col h-[50vh] md:h-full min-w-0 md:min-w-[520px]"
+          style={{
+            flex: typeof window !== 'undefined' && window.innerWidth < 768 ? undefined : `0 1 ${terminalPaneWidth}%`,
+            maxWidth: typeof window !== 'undefined' && window.innerWidth < 768 ? undefined : 'calc(100% - 360px)',
+          }}
         >
           <div className="flex-1 flex flex-col min-h-0 relative mb-1 md:mb-0">
             <div className="absolute inset-0 bg-red-surface opacity-50 pointer-events-none" />
             <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
               {phaseMap[phase] && (
                 <span className="siem-mitre font-mono">{phaseMap[phase]}</span>
+              )}
+              {session.scenario_variant && (
+                <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-cs-sm border border-amber-warn/30 bg-amber-warn/10 text-amber-warn ml-1">
+                  {session.scenario_variant}
+                </span>
+              )}
+              {session.target_ip && (
+                <span className="text-[9px] font-mono text-green-signal/80 bg-green-signal/5 border border-green-signal/20 px-1.5 py-0.5 rounded-cs-sm ml-1">
+                  {session.target_ip}
+                </span>
               )}
             </PanelHeader>
             <div className="flex-1 overflow-hidden relative z-10 flex flex-col">
@@ -271,7 +285,7 @@ export default function RedWorkspace() {
         />
 
         {/* RIGHT PANE */}
-        <div className="flex-1 flex flex-col min-w-0 h-[50vh] md:h-full">
+        <div className="flex-1 flex flex-col min-w-0 md:min-w-[360px] h-[50vh] md:h-full">
           <div className="flex-1 flex flex-col min-h-0 mb-1 md:mb-0 relative border-l border-cs-border bg-surface-1">
             <PanelHeader color="blue" title="AI Tutor" />
             <div className="flex-1 overflow-hidden flex flex-col">

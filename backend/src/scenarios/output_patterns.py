@@ -13,6 +13,59 @@ _ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 _buffers: dict[str, str] = {}
 _last_emit: dict[tuple[str, str], float] = {}
 _EMIT_TTL_SECONDS = 45.0
+_GENERIC_PATTERNS_RAW: list[dict[str, Any]] = [
+    {
+        "id": "shell-tool-usage",
+        "regex": r"usage:\s+\S+\.py|positional arguments:|options:",
+        "what": "The tool printed its help screen instead of running the intended action.",
+        "why": "This usually means the command was missing its target, credentials, or required flags.",
+        "next": "Rebuild the command as one complete line: tool name, required options, then the target. Avoid pressing Enter after a trailing backslash unless you continue the command immediately.",
+        "tags": ["shell", "recovery"],
+    },
+    {
+        "id": "shell-option-alone",
+        "regex": r"bash:\s+-{1,2}[A-Za-z0-9][\w-]*:\s+command not found",
+        "what": "A command option was submitted as its own command.",
+        "why": "Shell flags such as -dc-ip or --rules-file only work when they are attached to the tool command they configure.",
+        "next": "Put every option on the same command line as the tool. If you split lines, keep the backslash at the end of each continued line and do not submit a blank continuation line.",
+        "tags": ["shell", "syntax"],
+    },
+    {
+        "id": "shell-placeholder",
+        "regex": r"syntax error near unexpected token|<[^>\s]+>",
+        "what": "A placeholder or shell metacharacter was submitted literally.",
+        "why": "Examples that show values like <NTLM_HASH> are prompts to replace that text with evidence you already collected.",
+        "next": "Go back to the previous evidence step, copy the real value from your output, and replace the placeholder before rerunning.",
+        "tags": ["shell", "evidence"],
+    },
+    {
+        "id": "wordlist-missing",
+        "regex": r"rockyou\.txt:\s+No such file|/usr/share/wordlists/rockyou\.txt:\s+No such file",
+        "what": "The expected password wordlist path is missing in this Kali image.",
+        "why": "Some Kali builds ship rockyou compressed as rockyou.txt.gz or under the SecLists directory.",
+        "next": "Check for the compressed wordlist first, then either decompress it to your home directory or use the available SecLists password path.",
+        "tags": ["tooling", "wordlist"],
+    },
+    {
+        "id": "auth-or-share-denied",
+        "regex": r"NT_STATUS_ACCESS_DENIED|STATUS_LOGON_FAILURE|tree connect failed",
+        "what": "The target rejected the current authentication context.",
+        "why": "This can mean the account is wrong, the password is wrong, the domain prefix is missing, or the share requires a different privilege level.",
+        "next": "Verify the exact domain, username, password, and share name. Then document whether the denial is expected access control or a credential problem.",
+        "tags": ["credentials", "smb"],
+    },
+]
+
+
+@lru_cache(maxsize=1)
+def _generic_patterns() -> list[dict[str, Any]]:
+    patterns: list[dict[str, Any]] = []
+    for item in _GENERIC_PATTERNS_RAW:
+        try:
+            patterns.append({**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)})
+        except (KeyError, re.error):
+            continue
+    return patterns
 
 
 @lru_cache(maxsize=8)
@@ -66,7 +119,29 @@ def scan_output_chunk(session_id: str, scenario_id: str, chunk: str) -> list[dic
     for line in complete_lines[-30:]:
         if not line.strip():
             continue
+        line_matched_specific = False
         for pattern in _load_patterns(scenario_id):
+            compiled = pattern.get("_compiled")
+            if not compiled or not compiled.search(line):
+                continue
+            line_matched_specific = True
+            emit_key = (session_id, pattern.get("id", "unknown"))
+            if now - _last_emit.get(emit_key, 0.0) < _EMIT_TTL_SECONDS:
+                continue
+            _last_emit[emit_key] = now
+            insights.append(
+                {
+                    "id": pattern.get("id"),
+                    "matched_line": line[-500:],
+                    "what": pattern.get("what", "Interesting output fingerprint detected."),
+                    "why": pattern.get("why", "This line can guide the next investigation step."),
+                    "next": pattern.get("next", "Record the evidence and continue with the scenario methodology."),
+                    "tags": pattern.get("tags", []),
+                }
+            )
+        if line_matched_specific:
+            continue
+        for pattern in _generic_patterns():
             compiled = pattern.get("_compiled")
             if not compiled or not compiled.search(line):
                 continue

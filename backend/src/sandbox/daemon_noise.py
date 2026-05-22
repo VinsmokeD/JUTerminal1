@@ -184,10 +184,22 @@ async def _publish_noise_event(session_id: str, scenario_id: str) -> None:
         pass
 
 
+async def _get_session_seed(redis: object, session_id: str) -> int | None:
+    """Retrieve the randomization seed stored in Redis for a session, if any."""
+    try:
+        import json as _json
+        raw = await redis.get(f"session:{session_id}:rand_seed")  # type: ignore[attr-defined]
+        if raw:
+            return int(raw.decode() if isinstance(raw, bytes) else raw)
+    except Exception:
+        pass
+    return None
+
+
 async def _run_noise_loop() -> None:
     """
     Main daemon loop.
-    - Every 30–60 seconds: publish one noise SIEM event per active session
+    - Every 30–60 seconds (jittered per-session seed): publish one noise SIEM event
     - Every 90–180 seconds: fire an HTTP probe to a random container target
 
     Interval is intentionally long so noise doesn't overwhelm students who
@@ -230,12 +242,34 @@ async def _run_noise_loop() -> None:
                 last_noise_raw = await redis.get(f"noise:{session_id}:last_event_time")
                 if last_noise_raw:
                     last_noise = float(last_noise_raw.decode() if isinstance(last_noise_raw, bytes) else last_noise_raw)
-                    if now - last_noise < _MIN_SECONDS_BETWEEN_NOISE:
+
+                    # Use session seed for jitter: sessions with even seeds get
+                    # slightly shorter intervals to create realistic variation.
+                    seed = await _get_session_seed(redis, session_id)
+                    if seed is not None:
+                        rng = random.Random(seed ^ int(now / 60))
+                        min_between = rng.uniform(120.0, 200.0)
+                    else:
+                        min_between = _MIN_SECONDS_BETWEEN_NOISE
+
+                    if now - last_noise < min_between:
                         continue
             except Exception:
                 continue
 
-            await _publish_noise_event(session_id, scenario_id)
+            # Use session RNG for event selection if seed available
+            seed = await _get_session_seed(redis, session_id)
+            profile = _NOISE_PROFILES.get(scenario_id)
+            if not profile:
+                continue
+            if seed is not None:
+                rng = random.Random(seed ^ int(now / 30))
+                event = rng.choice(profile["siem_events"])
+            else:
+                event = random.choice(profile["siem_events"])
+
+            await _publish_noise_event_direct(session_id, scenario_id, event)
+
             try:
                 await redis.set(f"noise:{session_id}:last_event_time", str(now), ex=7200)
             except Exception:
@@ -243,13 +277,41 @@ async def _run_noise_loop() -> None:
 
             # HTTP probes: run much less frequently than SIEM events
             if http_tick >= random.uniform(90.0, 180.0):
-                profile = _NOISE_PROFILES.get(scenario_id, {})
                 targets = profile.get("http_targets", [])
                 if targets:
                     asyncio.create_task(_probe_http(random.choice(targets)))
 
         if http_tick >= 180.0:
             http_tick = 0
+
+
+async def _publish_noise_event_direct(
+    session_id: str,
+    scenario_id: str,
+    event: dict,
+) -> None:
+    """Publish a specific noise event to this session's SIEM feed."""
+    raw_severity = event["severity"].upper()
+    severity = "MED" if raw_severity == "MEDIUM" else raw_severity
+    payload = {
+        "id": str(uuid.uuid4()),
+        "type": "siem_event",
+        "session_id": session_id,
+        "severity": severity,
+        "message": event["message"],
+        "mitre_technique": event.get("mitre"),
+        "source": "background",
+        "source_type": "background",
+        "sensor": event.get("source", "system"),
+        "noise": True,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        redis = get_redis_client()
+        await redis.publish(f"siem:{session_id}:feed", json.dumps(payload))
+    except Exception:
+        pass
 
 
 def start_noise_daemon() -> asyncio.Task:

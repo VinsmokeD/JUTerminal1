@@ -318,6 +318,12 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3 mb-3">
                   <span className="font-mono text-xs text-txt-dim bg-surface-3 px-2 py-0.5 rounded-cs-sm">{briefing.id}</span>
                   <span className="text-xs text-txt-dim font-mono">Mission Briefing</span>
+                  <span className="ml-auto text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-cs-sm border border-amber-warn/30 bg-amber-warn/10 text-amber-warn flex items-center gap-1">
+                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Randomized Variant
+                  </span>
                 </div>
                 <h2 className="text-xl font-bold text-txt-primary mb-1 font-display">{briefing.title}</h2>
                 <p className="text-txt-secondary text-sm">{briefing.description || SCENARIO_SUMMARIES[briefing.id]}</p>

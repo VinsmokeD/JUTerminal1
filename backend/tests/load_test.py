@@ -7,6 +7,16 @@ Run with:
 """
 import time
 import uuid
+import sys
+
+if "pytest" in sys.modules:
+    import pytest
+
+    pytest.skip(
+        "Locust load scenario: run with `locust -f backend/tests/load_test.py`; not a pytest test module.",
+        allow_module_level=True,
+    )
+
 from locust import HttpUser, task, between
 
 

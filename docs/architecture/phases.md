@@ -285,30 +285,31 @@
 
 ---
 
-## Phase 25 - Instructor Learning Analytics - Planned
+## Phase 25 — Instructor Learning Analytics ✅ Done
 **Goal**: Give instructors class-level learning signals, common mistake summaries, and stronger grading exports.
 **Acceptance**: Instructor can see weak phases, most-used hints, detection coverage, and export grade-ready data.
 
 ---
 
-## Phase 26 - Mission Shell And Readiness UX - Done ✅
+## Phase 26 — Mission Shell And Readiness UX ✅ Done
 **Goal**: Make each scenario feel like a coherent mission with readiness states for targets, terminal, SIEM, and AI.
 **Acceptance**: Students can see what is starting, ready, degraded, or blocked before they begin acting.
 
 ---
 
-## Phase 27 - AI Debrief Mode - Planned
+## Phase 27 — AI Debrief Mode ✅ Done
 **Goal**: Add safe post-session coaching that summarizes mistakes, missed detections, and next practice without giving exploit chains.
 **Acceptance**: Debrief produces bounded, safe coaching with deterministic fallback when Gemini is unavailable.
 
 ---
 
-## Phase 28 - Scenario Depth And Randomization - Planned
+## Phase 28 — Scenario Depth And Randomization ✅ Done
 **Goal**: Increase replay value for SC-01 through SC-03 before expanding scenario count.
 **Acceptance**: Scenario seeds, difficulty variants, richer noise, and alternate valid paths exist while fixed demo paths still pass.
 
 ---
 
-## Total estimated phases: 28
+## Total estimated phases: 28 ✅ All Completed
 ## Estimated total Claude Code sessions: +6 for Product Evolution
 ## GitHub push points: after every phase
+

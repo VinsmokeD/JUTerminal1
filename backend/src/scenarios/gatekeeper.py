@@ -192,5 +192,19 @@ def _parse_tool(command: str) -> str:
     if not parts:
         return ""
 
+    joined = " ".join(parts).lower()
+    impacket_aliases = {
+        "getuserspns": "impacket-getuserspns",
+        "secretsdump": "impacket-secretsdump",
+        "smbexec": "impacket-smbexec",
+        "psexec": "impacket-psexec",
+        "wmiexec": "impacket-wmiexec",
+        "ticketer": "impacket-ticketer",
+        "getnpusers": "impacket-getnpusers",
+    }
+    for marker, canonical in impacket_aliases.items():
+        if marker in joined:
+            return canonical
+
     # Strip absolute path prefix
     return parts[0].split("/")[-1].lower()

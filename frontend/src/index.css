@@ -1306,30 +1306,29 @@
 }
 
 .output-annotator {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  z-index: 38;
+  position: relative;
+  z-index: 12;
   display: flex;
-  max-width: min(520px, calc(100% - 28px));
+  width: calc(100% - 20px);
+  max-width: none;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  margin: 6px 10px 0;
   border: 1px solid rgba(0,255,136,0.28);
   border-radius: var(--radius-sm);
   background: rgba(0,255,136,0.08);
   color: var(--green-signal);
-  padding: 7px 10px;
+  padding: 6px 8px;
   font-family: var(--font-mono);
   font-size: 10.5px;
   text-align: left;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.28);
+  box-shadow: none;
 }
 
-.output-annotator:hover,
-.output-annotator:focus-visible {
+.output-annotator:hover {
   border-color: rgba(0,255,136,0.5);
   background: rgba(0,255,136,0.12);
-  outline: none;
 }
 
 .output-annotator-dot {
@@ -1339,6 +1338,33 @@
   border-radius: 999px;
   background: var(--green-signal);
   box-shadow: 0 0 10px var(--green-signal);
+}
+
+.output-annotator-target {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--text-dim);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.output-annotator-dismiss {
+  flex-shrink: 0;
+  border: 1px solid rgba(74,80,104,0.56);
+  border-radius: var(--radius-sm);
+  background: rgba(19,22,29,0.78);
+  color: var(--text-dim);
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+}
+
+.output-annotator-dismiss:hover,
+.output-annotator-dismiss:focus-visible {
+  border-color: rgba(0,255,136,0.45);
+  color: var(--green-signal);
+  outline: none;
 }
 
 .output-insight-panel {
@@ -1508,4 +1534,3 @@
   color: var(--text-secondary);
   font-size: 11px;
 }
-

@@ -173,51 +173,87 @@ async def validate_flag(
     db: AsyncSession,
 ) -> dict[str, Any]:
     """
-    Check if `flag_input` matches any flag in the scenario spec.
+    Check if ``flag_input`` matches any flag for this session.
+
+    Priority:
+    1. Session-level dynamic overrides in ``session_metadata["flags"]``
+       — supports exact ``value`` match OR ``value_pattern`` regex match.
+    2. Static YAML flags (``get_flags(scenario_id)``).
+
     Awards points and records in DB if valid and not already captured.
     """
-    flags = get_flags(scenario_id)
-    for flag in flags:
-        if flag.get("value", "").strip() == flag_input.strip():
-            flag_id = flag["id"]
-            # Check not already captured
-            cached = await cache_get(f"session:{session_id}:state") or {}
-            captured = cached.get("flags_captured", [])
-            if flag_id in captured:
-                return {"valid": True, "already_captured": True, "flag_id": flag_id}
+    # ── 1. Build effective flag list ────────────────────────────────────────
+    # Start with dynamic overrides from session metadata
+    meta_flags: list[dict[str, Any]] = []
+    result_sess = await db.execute(
+        select(DbSession).where(DbSession.id == session_id)
+    )
+    db_session = result_sess.scalar_one_or_none()
+    if db_session:
+        metadata_flags: dict[str, Any] = (db_session.session_metadata or {}).get("flags", {})
+        for fid, fdata in metadata_flags.items():
+            meta_flags.append({"id": fid, **fdata})
 
-            # Award points
-            points = flag.get("points", 0)
-            captured.append(flag_id)
-            cached["flags_captured"] = captured
-            cached["score"] = cached.get("score", 100) + points
-            await cache_set(f"session:{session_id}:state", cached, ttl=28800)
+    # Append static YAML flags (only if no metadata override for same id)
+    meta_ids = {f["id"] for f in meta_flags}
+    static_flags = [f for f in get_flags(scenario_id) if f.get("id") not in meta_ids]
+    effective_flags = meta_flags + static_flags
 
-            # Persist score to DB
-            result = await db.execute(
-                select(DbSession).where(DbSession.id == session_id)
+    # ── 2. Match against effective flags ───────────────────────────────────
+    for flag in effective_flags:
+        flag_id = flag.get("id", "")
+        matched = False
+
+        # Exact value match
+        exact_value: str = flag.get("value", "").strip()
+        if exact_value and exact_value == flag_input.strip():
+            matched = True
+
+        # Regex pattern match (value_pattern)
+        if not matched:
+            pattern: str = flag.get("value_pattern", "")
+            if pattern:
+                try:
+                    matched = bool(re.fullmatch(pattern, flag_input.strip()))
+                except re.error:
+                    pass
+
+        if not matched:
+            continue
+
+        # ── Duplicate check ────────────────────────────────────────────────
+        cached = await cache_get(f"session:{session_id}:state") or {}
+        captured = cached.get("flags_captured", [])
+        if flag_id in captured:
+            return {"valid": True, "already_captured": True, "flag_id": flag_id}
+
+        # ── Award points ───────────────────────────────────────────────────
+        points = flag.get("points", 0)
+        captured.append(flag_id)
+        cached["flags_captured"] = captured
+        cached["score"] = cached.get("score", 100) + points
+        await cache_set(f"session:{session_id}:state", cached, ttl=28800)
+
+        # Persist score to DB
+        if db_session:
+            db_session.score = (db_session.score or 100) + points
+            flag_log = CommandLog(
+                session_id=session_id,
+                command=f"[flag_captured] {flag_id}",
+                tool="flag:capture",
+                phase=db_session.phase,
+                triggered_siem_events=[],
+                ai_hint_given=False,
             )
-            session = result.scalar_one_or_none()
-            if session:
-                session.score = (session.score or 100) + points
-                # Record flag capture in CommandLog
-                flag_log = CommandLog(
-                    session_id=session_id,
-                    command=f"[flag_captured] {flag_id}",
-                    tool="flag:capture",
-                    phase=session.phase,
-                    triggered_siem_events=[],
-                    ai_hint_given=False
-                )
-                db.add(flag_log)
-                await db.commit()
+            db.add(flag_log)
+            await db.commit()
 
-            return {
-                "valid": True,
-                "already_captured": False,
-                "flag_id": flag_id,
-                "points_awarded": points,
-            }
+        return {
+            "valid": True,
+            "already_captured": False,
+            "flag_id": flag_id,
+            "points_awarded": points,
+        }
 
     return {"valid": False}
 
@@ -234,8 +270,23 @@ def _parse_tool(command: str) -> str:
     cmd = command.strip()
     cmd = re.sub(r"^sudo\s+", "", cmd)
     cmd = re.sub(r"^[A-Z_]+=\S+\s+", "", cmd)  # strip env vars like FOO=bar
+    parts = cmd.split()
+    joined = " ".join(parts).lower()
+    impacket_aliases = {
+        "getuserspns": "impacket-getuserspns",
+        "secretsdump": "impacket-secretsdump",
+        "smbexec": "impacket-smbexec",
+        "psexec": "impacket-psexec",
+        "wmiexec": "impacket-wmiexec",
+        "ticketer": "impacket-ticketer",
+        "getnpusers": "impacket-getnpusers",
+    }
+    for marker, canonical in impacket_aliases.items():
+        if marker in joined:
+            return canonical
+
     # Take first token, strip leading path
-    first_token = cmd.split()[0] if cmd.split() else ""
+    first_token = parts[0] if parts else ""
     return first_token.split("/")[-1].lower()
 
 

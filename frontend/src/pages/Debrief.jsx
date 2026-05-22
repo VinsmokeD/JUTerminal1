@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 import CyberSimNav from '../components/nav/CyberSimNav'
@@ -53,7 +53,7 @@ export default function Debrief() {
       .finally(() => setLoading(false))
   }, [sessionId, navigate])
 
-  const fetchCoaching = () => {
+  const fetchCoaching = useCallback(() => {
     if (coachingData) return
     setCoachingLoading(true)
     api.post(`/reports/${sessionId}/debrief-coaching`)
@@ -62,13 +62,13 @@ export default function Debrief() {
       })
       .catch((err) => console.error("Error loading coaching:", err))
       .finally(() => setCoachingLoading(false))
-  }
+  }, [coachingData, sessionId])
 
   useEffect(() => {
     if (activeTab === 'coaching') {
       fetchCoaching()
     }
-  }, [activeTab])
+  }, [activeTab, fetchCoaching])
 
   const submitQuestion = (text) => {
     const q = text || questionInput
@@ -238,7 +238,6 @@ export default function Debrief() {
   }
 
   const getLabelCoords = (index) => {
-    const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
     let xOffset = 0
     let yOffset = 0
     

@@ -12,7 +12,7 @@ const ROE_CONTENT = {
     title: 'Nexora Financial AD — Rules of Engagement',
     scope: ['Domain: nexora.local (172.20.2.0/24)', 'All workstations, servers, and DC in scope', 'Kerberoasting, lateral movement, DCSync permitted'],
     outOfScope: ['Permanent changes to AD objects', 'Disabling the DC itself', 'Actions outside 172.20.2.0/24'],
-    rules: ['Starting credentials provided: jsmith / Welcome1!', 'Do NOT create permanent domain admin accounts', 'DCSync only against simulated DC container', 'Stop condition: once DA hash obtained, engagement ends', 'Document every lateral movement step in real time'],
+    rules: ['Starting credentials provided: jsmith / Password123', 'Do NOT create permanent domain admin accounts', 'DCSync only against simulated DC container', 'Stop condition: once DA hash obtained, engagement ends', 'Document every lateral movement step in real time'],
   },
   'SC-03': {
     title: 'Orion Logistics Phishing — Rules of Engagement',

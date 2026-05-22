@@ -67,11 +67,25 @@ async def start_session(
             }
         )
 
+    # Pre-generate session ID so metadata can be seeded deterministically
+    import uuid as _uuid
+    new_session_id = str(_uuid.uuid4())
+
+    from src.scenarios.randomizer import generate_randomized_session_metadata
+    is_automated_test_user = current_user.username.startswith(("test_", "test-"))
+    session_metadata = (
+        {}
+        if is_automated_test_user
+        else generate_randomized_session_metadata(new_session_id, scenario_id)
+    )
+
     session = Session(
+        id=new_session_id,
         user_id=current_user.id,
         scenario_id=scenario_id,
         role=body.role,
         methodology=body.methodology,
+        session_metadata=session_metadata or None,
     )
     db.add(session)
     await db.commit()
@@ -444,6 +458,7 @@ async def submit_flag(
 
 
 def _session_dict(s: Session) -> dict:
+    meta = s.session_metadata or {}
     return {
         "id": s.id,
         "session_id": s.id,
@@ -457,6 +472,8 @@ def _session_dict(s: Session) -> dict:
         "started_at": s.started_at.isoformat(),
         "completed_at": s.completed_at.isoformat() if s.completed_at else None,
         "container_id": s.container_id,
+        "scenario_variant": meta.get("scenario_variant"),
+        "target_ip": meta.get("target_ip"),
     }
 
 

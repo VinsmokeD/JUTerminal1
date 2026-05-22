@@ -23,9 +23,10 @@ from src.activity.service import record_activity
 from src.scenarios.gatekeeper import check_command
 from src.scenarios.loader import load_scenario
 from src.scenarios.hint_engine import _load_hints
-from src.scenarios.engine import try_advance_phase
+from src.scenarios.engine import try_advance_phase, check_gate, GateBlock
 from src.scenarios.output_patterns import scan_output_chunk
 from src.scenarios.branching import infer_active_branch, get_active_branch, get_branch_hint
+from src.siem.command_bridge import create_command_siem_events, publish_command_siem_events
 
 _GATE_PENALTY = 5  # points deducted per blocked command
 _HINT_PENALTIES = {
@@ -141,6 +142,47 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
                 await send_json({"type": "score_update", "data": {"score": new_score}})
             return
 
+    try:
+        async with AsyncSessionLocal() as db:
+            await check_gate(command, session_id, session_state["scenario_id"], db)
+    except GateBlock as gate_exc:
+        new_score = None
+        from src.scenarios.gatekeeper import _parse_tool as _gt
+        blocked_tool = _gt(command)
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                update(Session)
+                .where(Session.id == session_id)
+                .values(score=Session.score - _GATE_PENALTY)
+                .returning(Session.score)
+            )
+            row = result.fetchone()
+            new_score = row[0] if row else None
+            db.add(CommandLog(
+                session_id=session_id,
+                command=f"[gate_blocked] {command}",
+                tool=f"gate_block:{blocked_tool}",
+                phase=current_phase,
+                triggered_siem_events=[],
+            ))
+            await record_activity(
+                db,
+                session_state["user_id"],
+                "gate_block",
+                session_id,
+                {"command": command, "phase": current_phase, "tool": blocked_tool},
+            )
+            await db.commit()
+
+        warn = (
+            f"\r\n\x1b[31m[GATE BLOCKED] {gate_exc.message}\x1b[0m"
+            f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
+        )
+        await send_json({"type": "terminal_output", "data": {"data": warn}})
+        if new_score is not None:
+            await send_json({"type": "score_update", "data": {"score": new_score}})
+        return
+
     from src.scenarios.gatekeeper import _parse_tool as _gt
     tool_name = _gt(command)
     previous_branch = session_state.get("active_branch")
@@ -161,6 +203,24 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
         await db.commit()
         await db.refresh(cmd_row)
         cmd_log_id = cmd_row.id
+
+    generated_siem_events: list[dict] = []
+    async with AsyncSessionLocal() as db:
+        generated_siem_events = await create_command_siem_events(
+            command,
+            session_id,
+            session_state["scenario_id"],
+            db,
+        )
+        if generated_siem_events and cmd_log_id is not None:
+            await db.execute(
+                update(CommandLog)
+                .where(CommandLog.id == cmd_log_id)
+                .values(triggered_siem_events=[event["id"] for event in generated_siem_events])
+            )
+        await db.commit()
+    if generated_siem_events:
+        await publish_command_siem_events(session_id, generated_siem_events)
 
     await lpush_capped(f"session:{session_id}:commands", command, max_len=50)
     await cache_set(f"session:{session_id}:last_cmd_time", str(time.time()), ttl=7200)
@@ -286,6 +346,24 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             await db.commit()
     session_state["container_id"] = container_id
 
+    # Trigger seed-based randomization side-effects (NAT rules + flag injection)
+    # asynchronously so WS connection is not delayed.
+    if container_id and not container_id.startswith("mock-"):
+        async def _apply_rand() -> None:
+            try:
+                async with AsyncSessionLocal() as _db:
+                    from sqlalchemy import select as _sel
+                    _r = await _db.execute(_sel(Session).where(Session.id == session_id))
+                    _s = _r.scalar_one_or_none()
+                    _meta = _s.session_metadata if _s else {}
+                if _meta:
+                    from src.scenarios.randomizer import apply_randomization
+                    await apply_randomization(session_id, session_state["scenario_id"], _meta, container_id)
+            except Exception as _exc:
+                import logging as _log
+                _log.getLogger(__name__).warning("[WS] Randomization apply failed: %s", _exc)
+        asyncio.create_task(_apply_rand())
+
     # Register direct terminal output before launching the PTY proxy so live
     # frames do not depend on Redis pub/sub delivery.
     terminal_output_queue = register_terminal_output_listener(session_id)
@@ -400,34 +478,35 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         hint_steps = None
         active_branch = session_state.get("active_branch") or await get_active_branch(session_id)
 
-        ai_hint = await get_ai_hint(session_id, session_state, None, level)
-        if ai_hint:
-            hint_text = ai_hint
-            hint_steps = [ai_hint]
-        else:
-            branch_steps = get_branch_hint(
-                session_state["scenario_id"],
-                session_state.get("role", "red"),
-                session_state.get("phase", 1),
-                active_branch.get("id") if active_branch else None,
-                level,
-            )
-            if branch_steps:
-                hint_text = "\n".join(branch_steps)
-                hint_steps = branch_steps
-            else:
-                hints_data = _load_hints(session_state["scenario_id"])
-                sc_hints = hints_data.get(session_state["scenario_id"], {})
-                role_hints = sc_hints.get(session_state.get("role", "red"), {})
-                phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
-                static_hint = phase_hints.get(f"L{level}")
+        hints_data = _load_hints(session_state["scenario_id"])
+        sc_hints = hints_data.get(session_state["scenario_id"], {})
+        role_hints = sc_hints.get(session_state.get("role", "red"), {})
+        phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
+        static_hint = phase_hints.get(f"L{level}")
 
-                if isinstance(static_hint, list):
-                    hint_text = "\n".join(static_hint)
-                    hint_steps = static_hint
-                elif static_hint:
-                    hint_text = static_hint
-                    hint_steps = [static_hint]
+        if isinstance(static_hint, list):
+            hint_text = "\n".join(static_hint)
+            hint_steps = static_hint
+        elif static_hint:
+            hint_text = static_hint
+            hint_steps = [static_hint]
+
+        branch_steps = get_branch_hint(
+            session_state["scenario_id"],
+            session_state.get("role", "red"),
+            session_state.get("phase", 1),
+            active_branch.get("id") if active_branch else None,
+            level,
+        )
+        if branch_steps and (not hint_steps or len(branch_steps) > len(hint_steps)):
+            hint_text = "\n".join(branch_steps)
+            hint_steps = branch_steps
+
+        if not hint_text:
+            ai_hint = await get_ai_hint(session_id, session_state, None, level)
+            if ai_hint:
+                hint_text = ai_hint
+                hint_steps = [ai_hint]
 
         # ── Log hint request + apply score penalty ─────────────────────────
         skill = session_state.get("skill_level", "beginner")

@@ -82,13 +82,13 @@ SCENARIO_KNOWLEDGE: dict[str, dict] = {
             },
         ],
         "domain": "nexora.local",
-        "initial_creds": {"username": "jsmith", "password": "Welcome1!"},
+        "initial_creds": {"username": "jsmith", "password": "Password123"},
         "key_accounts": {
             "jsmith": {"role": "Low-privilege domain user", "groups": ["Domain Users"]},
-            "svc_backup": {"role": "Service account (Kerberoastable)", "spn": "CIFS/NEXORA-FS01.nexora.local", "password": "Backup2024!", "groups": ["Domain Users"]},
+            "svc_backup": {"role": "Service account (Kerberoastable)", "spn": "CIFS/NEXORA-FS01.nexora.local", "password": "Backup2023!", "groups": ["Domain Users"]},
             "it.admin": {"role": "Domain Administrator", "groups": ["Domain Admins", "Enterprise Admins"]},
         },
-        "key_findings_expected": ["AD domain discovery (nexora.local)", "BloodHound data collection", "Kerberoastable account identification (svc_backup)", "TGS hash extraction", "Hash cracking (Backup2024!)", "Lateral movement to file server", "DCSync attack for all hashes"],
+        "key_findings_expected": ["AD domain discovery (nexora.local)", "BloodHound data collection", "Kerberoastable account identification (svc_backup)", "TGS hash extraction", "Hash cracking (Backup2023!)", "Lateral movement to file server", "DCSync attack for all hashes"],
         "blue_detection_points": ["Event 4769 with RC4 encryption (Kerberoasting)", "Event 4625 failed auth attempts", "Event 4624 Type 3 from unusual IPs", "Event 4648 explicit credential usage", "Event 4662 replication rights (DCSync)"],
     },
     "SC-03": {

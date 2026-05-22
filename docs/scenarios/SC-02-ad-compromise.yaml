@@ -27,7 +27,7 @@ flags:
 methodologies:
   branch_kerberoast:
     label: "SPN Kerberoasting"
-    required_tools: ["bloodhound", "GetUserSPNs.py", "hashcat"]
+    required_tools: ["bloodhound", "impacket-getuserspns", "hashcat"]
     evidence_chain: ["SPN discovery", "RC4 service ticket", "service account credential use"]
   branch_asrep:
     label: "AS-REP roastable user"
@@ -63,7 +63,7 @@ phases:
       - "Map computer accounts and roles"
       - "Find unconstrained delegation objects"
     completion_signals:
-      tools_used: ["bloodhound", "ldapsearch", "crackmapexec", "GetUserSPNs.py"]
+      tools_used: ["bloodhound", "ldapsearch", "crackmapexec", "impacket-getuserspns"]
       min_notes_tagged: { "#finding": 2 }
 
   2:
@@ -76,7 +76,7 @@ phases:
       - "Crack hash offline to obtain plaintext"
     completion_signals:
       flags_captured: ["kerberoast_hash"]
-      tools_used: ["GetUserSPNs.py", "hashcat"]
+      tools_used: ["impacket-getuserspns", "hashcat"]
 
   3:
     name: "Lateral Movement"
