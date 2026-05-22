@@ -23,24 +23,74 @@ export default function Debrief() {
   const [notes, setNotes] = useState([])
   const [commands, setCommands] = useState([])
   const [siemEvents, setSiemEvents] = useState([])
+  const [triage, setTriage] = useState([])
   const [insights, setInsights] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
 
+  // AI Coach state
+  const [coachingData, setCoachingData] = useState(null)
+  const [coachingLoading, setCoachingLoading] = useState(false)
+  const [qaHistory, setQaHistory] = useState([])
+  const [qaRemaining, setQaRemaining] = useState(3)
+  const [qaLoading, setQaLoading] = useState(false)
+  const [questionInput, setQuestionInput] = useState('')
+  const [hoveredMetric, setHoveredMetric] = useState(null)
+
   useEffect(() => {
     api.get(`/reports/${sessionId}/report`)
       .then((res) => {
-        const { session, score, notes, commands, siem_events, learning_insights } = res.data
+        const { session, score, notes, commands, siem_events, triage, learning_insights } = res.data
         setSession(session)
         setScore(score)
         setNotes(notes || [])
         setCommands(commands || [])
         setSiemEvents(siem_events || [])
+        setTriage(triage || [])
         setInsights(learning_insights)
       })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
   }, [sessionId, navigate])
+
+  const fetchCoaching = () => {
+    if (coachingData) return
+    setCoachingLoading(true)
+    api.post(`/reports/${sessionId}/debrief-coaching`)
+      .then((res) => {
+        setCoachingData(res.data)
+      })
+      .catch((err) => console.error("Error loading coaching:", err))
+      .finally(() => setCoachingLoading(false))
+  }
+
+  useEffect(() => {
+    if (activeTab === 'coaching') {
+      fetchCoaching()
+    }
+  }, [activeTab])
+
+  const submitQuestion = (text) => {
+    const q = text || questionInput
+    if (!q.trim() || qaRemaining <= 0 || qaLoading) return
+    
+    setQaLoading(true)
+    setQuestionInput('')
+    
+    const tempHistory = [...qaHistory, { sender: 'student', text: q }]
+    setQaHistory(tempHistory)
+
+    api.post(`/reports/${sessionId}/debrief-qa`, { question: q })
+      .then((res) => {
+        setQaHistory([...tempHistory, { sender: 'coach', text: res.data.response }])
+        setQaRemaining(res.data.remaining)
+      })
+      .catch((err) => {
+        console.error("Error asking Q&A:", err)
+        setQaHistory([...tempHistory, { sender: 'coach', text: "The coach was unable to respond at this time. Please try again." }])
+      })
+      .finally(() => setQaLoading(false))
+  }
 
   const downloadReport = async () => {
     const res = await api.get(`/reports/${sessionId}`)
@@ -106,6 +156,128 @@ export default function Debrief() {
   const evidence = notes.filter(n => n.tag === 'evidence')
   const iocs = notes.filter(n => n.tag === 'ioc')
   const remediations = notes.filter(n => n.tag === 'remediation')
+
+  // Radar metrics calculations
+  const sessionDurationSec = session.completed_at && session.started_at
+    ? Math.round((new Date(session.completed_at) - new Date(session.started_at)) / 1000)
+    : 1800
+  const offensive_speed = Math.max(0, Math.min(100, 100 - (sessionDurationSec - 1800) / 60))
+
+  const triagedCount = triage ? triage.filter(t => t.classification === 'true_positive' || t.classification === 'false_positive').length : 0
+  const totalSiem = siemEvents ? siemEvents.length : 0
+  const defensive_response = totalSiem > 0 ? (triagedCount / totalSiem) * 100 : 0
+
+  const word_count = notes.reduce((acc, note) => {
+    const words = note.content ? note.content.trim().split(/\s+/).filter(Boolean).length : 0
+    return acc + words
+  }, 0)
+  const documentation_quality = Math.min(100, notes.length * 20 + word_count / 10)
+
+  const gate_blocks = commands.filter(c => c.tool && c.tool.startsWith('gate_block:')).length
+  const methodology_adherence = Math.max(0, 100 - (gate_blocks * 10))
+
+  const hintsUsed = session.hints_used || []
+  const hints_l1 = hintsUsed.filter(h => h.level === 1).length
+  const hints_l2 = hintsUsed.filter(h => h.level === 2).length
+  const hints_l3 = hintsUsed.filter(h => h.level === 3).length
+  const resourcefulness = Math.max(0, 100 - (hints_l1 * 5 + hints_l2 * 10 + hints_l3 * 20))
+
+  const metrics = [
+    { name: 'Offensive Speed', value: Math.round(offensive_speed), label: 'Offensive Speed', framework: 'MITRE ATT&CK Execution', link: 'https://attack.mitre.org/', desc: `Based on a 30m benchmark. Your time: ${Math.round(sessionDurationSec / 60)}m.` },
+    { name: 'Defensive Response', value: Math.round(defensive_response), label: 'Defensive Response', framework: 'NIST SP 800-61 / D3FEND', link: 'https://d3fend.mitre.org/', desc: `Triaged ${triagedCount} out of ${totalSiem} SIEM events.` },
+    { name: 'Documentation Quality', value: Math.round(documentation_quality), label: 'Documentation Quality', framework: 'OSSTMM / PTES Reporting', link: 'http://www.pentest-standard.org/index.php/Reporting', desc: `Documented ${notes.length} notes with ${word_count} total words.` },
+    { name: 'Methodology Adherence', value: Math.round(methodology_adherence), label: 'Methodology Adherence', framework: 'PTES / NIST Methodology', link: 'http://www.pentest-standard.org/', desc: `Triggered ${gate_blocks} tool execution blocks by skipping phases.` },
+    { name: 'Resourcefulness', value: Math.round(resourcefulness), label: 'Resourcefulness', framework: 'Self-Reliance & Strategy', link: null, desc: `Used ${hintsUsed.length} hints (L1: ${hints_l1}, L2: ${hints_l2}, L3: ${hints_l3}).` },
+  ]
+
+  const sortedMetrics = [...metrics].sort((a, b) => a.value - b.value)
+  const lowestMetric = sortedMetrics[0]
+
+  const getSuggestions = (lowestName) => {
+    switch (lowestName) {
+      case 'Methodology Adherence':
+        return [
+          "Why did my scan get blocked by the methodology gate?",
+          "How can I better align my scan sequencing with the PTES framework?",
+          "What step did I skip in the enumeration phase before attempting exploitation?"
+        ]
+      case 'Defensive Response':
+        return [
+          "How can I improve my SIEM alert classification and triage?",
+          "What signatures did my actions trigger that I failed to acknowledge?",
+          "How do I distinguish true positive attacks from background noise in logs?"
+        ]
+      case 'Documentation Quality':
+        return [
+          "How does thorough note-taking help during an incident response?",
+          "What key indicators of compromise (IOCs) should I have documented?",
+          "How can I structure my findings to make them more actionable for a client?"
+        ]
+      case 'Resourcefulness':
+        return [
+          "How can I figure out the next step without relying on Level 3 hints?",
+          "What recon information did I overlook that could have guided me?",
+          "What are the common strategies to troubleshoot connection blocks?"
+        ]
+      case 'Offensive Speed':
+      default:
+        return [
+          "How can I optimize my scanning to be more time-efficient?",
+          "What commands or procedures wasted the most time during my operations?",
+          "How does automated tool configuration affect my overall assessment speed?"
+        ]
+    }
+  }
+  const suggestions = getSuggestions(lowestMetric?.name)
+
+  const getCoords = (index, value) => {
+    const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
+    const x = 150 + 100 * (value / 100) * Math.cos(angle)
+    const y = 150 + 100 * (value / 100) * Math.sin(angle)
+    return { x, y }
+  }
+
+  const getLabelCoords = (index) => {
+    const angle = (index * 2 * Math.PI) / 5 - Math.PI / 2
+    let xOffset = 0
+    let yOffset = 0
+    
+    if (index === 0) {
+      yOffset = -8
+    } else if (index === 1) {
+      xOffset = 10
+      yOffset = 4
+    } else if (index === 2) {
+      xOffset = 10
+      yOffset = 10
+    } else if (index === 3) {
+      xOffset = -10
+      yOffset = 10
+    } else if (index === 4) {
+      xOffset = -10
+      yOffset = 4
+    }
+
+    const { x, y } = getCoords(index, 115)
+    return { x: x + xOffset, y: y + yOffset }
+  }
+
+  const gridLevels = [20, 40, 60, 80, 100]
+
+  const pointsStr = (val) => {
+    return Array.from({ length: 5 })
+      .map((_, i) => {
+        const { x, y } = getCoords(i, val)
+        return `${x},${y}`
+      })
+      .join(' ')
+  }
+
+  const dataPoints = metrics.map((m, i) => {
+    const { x, y } = getCoords(i, m.value)
+    return `${x},${y}`
+  }).join(' ')
+
   const sessionDuration = session.completed_at
     ? Math.round((new Date(session.completed_at) - new Date(session.started_at)) / 60000)
     : null
@@ -113,6 +285,7 @@ export default function Debrief() {
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'insights', label: 'Insights' },
+    { id: 'coaching', label: 'AI Coach' },
     { id: 'findings', label: `Findings (${findings.length})` },
     { id: 'timeline', label: 'Kill Chain' },
     { id: 'notes', label: `All Notes (${notes.length})` },
@@ -247,6 +420,315 @@ export default function Debrief() {
 
         {activeTab === 'notes' && (
           <AllNotes notes={notes} />
+        )}
+
+        {activeTab === 'coaching' && (
+          <div className="space-y-6">
+            {coachingLoading || !coachingData ? (
+              <div className="card-v3 p-8 text-center flex flex-col items-center justify-center min-h-[300px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cs-blue mb-4"></div>
+                <p className="text-txt-dim text-sm font-mono">Generating Socratic coaching session...</p>
+              </div>
+            ) : (
+              <>
+                {/* Top: Summary and Radar Chart */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Radar Chart Panel */}
+                  <div className="card-v3 p-5 flex flex-col items-center justify-center">
+                    <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider self-start">Competency Radar</h3>
+                    
+                    <div className="relative w-[300px] h-[300px] flex items-center justify-center">
+                      <svg width="300" height="300" className="overflow-visible">
+                        {/* Background grids */}
+                        {gridLevels.map((level) => (
+                          <polygon
+                            key={level}
+                            points={pointsStr(level)}
+                            fill="none"
+                            stroke="rgba(255,255,255,0.06)"
+                            strokeWidth="1"
+                          />
+                        ))}
+                        
+                        {/* Axis lines and labels */}
+                        {metrics.map((m, i) => {
+                          const outer = getCoords(i, 100)
+                          const label = getLabelCoords(i)
+                          const isHovered = hoveredMetric?.name === m.name
+                          
+                          return (
+                            <g key={m.name}>
+                              <line
+                                x1="150"
+                                y1="150"
+                                x2={outer.x}
+                                y2={outer.y}
+                                stroke="rgba(255,255,255,0.1)"
+                                strokeWidth="1"
+                                strokeDasharray="2,2"
+                              />
+                              <text
+                                x={label.x}
+                                y={label.y}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                className={`text-[10px] font-mono cursor-pointer transition-colors duration-150 ${
+                                  isHovered ? 'fill-cs-blue font-bold' : 'fill-txt-dim hover:fill-txt-secondary'
+                                }`}
+                                onMouseEnter={() => setHoveredMetric(m)}
+                                onClick={() => setHoveredMetric(m)}
+                              >
+                                {m.name}
+                              </text>
+                            </g>
+                          )
+                        })}
+                        
+                        {/* Score Area Polygon */}
+                        <polygon
+                          points={dataPoints}
+                          fill="rgba(0,170,255,0.15)"
+                          stroke="#00aaff"
+                          strokeWidth="2"
+                          className="transition-all duration-300"
+                        />
+                        
+                        {/* Interaction vertices */}
+                        {metrics.map((m, i) => {
+                          const pt = getCoords(i, m.value)
+                          const isHovered = hoveredMetric?.name === m.name
+                          return (
+                            <circle
+                              key={m.name}
+                              cx={pt.x}
+                              cy={pt.y}
+                              r={isHovered ? 6 : 4}
+                              fill={isHovered ? '#00ff88' : '#00aaff'}
+                              className="cursor-pointer transition-all duration-150"
+                              onMouseEnter={() => setHoveredMetric(m)}
+                              onClick={() => setHoveredMetric(m)}
+                            />
+                          )
+                        })}
+                      </svg>
+                    </div>
+                    <p className="text-[11px] text-txt-dim mt-2 font-mono">Hover points or text to view metric breakdown</p>
+                  </div>
+
+                  {/* Breakdown Detail Panel */}
+                  <div className="card-v3 p-5 flex flex-col justify-between min-h-[300px]">
+                    <div>
+                      <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider">Metric Breakdown</h3>
+                      
+                      {hoveredMetric ? (
+                        <div className="space-y-4 animate-fadeIn">
+                          <div className="flex items-center justify-between">
+                            <span className="text-base font-bold text-txt-primary">{hoveredMetric.label}</span>
+                            <span className="text-xl font-extrabold font-mono text-cs-blue">{hoveredMetric.value}/100</span>
+                          </div>
+                          
+                          <p className="text-sm text-txt-secondary leading-relaxed">{hoveredMetric.desc}</p>
+                          
+                          {hoveredMetric.framework && (
+                            <div className="border-t border-cs-border/40 pt-4 mt-2">
+                              <span className="text-xs text-txt-dim block mb-1 font-mono uppercase">Alignment Framework:</span>
+                              {hoveredMetric.link ? (
+                                <a
+                                  href={hoveredMetric.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-cs-blue hover:underline font-mono inline-flex items-center gap-1"
+                                >
+                                  {hoveredMetric.framework} &rarr;
+                                </a>
+                              ) : (
+                                <span className="text-xs text-txt-secondary font-mono">{hoveredMetric.framework}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+                          <p className="text-sm text-txt-dim font-mono">Select or hover a radar metric to view details.</p>
+                          {lowestMetric && (
+                            <button
+                              onClick={() => setHoveredMetric(lowestMetric)}
+                              className="text-xs text-cs-blue hover:underline mt-4 font-mono"
+                            >
+                              Inspect Weakest Area ({lowestMetric.name}) &rarr;
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Overall Coaching Summary Box */}
+                    {hoveredMetric && (
+                      <div className="mt-4 p-3 bg-surface-2/30 border border-cs-border/60 rounded-cs text-xs text-txt-dim font-mono">
+                        Overall grade: <span className="text-txt-primary font-bold">{gradeLabel} ({finalScore}/100)</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* AI Socratic Feedback Summary */}
+                <div className="card-v3 p-6">
+                  <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider">Coach Analysis</h3>
+                  <p className="text-sm text-txt-primary leading-relaxed mb-6">{coachingData.summary}</p>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-green-signal uppercase tracking-wider font-mono">Demonstrated Strengths</h4>
+                      {coachingData.strengths?.length > 0 ? (
+                        <ul className="space-y-2">
+                          {coachingData.strengths.map((s, idx) => (
+                            <li key={idx} className="flex gap-2 text-xs text-txt-secondary leading-relaxed">
+                              <span className="text-green-signal font-mono font-bold flex-shrink-0">&radic;</span>
+                              <span>{s}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-txt-dim">None documented.</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-amber-warn uppercase tracking-wider font-mono">Areas for Improvement</h4>
+                      {coachingData.improvement_areas?.length > 0 ? (
+                        <ul className="space-y-2">
+                          {coachingData.improvement_areas.map((i, idx) => (
+                            <li key={idx} className="flex gap-2 text-xs text-txt-secondary leading-relaxed">
+                              <span className="text-amber-warn font-mono font-bold flex-shrink-0">!</span>
+                              <span>{i}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-txt-dim">None documented.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-cs-border/40">
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-cs-red uppercase tracking-wider font-mono">Missed Detections / Logs</h4>
+                      {coachingData.missed_detections?.length > 0 ? (
+                        <ul className="space-y-2">
+                          {coachingData.missed_detections.map((m, idx) => (
+                            <li key={idx} className="flex gap-2 text-xs text-txt-secondary leading-relaxed">
+                              <span className="text-cs-red font-mono font-bold flex-shrink-0">&times;</span>
+                              <span>{m}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-txt-dim">No major missed items.</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-semibold text-cs-blue uppercase tracking-wider font-mono">Recommended Practices</h4>
+                      {coachingData.next_practice?.length > 0 ? (
+                        <ul className="space-y-2">
+                          {coachingData.next_practice.map((n, idx) => (
+                            <li key={idx} className="flex gap-2 text-xs text-txt-secondary leading-relaxed">
+                              <span className="text-cs-blue font-mono font-bold flex-shrink-0">&bull;</span>
+                              <span>{n}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-txt-dim">None suggested.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Q&A Chat Console */}
+                <div className="card-v3 p-6 space-y-4">
+                  <div className="flex items-center justify-between border-b border-cs-border/40 pb-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-txt-secondary font-mono uppercase tracking-wider">Socratic Operator Coach</h3>
+                      <p className="text-xs text-txt-dim mt-0.5">Explore scenario context and strategies. No direct answers will be given.</p>
+                    </div>
+                    <Badge tone={qaRemaining > 0 ? 'blue' : 'neutral'}>
+                      {qaRemaining} {qaRemaining === 1 ? 'Question' : 'Questions'} Remaining
+                    </Badge>
+                  </div>
+
+                  {/* Q&A Chat Window */}
+                  <div className="min-h-[150px] max-h-[300px] overflow-y-auto border border-cs-border rounded-cs p-4 bg-void/30 space-y-3 font-mono text-xs leading-relaxed">
+                    {qaHistory.length === 0 ? (
+                      <div className="text-txt-dim text-center py-8">
+                        Ask a follow-up question below, or select a suggested topic to begin.
+                      </div>
+                    ) : (
+                      qaHistory.map((msg, idx) => (
+                        <div key={idx} className={`p-3 rounded-cs ${
+                          msg.sender === 'student'
+                            ? 'bg-cs-blue/10 border border-cs-blue/20 text-txt-primary ml-8'
+                            : 'bg-surface-2/50 border border-cs-border text-txt-secondary mr-8'
+                        }`}>
+                          <span className={`font-bold block mb-1 uppercase text-[10px] ${
+                            msg.sender === 'student' ? 'text-cs-blue' : 'text-green-signal'
+                          }`}>
+                            {msg.sender === 'student' ? 'Student' : 'AI Coach'}
+                          </span>
+                          <div className="whitespace-pre-wrap">{msg.text}</div>
+                        </div>
+                      ))
+                    )}
+                    {qaLoading && (
+                      <div className="bg-surface-2/50 border border-cs-border p-3 rounded-cs mr-8 text-txt-dim animate-pulse">
+                        <span className="font-bold block mb-1 uppercase text-[10px] text-green-signal">AI Coach</span>
+                        Analyzing context and drafting Socratic guidance...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pre-populated Suggestions */}
+                  {qaRemaining > 0 && !qaLoading && (
+                    <div className="space-y-2">
+                      <span className="text-xs text-txt-dim font-mono block">Suggested Questions (tailored to lowest metric: {lowestMetric?.name}):</span>
+                      <div className="flex flex-wrap gap-2">
+                        {suggestions.map((s, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => submitQuestion(s)}
+                            className="text-left text-xs bg-surface-2/40 border border-cs-border/60 hover:bg-surface-2/80 hover:border-cs-blue/50 text-txt-secondary hover:text-txt-primary transition-all px-3 py-1.5 rounded-cs font-mono"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Question Input */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={questionInput}
+                      onChange={(e) => setQuestionInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && submitQuestion()}
+                      placeholder={qaRemaining > 0 ? "Ask the coach about a technique, signature, or phase..." : "No questions remaining"}
+                      disabled={qaRemaining <= 0 || qaLoading}
+                      className="flex-1 bg-void/60 border border-cs-border focus:border-cs-blue focus:outline-none rounded-cs px-4 py-2 text-sm text-txt-primary placeholder-txt-dim font-mono disabled:opacity-50"
+                    />
+                    <Button
+                      onClick={() => submitQuestion()}
+                      disabled={!questionInput.trim() || qaRemaining <= 0 || qaLoading}
+                      variant="blue"
+                      size="sm"
+                    >
+                      Ask
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>

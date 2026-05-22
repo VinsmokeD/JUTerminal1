@@ -2,14 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from pydantic import BaseModel
 
 from src.auth.routes import get_current_user
-from src.db.database import get_db, Session, User, CommandLog, SiemEvent, Note
+from src.db.database import get_db, Session, User, CommandLog, SiemEvent, Note, SiemTriage
 from src.reports.generator import generate_report
 from src.reports.learning_insights import build_learning_insights
 from src.scoring.engine import final_score
+from src.ai.debrief_coach import generate_debrief_coaching, handle_debrief_qa
 
 router = APIRouter()
+
+class QARequest(BaseModel):
+    question: str
 
 
 @router.get("/{session_id}")
@@ -188,12 +193,68 @@ async def get_consolidated_report(
 
     timeline.sort(key=lambda x: x["timestamp"])
 
+    triage_result = await db.execute(
+        select(SiemTriage)
+        .where(SiemTriage.session_id == session_id)
+        .order_by(SiemTriage.created_at)
+    )
+    triage_list = list(triage_result.scalars())
+    triage_data = [
+        {
+            "id": t.id,
+            "event_id": t.event_id,
+            "classification": t.classification,
+            "notes": t.notes,
+            "created_at": t.created_at.isoformat(),
+        }
+        for t in triage_list
+    ]
+
     return {
         "session": session_data,
         "score": score_data,
         "notes": notes_data,
         "commands": commands_data,
         "siem_events": siem_events_data,
+        "triage": triage_data,
         "learning_insights": learning_insights_data,
         "timeline": timeline,
     }
+
+
+@router.post("/{session_id}/debrief-coaching")
+async def get_debrief_coaching_report(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Generate and return AI Socratic coaching for a completed session."""
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Reuse get_consolidated_report logic/payload
+    report_data = await get_consolidated_report(session_id, current_user, db)
+    return await generate_debrief_coaching(session_id, report_data, db)
+
+
+@router.post("/{session_id}/debrief-qa")
+async def ask_debrief_coach(
+    session_id: str,
+    req: QARequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Ask follow-up questions to the Socratic coach (max 3 per session)."""
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    report_data = await get_consolidated_report(session_id, current_user, db)
+    return await handle_debrief_qa(session_id, req.question, report_data, db)

@@ -226,6 +226,7 @@ async def test_reports_consolidated_endpoint_returns_session_fields(monkeypatch)
         _Result(many=[note]),
         _Result(many=[cmd]),
         _Result(many=[evt]),
+        _Result(many=[]),
     )
 
     async def fake_insights(_session, _db):
