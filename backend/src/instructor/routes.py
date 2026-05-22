@@ -10,7 +10,7 @@ Default instructor: username=admin / password=CyberSimAdmin! (seeded in main.py 
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -380,4 +380,231 @@ async def get_ai_usage(
     return {
         "global_daily_tokens_used": global_tokens,
         "total_flagged_interactions": total_flagged
+    }
+
+
+# ── Instructor Analytics (Phase 25) ───────────────────────────────────────────
+
+@router.get("/analytics")
+async def get_analytics(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_instructor),
+) -> dict:
+    """Fetch class-level learning signals, struggle flags, and score distribution."""
+    from src.instructor.analytics import get_instructor_analytics
+    return await get_instructor_analytics(db)
+
+
+@router.get("/export/grades")
+async def export_grades(
+    format: str = "canvas",
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_instructor),
+) -> Response:
+    """Generate a Canvas or Moodle-compatible CSV download stream of student grades."""
+    import csv
+    import io
+
+    # fetch student sessions
+    sessions_result = await db.execute(
+        select(Session, User)
+        .join(User, Session.user_id == User.id)
+        .where(User.role == "student")
+    )
+    rows = sessions_result.all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    if format.lower() == "moodle":
+        writer.writerow([
+            "First name", "Surname", "ID number", "Institution",
+            "Department", "Email address", "Grade", "Feedback"
+        ])
+        for session, user in rows:
+            # Query notes for feedback
+            notes_res = await db.execute(
+                select(Note.content)
+                .where(Note.session_id == session.id)
+            )
+            notes_contents = notes_res.scalars().all()
+            feedback = "; ".join(notes_contents)[:500] if notes_contents else "No notes submitted."
+
+            writer.writerow([
+                user.username,
+                "Student",
+                user.id,
+                "University",
+                "Cybersecurity",
+                f"{user.username}@example.com",
+                session.score,
+                feedback
+            ])
+    else:  # canvas default
+        writer.writerow([
+            "Student", "ID", "SIS User ID", "SIS Login ID",
+            "Section", "CyberSim Score", "CyberSim Time (m)", "Adherence %"
+        ])
+        for session, user in rows:
+            # count gate blocks
+            blocks_count = await db.scalar(
+                select(func.count(CommandLog.id))
+                .where(CommandLog.session_id == session.id, CommandLog.tool.like("gate_block:%"))
+            ) or 0
+            adherence = max(0, 100 - (blocks_count * 5))
+            duration = 0.0
+            if session.completed_at:
+                duration = round((session.completed_at - session.started_at).total_seconds() / 60.0, 1)
+
+            writer.writerow([
+                user.username,
+                user.id,
+                user.username,
+                user.username,
+                user.skill_level.capitalize() if user.skill_level else "Beginner",
+                session.score,
+                duration,
+                adherence
+            ])
+
+    csv_content = output.getvalue()
+    filename = f"cybersim_grades_{format}_{datetime.now(timezone.utc).strftime('%Y%m%d')}.csv"
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@router.get("/sessions/{session_id}/timeline")
+async def session_timeline(
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_instructor),
+) -> dict:
+    """Return detailed command and detection timeline for audit."""
+    # 1. Fetch commands
+    cmds_res = await db.execute(
+        select(CommandLog)
+        .where(CommandLog.session_id == session_id)
+        .order_by(CommandLog.created_at.asc())
+    )
+    commands = cmds_res.scalars().all()
+
+    # 2. Fetch SIEM events
+    events_res = await db.execute(
+        select(SiemEvent)
+        .where(SiemEvent.session_id == session_id)
+        .order_by(SiemEvent.created_at.asc())
+    )
+    events = events_res.scalars().all()
+
+    return {
+        "commands": [
+            {
+                "id": c.id,
+                "command": c.command,
+                "tool": c.tool,
+                "phase": c.phase,
+                "created_at": c.created_at.isoformat()
+            }
+            for c in commands
+        ],
+        "siem_events": [
+            {
+                "id": e.id,
+                "severity": e.severity,
+                "message": e.message,
+                "source": e.source,
+                "created_at": e.created_at.isoformat()
+            }
+            for e in events
+        ]
+    }
+
+
+@router.get("/sessions/{session_id}/live-inspect")
+async def session_live_inspect(
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_instructor),
+) -> dict:
+    """Return detailed active command history, SIEM events with triage classification, and notes."""
+    sess_res = await db.execute(
+        select(Session, User.username)
+        .join(User, Session.user_id == User.id)
+        .where(Session.id == session_id)
+    )
+    row = sess_res.first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session, username = row
+
+    cmds_res = await db.execute(
+        select(CommandLog)
+        .where(CommandLog.session_id == session_id)
+        .order_by(CommandLog.created_at.desc())
+        .limit(100)
+    )
+    commands = cmds_res.scalars().all()
+
+    events_res = await db.execute(
+        select(SiemEvent)
+        .where(SiemEvent.session_id == session_id)
+        .order_by(SiemEvent.created_at.desc())
+        .limit(200)
+    )
+    events = events_res.scalars().all()
+
+    triage_res = await db.execute(
+        select(SiemTriage)
+        .where(SiemTriage.session_id == session_id)
+    )
+    triage_list = triage_res.scalars().all()
+    triage_map = {t.event_id: {"classification": t.classification, "notes": t.notes} for t in triage_list}
+
+    notes_res = await db.execute(
+        select(Note)
+        .where(Note.session_id == session_id)
+        .order_by(Note.created_at.desc())
+    )
+    notes = notes_res.scalars().all()
+
+    return {
+        "session": {
+            "session_id": session.id,
+            "username": username,
+            "scenario_id": session.scenario_id,
+            "phase": session.phase,
+            "score": session.score,
+            "status": "completed" if session.completed_at else "active",
+            "started_at": session.started_at.isoformat(),
+        },
+        "commands": [
+            {
+                "command": c.command,
+                "tool": c.tool,
+                "phase": c.phase,
+                "created_at": c.created_at.isoformat()
+            } for c in commands
+        ],
+        "events": [
+            {
+                "id": e.id,
+                "severity": e.severity,
+                "message": e.message,
+                "source": e.source,
+                "created_at": e.created_at.isoformat(),
+                "classification": triage_map.get(e.id, {}).get("classification"),
+                "notes": triage_map.get(e.id, {}).get("notes")
+            } for e in events
+        ],
+        "notes": [
+            {
+                "tag": n.tag,
+                "content": n.content,
+                "phase": n.phase,
+                "created_at": n.created_at.isoformat()
+            } for n in notes
+        ]
     }

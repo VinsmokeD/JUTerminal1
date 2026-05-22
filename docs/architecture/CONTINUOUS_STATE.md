@@ -5,6 +5,19 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-21 22:50:00 +03:00] - Antigravity (Enhanced Planning for Phases 25–28)
+* **Status**: Complete - Reviewed current codebase, verified health and status, and updated the implementation plan and next-phase prompt artifacts to specify advanced classroom-grade mechanics.
+* **Why**: To elevate the final four phases into a commercial-grade, highly resilient classroom simulation platform.
+* **Where**:
+  - `C:\Users\Mahmo\.gemini\antigravity\brain\6be15959-1839-40e0-85e0-6c488bbea334\implementation_plan.md` - modified/overwritten.
+  - `C:\Users\Mahmo\.gemini\antigravity\brain\6be15959-1839-40e0-85e0-6c488bbea334\next_phase_prompt.md` - modified/overwritten.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Enhanced Phase 25 (Instructor Learning Analytics) by detailing a real-time websocket-driven struggle notification console, struggle score metric calculations, and an active session inspector/triage drawer.
+  - Enhanced Phase 26 (Mission Shell & Readiness UX) by outlining pre-flight diagnostic suites, interactive SVG topology diagrams with clickable nodes, and a self-repair target sandbox recovery protocol.
+  - Enhanced Phase 27 (AI Debrief Mode & Socratic Operator Coach) by adding double-layer context sanitization (regex + exact metadata matching), interactive radar charts mapping NIST/MITRE frameworks, and dynamic weak-point suggestions.
+  - Enhanced Phase 28 (Scenario Depth & Randomization) by adding Docker-SDK dynamic NAT-routing alias configuration, seed-based customization maps, and TAR-based flag file injection.
+
 ### [2026-05-20 21:08:00 +03:00] - Codex (Post-Push Demo Rehearsal - Frontend API Proxy Fix)
 * **Status**: Complete - manual browser rehearsal found and fixed frontend container API proxy 502s caused by stale Docker DNS resolution after backend recreation; rebuilt frontend, retested auth/dashboard/session, and prepared the fix for commit/push.
 * **Why**: User asked to do the full post-push demo checklist. API docs and core readiness passed, but browser registration through `http://localhost:3000/auth` failed because frontend Nginx had cached the old backend container IP after `docker compose up -d` recreated backend.
@@ -4299,3 +4312,27 @@ $ python3 -m py_compile src/main.py  # ✓
   - Browser smoke passed for register -> onboarding -> SC-01 Red -> AI hint response -> Kill Chain modal, SC-02 Red -> AI hint response, Red-to-Blue switch, Blue Forensics Workbench simulated query rows, and instructor login/dashboard rendering.
   - Debrief data API smoke passed for browser-created SC-02 session `d33bc78d-25bf-4bee-8352-addfbd49839e`, returning session, score, timeline, and report shape; the in-app browser reload path did not retain local auth state long enough for a full visual Debrief route smoke.
   - Instructor API smoke with `admin/CyberSimAdmin!` returned 50 activity rows and 82 sessions. AI budget usage remains zero in this environment because `OPENROUTER_API_KEY` is not set; readiness explicitly reports static fallback hints enabled, so live LLM-token usage can only be verified after a valid key is configured.
+
+### [2026-05-21 22:51:00 +03:00] - Antigravity (Enhanced Planning for Phases 25–28)
+* **Status**: Complete
+* **Why**: The user requested a review of the existing project state and a replanning of a better, more enhanced improvement/fix plan.
+* **Where**:
+  - `C:\Users\Mahmo\.gemini\antigravity\brain\6be15959-1839-40e0-85e0-6c488bbea334\implementation_plan.md` (updated artifact)
+  - `C:\Users\Mahmo\.gemini\antigravity\brain\6be15959-1839-40e0-85e0-6c488bbea334\next_phase_prompt.md` (updated artifact)
+* **What & How**:
+  - Reviewed existing project state, git logs, and test results. Determined all prior phases (0–24) and fixes are healthy, tested, and verified.
+  - Refined the roadmap for the final sprint (Phases 25–28) to incorporate professional-grade features: struggle/recon-paralysis tracking, SVG score distributions, interactive SVG topology maps inside a mission readiness overlay, custom competency mapping (radar charts), Socratic interactive post-mission chat, and seed-driven scenario/network randomizations.
+  - Updated implementation plan and next-phase prompts to provide detailed design directions for the next execution agent.
+
+---
+
+### [2026-05-22 09:55:00 +03:00] - Antigravity (Phase 25 Verification & Syntax Fix)
+* **Status**: Complete
+* **Why**: The user requested full implementation of the approved plan. Verification of the current tree showed that Phase 25 frontend code in `InstructorDashboard.jsx` was broken by a stray/truncated JSX block in the activity feed, causing frontend builds to fail.
+* **Where**:
+  - `frontend/src/pages/InstructorDashboard.jsx` - Repaired the recent activity map block by removing stray code and restoring valid JSX syntax.
+* **What & How**:
+  - Ran backend test suite for Phase 25 analytics (`test_instructor_analytics.py`), confirming all 12 tests pass successfully.
+  - Repaired `InstructorDashboard.jsx` to resolve the Vite/esbuild compilation blocker.
+  - Verified compilation via `npm run build` in `frontend/`, which now completes successfully without errors.
+

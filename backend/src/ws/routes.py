@@ -113,7 +113,25 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
                 )
                 row = result.fetchone()
                 new_score = row[0] if row else None
+                
+                from src.scenarios.gatekeeper import _parse_tool as _gt
+                blocked_tool = _gt(command)
+                db.add(CommandLog(
+                    session_id=session_id,
+                    command=f"[gate_blocked] {command}",
+                    tool=f"gate_block:{blocked_tool}",
+                    phase=current_phase,
+                    triggered_siem_events=[],
+                ))
+                await record_activity(
+                    db,
+                    session_state["user_id"],
+                    "gate_block",
+                    session_id,
+                    {"command": command, "phase": current_phase, "tool": blocked_tool},
+                )
                 await db.commit()
+
             warn = (
                 f"\r\n\x1b[31m[GATE BLOCKED] {gate_result.redirect_message}\x1b[0m"
                 f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
