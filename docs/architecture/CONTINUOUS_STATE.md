@@ -4480,3 +4480,24 @@ $ python3 -m py_compile src/main.py  # ✓
   - `python scripts/demo_check.py --scenarios all` -> all 22 checks passed, ready to demo.
   - Browser smoke opened `http://localhost:3000/`, confirmed the CyberSim landing page loaded with Launch Platform and Scenarios content visible.
   - `git diff --check` -> exit 0; only CRLF conversion warnings from Git were printed.
+
+---
+
+### [2026-05-22 16:22:01 +03:00] - Codex (SC-01 WAF Healthcheck Normalization)
+* **Status**: Complete - SC-01 WAF now reports healthy in Docker while continuing to pass live HTTP readiness.
+* **Why**: The live demo check passed after starting SC-01 services, but `docker compose ps` still showed `sc01-waf` as unhealthy because the upstream ModSecurity image healthcheck expects its default HTTPS `/healthz` setup while CyberSim uses a custom HTTP Nginx template on port 80.
+* **Where**:
+  - `docker-compose.yml` - added a CyberSim-specific `sc01-waf` healthcheck that validates Nginx config and confirms the local HTTP listener on port 80.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this healthcheck normalization entry.
+* **What & How**:
+  - Recreated `sc01-waf` with the compose healthcheck override.
+  - Confirmed `sc01-waf` moved from `unhealthy` to `healthy`, removing the misleading operator signal while keeping the scenario service behavior unchanged.
+* **Verification**:
+  - `docker compose config --quiet` -> exit 0.
+  - `docker compose up -d sc01-waf` -> recreated and started SC-01 WAF successfully.
+  - `docker compose ps` -> backend, frontend, Postgres, Redis, Elasticsearch, SC-01 DB/WAF, SC-02 DC/fileserver, and SC-03 services all running; health-enabled scenario services report healthy.
+  - `python -m pytest -q -p no:cacheprovider` from `backend/` -> 188 passed, 1 skipped.
+  - `npm run lint` from `frontend/` -> exit 0.
+  - `npm run build` from `frontend/` -> Vite build succeeded.
+  - `python scripts/demo_check.py --scenarios all` -> all 22 checks passed.
+  - `git diff --check` -> exit 0.
