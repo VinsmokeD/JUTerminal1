@@ -4501,3 +4501,20 @@ $ python3 -m py_compile src/main.py  # ✓
   - `npm run build` from `frontend/` -> Vite build succeeded.
   - `python scripts/demo_check.py --scenarios all` -> all 22 checks passed.
   - `git diff --check` -> exit 0.
+
+---
+
+### [2026-05-22 16:25:00 +03:00] - Antigravity (Platform Audit and SC-02 Guide Delivery)
+* **Status**: Complete - Verified all builds and tests, committed all state logs, and delivered the complete SC-02 solution walkthrough.
+* **Why**: The user requested that we continue, fix any issues, verify all tests, and provide step-by-step commands to solve Scenario 2 (Active Directory Compromise).
+* **Where**:
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification entry.
+* **What & How**:
+  - Committed and pushed the prior uncommitted Phase 28 CONTINUOUS_STATE logs to remote.
+  - Executed `python scripts/demo_check.py --scenarios all` -> all 22 checks passed perfectly.
+  - Executed `pytest` (188 passed), `npm run lint` (clean), and `npm run build` (successful compilation).
+  - Drafted clear instructions for the SC-02 attack chain (Recon, Kerberoasting, Hash Cracking, Lateral Movement, and DCSync).
+* **Verification**:
+  - `git status` -> working tree is clean.
+  - `git push origin master` -> successfully pushed.
+
