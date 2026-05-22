@@ -4518,3 +4518,18 @@ $ python3 -m py_compile src/main.py  # ✓
   - `git status` -> working tree is clean.
   - `git push origin master` -> successfully pushed.
 
+---
+
+### [2026-05-22 16:31:00 +03:00] - Antigravity (Socratic Gating & SC-02 Attack Path Audit)
+* **Status**: Complete - Audited methodology gate block, verified Docker scenario service state, and drafted step-by-step resolution walkthrough for student.
+* **Why**: The student encountered methodology blocks on `GetUserSPNs.py` and `crackmapexec` during SC-02 Phase 1 (Domain Reconnaissance).
+* **Where**:
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification entry.
+* **What & How**:
+  - Analyzed the active scenario gating (`docs/scenarios/SC-02-ad-compromise.yaml`), showing `impacket-getuserspns` is gated to Phase 2 and `crackmapexec` is gated to Phase 3.
+  - Determined that Phase 1 requires completing domain recon using allowed tools (`ldapsearch`, `bloodhound-python`) and submitting 2 findings in the notes workspace to auto-advance to Phase 2.
+  - Checked running docker infrastructure, confirming DC (`sc02-dc`) and fileserver (`sc02-fileserver`) are healthy on the internal bridge subnet `172.20.2.0/24`.
+  - Audited the exact attack path commands, credential sets, and flag values to resolve the blocker.
+* **Verification**:
+  - Audited `backend/src/scenarios/engine.py` and `backend/src/scenarios/gatekeeper.py` to confirm that phase gates are evaluated via WebSocket proxies but can be advanced cleanly by creating findings notes.
+
