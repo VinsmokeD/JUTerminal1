@@ -1,56 +1,79 @@
 # Scenario Dossier: SC-01 NovaMed Healthcare
 
 ## 1. Overview
-*   **ID**: SC-01
-*   **Title**: Web Application Penetration Test — NovaMed Healthcare Portal
-*   **Difficulty**: Intermediate
-*   **Estimated Duration**: 240 Minutes
-*   **Focus**: OWASP Top 10, WAF Evasion, and Healthcare Data Privacy.
 
-## 2. Tactical Context (MITRE ATT&CK)
-*   **Reconnaissance** (`TA0043`): Passive and active mapping of the NovaMed portal.
-*   **Initial Access** (`TA0001`): Exploiting web vulnerabilities (SQLi, LFI) for entry.
-*   **Credential Access** (`TA0006`): Extracting admin hashes from the backend database.
-*   **Collection** (`TA0009`): Accessing sensitive patient records (simulated PII).
+| Field | Value |
+| --- | --- |
+| Scenario ID | SC-01 |
+| Scenario title | NovaMed Healthcare Portal |
+| Difficulty | Intermediate |
+| Estimated duration | 240 minutes |
+| Primary focus | Web application security, OWASP-style testing, WAF telemetry, and healthcare-data handling |
+
+SC-01 is the web application scenario in CyberSim. It represents a fictional healthcare portal with a web tier, WAF layer, and database-backed application state. The scenario teaches students how web reconnaissance, input validation weaknesses, authorization mistakes, and file-access anomalies appear from both Red Team and Blue Team perspectives.
+
+The report version of this dossier intentionally avoids solution commands, flags, and lab-only secrets. It documents the scenario design, learning intent, telemetry, and evidence expectations.
+
+## 2. Learning Objectives
+
+Red Team students should learn to:
+
+- Perform scoped web reconnaissance against a lab-only target.
+- Identify web application weakness classes without attacking real systems.
+- Record findings with enough detail for an examiner or defender to reproduce the reasoning.
+- Understand how WAF and application logs reflect probing and exploitation attempts.
+
+Blue Team students should learn to:
+
+- Triage WAF events, web access anomalies, and database-related signals.
+- Distinguish background traffic from attacker-driven events.
+- Correlate a web request pattern with a scenario phase and student note.
+- Produce a concise incident response summary from SIEM and notebook evidence.
 
 ## 3. Target Infrastructure
-| Host | FQDN | Role | OS/Tech |
-| :--- | :--- | :--- | :--- |
-| **NOVAMED-WAF** | `novamed.local` | Gateway / WAF | ModSecurity / Apache |
-| **NOVAMED-WEB** | `app.novamed.local` | Primary Web Server | PHP 8.x / Apache |
-| **NOVAMED-DB** | `db.novamed.local` | MariaDB Database | Linux / MariaDB |
 
-## 4. Missions
+| Component | Role | Report-safe description |
+| --- | --- | --- |
+| NovaMed WAF | Gateway and detection point | ModSecurity-style filtering, audit logging, and request inspection |
+| NovaMed web application | Primary target application | PHP/Apache-style healthcare portal with deliberately vulnerable educational routes |
+| NovaMed database | Data tier | MariaDB-style backing store with simulated patient and administrative records |
+| Filebeat and Elasticsearch | Telemetry path | Log forwarding and searchable SIEM evidence |
 
-### Red Team (Attacker)
-**Objective**: Breach the NovaMed portal and extract administrative credentials and patient records without triggering the WAF's critical blocks.
-*   **Key Tasks**:
-    1.  Perform passive recon to identify server versions and `robots.txt` entries.
-    2.  Use directory brute-forcing to find hidden `/admin` or `/backup` folders.
-    3.  Identify and exploit SQL Injection on the login form.
-    4.  Chain LFI to read the `config.php` file and extract database secrets.
-*   **Tools**: `nmap`, `gobuster`, `sqlmap`, `curl`, `nikto`.
+The scenario is deployed only on the SC-01 internal Docker network. It is not reachable as a real public healthcare system.
 
-### Blue Team (Defender/Analyst)
-**Objective**: Detect and triage the attacker's activities in the Elastic SIEM, and identify the specific exploitation path.
-*   **Key Detections**:
-    1.  High-frequency 404 errors (Directory brute-force).
-    2.  SQLi patterns in POST requests.
-    3.  Path traversal attempts (`../`).
-    4.  Unauthorized access to backup artifacts.
-*   **Tools**: Elastic SIEM, Kibana, ModSecurity Audit Logs.
+## 4. Methodology Phases
 
-## 5. Flag Inventory
-| ID | Description |
-| :--- | :--- |
-| `FLAG-SC01-1` | Contents of `/etc/passwd` via LFI |
-| `FLAG-SC01-2` | Admin password from `db_backup` |
-| `FLAG-SC01-3` | Contents of `/admin/config.php` via SQLi+LFI chain |
-| `FLAG-SC01-4` | Patient record #1042 via IDOR |
+| Phase | Student intent | Evidence expected |
+| --- | --- | --- |
+| Reconnaissance | Map visible services and application behavior | Notes describing observed hosts, HTTP responses, and visible application surfaces |
+| Enumeration | Identify candidate routes, forms, and access-control boundaries | Notes tagging routes, parameters, and observed errors |
+| Exploitation reasoning | Validate weakness classes inside the lab scope | Concise finding notes and SIEM observations, without publishing unsafe payload strings |
+| Impact analysis | Explain what the weakness would mean for a fictional organization | Report-ready impact statement and recommended controls |
+| Blue Team response | Triage, classify, and summarize detected activity | Event classifications, response notes, and debrief evidence |
 
-## 6. Scoring Breakdown
-*   **Red Team**: 100 Base + up to 90 Flag Points + 10 Time Bonus.
-*   **Blue Team**: 100 Base + Bonuses for rapid triage and blocking the webshell upload.
+## 5. Defensive Telemetry
 
----
-*Generated for CyberSim Graduation Project - 2026-05-23*
+SC-01 produces defensive evidence such as:
+
+- WAF alerts for suspicious request patterns.
+- HTTP status-code spikes caused by enumeration.
+- File-access anomalies.
+- Authentication and database-related warnings.
+- Background web traffic that students must filter out during triage.
+
+The Blue Team workflow uses these signals to explain the causal link between student actions and SIEM observations.
+
+## 6. Assessment Evidence
+
+The final report and instructor review can use:
+
+- Student notes tagged as findings or evidence.
+- SIEM events and triage decisions.
+- Scenario phase history.
+- Hint usage metadata.
+- Debrief timeline entries.
+- Report summaries generated after the session.
+
+## 7. Safety Boundary
+
+SC-01 must always be described as a fictional, internal-only lab. The report should not include real-world target domains, live exploit payloads, lab-only credentials, or exact flag values.

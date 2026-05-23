@@ -1,53 +1,78 @@
 # Scenario Dossier: SC-03 Orion Logistics
 
 ## 1. Overview
-*   **ID**: SC-03
-*   **Title**: Phishing Campaign & Initial Access — Orion Logistics
-*   **Difficulty**: Beginner
-*   **Estimated Duration**: 180 Minutes
-*   **Focus**: Social Engineering, Email Infrastructure, and C2 Basics.
 
-## 2. Tactical Context (MITRE ATT&CK)
-*   **Reconnaissance** (`TA0043`): Harvesting email addresses and employee data.
-*   **Initial Access** (`TA0001`): Spearphishing with a malicious link or attachment.
-*   **Execution** (`TA0002`): User execution of a simulated reverse shell payload.
-*   **Command and Control** (`TA0011`): Establishing a beacon callback to the attacker's host.
+| Field | Value |
+| --- | --- |
+| Scenario ID | SC-03 |
+| Scenario title | Orion Logistics Initial Access Lab |
+| Difficulty | Beginner to intermediate |
+| Estimated duration | 180 minutes |
+| Primary focus | Phishing simulation, email telemetry, endpoint-behavior simulation, and SOC response |
+
+SC-03 is the phishing and initial-access scenario in CyberSim. It represents a fictional logistics company with an internal mail relay, a campaign-management service, and a simulated endpoint. The scenario teaches how social-engineering activity and endpoint behavior can be analyzed safely without sending real campaigns or running real malware.
+
+This dossier avoids publishing unsafe payload construction details, live campaign instructions, real target data, or exact solution steps.
+
+## 2. Learning Objectives
+
+Red Team students should learn to:
+
+- Understand how phishing-pretext design works in a controlled classroom simulation.
+- Configure a lab-only campaign workflow without targeting real users.
+- Record campaign assumptions and evidence responsibly.
+- Explain how simulated endpoint behavior creates defensive telemetry.
+
+Blue Team students should learn to:
+
+- Analyze email-header and mail-relay evidence.
+- Identify suspicious simulated user-execution events.
+- Correlate endpoint activity with email-delivery events.
+- Recommend containment and awareness actions based on evidence.
 
 ## 3. Target Infrastructure
-| Host | IP | Role | OS/Tech |
-| :--- | :--- | :--- | :--- |
-| **Postfix Mailer** | `172.20.3.20` | Internal Mail Relay | Postfix |
-| **GoPhish Server** | `172.20.3.40` | Phishing Platform | GoPhish |
-| **Endpoint Sim** | `172.20.3.30` | Victim Workstation | Python/Windows Sim |
 
-## 4. Missions
+| Component | Role | Report-safe description |
+| --- | --- | --- |
+| Orion mail relay | Email simulation | Internal mail service used only inside the SC-03 lab |
+| Campaign service | Training campaign management | Lab-only campaign orchestration service |
+| Endpoint simulator | Victim behavior simulator | Python-based endpoint model that emits safe telemetry markers |
+| Filebeat and Elasticsearch | Telemetry path | Log forwarding and searchable SIEM evidence |
 
-### Red Team (Attacker)
-**Objective**: Launch a targeted phishing campaign against Orion Logistics staff and achieve a reverse shell callback from an internal workstation.
-*   **Key Tasks**:
-    1.  Perform OSINT to harvest target email addresses.
-    2.  Configure a convincing phishing template and landing page in GoPhish.
-    3.  Generate a simulated payload (Macro/HTA) and attach it to the campaign.
-    4.  Monitor for callbacks and perform basic host enumeration.
-*   **Tools**: `gophish`, `theHarvester`, `msfvenom`, `netcat`.
+The scenario is deployed only on the SC-03 internal Docker network.
 
-### Blue Team (Defender/Analyst)
-**Objective**: Detect the phishing campaign at the mail gateway or workstation level and respond to the C2 callback.
-*   **Key Detections**:
-    1.  Email tracking pixels triggered by internal users.
-    2.  Macro execution events on the workstation simulator.
-    3.  Reverse shell callbacks (C2 beacons) on non-standard ports.
-    4.  SPF/DMARC authentication failures.
-*   **Tools**: Elastic SIEM, Email Logs, Endpoint Telemetry.
+## 4. Methodology Phases
 
-## 5. Flag Inventory
-| ID | Description |
-| :--- | :--- |
-| `FLAG-SC03-1` | Reverse shell callback received |
+| Phase | Student intent | Evidence expected |
+| --- | --- | --- |
+| Reconnaissance | Review fictional personas and organizational context | Notes describing target assumptions and scope boundaries |
+| Campaign design | Build a safe, lab-only pretext and landing flow | Evidence notes on rationale, expected signals, and ethics |
+| Delivery simulation | Trigger controlled mail and endpoint telemetry | SIEM observations and event timestamps |
+| Impact analysis | Explain user-execution and callback concepts safely | Report-safe impact statement and recommendations |
+| Blue Team response | Triage email, endpoint, and network-like events | Classifications, containment notes, and awareness actions |
 
-## 6. Scoring Breakdown
-*   **Red Team**: 100 Base + 50 Flag Points + 10 Time Bonus.
-*   **Blue Team**: 100 Base + Bonuses for flagging the email before a click occurs.
+## 5. Defensive Telemetry
 
----
-*Generated for CyberSim Graduation Project - 2026-05-23*
+SC-03 produces defensive evidence such as:
+
+- Mail relay and delivery events.
+- Campaign interaction markers.
+- Endpoint simulator alerts.
+- Callback or beacon-like educational markers.
+- Background mail activity for triage realism.
+
+The scenario is designed to teach detection and response reasoning, not real-world social-engineering operations.
+
+## 6. Assessment Evidence
+
+The final report and instructor review can use:
+
+- Campaign-design notes.
+- Email and endpoint-event triage.
+- Containment actions.
+- Time-to-detect and classification evidence.
+- Debrief timeline entries.
+
+## 7. Safety Boundary
+
+SC-03 must be described as a simulated phishing lab. It must not include real recipients, live payloads, functional malware, real external infrastructure, or instructions for attacking real organizations.

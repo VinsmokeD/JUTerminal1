@@ -4771,6 +4771,37 @@ $ python3 -m py_compile src/main.py  # ✓
   - Verified `jsmith`'s password is `Password123` and `svc_backup`'s password is `Backup2023!`.
   - Mapped out the commands for Phase 1 (Recon), Phase 2 (Kerberoasting via `GetUserSPNs.py` and `hashcat`), Phase 3 (Lateral Movement via `smbclient`), and Phase 4 (Privilege Escalation via `secretsdump.py`).
 
+### [2026-05-23 17:28:28 +03:00] - Codex (Documentation Phase 4 - Scenario Dossier Safety Cleanup)
+* **Status**: Complete - rewrote the three Phase 3 scenario dossiers into ASCII, report-safe documentation.
+* **Why**: Phase 3 was already present in the workspace, but its dossier files contained non-ASCII punctuation and more solution-like wording than the final-report package should publish.
+* **Where**:
+  - `docs/final-report/scenarios/sc-01-novamed-dossier.md` - rewritten.
+  - `docs/final-report/scenarios/sc-02-nexora-dossier.md` - rewritten.
+  - `docs/final-report/scenarios/sc-03-orion-dossier.md` - rewritten.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Converted the dossiers into consistent tables and report-safe sections covering overview, learning objectives, target infrastructure, methodology phases, defensive telemetry, assessment evidence, and safety boundaries.
+  - Removed exact solution-chain language, lab-only secrets, flag inventories, and unsafe payload/tooling details while preserving the educational scenario intent.
+  - Kept the active MVP scope limited to SC-01, SC-02, and SC-03.
+* **Verification**:
+  - Pending final documentation checks after the rest of Phase 4 is applied.
+
+### [2026-05-23 17:29:30 +03:00] - Codex (Documentation Phase 4 - User and Operations Manuals)
+* **Status**: Complete - rewrote the student and instructor manuals and added a maintainer operations manual.
+* **Why**: The final report package needed ASCII-only, report-safe manuals for students, instructors, and maintainers before the installation/testing chapter could cite them.
+* **Where**:
+  - `docs/final-report/user-manuals/student-manual.md` - rewritten.
+  - `docs/final-report/user-manuals/instructor-manual.md` - rewritten.
+  - `docs/final-report/user-manuals/maintainer-operations-manual.md` - added.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Replaced icon-heavy manual headings with plain numbered sections.
+  - Added student workflow guidance for Dashboard, Red Workspace, Blue Workspace, notes, AI Tutor, Debrief, and safety rules.
+  - Added instructor guidance for dashboard monitoring, assessment dimensions, hint interpretation, operations checks, and privacy handling.
+  - Added maintainer installation, readiness, browser verification, recovery, evidence capture, and safety check guidance.
+* **Verification**:
+  - Pending final documentation checks after the rest of Phase 4 is applied.
+
 ### [2026-05-23 17:30:00 +03:00] - Antigravity (SIEM Background Noise & Filter Polish)
 * **Status**: Complete - Removed command-suppression gating on background noise events and made background noise visible in the SIEM feed by default.
 * **Why**: To address issues where the live SIEM logs feed appeared completely empty because noise events were suppressed based on user command activity and hidden in the UI by default.

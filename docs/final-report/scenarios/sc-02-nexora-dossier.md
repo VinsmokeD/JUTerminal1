@@ -1,54 +1,78 @@
 # Scenario Dossier: SC-02 Nexora Financial
 
 ## 1. Overview
-*   **ID**: SC-02
-*   **Title**: Active Directory Compromise — Nexora Financial Services
-*   **Difficulty**: Advanced
-*   **Estimated Duration**: 150 Minutes
-*   **Focus**: Active Directory internals, Kerberos attacks, and Privilege Escalation.
 
-## 2. Tactical Context (MITRE ATT&CK)
-*   **Discovery** (`TA0007`): Enumerating domain users, groups, and SPNs.
-*   **Credential Access** (`TA0006`): Kerberoasting service accounts and cracking hashes.
-*   **Lateral Movement** (`TA0008`): Moving from a low-priv user to a sensitive file server.
-*   **Privilege Escalation** (`TA0004`): Exploiting domain-level configurations to gain Domain Admin.
+| Field | Value |
+| --- | --- |
+| Scenario ID | SC-02 |
+| Scenario title | Nexora Financial Domain Lab |
+| Difficulty | Advanced |
+| Estimated duration | 150 minutes |
+| Primary focus | Directory-service security, authentication telemetry, lateral-movement reasoning, and SOC correlation |
+
+SC-02 is the directory-services scenario in CyberSim. It represents a fictional financial organization with a domain-controller service and a file-server service. The scenario teaches how identity enumeration, service-account abuse concepts, authentication anomalies, and privileged-access attempts appear in a defensive event stream.
+
+This dossier documents the scenario design without exposing a complete solution path, lab-only passwords, hashes, or exact command sequences.
+
+## 2. Learning Objectives
+
+Red Team students should learn to:
+
+- Enumerate identity and service relationships inside a scoped lab.
+- Understand directory-service attack concepts at a controlled educational level.
+- Connect methodology phases to evidence collection and reporting.
+- Explain privilege-escalation risk without applying the technique outside the lab.
+
+Blue Team students should learn to:
+
+- Analyze authentication and directory-service events.
+- Detect abnormal service-ticket and logon patterns.
+- Correlate file-share access with identity context.
+- Produce a concise domain-compromise investigation summary.
 
 ## 3. Target Infrastructure
-| Host | FQDN | Role | OS/Tech |
-| :--- | :--- | :--- | :--- |
-| **NEXORA-DC01** | `nexora-dc01.nexora.local` | Domain Controller | Samba4 AD DC |
-| **NEXORA-FS01** | `nexora-fs01.nexora.local` | File Server | Linux / SMB |
 
-## 4. Missions
+| Component | Role | Report-safe description |
+| --- | --- | --- |
+| Nexora domain controller | Identity service | Samba4 Active Directory style domain service on the SC-02 internal network |
+| Nexora file server | Shared resource host | SMB-style file service containing fictional business artifacts |
+| Filebeat and Elasticsearch | Telemetry path | Forward selected authentication and service logs for Blue Team triage |
+| CyberSim backend | Scenario engine | Evaluates phase progress, notes, scoring, and SIEM mappings |
 
-### Red Team (Attacker)
-**Objective**: Compromise the `nexora.local` domain, starting from a low-privilege employee account (`jsmith`), and escalate to Domain Admin.
-*   **Key Tasks**:
-    1.  Enumerate the domain using `bloodhound-python` and `ldapsearch`.
-    2.  Perform Kerberoasting on the `svc_backup` account.
-    3.  Crack the service ticket hash to gain `svc_backup`'s plaintext password.
-    4.  Access sensitive shares on `NEXORA-FS01` and exploit unconstrained delegation.
-    5.  Perform DCSync to dump the NTDS.dit database.
-*   **Tools**: `crackmapexec`, `impacket-getuserspns`, `hashcat`, `secretsdump.py`.
+The scenario is deployed only on the SC-02 internal Docker network.
 
-### Blue Team (Defender/Analyst)
-**Objective**: Identify Kerberos-based attacks and lateral movement within the Windows domain environment.
-*   **Key Detections**:
-    1.  EventID 4769: Kerberos TGS requests with RC4 encryption.
-    2.  EventID 4662: Unauthorized replication requests (DCSync).
-    3.  Multiple failed logon attempts (Credential Spraying).
-    4.  Access to `Groups.xml` in SYSVOL.
-*   **Tools**: Elastic SIEM, Windows Event Logs (via Filebeat/Winlogbeat).
+## 4. Methodology Phases
 
-## 5. Flag Inventory
-| ID | Description |
-| :--- | :--- |
-| `kerberoast_hash` | `svc_backup` SPN ticket (RC4-HMAC) |
-| `dcsync_krbtgt_nthash` | NT Hash for the `krbtgt` account |
+| Phase | Student intent | Evidence expected |
+| --- | --- | --- |
+| Reconnaissance | Identify domain services and reachable shares | Notes describing service observations and scope boundaries |
+| Enumeration | Map fictional users, groups, and service relationships | Evidence notes about account roles and access-control assumptions |
+| Credential-risk reasoning | Analyze service-account exposure concepts | Report-safe explanation of risk, without including recovered secrets |
+| Privilege-impact analysis | Explain the effect of excessive privileges | Impact statement and defensive recommendations |
+| Blue Team response | Triage authentication and lateral-access events | SIEM classification, containment notes, and timeline evidence |
 
-## 6. Scoring Breakdown
-*   **Red Team**: 100 Base + 70 Flag Points + 15 Time Bonus.
-*   **Blue Team**: 100 Base + Bonuses for detecting Kerberoasting within 2 minutes and blocking DCSync.
+## 5. Defensive Telemetry
 
----
-*Generated for CyberSim Graduation Project - 2026-05-23*
+SC-02 produces defensive evidence such as:
+
+- Authentication failures and successful logons.
+- Service-ticket request patterns.
+- File-share access events.
+- Privilege-change or replication-style alert categories.
+- Background authentication traffic that simulates normal employee activity.
+
+The defensive goal is not only to see a single alert. Students must build a sequence of events that explains identity, host, time, and action.
+
+## 6. Assessment Evidence
+
+The final report and instructor review can use:
+
+- Methodology notes for identity enumeration and access analysis.
+- SIEM triage decisions for authentication events.
+- Timeline evidence linking Red Team activity to Blue Team observations.
+- Hint usage and methodology-gating records.
+- Generated debrief summaries.
+
+## 7. Safety Boundary
+
+SC-02 must be presented as a fictional, internal-only directory-services lab. The report should redact lab credentials, password material, hashes, and exact offensive command chains.
