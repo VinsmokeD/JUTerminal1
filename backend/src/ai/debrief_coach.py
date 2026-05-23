@@ -126,7 +126,7 @@ async def generate_debrief_coaching(session_id: str, report_data: dict, db: Asyn
     if cached_result:
         try:
             return json.loads(cached_result)
-        except Exception:
+        except json.JSONDecodeError:
             pass
 
     # Fetch session metadata for dynamic scrubbing

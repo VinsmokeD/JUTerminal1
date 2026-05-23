@@ -263,7 +263,7 @@ async def _poll_elasticsearch() -> None:
                     try:
                         doc_ts = datetime.fromisoformat(doc_ts_str.replace("Z", "+00:00"))
                         latency_ms = int((now - doc_ts).total_seconds() * 1000)
-                    except Exception:
+                    except ValueError:
                         latency_ms = 0
 
                     target_scenario = _infer_scenario(source)

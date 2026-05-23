@@ -59,10 +59,10 @@ export default {
         '6': '24px', '8': '32px', '12': '48px', '16': '64px', '24': '96px',
       },
       borderRadius: {
-        cs: '10px',
-        'cs-sm': '6px',
-        'cs-lg': '16px',
-        'cs-xl': '24px',
+        cs: '8px',
+        'cs-sm': '4px',
+        'cs-lg': '12px',
+        'cs-xl': '20px',
       },
       boxShadow: {
         'red-glow': '0 4px 24px #ff3b3b40, inset 0 1px 0 rgba(255,255,255,0.15)',

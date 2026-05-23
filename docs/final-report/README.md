@@ -28,8 +28,10 @@ Use the Canva design as the visual companion direction, not as the official form
 | API reference | Backend route documentation | Started |
 | Database reference | Schema and data lifecycle documentation | Started |
 | Requirements matrix | Requirements, implementation, tests, and evidence mapping | Started |
-| Diagram catalog | Source and caption registry for figures | Started |
-| Evidence bundle | Test output, screenshots, Docker/API evidence | Planned |
+| Diagram catalog | Source, export, and caption registry for figures | Six diagrams rendered |
+| Evidence bundle | Test output, screenshots, Docker/API evidence | Started |
+| Canva rewrite brief | Page-by-page CyberSim replacement plan for the selected Canva design | Started |
+| Tooling and skill log | Record of useful MCP, plugin, and skill usage | Started |
 
 ## Folder Map
 
@@ -43,11 +45,20 @@ docs/final-report/
 +-- api-reference.md
 +-- database-reference.md
 +-- references.md
++-- canva-page-rewrite-brief.md
++-- tooling-and-skill-usage.md
++-- evidence/
++|   +-- README.md
++|   +-- source-inventory.md
++|   +-- screenshots/
++|   +-- test-output/
 +-- chapters/
 |   +-- chapter-01-introduction.md
 |   +-- chapter-03-requirements.md
+|   +-- chapter-04-system-design.md
 +-- diagrams/
     +-- catalog.md
+    +-- mermaid-theme.json
     +-- source/
         +-- c4-context.mmd
         +-- c4-container.mmd
@@ -55,6 +66,9 @@ docs/final-report/
         +-- erd-core-schema.mmd
         +-- docker-topology.mmd
         +-- red-blue-event-sequence.mmd
+    +-- export/
+        +-- svg/
+        +-- png/
 ```
 
 ## Formal Report Rule

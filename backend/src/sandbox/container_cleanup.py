@@ -9,8 +9,9 @@ import json
 import logging
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from docker import from_env as docker_from_env
-from docker.errors import NotFound
+from docker.errors import NotFound, APIError
 
 from src.db.database import AsyncSessionLocal, Session, CommandLog
 
@@ -49,7 +50,8 @@ def _container_age_seconds(container) -> float:
         started_at_str = started_at_raw[:26].rstrip("Z") + "+00:00"
         started_at = datetime.fromisoformat(started_at_str)
         return (datetime.now(timezone.utc) - started_at).total_seconds()
-    except Exception:
+    except (KeyError, IndexError, ValueError, TypeError) as e:
+        logger.debug("[CLEANUP] Failed to parse container age: %s", e)
         return 0.0
 
 
@@ -76,7 +78,7 @@ def _remove_container(container, reason: str) -> bool:
         return True
     except NotFound:
         return True
-    except Exception as exc:
+    except APIError as exc:
         logger.warning(
             "[CLEANUP] Failed to remove container %s: %s",
             getattr(container, "id", "unknown"),
@@ -324,7 +326,7 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                         from src.cache.redis import _get as get_redis2
                         redis2 = get_redis2()
                         active2 = await redis2.hgetall("cybersim:active_sessions")
-                    except Exception:
+                    except redis.RedisError:
                         active2 = {}
                     # Also pull from DB for belt-and-suspenders
                     async with AsyncSessionLocal() as db:

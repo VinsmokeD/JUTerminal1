@@ -19,12 +19,19 @@ import json
 import queue
 import select as _select
 import threading
+import logging
+
+logger = logging.getLogger(__name__)
 
 try:
     import docker
+    from docker.errors import NotFound, DockerException, APIError
     _docker_available = True
 except ImportError:
     _docker_available = False
+    class DockerException(Exception): pass
+    class APIError(Exception): pass
+    class NotFound(Exception): pass
 
 import redis as sync_redis  # synchronous client, part of redis[hiredis] already installed
 
@@ -221,7 +228,8 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                     pipe.ltrim(f"terminal:{session_id}:history", 0, 499)
                     pipe.expire(f"terminal:{session_id}:history", 86400)
                     pipe.execute()
-                except Exception:
+                except (OSError, sync_redis.RedisError, ValueError) as exc:
+                    logger.warning(f"[Terminal] Docker->Redis proxy error for session {session_id}: {exc}")
                     break
             stop_event.set()  # Signal the sibling thread to exit too
 
@@ -235,7 +243,8 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                 try:
                     if text:
                         raw_sock.sendall(text.encode("utf-8"))
-                except Exception:
+                except OSError as exc:
+                    logger.warning(f"[Terminal] Queue->Docker proxy error for session {session_id}: {exc}")
                     stop_event.set()
                     break
                 finally:
@@ -261,14 +270,15 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                                     input_queue.put_nowait(text)
                                 except queue.Full:
                                     pass
-                        except Exception:
+                        except (json.JSONDecodeError, KeyError, TypeError) as exc:
+                            logger.warning(f"[Terminal] Redis message parse error for session {session_id}: {exc}")
                             break
             finally:
                 try:
                     pub.unsubscribe()
                     pub.close()
-                except Exception:
-                    pass
+                except sync_redis.RedisError as exc:
+                    logger.debug(f"[Terminal] Redis unsubscribe error for session {session_id}: {exc}")
             stop_event.set()
 
         read_thread = threading.Thread(target=_docker_to_redis, daemon=True)
@@ -280,7 +290,8 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
 
         stop_event.wait()  # Block until one side exits, then clean up
 
-    except Exception as exc:
+    except (DockerException, APIError, NotFound, OSError, sync_redis.RedisError, RuntimeError) as exc:
+        logger.error(f"[Terminal] Proxy error for session {session_id}, container {container_id}: {exc}")
         if settings.ENVIRONMENT == "development":
             print(f"[Terminal] Proxy error for session {session_id[:8]}: {exc}")
     finally:

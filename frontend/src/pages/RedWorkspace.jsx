@@ -16,6 +16,7 @@ import Button from '../components/ui/Button'
 import ScoreToast from '../components/ui/ScoreToast'
 import api from '../lib/api'
 import MissionReadinessOverlay from '../components/workspace/MissionReadinessOverlay'
+import ErrorBoundary from '../components/ErrorBoundary'
 
 export default function RedWorkspace() {
   const { sessionId } = useParams()
@@ -264,8 +265,10 @@ export default function RedWorkspace() {
                 </span>
               )}
             </PanelHeader>
-            <div className="flex-1 overflow-hidden relative z-10 flex flex-col">
-              <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
+            <div className="flex-1 bg-void overflow-hidden flex flex-col relative">
+              <ErrorBoundary>
+                <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
+              </ErrorBoundary>
             </div>
           </div>
           <div className="h-1/3 min-h-[250px] flex flex-col mt-1 md:mt-0 relative border-t border-cs-border bg-surface-1">
@@ -301,7 +304,9 @@ export default function RedWorkspace() {
               <LiveDot />
             </PanelHeader>
             <div className="flex-1 overflow-hidden relative z-10 flex flex-col">
-              <SiemFeed />
+              <ErrorBoundary>
+                <SiemFeed />
+              </ErrorBoundary>
             </div>
           </div>
         </div>

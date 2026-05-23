@@ -2,7 +2,7 @@
 
 Standing rule: every documentation handoff should include a proposed next phase with a goal, acceptance criteria, files to create or modify, dependencies, and verification. This keeps the final-report effort moving in clear, auditable increments.
 
-## Proposed Next Phase: Documentation Phase 2 - Evidence Capture and Architecture Diagram Export
+## Completed Phase: Documentation Phase 2 - Evidence Capture and Architecture Diagram Export
 
 Goal:
 
@@ -74,3 +74,61 @@ Suggested execution order:
 6. Update continuous state.
 7. End with the next proposed phase: Documentation Phase 3 - Scenario Dossiers and UX/User Manual.
 
+## Proposed Next Phase: Documentation Phase 3 - Scenario Dossiers, UX Evidence, and Canva Replacement
+
+Goal:
+
+- Expand the documentation from system architecture into scenario-level, user-level, and visual-report material by drafting SC-01/SC-02/SC-03 dossiers, capturing current UI screenshots, and replacing generic Canva text with verified CyberSim content.
+
+Why this phase comes next:
+
+- Chapter 4 now has rendered architecture diagrams and evidence-backed source text.
+- The final report still needs detailed scenario documentation and user experience evidence.
+- Canva candidate 2 is visually ready, but its content must be replaced before it can support a defense presentation.
+
+Acceptance criteria:
+
+- Create scenario dossier files for:
+  - SC-01 NovaMed Healthcare.
+  - SC-02 Nexora Financial.
+  - SC-03 Orion Logistics.
+- Create initial student and instructor user manual source files.
+- Capture or prepare the required screenshot inventory under `docs/final-report/evidence/screenshots/`.
+- Update the Canva visual report text according to `docs/final-report/canva-page-rewrite-brief.md` or produce a page-ready replacement script if direct editing is not reliable.
+- Update the diagram catalog with the next diagram batch requirements:
+  - AI safety pipeline.
+  - Scenario phase state machine.
+  - Authentication/session lifecycle.
+  - Report generation pipeline.
+  - Instructor analytics flow.
+- Update `docs/architecture/CONTINUOUS_STATE.md`.
+
+Files to create or modify:
+
+- `docs/final-report/scenarios/sc-01-novamed-dossier.md`
+- `docs/final-report/scenarios/sc-02-nexora-dossier.md`
+- `docs/final-report/scenarios/sc-03-orion-dossier.md`
+- `docs/final-report/user-manuals/student-manual.md`
+- `docs/final-report/user-manuals/instructor-manual.md`
+- `docs/final-report/evidence/screenshots/`
+- `docs/final-report/canva-page-rewrite-brief.md`
+- `docs/final-report/diagrams/catalog.md`
+- `docs/architecture/CONTINUOUS_STATE.md`
+
+Dependencies:
+
+- Running local frontend and backend for screenshots.
+- Active Docker stack if live scenario screenshots are required.
+- Existing Chapter 4 diagrams and source inventory.
+- Current scenario specs, hint trees, event maps, and playbooks.
+
+Verification:
+
+- Run documentation formatting checks.
+- Verify screenshots exist and do not expose secrets.
+- Verify Canva text no longer contains generic placeholders.
+- If no code changes occur, run `docker compose config --quiet` plus documentation checks. If screenshots require live workflows, run the relevant smoke/demo command.
+
+Next likely phase after Phase 3:
+
+- Documentation Phase 4 - Implementation, Testing, Installation, and Operations Chapters.

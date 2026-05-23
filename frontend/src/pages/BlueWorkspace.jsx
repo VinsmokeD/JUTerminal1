@@ -40,7 +40,7 @@ export default function BlueWorkspace() {
   const [loadingSession, setLoadingSession] = useState(!cachedSession)
   const [roeAcked, setRoeAcked] = useState(cachedSession?.roe_acknowledged ?? false)
   const [siemFilter, setSiemFilter] = useState('')
-  const [hideNoise, setHideNoise] = useState(true)
+  const [hideNoise, setHideNoise] = useState(false)
   const [checkedSteps, setCheckedSteps] = useState({})
   const [playbook, setPlaybook] = useState([])
   const [iocs, setIocs] = useState([])
@@ -304,7 +304,9 @@ export default function BlueWorkspace() {
                       )}
                     </div>
                   ) : (
-                    <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
+                    <ErrorBoundary>
+                      <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
+                    </ErrorBoundary>
                   )}
                 </div>
               </div>

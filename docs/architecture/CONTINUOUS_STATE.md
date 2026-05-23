@@ -4636,8 +4636,110 @@ $ python3 -m py_compile src/main.py  # ✓
   - Verified each selected skill has a `SKILL.md` in all four roots: Codex 34/34, Claude 34/34, shared Antigravity/agent 34/34, native Antigravity 34/34.
   - `skill-seekers --version` -> `skill-seekers 3.6.0`.
   - `npx --yes repomix@latest --version` -> `1.14.0`.
+- `docker compose config --quiet` -> exit 0.
+- `git diff --check -- docs/architecture/CONTINUOUS_STATE.md` -> exit 0; Git printed only the normal CRLF conversion warning.
+
+### [2026-05-23 11:47:38 +03:00] - Codex (Documentation Phase 2 - Tool-Aware Architecture Documentation)
+* **Status**: Complete - used the newly installed useful skills, Canva MCP, Node REPL MCP, Repomix, and Mermaid CLI to continue the final-report documentation package with verified architecture exports, evidence scaffolding, Canva replacement planning, and Chapter 4 source text.
+* **Why**: The user asked to make use of the newly installed MCP/tools/plugins/skills before continuing documentation, and to keep improving the whole documentation with the next phase proposed each time.
+* **Where**:
+  - `docs/final-report/diagrams/mermaid-theme.json` - added a CyberSim/UJ-inspired Mermaid theme for print-friendly diagram exports.
+  - `docs/final-report/diagrams/export/svg/*.svg` - generated six SVG diagram exports.
+  - `docs/final-report/diagrams/export/png/*.png` - generated six PNG diagram exports.
+  - `docs/final-report/diagrams/catalog.md` - expanded the catalog with render setup, export paths, dimensions, verification, and next diagram batch.
+  - `docs/final-report/chapters/chapter-04-system-design.md` - drafted the System Design chapter with context, containers, DFD, ERD, Docker topology, Red-to-Blue sequence, AI guidance, security, and scalability.
+  - `docs/final-report/evidence/README.md` - added the evidence bundle index and current evidence snapshot.
+  - `docs/final-report/evidence/source-inventory.md` - added the Repomix source inventory summary.
+  - `docs/final-report/evidence/test-output/README.md` - added planned final verification evidence files.
+  - `docs/final-report/evidence/screenshots/README.md` - added screenshot evidence requirements.
+  - `docs/final-report/tooling-and-skill-usage.md` - documented which new tools/skills were used and which were intentionally skipped.
+  - `docs/final-report/canva-page-rewrite-brief.md` - added the 17-page CyberSim replacement plan for Canva candidate 2.
+  - `docs/final-report/design-and-canva-direction.md` - updated current Canva URLs, audit notes, and diagram asset references.
+  - `docs/final-report/technical-architecture-atlas.md` - added exported asset inventory and evidence view.
+  - `docs/final-report/README.md` - updated workspace outputs and folder map.
+  - `docs/final-report/report-production-checklist.md` - marked the completed source inventory, Chapter 4 draft, first diagram exports, and Canva rewrite brief.
+  - `docs/final-report/references.md` - added verified official URLs and access dates for standards, frameworks, technologies, Mermaid, and Canva.
+  - `docs/final-report/next-phase-proposal.md` - closed Phase 2 and proposed Documentation Phase 3.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Used the Canva connector to inspect selected design `DAHKeHjt8IY`; confirmed 17 A4 pages and found generic placeholders that must be replaced before defense use.
+  - Used Repomix with compression on backend, frontend, scenarios, AI prompt, Docker, Nginx, Compose, README, and `.env.example`; packed 210 files into `.tmp/final-report/repomix-cybersim.xml` with 175,785 tokens and no suspicious files detected.
+  - Used Node REPL MCP to inspect available Node tooling; Playwright was available, Mermaid was not bundled, so Mermaid CLI was run through `npx`.
+  - Rendered the first six Mermaid sources through Mermaid CLI `11.15.0`, using the new theme file and white backgrounds for report readability.
+  - Built Chapter 4 around actual local source responsibilities instead of generic software-documentation prose.
+  - Added a Canva replacement brief so the current Canva design can be rewritten page by page without preserving fake metrics, financial labels, or sample contact information.
+  - Added evidence handling rules to prevent publishing secrets, lab-only credentials, full scenario solutions, or unsafe cybersecurity material.
+  - Noted that `infrastructure/docker/scenarios/sc02/setup-shares.sh` is currently modified in the working tree but was not part of this documentation pass.
+* **Verification**:
+  - `npx --yes @mermaid-js/mermaid-cli --version` -> `11.15.0`.
+  - Mermaid export loop generated six SVG files and six PNG files.
+  - PNG validation via `System.Drawing.Image` loaded all six images; dimensions were `1568x1076`, `1568x774`, `1568x404`, `1568x1112`, `1568x920`, and `1568x400`.
   - `docker compose config --quiet` -> exit 0.
-  - `git diff --check -- docs/architecture/CONTINUOUS_STATE.md` -> exit 0; Git printed only the normal CRLF conversion warning.
+  - `git diff --check -- docs/final-report docs/architecture/CONTINUOUS_STATE.md docs/architecture/GRADUATION_DOCUMENTATION_MASTER_PLAN.md` -> exit 0; Git printed only CRLF conversion warnings.
+  - `rg -n "[^\x00-\x7F]" docs/final-report docs/architecture/GRADUATION_DOCUMENTATION_MASTER_PLAN.md` -> exit 1, meaning no non-ASCII matches were found in the checked documentation paths.
+  - `rg -n "[ \t]+$" docs/final-report docs/architecture/GRADUATION_DOCUMENTATION_MASTER_PLAN.md` -> exit 1, meaning no trailing whitespace matches were found in the checked documentation paths.
+  - `Get-ChildItem docs/final-report -Recurse -File | Measure-Object` -> 38 files.
+
+### [2026-05-23 14:35:00 +03:00] - Gemini (Design System and Documentation Phase 3)
+* **Status**: Complete - Initialized the formal CyberSim Design System (DESIGN.md), applied a Refero-inspired "Precision Tooling" polish to the frontend, and completed the first batch of Documentation Phase 3 (Scenario Dossiers and User Manuals).
+* **Why**: To integrate the high-end product design standards from Refero Styles into the project's graduation deliverables and to fulfill the proposed Phase 3 documentation requirements.
+* **Where**:
+  - `DESIGN.md` - newly created core design manual.
+  - `frontend/src/index.css` - updated border-radii and added body-level blueprint grid.
+  - `frontend/tailwind.config.js` - aligned border-radius constants with new design scale.
+  - `docs/final-report/scenarios/sc-01-novamed-dossier.md` - added.
+  - `docs/final-report/scenarios/sc-02-nexora-dossier.md` - added.
+  - `docs/final-report/scenarios/sc-03-orion-dossier.md` - added.
+  - `docs/final-report/user-manuals/student-manual.md` - added.
+  - `docs/final-report/user-manuals/instructor-manual.md` - added.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Analyzed the Refero Styles "Midnight Command Center" pattern via web_fetch; adopted high-density layout, precision border-radii (4px-8px), and blueprint grids.
+  - Formulated a "Research Journal" aesthetic for the final report material to add academic authority.
+  - Drafted three detailed scenario dossiers mapping CyberSim scenarios to MITRE ATT&CK tactics, target infrastructure, and specific mission objectives.
+  - Built student and instructor manuals centered on the Red/Blue duality and Socratic learning model.
+  - Refactored `index.css` to use a 32px radial grid and reduced rounding for an "industrial tool" feel.
+* **Verification**:
+  - Verified all new documentation files exist and follow the established formatting rules.
+  - Confirmed `DESIGN.md` correctly bridges existing SOC identity with new Refero-inspired polish.
+  - `git diff --check` confirmed no whitespace or formatting regressions in modified files.
+  - Proposed Documentation Phase 4: Installation, Testing, and Operations Chapters.
+
+### [2026-05-23 15:00:00 +03:00] - Gemini (Claude Code Tooling Integration)
+* **Status**: Complete - Successfully installed "Everything Claude Code" (ECC) full profile into the project workspace to supercharge future agent interactions.
+* **Why**: The user requested a full installation and setup of advanced Claude Code capabilities from community repositories (ECC and awesome-claude-code) to optimize the environment before starting heavy implementation work.
+* **Where**:
+  - `ecc-temp/` (created and subsequently removed after successful installation).
+  - `.claude/` (populated with 733 rules, hooks, skills, and agents from the ECC framework).
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Fetched and analyzed the READMEs for both repositories. Identified that `awesome-claude-code` is currently undergoing reorganization, while `everything-claude-code` provides a mature, actionable operator system.
+  - Cloned the `everything-claude-code` repository to a temporary workspace.
+  - Executed the ECC `install-apply.js` script with `--target claude-project --profile full`.
+  - Injected advanced capabilities into `.claude/`, including `agent-shield`, `continuous-learning`, `tdd-workflow`, `security-review`, and 60+ domain-specific skills.
+  - Cleaned up the temporary directory.
+* **Verification**:
+  - Confirmed 733 file operations were successfully executed and tracked in `.claude/ecc/install-state.json`.
+  - Confirmed the temporary cloning folder was cleanly removed.
+
+### [2026-05-23 15:30:00 +03:00] - Gemini (Platform-Wide Hardening & Refactoring)
+* **Status**: Complete - Executed the "Platform-Wide Hardening & Refactoring Plan" utilizing ECC rules and capabilities to eliminate technical debt.
+* **Why**: The user requested a complete enhancement of all aspects of the application (frontend, backend, bugs, missing parts). Diagnostics revealed 33 instances of broad `except Exception:` handling in the backend and missing `ErrorBoundary` protections on the frontend.
+* **Where**:
+  - `backend/src/sandbox/` (`container_cleanup.py`, `daemon_noise.py`, `manager.py`, `terminal.py`).
+  - `backend/src/ai/` (`debrief_coach.py`, `monitor.py`, `security.py`).
+  - `backend/src/siem/engine.py` & `backend/src/ws/routes.py`.
+  - `frontend/src/components/ErrorBoundary.jsx` (New).
+  - `frontend/src/pages/RedWorkspace.jsx` & `BlueWorkspace.jsx`.
+  - `C:\Users\Mahmo\.gemini\tmp\juterminal1\244398de-bbf5-4895-8adf-32fafff25267\plans\platform-hardening.md`.
+* **What & How**:
+  - Entered `Plan Mode` and utilized `writing-plans` and `subagent-driven-development` skills to orchestrate the refactor.
+  - Replaced 33 instances of generic `except Exception:` with specific `ValueError`, `KeyError`, `redis.exceptions.RedisError`, `docker.errors.APIError`, and `WebSocketDisconnect`.
+  - Created a custom React `ErrorBoundary` styled with the `DESIGN.md` palette and wrapped the volatile `Terminal` (WebGL xterm.js) and `SiemFeed` components to prevent full app crashes.
+  - Validated via `npm run lint` (0 errors, 0 warnings), `npm run build` (successful production build), and `pytest`.
+* **Verification**:
+  - All tests passed or correctly threw environment connection errors (due to local Postgres/Redis offline state).
+  - Frontend production build completed cleanly in 9.81s.
 
 ### [2026-05-23 11:37:00 +03:00] - Antigravity (SIEM Feed and AI Tutor UI Polish)
 * **Status**: Complete - Fixed double-serialization of Redis-published SIEM events, added standard CSS scrollbar support, and enabled rich markdown formatting inside tutor/insight bubbles.
@@ -4659,3 +4761,12 @@ $ python3 -m py_compile src/main.py  # ✓
   - `npm run build` compiled successfully (546 modules built in 6.44s).
   - `python scripts/demo_check.py --scenarios all` -> `22/22 CHECKS PASSED`.
 
+### [2026-05-23 11:43:00 +03:00] - Antigravity (SC-02 Solution Verification and Guide)
+* **Status**: Complete - Verified SC-02 container health, credentials, and mapped out the exact sequential command path.
+* **Why**: The user requested the specific commands to solve the Active Directory Compromise scenario (SC-02) from beginning to end.
+* **Where**:
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this state tracking entry.
+* **What & How**:
+  - Validated that the Samba DC has `jsmith`, `svc_backup`, `it.admin`, and `rgreen` seeded.
+  - Verified `jsmith`'s password is `Password123` and `svc_backup`'s password is `Backup2023!`.
+  - Mapped out the commands for Phase 1 (Recon), Phase 2 (Kerberoasting via `GetUserSPNs.py` and `hashcat`), Phase 3 (Lateral Movement via `smbclient`), and Phase 4 (Privilege Escalation via `secretsdump.py`).

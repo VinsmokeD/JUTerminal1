@@ -237,7 +237,7 @@ def _get_primary_target(scenario_id: str) -> tuple[str, int] | None:
         role = hosts[0].get("role", "")
         port = 445 if "dc" in role.lower() else 80
         return (ip, port) if ip else None
-    except Exception:
+    except (KeyError, IndexError, TypeError):
         return None
 
 

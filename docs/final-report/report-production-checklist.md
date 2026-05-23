@@ -4,13 +4,13 @@ Use this checklist to drive the remaining documentation work from source freeze 
 
 ## Phase 1: Source Freeze
 
-- [ ] Confirm current project scope: SC-01, SC-02, SC-03 only.
-- [ ] Capture current `git status` and commit hash for documentation evidence.
+- [x] Confirm current project scope: SC-01, SC-02, SC-03 only.
+- [x] Capture current `git status` and commit hash for documentation evidence.
 - [ ] Confirm latest backend test count and frontend build status.
 - [ ] Export FastAPI OpenAPI JSON from `/api/docs` or `/openapi.json` if available.
 - [ ] Export current Docker Compose config with `docker compose config`.
-- [ ] Capture database model inventory from SQLAlchemy and migrations.
-- [ ] Capture current scenario YAMLs, hint trees, SIEM rules, and playbooks.
+- [x] Capture database model inventory from SQLAlchemy and migrations.
+- [x] Capture current scenario YAMLs, hint trees, SIEM rules, and playbooks.
 - [ ] Capture current application screenshots.
 
 ## Phase 2: Formal Report
@@ -26,7 +26,7 @@ Use this checklist to drive the remaining documentation work from source freeze 
 - [ ] Draft Chapter 1: Introduction.
 - [ ] Draft Chapter 2: Related Existing Systems.
 - [ ] Draft Chapter 3: Requirements Engineering and Analysis.
-- [ ] Draft Chapter 4: System Design.
+- [x] Draft Chapter 4: System Design.
 - [ ] Draft Chapter 5: Implementation.
 - [ ] Draft Chapter 6: Testing and Installation.
 - [ ] Draft Chapter 7: Conclusions and Future Work.
@@ -47,12 +47,12 @@ Use this checklist to drive the remaining documentation work from source freeze 
 
 ## Phase 4: Diagrams
 
-- [ ] Export C4 context diagram.
-- [ ] Export C4 container diagram.
-- [ ] Export DFD Level 0.
-- [ ] Export ERD.
-- [ ] Export Docker topology.
-- [ ] Export Red-to-Blue event sequence.
+- [x] Export C4 context diagram.
+- [x] Export C4 container diagram.
+- [x] Export DFD Level 0.
+- [x] Export ERD.
+- [x] Export Docker topology.
+- [x] Export Red-to-Blue event sequence.
 - [ ] Add UML use case diagram.
 - [ ] Add UML class/component diagram.
 - [ ] Add authentication sequence diagram.
@@ -70,6 +70,7 @@ Use this checklist to drive the remaining documentation work from source freeze 
 
 - [x] Select Canva candidate 2.
 - [x] Create editable Canva visual report design.
+- [x] Create verified Canva page rewrite brief.
 - [ ] Replace generic Canva text with verified CyberSim content.
 - [ ] Import/export polished architecture diagrams.
 - [ ] Add current screenshots.
@@ -94,4 +95,3 @@ Use this checklist to drive the remaining documentation work from source freeze 
 - [ ] Check for accidental credentials or secrets.
 - [ ] Check for unsupported claims.
 - [ ] Final export: DOCX, PDF, Canva links, poster, deck, evidence bundle.
-

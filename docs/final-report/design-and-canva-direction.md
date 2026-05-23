@@ -5,11 +5,17 @@
 The selected Canva candidate is the editable visual report:
 
 - Design id: `DAHKeHjt8IY`
-- Edit URL: https://www.canva.com/d/HiO92F8_1b90Umj
-- View URL: https://www.canva.com/d/AWvF-sEqVnIMkdU
+- Edit URL: https://www.canva.com/d/8CmCA-8Y41Ms9ML
+- View URL: https://www.canva.com/d/pfQr_4wjgUjRfJs
 - Page count: 17
 
 This design should be treated as the visual companion style for CyberSim. It should influence the deck, poster, scenario one-pagers, and visual executive report. The official Word/PDF submission should preserve the KASIT handbook layout and use the richer visual style only inside figures, diagrams, and visual appendices.
+
+## Canva Audit Notes
+
+The selected Canva design has the right visual direction, but its text still includes generic business content. Replace all placeholder financial labels, fake metric values, generic contact details, and repeated `Your Text` fields before using it in the defense package.
+
+The page-by-page replacement source is `canva-page-rewrite-brief.md`. Use that file as the control document when editing Canva so the visual report stays aligned with verified CyberSim content.
 
 ## Visual Identity
 
@@ -74,6 +80,17 @@ The selected Canva design should be revised into the following sections:
 | 16 | Contributions and results | Achievements and project value |
 | 17 | Future work and Q&A | Roadmap and closing slide/report page |
 
+## Current Export Assets
+
+| Asset | Path | Use |
+| --- | --- | --- |
+| C4 context | `diagrams/export/png/c4-context.png` | Canva page 3 or overview slide |
+| C4 container | `diagrams/export/png/c4-container.png` | Canva page 4 |
+| DFD Level 0 | `diagrams/export/png/dfd-level-0.png` | Architecture appendix or data flow callout |
+| ERD | `diagrams/export/png/erd-core-schema.png` | Canva page 11 |
+| Docker topology | `diagrams/export/png/docker-topology.png` | Canva page 12 |
+| Red-to-Blue sequence | `diagrams/export/png/red-blue-event-sequence.png` | Learning loop or testing evidence page |
+
 ## Diagram Style Rules
 
 - Keep diagram labels identical to repository service names where possible.
@@ -90,4 +107,3 @@ The selected Canva design should be revised into the following sections:
 - Remove or blur real tokens, `.env` values, and user passwords.
 - Prefer full-page screenshots for page anatomy and cropped screenshots for feature callouts.
 - Use consistent browser size for all UI screenshots.
-

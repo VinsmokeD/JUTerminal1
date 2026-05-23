@@ -203,6 +203,10 @@ net ads testjoin
 
 echo "$DC_IP nexora-dc01.$DOMAIN nexora-dc01" >> /etc/hosts
 
+# Start winbindd in daemon mode
+echo "[+] Starting winbindd..."
+winbindd -D
+
 # Start file server
 echo "[+] Starting Samba file server..."
 exec smbd -F --no-process-group --debug-stdout

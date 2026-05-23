@@ -65,7 +65,7 @@ export default function SiemFeed() {
   const listRef = useRef(null)
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
-  const [hideNoise, setHideNoise] = useState(true)    // default hide noise
+  const [hideNoise, setHideNoise] = useState(false)    // default show noise
 
   const filtered = useMemo(() => {
     return events.filter((ev) => {

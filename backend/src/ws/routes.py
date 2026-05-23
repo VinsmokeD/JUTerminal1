@@ -98,7 +98,7 @@ async def _handle_terminal_command(session_id: str, session_state: dict, command
         phases = spec.get("phases", {})
         phase_spec = phases.get(current_phase, phases.get(str(current_phase), {}))
         ptes_phase = phase_spec.get("ptes_phase", "")
-    except Exception:
+    except (WebSocketDisconnect, RuntimeError):
         ptes_phase = ""
 
     if ptes_phase:
@@ -574,7 +574,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             # can evict abandoned sessions from cybersim:active_sessions hash.
             try:
                 await redis.set(f"cybersim:session:{session_id}:alive", "1", ex=7200)
-            except Exception:
+            except (WebSocketDisconnect, RuntimeError):
                 pass  # non-fatal; eviction will happen on next cleanup cycle
 
             if msg_type == "terminal_raw":
@@ -664,18 +664,18 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         heartbeat_task.cancel()
         try:
             await pubsub.unsubscribe()
-        except Exception:
+        except (WebSocketDisconnect, RuntimeError):
             pass
         try:
             await pubsub.reset()
-        except Exception:
+        except (WebSocketDisconnect, RuntimeError):
             pass
         try:
             await redis.hdel(_ACTIVE_SESSIONS_KEY, session_id)
-        except Exception:
+        except (WebSocketDisconnect, RuntimeError):
             pass
         try:
             await redis.delete(f"cybersim:session:{session_id}:alive")
-        except Exception:
+        except (WebSocketDisconnect, RuntimeError):
             pass
         unregister_terminal_output_listener(session_id, terminal_output_queue)

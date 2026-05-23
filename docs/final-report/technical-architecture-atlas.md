@@ -1,6 +1,6 @@
 # Technical Architecture Atlas
 
-This atlas is the diagram-first architecture reference for CyberSim. It supports Chapter 4 of the formal report and the Canva visual companion.
+This atlas is the diagram-first architecture reference for CyberSim. It supports Chapter 4 of the formal report and the Canva visual companion. It is backed by the Repomix source inventory in `evidence/source-inventory.md` and by rendered Mermaid exports under `diagrams/export/`.
 
 ## Architecture Summary
 
@@ -27,6 +27,19 @@ The educational loop is built around one central idea: a student action in the R
 | Figure 4.4 | `diagrams/source/erd-core-schema.mmd` | Shows persistent relational schema relationships |
 | Figure 4.5 | `diagrams/source/docker-topology.mmd` | Shows Docker networks, services, volumes, and scenario isolation |
 | Figure 4.6 | `diagrams/source/red-blue-event-sequence.mmd` | Shows a command moving from Red Team action to Blue Team telemetry and debrief evidence |
+
+## Exported Assets
+
+| Figure | SVG | PNG | Status |
+| --- | --- | --- | --- |
+| Figure 4.1 | `diagrams/export/svg/c4-context.svg` | `diagrams/export/png/c4-context.png` | Rendered |
+| Figure 4.2 | `diagrams/export/svg/c4-container.svg` | `diagrams/export/png/c4-container.png` | Rendered |
+| Figure 4.3 | `diagrams/export/svg/dfd-level-0.svg` | `diagrams/export/png/dfd-level-0.png` | Rendered |
+| Figure 4.4 | `diagrams/export/svg/erd-core-schema.svg` | `diagrams/export/png/erd-core-schema.png` | Rendered |
+| Figure 4.5 | `diagrams/export/svg/docker-topology.svg` | `diagrams/export/png/docker-topology.png` | Rendered |
+| Figure 4.6 | `diagrams/export/svg/red-blue-event-sequence.svg` | `diagrams/export/png/red-blue-event-sequence.png` | Rendered |
+
+All six diagrams were exported with Mermaid CLI `11.15.0` and the CyberSim report theme in `diagrams/mermaid-theme.json`.
 
 ## Design Decisions
 
@@ -101,3 +114,15 @@ The critical security boundary is between:
 
 Scenario networks are configured as Docker `internal: true` networks. Training actions must stay inside those scenario networks. The report should repeatedly state that CyberSim is not for testing real systems.
 
+### Evidence View
+
+The source inventory evidence pack covered 210 report-relevant files and grouped them into backend, frontend, scenario, AI, SIEM, Docker, and documentation domains. The architecture chapter should cite local file paths rather than broad claims. Examples:
+
+- Backend entry and router registration: `backend/src/main.py`.
+- Session and WebSocket behavior: `backend/src/sessions/routes.py`, `backend/src/ws/routes.py`.
+- Sandbox lifecycle: `backend/src/sandbox/manager.py`, `backend/src/sandbox/terminal.py`.
+- Database model: `backend/src/db/database.py`.
+- Scenario specs: `docs/scenarios/SC-01-webapp-pentest.yaml`, `docs/scenarios/SC-02-ad-compromise.yaml`, `docs/scenarios/SC-03-phishing.yaml`.
+- Docker topology: `docker-compose.yml`, `infrastructure/docker/scenarios/`.
+
+The report should avoid exposing full scenario solutions or lab-only credentials. Evidence belongs in summaries, diagrams, and redacted screenshots.

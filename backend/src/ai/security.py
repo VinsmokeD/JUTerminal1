@@ -69,7 +69,7 @@ def _redact_sensitive_values(value):
 def redact_for_ai(target_knowledge: dict, current_phase: int = 1) -> dict:
     try:
         return _redact_for_ai_impl(target_knowledge, current_phase)
-    except Exception:
+    except (KeyError, TypeError, ValueError):
         return _redact_sensitive_values(target_knowledge or {})
 
 

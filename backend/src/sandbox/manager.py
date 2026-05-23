@@ -3,17 +3,23 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import subprocess
 from pathlib import Path
 from typing import Tuple, Optional
 
+logger = logging.getLogger(__name__)
+
 try:
     import docker
-    from docker.errors import NotFound
+    from docker.errors import NotFound, DockerException, APIError
 
     _docker_available = True
 except ImportError:
     _docker_available = False
+    class DockerException(Exception): pass
+    class APIError(Exception): pass
+    class NotFound(Exception): pass
 
 from src.config import settings
 
@@ -137,7 +143,7 @@ def _ensure_scenario_targets(scenario_id: str, force_reset: bool = True) -> None
         cmd.extend(targets)
 
         subprocess.run(cmd, capture_output=True, timeout=60)
-    except Exception as exc:
+    except (subprocess.SubprocessError, OSError) as exc:
         print(f"[Sandbox] Scenario targets for {profile} unavailable: {exc}")
 
 
@@ -162,7 +168,7 @@ def _teardown_scenario_targets(scenario_id: str) -> None:
             capture_output=True,
             timeout=60,
         )
-    except Exception as exc:
+    except (subprocess.SubprocessError, OSError) as exc:
         print(f"[Sandbox] Error stopping scenario targets for {profile}: {exc}")
 
 
@@ -180,7 +186,7 @@ def _get_scenario_network(sc_num: str) -> str:
         for net in client.networks.list():
             if sc_num + "-net" in net.name:
                 return net.name
-    except Exception:
+    except (DockerException, APIError, RuntimeError):
         pass
     # Derive from compose file parent directory as a reliable fallback
     return f"cybersim_{sc_num}-net"
@@ -202,7 +208,7 @@ def _repair_kali_tools(container: "docker.models.containers.Container") -> bool:
         )
         output = (result.output or b"").decode("utf-8", errors="replace")
         return "/usr/lib/nmap/nmap" not in output
-    except Exception as exc:
+    except (DockerException, APIError) as exc:
         if settings.ENVIRONMENT == "development":
             print(f"[Sandbox] Kali tool repair skipped for {container.name}: {exc}")
         return True
@@ -298,10 +304,11 @@ EOF
         _repair_kali_tools(container)
         return container.id, network_name
 
-    except Exception as exc:
+    except (DockerException, APIError, RuntimeError) as exc:
+        logger.error(f"[Sandbox] Docker unavailable for session {session_id}, container {container_name}: {exc}")
         if settings.ENVIRONMENT == "development":
             print(
-                f"[Sandbox] Docker unavailable; using mock container for {session_id}: {exc}"
+                f"[Sandbox] Docker unavailable for session {session_id}, container {container_name}; using mock: {exc}"
             )
             return f"mock-{session_id[:8]}", network_name
         raise
@@ -324,8 +331,8 @@ def _ensure_sync(
             if _repair_kali_tools(container):
                 return container.id, network_name, False
             container.remove(force=True)
-        except Exception:
-            pass
+        except (NotFound, DockerException, APIError, RuntimeError) as exc:
+            logger.warning(f"[Sandbox] Failed to ensure existing container {container_id} for session {session_id}: {exc}")
 
     new_container_id, new_network_name = _start_sync(session_id, scenario_id)
     return new_container_id, new_network_name, new_container_id != container_id
@@ -337,9 +344,10 @@ def _stop_sync(container_id: str) -> None:
         container = client.containers.get(container_id)
         container.stop(timeout=5)
         container.remove(force=True)
-    except Exception as exc:
+    except (NotFound, DockerException, APIError, RuntimeError) as exc:
+        logger.error(f"[Sandbox] Container {container_id} stop error: {exc}")
         if settings.ENVIRONMENT == "development":
-            print(f"[Sandbox] Container stop error (non-fatal): {exc}")
+            print(f"[Sandbox] Container {container_id} stop error (non-fatal): {exc}")
         else:
             raise
 
@@ -350,5 +358,6 @@ def _exec_sync(container_id: str, command: str) -> str:
         container = client.containers.get(container_id)
         result = container.exec_run(command, demux=False)
         return (result.output or b"").decode("utf-8", errors="replace")
-    except Exception as exc:
+    except (NotFound, DockerException, APIError, RuntimeError) as exc:
+        logger.error(f"[Sandbox] Exec error in container {container_id}: {exc}")
         return f"[exec error] {exc}"

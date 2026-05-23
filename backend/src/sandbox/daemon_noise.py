@@ -13,14 +13,18 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import random
 import time
 import uuid
+import redis.exceptions
 from datetime import datetime, timezone
 
 import httpx
 
 from src.cache.redis import _get as get_redis_client
+
+logger = logging.getLogger(__name__)
 
 _ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"
 
@@ -149,7 +153,8 @@ async def _probe_http(url: str) -> None:
                     ])
                 },
             )
-    except Exception:
+    except (httpx.RequestError, asyncio.TimeoutError) as e:
+        logger.debug("[NOISE] HTTP probe to %s failed (container may be down): %s", url, e)
         pass  # Container may be down — noise daemon must never crash the app
 
 
@@ -180,8 +185,8 @@ async def _publish_noise_event(session_id: str, scenario_id: str) -> None:
     try:
         redis = get_redis_client()
         await redis.publish(f"siem:{session_id}:feed", json.dumps(payload))
-    except Exception:
-        pass
+    except redis.exceptions.RedisError as e:
+        logger.warning("[NOISE] Failed to publish noise event for session %s: %s", session_id, e)
 
 
 async def _get_session_seed(redis: object, session_id: str) -> int | None:
@@ -191,8 +196,8 @@ async def _get_session_seed(redis: object, session_id: str) -> int | None:
         raw = await redis.get(f"session:{session_id}:rand_seed")  # type: ignore[attr-defined]
         if raw:
             return int(raw.decode() if isinstance(raw, bytes) else raw)
-    except Exception:
-        pass
+    except redis.exceptions.RedisError as e:
+        logger.warning("[NOISE] Failed to get session seed from redis for session %s: %s", session_id, e)
     return None
 
 
@@ -209,8 +214,8 @@ async def _run_noise_loop() -> None:
     try:
         redis = get_redis_client()
         await redis.delete(_ACTIVE_SESSIONS_KEY)
-    except Exception:
-        pass
+    except redis.exceptions.RedisError as e:
+        logger.warning("[NOISE] Failed to clear active sessions key on startup: %s", e)
 
     while True:
         sleep_secs = random.uniform(30.0, 60.0)
@@ -220,7 +225,8 @@ async def _run_noise_loop() -> None:
         try:
             redis = get_redis_client()
             active: dict[bytes, bytes] = await redis.hgetall(_ACTIVE_SESSIONS_KEY)
-        except Exception:
+        except redis.exceptions.RedisError as e:
+            logger.warning("[NOISE] Failed to get active sessions: %s", e)
             continue
 
         if not active:
@@ -232,13 +238,6 @@ async def _run_noise_loop() -> None:
 
             now = time.time()
             try:
-                last_cmd_raw = await redis.get(f"session:{session_id}:last_cmd_time")
-                if not last_cmd_raw:
-                    continue
-                last_cmd = float(last_cmd_raw.decode() if isinstance(last_cmd_raw, bytes) else last_cmd_raw)
-                if now - last_cmd < _MIN_SECONDS_AFTER_COMMAND:
-                    continue
-
                 last_noise_raw = await redis.get(f"noise:{session_id}:last_event_time")
                 if last_noise_raw:
                     last_noise = float(last_noise_raw.decode() if isinstance(last_noise_raw, bytes) else last_noise_raw)
@@ -254,7 +253,8 @@ async def _run_noise_loop() -> None:
 
                     if now - last_noise < min_between:
                         continue
-            except Exception:
+            except redis.exceptions.RedisError as e:
+                logger.warning("[NOISE] Failed to get last noise time for session %s: %s", session_id, e)
                 continue
 
             # Use session RNG for event selection if seed available
@@ -272,8 +272,8 @@ async def _run_noise_loop() -> None:
 
             try:
                 await redis.set(f"noise:{session_id}:last_event_time", str(now), ex=7200)
-            except Exception:
-                pass
+            except redis.exceptions.RedisError as e:
+                logger.warning("[NOISE] Failed to update last noise time for session %s: %s", session_id, e)
 
             # HTTP probes: run much less frequently than SIEM events
             if http_tick >= random.uniform(90.0, 180.0):
@@ -310,8 +310,8 @@ async def _publish_noise_event_direct(
     try:
         redis = get_redis_client()
         await redis.publish(f"siem:{session_id}:feed", json.dumps(payload))
-    except Exception:
-        pass
+    except redis.exceptions.RedisError as e:
+        logger.warning("[NOISE] Failed to publish noise event for session %s: %s", session_id, e)
 
 
 def start_noise_daemon() -> asyncio.Task:
