@@ -483,13 +483,13 @@ export default function Debrief() {
                           )
                         })}
                         
-                        {/* Score Area Polygon */}
                         <polygon
                           points={dataPoints}
-                          fill="rgba(0,170,255,0.15)"
+                          fill="rgba(0,170,255,0.12)"
                           stroke="#00aaff"
                           strokeWidth="2"
                           className="transition-all duration-300"
+                          style={{ filter: 'drop-shadow(0 0 6px rgba(0, 240, 255, 0.5))' }}
                         />
                         
                         {/* Interaction vertices */}
@@ -780,10 +780,13 @@ function ScoreRing({ score, gradeColor, gradeLabel }) {
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
-            style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
+            style={{ 
+              transition: 'stroke-dashoffset 1.2s ease-out',
+              filter: `drop-shadow(0 0 5px ${stroke}a0)`
+            }}
           />
         </svg>
-        <div className="absolute inset-3 rounded-full bg-surface-1 border border-cs-border flex items-center justify-center">
+        <div className="absolute inset-3 rounded-full bg-[#030508]/80 border border-cs-border backdrop-blur-md flex items-center justify-center">
           <div>
             <div className={`text-4xl font-extrabold font-mono ${gradeColor}`}>{score}</div>
             <div className="text-xs text-txt-dim font-mono">/100</div>

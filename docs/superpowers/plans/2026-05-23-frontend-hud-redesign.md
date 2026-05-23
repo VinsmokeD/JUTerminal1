@@ -89,8 +89,8 @@ Rework sidebar and top bars into minimal, semi-transparent HUD overlays that "fl
 **Files:**
 - Modify: `frontend/src/pages/Debrief.jsx`
 
-- [ ] **Step 1: Intelligence Readout Style**
+- [x] **Step 1: Intelligence Readout Style**
 Restyle the Debrief page to look like a post-mission technical readout. Enhance charts and timelines with glowing data points.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 `git commit -am "feat: data-rich intelligence debrief"`
