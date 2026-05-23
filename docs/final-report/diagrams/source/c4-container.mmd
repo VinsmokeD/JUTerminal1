@@ -1,0 +1,34 @@
+flowchart TB
+    browser["Browser\nReact/Vite UI"]
+    nginx["Nginx or Caddy\nRouting Layer"]
+    backend["FastAPI Backend\nAPI, WS, Orchestration"]
+    postgres["PostgreSQL\nDurable Data"]
+    redis["Redis\nRealtime and Cache"]
+    es["Elasticsearch\nTelemetry Store"]
+    filebeat["Filebeat\nLog Forwarder"]
+    docker["Docker Engine\nKali and Scenario Lifecycle"]
+    ai["OpenRouter-Compatible\nAI Provider"]
+
+    subgraph scenarios["Internal Scenario Networks"]
+        sc01["SC-01 NovaMed\nWeb/WAF/DB"]
+        sc02["SC-02 Nexora\nAD DC/File Server"]
+        sc03["SC-03 Orion\nMail/GoPhish/Victim"]
+        kali["Kali Session Containers"]
+    end
+
+    browser -->|"HTTP and WebSocket"| nginx
+    nginx -->|"API and WS proxy"| backend
+    backend -->|"SQLAlchemy async"| postgres
+    backend -->|"session/cache/history"| redis
+    backend -->|"poll/query detections"| es
+    backend -->|"Docker SDK"| docker
+    backend -->|"bounded hints"| ai
+    docker --> kali
+    docker --> sc01
+    docker --> sc02
+    docker --> sc03
+    sc01 -->|"logs"| filebeat
+    sc02 -->|"logs"| filebeat
+    sc03 -->|"logs"| filebeat
+    filebeat --> es
+

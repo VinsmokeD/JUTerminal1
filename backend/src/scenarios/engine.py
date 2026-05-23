@@ -127,7 +127,7 @@ async def process_command_for_siem(
 
     # Publish to Blue Team WebSocket feed
     for ev in events:
-        await publish(f"siem:{session_id}:feed", json.dumps(ev))
+        await publish(f"siem:{session_id}:feed", ev)
 
     return events
 

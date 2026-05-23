@@ -1,0 +1,18 @@
+flowchart LR
+    studentRed["Student\nRed Team Operator"]
+    studentBlue["Student\nBlue Team Analyst"]
+    instructor["Instructor"]
+    admin["Administrator\nDemo Operator"]
+    ai["OpenRouter-Compatible\nAI Provider"]
+    docker["Local Docker Engine"]
+    cybersim["CyberSim Platform\nBrowser-Based Training System"]
+    uj["University of Jordan\nKASIT Environment"]
+
+    studentRed -->|"Runs sandboxed methodology"| cybersim
+    studentBlue -->|"Triages SIEM events and notes"| cybersim
+    instructor -->|"Monitors progress and exports grades"| cybersim
+    admin -->|"Deploys, verifies, and recovers"| cybersim
+    cybersim -->|"Bounded hint requests"| ai
+    cybersim -->|"Provisions isolated containers"| docker
+    uj -->|"Course and graduation context"| cybersim
+

@@ -1,0 +1,44 @@
+flowchart TB
+    subgraph internal["internal network 172.30.0.0/24"]
+        nginx["nginx"]
+        frontend["frontend"]
+        backend["backend"]
+        postgres["postgres\nvolume: postgres_data"]
+        redis["redis\nvolume: redis_data"]
+        elastic["elasticsearch\nvolume: elastic_data"]
+        filebeat["filebeat"]
+    end
+
+    subgraph sc01["sc01-net 172.20.1.0/24 internal"]
+        sc01db["sc01-db"]
+        sc01php["sc01-php"]
+        sc01web["sc01-webapp"]
+        sc01waf["sc01-waf\nvolume: sc01_waf_logs"]
+    end
+
+    subgraph sc02["sc02-net 172.20.2.0/24 internal"]
+        sc02dc["sc02-dc\nvolumes: samba lib/cache/logs"]
+        sc02fs["sc02-fileserver"]
+    end
+
+    subgraph sc03["sc03-net 172.20.3.0/24 internal"]
+        sc03mail["sc03-mailrelay"]
+        sc03phish["sc03-phish"]
+        sc03victim["sc03-victim"]
+    end
+
+    frontend --> nginx
+    nginx --> backend
+    backend --> postgres
+    backend --> redis
+    backend --> elastic
+    filebeat --> elastic
+    filebeat -. "reads selected logs" .-> sc01waf
+    filebeat -. "reads selected logs" .-> sc02dc
+    sc01waf --> sc01web
+    sc01web --> sc01php
+    sc01php --> sc01db
+    sc02fs --> sc02dc
+    sc03phish --> sc03mail
+    sc03victim --> sc03mail
+

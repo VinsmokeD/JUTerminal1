@@ -1,0 +1,22 @@
+flowchart LR
+    user["Student or Instructor"]
+    ui["React Frontend"]
+    api["FastAPI Backend"]
+    db[("PostgreSQL")]
+    cache[("Redis")]
+    siem[("Elasticsearch")]
+    docker["Docker Sandbox"]
+    ai["AI Provider"]
+
+    user -->|"credentials, commands, notes, triage"| ui
+    ui -->|"REST requests"| api
+    ui <-->|"WebSocket frames"| api
+    api -->|"users, sessions, notes, commands, reports"| db
+    api -->|"active sessions, terminal history, AI rate state"| cache
+    api -->|"telemetry queries"| siem
+    api -->|"container lifecycle and PTY proxy"| docker
+    docker -->|"target logs via Filebeat"| siem
+    api -->|"redacted bounded prompt"| ai
+    ai -->|"safe hint or fallback unavailable"| api
+    api -->|"scores, events, readiness, reports"| ui
+

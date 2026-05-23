@@ -110,6 +110,12 @@
     background: var(--text-dim);
   }
 
+  /* Support Firefox scrollbars and standard scrollbar properties */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-4) transparent;
+  }
+
   /* ── Selection ────────────────────────────────────── */
   ::selection {
     background: rgba(59,139,255,0.3);

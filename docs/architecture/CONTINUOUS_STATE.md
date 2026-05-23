@@ -4621,6 +4621,7 @@ $ python3 -m py_compile src/main.py  # ✓
   - `C:\Users\Mahmo\.claude\skills\` - installed the same 34 selected skill directories for Claude Code.
   - `C:\Users\Mahmo\.agents\skills\` - installed the same 34 selected skill directories for the existing shared Antigravity/agent skill root.
   - `C:\Users\Mahmo\.gemini\antigravity\skills\` - mirrored the same 34 selected skill directories into Antigravity's native skill root.
+  - `C:\Users\Mahmo\AppData\Roaming\Python\Python314\site-packages\` - installed the `skill-seekers` Python CLI package and dependencies.
   - `docs/architecture/CONTINUOUS_STATE.md` - this continuity entry.
 * **What & How**:
   - Used the bundled Codex `skill-installer` helper script to install GitHub-backed skills with real `SKILL.md` files only.
@@ -4628,8 +4629,33 @@ $ python3 -m py_compile src/main.py  # ✓
   - Installed research/documentation skills: `academic-paper`, `academic-paper-reviewer`, `academic-pipeline`, `academic-deep-research`, `deep-research-engine`, `web-scraper`, `balanced`, `humanizer`, and `beautiful-prose`.
   - Installed engineering workflow skills from Superpowers: `brainstorming`, `writing-plans`, `executing-plans`, `verification-before-completion`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `using-superpowers`, `subagent-driven-development`, `dispatching-parallel-agents`, `requesting-code-review`, `receiving-code-review`, `finishing-a-development-branch`, and `writing-skills`.
   - Installed supporting output/tooling skills: `hand-drawn-diagrams`, `skill-seekers`, `repomix-explorer`, and `remotion`.
+  - Installed `skill-seekers==3.6.0` with `python -m pip install --user skill-seekers` so the Skill Seekers skill can invoke its CLI instead of only existing as instructions.
+  - Confirmed Repomix resolves through `npx`, so `repomix-explorer` can run without a global npm install.
   - Excluded unrelated or high-risk categories from the supplied list, including health/DNA, direct social publishing, ad extraction, music production, and marketing-only skills that do not materially support CyberSim's current build or graduation deliverables.
 * **Verification**:
   - Verified each selected skill has a `SKILL.md` in all four roots: Codex 34/34, Claude 34/34, shared Antigravity/agent 34/34, native Antigravity 34/34.
+  - `skill-seekers --version` -> `skill-seekers 3.6.0`.
+  - `npx --yes repomix@latest --version` -> `1.14.0`.
   - `docker compose config --quiet` -> exit 0.
   - `git diff --check -- docs/architecture/CONTINUOUS_STATE.md` -> exit 0; Git printed only the normal CRLF conversion warning.
+
+### [2026-05-23 11:37:00 +03:00] - Antigravity (SIEM Feed and AI Tutor UI Polish)
+* **Status**: Complete - Fixed double-serialization of Redis-published SIEM events, added standard CSS scrollbar support, and enabled rich markdown formatting inside tutor/insight bubbles.
+* **Why**: To address issues where command-mapped attacks did not populate in the SIEM feed due to JSON double-serialization, and to improve the visual readability and standard scrollbar look-and-feel of the Socratic AI Tutor panel.
+* **Where**:
+  - `backend/src/scenarios/engine.py` - passed raw dict to publish instead of double-serializing via json.dumps.
+  - `backend/src/siem/command_bridge.py` - passed raw dict to publish instead of double-serializing via json.dumps.
+  - `frontend/src/index.css` - added standard CSS scrollbar properties for Firefox and cross-browser support.
+  - `frontend/src/components/hints/AiHintPanel.jsx` - added custom markdown parser `renderTextWithMarkdown` to render bold text, inline code, and links in tutor dialogues.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - The Redis publish helper `src.cache.redis.publish` already applies `json.dumps()` internally. Callers in `engine.py` and `command_bridge.py` were passing already-stringified JSON, causing double-serialization. Replaced these calls to pass the event dictionaries directly.
+  - Added standard `scrollbar-width: thin` and `scrollbar-color` properties under `*` in `index.css`.
+  - Added a regex-based `renderTextWithMarkdown` parser in `AiHintPanel.jsx` that translates `**bold**`, `` `inline code` ``, and `[link](url)` into clean HTML, which is rendered using `dangerouslySetInnerHTML` inside the message bubbles.
+  - Rebuilt and restarted both `backend` and `frontend` docker containers.
+* **Verification**:
+  - `python -m pytest` passed all 133 tests successfully.
+  - `npm run lint` completed with 0 errors and 0 warnings.
+  - `npm run build` compiled successfully (546 modules built in 6.44s).
+  - `python scripts/demo_check.py --scenarios all` -> `22/22 CHECKS PASSED`.
+

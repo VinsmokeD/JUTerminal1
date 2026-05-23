@@ -1,0 +1,129 @@
+erDiagram
+    USERS ||--o{ SESSIONS : owns
+    SESSIONS ||--o{ NOTES : contains
+    SESSIONS ||--o{ COMMAND_LOG : records
+    SESSIONS ||--o{ SIEM_EVENTS : produces
+    SESSIONS ||--o{ AUTO_EVIDENCE : summarizes
+    SESSIONS ||--o{ SIEM_TRIAGE : classifies
+    USERS ||--o{ AI_INTERACTIONS : receives
+    SESSIONS ||--o{ AI_INTERACTIONS : contextualizes
+    USERS ||--o{ USER_ACTIVITY : performs
+    SESSIONS ||--o{ USER_ACTIVITY : includes
+    USERS ||--o{ CONTAINMENT_ACTIONS : initiates
+    SESSIONS ||--o{ CONTAINMENT_ACTIONS : includes
+
+    USERS {
+        string id PK
+        string username UK
+        string password_hash
+        string role
+        string skill_level
+        boolean onboarding_completed
+        datetime created_at
+    }
+
+    SESSIONS {
+        string id PK
+        string user_id FK
+        string scenario_id
+        string role
+        string methodology
+        string ai_mode
+        int phase
+        int score
+        json hints_used
+        boolean roe_acknowledged
+        datetime started_at
+        datetime completed_at
+        string container_id
+        string network_name
+        json metadata
+    }
+
+    NOTES {
+        string id PK
+        string session_id FK
+        string tag
+        string content
+        int phase
+        datetime created_at
+    }
+
+    COMMAND_LOG {
+        string id PK
+        string session_id FK
+        string command
+        string tool
+        int phase
+        json triggered_siem_events
+        boolean ai_hint_given
+        datetime created_at
+    }
+
+    SIEM_EVENTS {
+        string id PK
+        string session_id FK
+        string severity
+        string message
+        string raw_log
+        string mitre_technique
+        string source_ip
+        string source
+        boolean acknowledged
+        datetime created_at
+    }
+
+    SIEM_TRIAGE {
+        string id PK
+        string session_id FK
+        string event_id
+        string classification
+        string notes
+        datetime created_at
+    }
+
+    AI_INTERACTIONS {
+        string id PK
+        string session_id FK
+        string user_id FK
+        string kind
+        int hint_level
+        string command_context
+        int prompt_tokens
+        int completion_tokens
+        string model
+        string response_text
+        int latency_ms
+        boolean was_fallback
+        boolean flagged
+    }
+
+    USER_ACTIVITY {
+        string id PK
+        string user_id FK
+        string session_id FK
+        string event_type
+        json metadata_json
+        datetime created_at
+    }
+
+    CONTAINMENT_ACTIONS {
+        string id PK
+        string session_id FK
+        string user_id FK
+        string action_type
+        string target_value
+        string status
+        datetime created_at
+    }
+
+    AUTO_EVIDENCE {
+        string id PK
+        string session_id FK
+        string command
+        string output_summary
+        string tool_name
+        string tag
+        datetime created_at
+    }
+

@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant Student as Student Red Workspace
+    participant Frontend as React Frontend
+    participant Backend as FastAPI WebSocket
+    participant Kali as Kali Session Container
+    participant Target as Scenario Target
+    participant Filebeat as Filebeat
+    participant ES as Elasticsearch
+    participant Blue as Blue Team Workspace
+    participant DB as PostgreSQL
+    participant AI as AI Provider or Fallback
+
+    Student->>Frontend: Submit terminal command
+    Frontend->>Backend: WebSocket stdin frame
+    Backend->>DB: Store command metadata
+    Backend->>AI: Send bounded/redacted context when allowed
+    AI-->>Backend: Socratic hint or fallback hint
+    Backend->>Kali: Proxy PTY input through Docker exec
+    Kali->>Target: Interact inside isolated scenario network
+    Target-->>Filebeat: Emit service/security logs
+    Filebeat->>ES: Forward logs
+    Backend->>ES: Poll/query matching telemetry
+    Backend->>DB: Persist SIEM event and evidence metadata
+    Backend-->>Frontend: WebSocket stdout, hint, output insight, event
+    Frontend-->>Student: Render terminal output and guidance
+    Backend-->>Blue: SIEM event stream
+    Blue->>DB: Save triage notes and classifications
+

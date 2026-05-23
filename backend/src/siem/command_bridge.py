@@ -152,4 +152,4 @@ async def create_command_siem_events(
 
 async def publish_command_siem_events(session_id: str, events: list[dict[str, Any]]) -> None:
     for event in events:
-        await publish(f"siem:{session_id}:feed", json.dumps(event))
+        await publish(f"siem:{session_id}:feed", event)

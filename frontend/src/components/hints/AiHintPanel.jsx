@@ -84,6 +84,28 @@ const parseAIHint = (text) => {
   return { format: 'general', paragraphs }
 }
 
+const renderTextWithMarkdown = (text) => {
+  if (!text) return ''
+  let escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+
+  // Bold: **text**
+  escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-txt-primary">$1</strong>')
+
+  // Inline Code: `code`
+  escaped = escaped.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-surface-3 border border-cs-border font-mono text-[11px] text-cs-blue font-semibold">$1</code>')
+
+  // Links: [text](url)
+  escaped = escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-cs-blue hover:underline font-medium">$1</a>')
+
+  // Line breaks
+  escaped = escaped.replace(/\n/g, '<br />')
+
+  return escaped
+}
+
 export default function AiHintPanel({ onRequestHint, onToggleMode }) {
   const [hints, setHints] = useState([])
   const [loading, setLoading] = useState(false)
@@ -384,7 +406,7 @@ function HintBubble({ hint }) {
             <div className="space-y-3">
               {parsed.sections.map((section, idx) => {
                 if (section.type === 'general') {
-                  return <p key={idx} className="text-txt-primary">{section.content}</p>
+                  return <p key={idx} className="text-txt-primary" dangerouslySetInnerHTML={{ __html: renderTextWithMarkdown(section.content) }} />
                 }
                 return (
                   <div key={idx} className="border-l-2 pl-3 border-cs-border/60 space-y-1">
@@ -395,7 +417,7 @@ function HintBubble({ hint }) {
                     }}>
                       {section.label}
                     </span>
-                    <p className="text-txt-secondary">{section.content}</p>
+                    <p className="text-txt-secondary" dangerouslySetInnerHTML={{ __html: renderTextWithMarkdown(section.content) }} />
                   </div>
                 )
               })}
@@ -409,7 +431,7 @@ function HintBubble({ hint }) {
                   <span className="w-5 h-5 rounded-full border border-cs-border bg-surface-3 flex items-center justify-center font-mono text-[10.5px] font-bold text-txt-secondary flex-shrink-0 mt-0.5">
                     {step.index}
                   </span>
-                  <p className="text-txt-primary flex-1">{step.content}</p>
+                  <p className="text-txt-primary flex-1" dangerouslySetInnerHTML={{ __html: renderTextWithMarkdown(step.content) }} />
                 </div>
               ))}
             </div>
@@ -418,7 +440,7 @@ function HintBubble({ hint }) {
           {parsed?.format === 'general' && (
             <div className="space-y-2">
               {parsed.paragraphs.map((p, idx) => (
-                <p key={idx} className="text-txt-primary whitespace-pre-wrap">{p}</p>
+                <p key={idx} className="text-txt-primary" dangerouslySetInnerHTML={{ __html: renderTextWithMarkdown(p) }} />
               ))}
             </div>
           )}
