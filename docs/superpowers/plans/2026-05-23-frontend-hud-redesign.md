@@ -32,13 +32,13 @@ Extend theme with `hud-void`, `hud-cyan`, `hud-crimson` colors and custom `clip-
 - Create: `frontend/src/components/layout/HudEnvironment.jsx`
 - Modify: `frontend/src/App.jsx`
 
-- [ ] **Step 1: Implement HudEnvironment**
+- [x] **Step 1: Implement HudEnvironment**
 Create a component that renders a full-screen, fixed-position Three.js canvas with a subtle particle grid.
 
-- [ ] **Step 2: Wrap Application**
+- [x] **Step 2: Wrap Application**
 Wrap the main router in `App.jsx` with the `HudEnvironment` to provide the persistent atmosphere.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 `git add frontend/src/components/layout/HudEnvironment.jsx frontend/src/App.jsx && git commit -m "feat: add global Three.js HUD atmosphere"`
 
 ### Task 3: HUD Core Components Rework
