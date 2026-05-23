@@ -5078,3 +5078,17 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
   - Added it to the final push batch instead of leaving an untracked file behind.
 * **Verification**:
   - `git status --short` exposed only `get_dims.ps1` before this final batch.
+
+### [2026-05-23 19:06:40 +03:00] - Codex (Final Report Index Push)
+* **Status**: Complete - prepared the remaining final-report index and architecture-reference updates for the last GitHub push.
+* **Why**: Additional report documentation updates appeared after the prior push while flushing generated visual evidence. The user requested all current changes be pushed.
+* **Where**:
+  - `docs/final-report/technical-architecture-atlas.md` - includes the expanded Figure 4.7 through Figure 5.6 diagram inventory and exported asset table.
+  - `docs/final-report/requirements-traceability-matrix.md` - staged with the latest report documentation updates.
+  - `docs/final-report/scenarios/INDEX.md` - added scenario dossier comparison and index for SC-01 through SC-03.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Reviewed the scenario index to confirm it stays within the three-scenario MVP scope and does not include unsafe solution chains.
+  - Prepared the final documentation stragglers for commit so the local tree can be clean after push.
+* **Verification**:
+  - `git diff --check` -> exit 0 with normal CRLF warnings only.

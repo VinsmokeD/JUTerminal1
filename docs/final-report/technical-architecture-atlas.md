@@ -27,6 +27,16 @@ The educational loop is built around one central idea: a student action in the R
 | Figure 4.4 | `diagrams/source/erd-core-schema.mmd` | Shows persistent relational schema relationships |
 | Figure 4.5 | `diagrams/source/docker-topology.mmd` | Shows Docker networks, services, volumes, and scenario isolation |
 | Figure 4.6 | `diagrams/source/red-blue-event-sequence.mmd` | Shows a command moving from Red Team action to Blue Team telemetry and debrief evidence |
+| Figure 4.7 | `diagrams/source/uml-use-case.mmd` | Maps user and administrator goals across the platform |
+| Figure 4.8 | `diagrams/source/auth-sequence.mmd` | Details the JWT-based registration and login handshake |
+| Figure 4.9 | `diagrams/source/session-lifecycle-state.mmd` | Models the STANDBY to COMPLETED lifecycle of a training session |
+| Figure 4.10 | `diagrams/source/scenario-phase-state-machine.mmd` | Models the methodology-gated progression of a scenario |
+| Figure 5.1 | `diagrams/source/ai-safety-pipeline.mmd` | Details the redaction, policy, and sanitization boundary for Socratic AI |
+| Figure 5.2 | `diagrams/source/report-generation-pipeline.mmd` | Shows how session data is transformed into debrief and examiner reports |
+| Figure 5.3 | `diagrams/source/instructor-analytics-flow.mmd` | Details the aggregation of metrics for the instructor dashboard |
+| Figure 5.4 | `diagrams/source/sc01-topology.mmd` | NovaMed: Web App security and WAF/SIEM topology |
+| Figure 5.5 | `diagrams/source/sc02-topology.mmd` | Nexora: Directory service and Kerberos telemetry topology |
+| Figure 5.6 | `diagrams/source/sc03-topology.mmd` | Orion: Phishing simulation and endpoint forensic topology |
 
 ## Exported Assets
 
@@ -38,8 +48,19 @@ The educational loop is built around one central idea: a student action in the R
 | Figure 4.4 | `diagrams/export/svg/erd-core-schema.svg` | `diagrams/export/png/erd-core-schema.png` | Rendered |
 | Figure 4.5 | `diagrams/export/svg/docker-topology.svg` | `diagrams/export/png/docker-topology.png` | Rendered |
 | Figure 4.6 | `diagrams/export/svg/red-blue-event-sequence.svg` | `diagrams/export/png/red-blue-event-sequence.png` | Rendered |
+| Figure 4.7 | `diagrams/export/svg/uml-use-case.svg` | `diagrams/export/png/uml-use-case.png` | Rendered |
+| Figure 4.8 | `diagrams/export/svg/auth-sequence.svg` | `diagrams/export/png/auth-sequence.png` | Rendered |
+| Figure 4.9 | `diagrams/export/svg/session-lifecycle-state.svg` | `diagrams/export/png/session-lifecycle-state.png` | Rendered |
+| Figure 4.10 | `diagrams/export/svg/scenario-phase-state-machine.svg` | `diagrams/export/png/scenario-phase-state-machine.png` | Rendered |
+| Figure 5.1 | `diagrams/export/svg/ai-safety-pipeline.svg` | `diagrams/export/png/ai-safety-pipeline.png` | Rendered |
+| Figure 5.2 | `diagrams/export/svg/report-generation-pipeline.svg` | `diagrams/export/png/report-generation-pipeline.png` | Rendered |
+| Figure 5.3 | `diagrams/export/svg/instructor-analytics-flow.svg` | `diagrams/export/png/instructor-analytics-flow.png` | Rendered |
+| Figure 5.4 | `diagrams/export/svg/sc01-topology.svg` | `diagrams/export/png/sc01-topology.png` | Rendered |
+| Figure 5.5 | `diagrams/export/svg/sc02-topology.svg` | `diagrams/export/png/sc02-topology.png` | Rendered |
+| Figure 5.6 | `diagrams/export/svg/sc03-topology.svg` | `diagrams/export/png/sc03-topology.png` | Rendered |
 
-All six diagrams were exported with Mermaid CLI `11.15.0` and the CyberSim report theme in `diagrams/mermaid-theme.json`.
+All diagrams were exported with Mermaid CLI `11.15.0` and the CyberSim report theme in `diagrams/mermaid-theme.json`.
+
 
 ## Design Decisions
 
