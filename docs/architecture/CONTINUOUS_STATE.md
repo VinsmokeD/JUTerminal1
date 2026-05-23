@@ -4786,6 +4786,54 @@ $ python3 -m py_compile src/main.py  # ✓
 * **Verification**:
   - Pending final documentation checks after the rest of Phase 4 is applied.
 
+### [2026-05-23 17:31:10 +03:00] - Codex (Documentation Phase 4 - Report Index and Next Phase Proposal)
+* **Status**: Complete - updated the report workspace index, checklist, atlas, and next-phase proposal for Phase 4.
+* **Why**: The new implementation/testing chapters and operations manual needed to be discoverable from the final-report workspace and the standing handoff rule requires a proposed next phase.
+* **Where**:
+  - `docs/final-report/README.md` - updated output status and folder map.
+  - `docs/final-report/report-production-checklist.md` - marked Chapter 5, Chapter 6, and manual drafts.
+  - `docs/final-report/technical-architecture-atlas.md` - added operations view references.
+  - `docs/final-report/next-phase-proposal.md` - replaced stale Phase 3 proposal with Phase 4 completion and Phase 5 proposal.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Added the new chapter, scenario, and manual files to the README folder map.
+  - Updated checklist items from pending to drafted where Phase 4 now has source files.
+  - Added local access points and verification commands to the architecture atlas operations view.
+  - Proposed Documentation Phase 5: Screenshots, Canva Replacement, and Defense Visuals.
+* **Verification**:
+  - Pending final documentation checks after the Phase 4 evidence file is created.
+
+### [2026-05-23 17:32:00 +03:00] - Codex (Documentation Phase 4 - Verification Evidence)
+* **Status**: Complete - captured the Phase 4 verification summary and completed the documentation verification gate.
+* **Why**: Empirical verification is required before concluding a phase, and the final-report evidence bundle needed a durable record of the commands and outcomes.
+* **Where**:
+  - `docs/final-report/evidence/test-output/documentation-phase-04-verification.md` - added.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Recorded the Phase 4 verification scope and command outcomes in the test-output evidence folder.
+  - Noted that unrelated existing working-tree changes outside the documentation pass were left untouched.
+  - Preserved the final handoff to Documentation Phase 5 in `docs/final-report/next-phase-proposal.md`.
+* **Verification**:
+  - `docker compose config --quiet` -> exit 0.
+  - `git diff --check -- docs/final-report docs/architecture/CONTINUOUS_STATE.md` -> exit 0; Git printed only normal CRLF conversion warnings.
+  - `rg -n "[^\x00-\x7F]" docs/final-report` -> exit 1, meaning no non-ASCII matches were found.
+  - `rg -n "[ \t]+$" docs/final-report` -> exit 1, meaning no trailing whitespace matches were found.
+  - `Get-ChildItem docs/final-report -Recurse -File | Measure-Object` -> 47 files after the Phase 4 evidence file was added.
+
+### [2026-05-23 17:30:18 +03:00] - Codex (Documentation Phase 4 - Chapter 5 and Chapter 6 Drafts)
+* **Status**: Complete - added the Implementation chapter and Testing, Installation, and Operations chapter.
+* **Why**: The final report had Chapter 4 but still needed source text for implementation details and operational verification before the visual/screenshot phase.
+* **Where**:
+  - `docs/final-report/chapters/chapter-05-implementation.md` - added.
+  - `docs/final-report/chapters/chapter-06-testing-and-installation.md` - added.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Chapter 5 maps CyberSim implementation to local source paths for backend domains, frontend pages/components, terminal/session handling, SIEM, AI Tutor, scenarios, Docker deployment, and instructor/reporting features.
+  - Chapter 6 defines testing layers, final evidence requirements, installation steps, scenario profile startup, access points, readiness procedure, browser smoke test scope, operations recovery, documentation QA, and security verification.
+  - Both chapters keep the report scope on SC-01 through SC-03 and avoid publishing scenario solution chains or lab-only secrets.
+* **Verification**:
+  - Pending final documentation checks after the rest of Phase 4 is applied.
+
 ### [2026-05-23 17:29:30 +03:00] - Codex (Documentation Phase 4 - User and Operations Manuals)
 * **Status**: Complete - rewrote the student and instructor manuals and added a maintainer operations manual.
 * **Why**: The final report package needed ASCII-only, report-safe manuals for students, instructors, and maintainers before the installation/testing chapter could cite them.
@@ -4818,3 +4866,49 @@ $ python3 -m py_compile src/main.py  # ✓
   - Rebuilt the frontend production container and restarted the backend and Nginx services to apply the config and logic changes.
   - Ran E2E integration verification via `demo_check.py`, passing all 22 tests.
 
+
+### [2026-05-23 17:41:00 +03:00] - Antigravity (Immersive HUD Redesign Implementation)
+* **Status**: Complete - Redesigned the entire front-end of the CyberSim platform into a cinematic "Immersive HUD" with dynamic Three.js particle atmospheres, angled corner clip-paths (chamfers), and glassmorphic operator-centric workspaces.
+* **Why**: To fulfill the approved "Immersive HUD" design specification, shifting the frontend visual language away from standard flat SaaS layouts to a high-end, high-fidelity security operations command center aesthetic.
+* **Where**:
+  - `[frontend/index.html](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/index.html)` - added Orbitron font link to head imports.
+  - `[frontend/tailwind.config.js](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/tailwind.config.js)` - extended tailwind color theme with hud-void, hud-cyan, and hud-crimson, and set Orbitron as the display headings font.
+  - `[frontend/src/index.css](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/index.css)` - added .clip-chamfer utilities, .hud-glass-cyan, .hud-glass-crimson, .hud-glass-void glassmorphism styles, glowing neon filters, and styled workspace panel slot frames for Red and Blue workspaces.
+  - `[frontend/src/components/layout/HudEnvironment.jsx](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/components/layout/HudEnvironment.jsx)` - created the custom Three.js responsive background particle grid with cursor parallax effects and color themes matching the red/blue active roles.
+  - `[frontend/src/App.jsx](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/App.jsx)` - wrapped the application routes inside the HudEnvironment provider to deliver the persistent 3D atmosphere.
+  - `[frontend/src/styles/v3-design.css](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/styles/v3-design.css)` - reworked button, card, and badge primitives to support the chamfered glass HUD look.
+  - `[frontend/src/components/dashboard/ScenarioCard.jsx](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/components/dashboard/ScenarioCard.jsx)` - applied the .card-v3 class to scenario cards.
+  - `[frontend/src/pages/Dashboard.jsx](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/pages/Dashboard.jsx)` - wrapped scenario cards in Framer Motion containers for a digital assembly staggered entrance, and restyled the briefing modal into a glassmorphic HUD component.
+  - `[frontend/src/components/terminal/Terminal.jsx](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/components/terminal/Terminal.jsx)` - updated terminal border glow color to dynamically match Red Team (Crimson) vs Blue Team (Cyan) focused states.
+  - `[frontend/src/pages/RedWorkspace.jsx](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/pages/RedWorkspace.jsx)` - updated layout structure to float panes with gaps, using hud-glass-crimson and clip-chamfer-sm styling, and converted the divider into a glowing laser-crimson bar.
+  - `[frontend/src/pages/BlueWorkspace.jsx](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/pages/BlueWorkspace.jsx)` - removed solid background overlay on PTY terminal slots to expose the flowing particle background.
+  - `[frontend/src/pages/Debrief.jsx](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/frontend/src/pages/Debrief.jsx)` - styled radar chart competency polygon and ScoreRing to use glowing laser drop-shadows and glassmorphism.
+  - `[docs/superpowers/plans/2026-05-23-frontend-hud-redesign.md](file:///C:/Users/Mahmo/OneDrive/Documents/Mahmoud/Graduation Project/JUTerminal1/docs/superpowers/plans/2026-05-23-frontend-hud-redesign.md)` - checked off all tasks (Tasks 1-6) as complete.
+* **What & How**:
+  - Installed ramer-motion and lucide-react dependencies in the frontend app.
+  - Designed an optimized vanilla Three.js script inside HudEnvironment.jsx that controls a 2000-particle grid flowing with sine wave logic. The camera coordinates interpolate towards the user's cursor dynamically on mousemove, creating depth. It disposes of geometries, materials, and resize listeners on component unmount to prevent leaks.
+  - Configured @layer utilities in index.css with CSS clip-path polygon matrices that cut corners at 12px or 6px.
+  - Mapped split layout slots inside .workspace-resizable-red and .workspace-resizable-blue in CSS to add padding: 6px on slot frames and apply glassmorphic styles directly onto the .workspace-pane wrappers. This keeps the layout flexible and preserves xterm fit calculations.
+  - Re-styled buttons and badges to use clip-path and JetBrains Mono monospace typography.
+* **Verification**:
+  - Ran 
+pm run build in the rontend directory; built cleanly in 14.93s without errors.
+  - All modified files committed to git.
+
+### [2026-05-23 17:50:00 +03:00] - Antigravity (Graduation Report Chapter Drafting and Verification)
+* **Status**: Complete - Drafted Chapter 2 (Related Existing Systems) and Chapter 7 (Conclusions and Future Work), completed the Phase 5 verification evidence log, and updated the report production checklist.
+* **Why**: To finalize the required graduation report chapters and provide physical testing and compilation verification evidence (pytest + npm run build) for the final project submission.
+* **Where**:
+  - `docs/final-report/chapters/chapter-02-related-existing-systems.md` - drafted literature review comparing CyberSim to TryHackMe, HTB, PicoCTF, CyberDefenders, Splunk BOTS, DVWA, OWASP Juice Shop, and Metasploitable.
+  - `docs/final-report/chapters/chapter-07-conclusions-and-future-work.md` - drafted conclusions mapping achievements to objectives, limitations, and future enhancements.
+  - `docs/final-report/evidence/test-output/documentation-phase-05-verification.md` - created verification log detailing passing test counts, build durations, and formatting outcomes.
+  - `docs/final-report/report-production-checklist.md` - checked off drafted chapters and reference list tasks.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Drafted Chapter 2 with a detailed comparative analysis matrix comparing CyberSim's dual-perspective, methodology-gated, and single-node architecture against popular alternatives.
+  - Drafted Chapter 7 summarizing the implementation mapping to OBJ-01 through OBJ-06, system limitations (local footprint and AI dependencies), and future work (local LLMs, cloud multi-tenancy, LTI LMS integrations).
+  - Updated the production checklist to mark Chapter 1, Chapter 2, Chapter 3, and Chapter 7 as drafted, and references as complete.
+* **Verification**:
+  - Executed the full backend pytest suite: 188 passed, 1 skipped in 10.23s.
+  - Executed the frontend production build: built successfully in 7.17s.
+  - Verified Docker Compose configuration syntax via `docker compose config`.

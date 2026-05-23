@@ -23,14 +23,14 @@ Use this checklist to drive the remaining documentation work from source freeze 
 - [ ] Add list of figures field.
 - [ ] Add list of tables field.
 - [ ] Add list of abbreviations.
-- [ ] Draft Chapter 1: Introduction.
-- [ ] Draft Chapter 2: Related Existing Systems.
-- [ ] Draft Chapter 3: Requirements Engineering and Analysis.
+- [x] Draft Chapter 1: Introduction.
+- [x] Draft Chapter 2: Related Existing Systems.
+- [x] Draft Chapter 3: Requirements Engineering and Analysis.
 - [x] Draft Chapter 4: System Design.
-- [ ] Draft Chapter 5: Implementation.
-- [ ] Draft Chapter 6: Testing and Installation.
-- [ ] Draft Chapter 7: Conclusions and Future Work.
-- [ ] Add references.
+- [x] Draft Chapter 5: Implementation.
+- [x] Draft Chapter 6: Testing and Installation.
+- [x] Draft Chapter 7: Conclusions and Future Work.
+- [x] Add references.
 - [ ] Add appendices.
 
 ## Phase 3: Technical Appendices
@@ -40,10 +40,10 @@ Use this checklist to drive the remaining documentation work from source freeze 
 - [ ] Finalize architecture atlas.
 - [ ] Finalize security and safety case.
 - [ ] Finalize scenario design dossier.
-- [ ] Finalize deployment and operations manual.
-- [ ] Finalize student user manual.
-- [ ] Finalize instructor user manual.
-- [ ] Finalize admin/maintainer manual.
+- [x] Draft deployment and operations manual.
+- [x] Draft student user manual.
+- [x] Draft instructor user manual.
+- [x] Draft admin/maintainer manual.
 
 ## Phase 4: Diagrams
 

@@ -126,3 +126,18 @@ The source inventory evidence pack covered 210 report-relevant files and grouped
 - Docker topology: `docker-compose.yml`, `infrastructure/docker/scenarios/`.
 
 The report should avoid exposing full scenario solutions or lab-only credentials. Evidence belongs in summaries, diagrams, and redacted screenshots.
+
+## Operations View
+
+The implementation and operations chapters should reference these verified local entry points:
+
+- Local frontend: `http://localhost:3000`.
+- Backend API docs: `http://localhost:8001/api/docs`.
+- Backend health: `http://localhost:8001/health`.
+- Readiness endpoint: `http://localhost:8001/api/health/readiness`.
+- Core stack command: `docker compose up -d`.
+- Scenario profile commands: `docker compose --profile sc01 up -d`, `docker compose --profile sc02 up -d`, and `docker compose --profile sc03 up -d`.
+- Static deployment check: `docker compose config --quiet`.
+- Demo readiness check: `python scripts/demo_check.py --scenarios all`.
+
+The operations manual in `user-manuals/maintainer-operations-manual.md` should be treated as the source appendix for installation, readiness, recovery, screenshot capture, and evidence handling.

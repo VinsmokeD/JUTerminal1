@@ -32,6 +32,9 @@ Use the Canva design as the visual companion direction, not as the official form
 | Evidence bundle | Test output, screenshots, Docker/API evidence | Started |
 | Canva rewrite brief | Page-by-page CyberSim replacement plan for the selected Canva design | Started |
 | Tooling and skill log | Record of useful MCP, plugin, and skill usage | Started |
+| Scenario dossiers | SC-01, SC-02, and SC-03 report-safe scenario summaries | Drafted |
+| Student and instructor manuals | User-facing workflow documentation | Drafted |
+| Maintainer operations manual | Installation, readiness, recovery, and evidence guidance | Drafted |
 
 ## Folder Map
 
@@ -56,6 +59,16 @@ docs/final-report/
 |   +-- chapter-01-introduction.md
 |   +-- chapter-03-requirements.md
 |   +-- chapter-04-system-design.md
+|   +-- chapter-05-implementation.md
+|   +-- chapter-06-testing-and-installation.md
++-- scenarios/
+|   +-- sc-01-novamed-dossier.md
+|   +-- sc-02-nexora-dossier.md
+|   +-- sc-03-orion-dossier.md
++-- user-manuals/
+|   +-- student-manual.md
+|   +-- instructor-manual.md
+|   +-- maintainer-operations-manual.md
 +-- diagrams/
     +-- catalog.md
     +-- mermaid-theme.json
