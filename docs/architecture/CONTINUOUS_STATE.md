@@ -4778,8 +4778,12 @@ $ python3 -m py_compile src/main.py  # ✓
   - `backend/src/sandbox/daemon_noise.py` - removed user activity / command cooldown logic from background noise loop.
   - `frontend/src/components/siem/SiemFeed.jsx` - changed default `hideNoise` state from `true` to `false`.
   - `frontend/src/pages/BlueWorkspace.jsx` - changed default `hideNoise` state from `true` to `false`.
+  - `docs/scenarios/SC-02-ad-compromise.yaml` - updated `value_pattern` regex for SC-02 flags to be more robust.
 * **What & How**:
   - Modified the noise generator daemon loop in `daemon_noise.py` to run continuously for active sessions without checking the `last_cmd_time` Redis key, ensuring background noise events are sent immediately on session start.
   - Set default state of `hideNoise` filter to `false` in both the standalone `SiemFeed` and `BlueWorkspace` components. This allows background events to render by default with lower visual weight (gray), providing realistic log clutter for students to analyze, while keeping the manual "hide noise" toggle active.
+  - Updated SC-02 `kerberoast_hash` flag regex from `svc_backup.*\$23\$` to `.*(\$23\$.*svc_backup|svc_backup.*\$23\$).*` to match tickets correctly where the username comes after `$23$`.
+  - Updated SC-02 `dcsync_krbtgt_nthash` flag regex from `krbtgt:502:[a-f0-9]{32}` to `.*krbtgt:502:.*[a-f0-9]{32}.*` to support full secretsdump outputs and various copy-paste formats.
   - Rebuilt the frontend production container and restarted the backend and Nginx services to apply the config and logic changes.
   - Ran E2E integration verification via `demo_check.py`, passing all 22 tests.
+
