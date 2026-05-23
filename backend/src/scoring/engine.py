@@ -16,10 +16,17 @@ def compute_time_bonus(started_at: datetime, completed_at: datetime | None) -> i
     return 0
 
 
-def compute_hint_penalty(hints_used: list[dict]) -> int:
+def compute_hint_penalty(hints_used: list) -> int:
     """Sum all hint penalties from the hints_used list."""
     penalty_map = {1: settings.HINT_L1_PENALTY, 2: settings.HINT_L2_PENALTY, 3: settings.HINT_L3_PENALTY}
-    return sum(penalty_map.get(h.get("level", 1), 5) for h in hints_used)
+    penalty = 0
+    for h in hints_used:
+        if isinstance(h, dict):
+            penalty += penalty_map.get(h.get("level", 1), 5)
+        else:
+            # If it's a string or other format, default to L1 penalty
+            penalty += 5
+    return penalty
 
 
 def final_score(base: int, hints_used: list[dict], started_at: datetime, completed_at: datetime | None) -> int:

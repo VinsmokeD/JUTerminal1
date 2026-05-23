@@ -20,9 +20,9 @@ objectives:
 tools_expected: [nmap, smbclient, crackmapexec, GetUserSPNs.py, hashcat, secretsdump.py, bloodhound-python, kerbrute]
 flags:
   - id: kerberoast_hash
-    value_pattern: "svc_backup.*\\$23\\$"
+    value_pattern: ".*(\\$23\\$.*svc_backup|svc_backup.*\\$23\\$).*"
   - id: dcsync_krbtgt_nthash
-    value_pattern: "krbtgt:502:[a-f0-9]{32}"
+    value_pattern: ".*krbtgt:502:.*[a-f0-9]{32}.*"
 
 methodologies:
   branch_kerberoast:

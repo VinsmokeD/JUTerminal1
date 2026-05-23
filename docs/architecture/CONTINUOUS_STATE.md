@@ -4770,3 +4770,16 @@ $ python3 -m py_compile src/main.py  # ✓
   - Validated that the Samba DC has `jsmith`, `svc_backup`, `it.admin`, and `rgreen` seeded.
   - Verified `jsmith`'s password is `Password123` and `svc_backup`'s password is `Backup2023!`.
   - Mapped out the commands for Phase 1 (Recon), Phase 2 (Kerberoasting via `GetUserSPNs.py` and `hashcat`), Phase 3 (Lateral Movement via `smbclient`), and Phase 4 (Privilege Escalation via `secretsdump.py`).
+
+### [2026-05-23 17:30:00 +03:00] - Antigravity (SIEM Background Noise & Filter Polish)
+* **Status**: Complete - Removed command-suppression gating on background noise events and made background noise visible in the SIEM feed by default.
+* **Why**: To address issues where the live SIEM logs feed appeared completely empty because noise events were suppressed based on user command activity and hidden in the UI by default.
+* **Where**:
+  - `backend/src/sandbox/daemon_noise.py` - removed user activity / command cooldown logic from background noise loop.
+  - `frontend/src/components/siem/SiemFeed.jsx` - changed default `hideNoise` state from `true` to `false`.
+  - `frontend/src/pages/BlueWorkspace.jsx` - changed default `hideNoise` state from `true` to `false`.
+* **What & How**:
+  - Modified the noise generator daemon loop in `daemon_noise.py` to run continuously for active sessions without checking the `last_cmd_time` Redis key, ensuring background noise events are sent immediately on session start.
+  - Set default state of `hideNoise` filter to `false` in both the standalone `SiemFeed` and `BlueWorkspace` components. This allows background events to render by default with lower visual weight (gray), providing realistic log clutter for students to analyze, while keeping the manual "hide noise" toggle active.
+  - Rebuilt the frontend production container and restarted the backend and Nginx services to apply the config and logic changes.
+  - Ran E2E integration verification via `demo_check.py`, passing all 22 tests.
