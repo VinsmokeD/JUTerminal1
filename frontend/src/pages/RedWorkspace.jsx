@@ -239,7 +239,7 @@ export default function RedWorkspace() {
         </div>
       )}
 
-      <div ref={containerRef} className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
+      <div ref={containerRef} className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden p-3 gap-3 bg-transparent relative z-10">
         {/* LEFT PANE */}
         <div
           className="flex flex-col h-[50vh] md:h-full min-w-0 md:min-w-[520px]"
@@ -248,8 +248,7 @@ export default function RedWorkspace() {
             maxWidth: typeof window !== 'undefined' && window.innerWidth < 768 ? undefined : 'calc(100% - 360px)',
           }}
         >
-          <div className="flex-1 flex flex-col min-h-0 relative mb-1 md:mb-0">
-            <div className="absolute inset-0 bg-red-surface opacity-50 pointer-events-none" />
+          <div className="flex-1 flex flex-col min-h-0 relative mb-3 hud-glass-crimson clip-chamfer-sm">
             <PanelHeader color="red" title="Kali Terminal" subtitle="attacker workspace">
               {phaseMap[phase] && (
                 <span className="siem-mitre font-mono">{phaseMap[phase]}</span>
@@ -265,13 +264,13 @@ export default function RedWorkspace() {
                 </span>
               )}
             </PanelHeader>
-            <div className="flex-1 bg-void overflow-hidden flex flex-col relative">
+            <div className="flex-1 bg-transparent overflow-hidden flex flex-col relative">
               <ErrorBoundary>
                 <Terminal sessionId={sessionId} onData={handleRawInput} onCommand={handleCommand} pendingOutput={writeOutputRef} connectionState={connectionState} />
               </ErrorBoundary>
             </div>
           </div>
-          <div className="h-1/3 min-h-[250px] flex flex-col mt-1 md:mt-0 relative border-t border-cs-border bg-surface-1">
+          <div className="h-1/3 min-h-[250px] flex flex-col mt-3 relative hud-glass-crimson clip-chamfer-sm">
             <PanelHeader color="amber" title="Pentest Notebook" subtitle={`Phase ${phase}`}>
               <LearningContextBadge scenario={session.scenario_id} phase={phase} />
             </PanelHeader>
@@ -283,20 +282,19 @@ export default function RedWorkspace() {
 
         {/* DRAG DIVIDER */}
         <div
-          className="hidden md:block w-1 bg-surface-3 hover:bg-cs-red cursor-col-resize flex-shrink-0 z-20 transition-colors"
+          className="hidden md:block w-1.5 bg-hud-crimson/20 hover:bg-hud-crimson cursor-col-resize flex-shrink-0 z-20 transition-all rounded-full h-[98%] my-auto"
           onMouseDown={handleDragStart}
         />
 
         {/* RIGHT PANE */}
         <div className="flex-1 flex flex-col min-w-0 md:min-w-[360px] h-[50vh] md:h-full">
-          <div className="flex-1 flex flex-col min-h-0 mb-1 md:mb-0 relative border-l border-cs-border bg-surface-1">
+          <div className="flex-1 flex flex-col min-h-0 mb-3 relative hud-glass-crimson clip-chamfer-sm">
             <PanelHeader color="blue" title="AI Tutor" />
             <div className="flex-1 overflow-hidden flex flex-col">
               <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
             </div>
           </div>
-          <div className={`flex-1 flex flex-col min-h-0 mt-1 md:mt-0 relative border-l border-t border-cs-border bg-surface-1 transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
-            <div className="absolute inset-0 bg-blue-surface opacity-30 pointer-events-none" />
+          <div className={`flex-1 flex flex-col min-h-0 mt-3 relative hud-glass-crimson clip-chamfer-sm transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>
             {siemFlash && (
               <div className="absolute inset-0 bg-green-signal/5 z-20 pointer-events-none animate-pulse" />
             )}

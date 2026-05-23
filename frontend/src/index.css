@@ -991,6 +991,31 @@
   overflow: hidden;
 }
 
+/* Dynamic HUD styles for panels in split workspaces */
+.workspace-resizable-red .workspace-slot-frame {
+  padding: 6px;
+}
+.workspace-resizable-red .workspace-pane,
+.workspace-resizable-red .workspace-bottom-split {
+  background: rgba(3, 5, 8, 0.65);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 0, 85, 0.18) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 85, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10% 100%, 0 calc(100% - 10px));
+}
+
+.workspace-resizable-blue .workspace-slot-frame {
+  padding: 6px;
+}
+.workspace-resizable-blue .workspace-pane,
+.workspace-resizable-blue .workspace-bottom-split {
+  background: rgba(3, 5, 8, 0.65);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 243, 255, 0.18) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 243, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10% 100%, 0 calc(100% - 10px));
+}
+
 .workspace-terminal-pane {
   grid-row: span 2 / span 2;
   border-right: 1px solid var(--border);
@@ -1023,10 +1048,11 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  padding: 6px 12px;
+  padding: 8px 14px;
   flex-shrink: 0;
-  background: rgba(19,22,29,0.74);
-  border-bottom: 1px solid rgba(30,34,48,0.65);
+  background: rgba(13, 15, 20, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: var(--font-display);
 }
 
 .workspace-panel-title,

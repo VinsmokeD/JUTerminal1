@@ -235,7 +235,6 @@ export default function BlueWorkspace() {
             label: activePanel === 'siem' ? 'SIEM Console' : 'Investigation Terminal',
             element: (
               <div className="workspace-pane workspace-terminal-pane">
-                <div className="absolute inset-0 bg-blue-surface opacity-30" />
                 <div className="workspace-panel-header relative z-10 flex-wrap">
                   <div className="flex gap-1 bg-surface-3 rounded-cs-sm p-0.5">
                     <button onClick={() => setActivePanel('siem')}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTerminal } from '../../hooks/useTerminal'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useSessionStore } from '../../store/sessionStore'
 import TerminalContextMenu from './TerminalContextMenu'
 import TerminalToolbar from './TerminalToolbar'
 import OutputAnnotator from './OutputAnnotator'
@@ -19,6 +20,10 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
   const [menu, setMenu] = useState(null)
   const [insights, setInsights] = useState([])
   const [activeInsight, setActiveInsight] = useState(null)
+
+  const currentSession = useSessionStore((state) => state.currentSession)
+  const role = currentSession?.role || 'red'
+  const isRed = role === 'red'
 
   const {
     terminalTheme, terminalFont, autoCopy,
@@ -162,7 +167,11 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
 
   return (
     <div
-      className={`relative flex h-full w-full flex-col rounded-cs-sm transition-shadow ${isFocused ? 'ring-1 ring-cs-red/45' : 'ring-1 ring-transparent'}`}
+      className={`relative flex h-full w-full flex-col clip-chamfer-sm transition-all duration-300 border ${
+        isFocused 
+          ? `${isRed ? 'border-hud-crimson/50 shadow-[0_0_15px_rgba(255,0,85,0.15)] bg-[#030508]/60' : 'border-hud-cyan/50 shadow-[0_0_15px_rgba(0,243,255,0.15)] bg-[#030508]/60'}` 
+          : 'border-cs-border bg-[#030508]/40'
+      }`}
       onKeyDown={handleKeyDown}
       onContextMenu={handleContextMenu}
       onTouchStart={handleTouchStart}

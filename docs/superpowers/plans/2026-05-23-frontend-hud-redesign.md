@@ -75,13 +75,13 @@ Make them large, glassmorphic, and highly interactive.
 - Modify: `frontend/src/pages/BlueWorkspace.jsx`
 - Modify: `frontend/src/components/terminal/Terminal.jsx`
 
-- [ ] **Step 1: Style Terminal for HUD**
+- [x] **Step 1: Style Terminal for HUD**
 Transparent background, matching colors, and JetBrains Mono font.
 
-- [ ] **Step 2: Operational Overlays**
+- [x] **Step 2: Operational Overlays**
 Rework sidebar and top bars into minimal, semi-transparent HUD overlays that "float" at the edges.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 `git commit -am "feat: immersive workspace HUD"`
 
 ### Task 6: Data-Rich Debrief (The Aftermath)
