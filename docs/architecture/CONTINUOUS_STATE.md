@@ -4533,3 +4533,19 @@ $ python3 -m py_compile src/main.py  # ✓
 * **Verification**:
   - Audited `backend/src/scenarios/engine.py` and `backend/src/scenarios/gatekeeper.py` to confirm that phase gates are evaluated via WebSocket proxies but can be advanced cleanly by creating findings notes.
 
+---
+
+### [2026-05-23 11:05:00 +03:00] - Antigravity (AD Compromise Scenario 2 Guide Delivery)
+* **Status**: Complete - Documented and delivered the comprehensive AD Compromise (SC-02) solution walkthrough.
+* **Why**: The user requested that we continue the session and provide the solution walkthrough to bypass gating blocks and solve the scenario.
+* **Where**:
+  - `docs/architecture/CONTINUOUS_STATE.md` - appended this verification entry.
+* **What & How**:
+  - Explained the methodology gating rules of SC-02, detailing how the student must complete Phase 1 using `ldapsearch` / `bloodhound-python` and add at least two notes tagged as `#finding` in the UI to unlock Phase 2.
+  - Outlined Phase 2 Kerberoasting steps with `GetUserSPNs.py` and offline hash cracking with `hashcat` using the `Backup2023!` password.
+  - Outlined Phase 3 Lateral Movement steps with `crackmapexec` and `smbclient` on the backups share.
+  - Outlined Phase 4 Privilege Escalation with DCSync using `secretsdump.py` and retrieving the `krbtgt` hash.
+* **Verification**:
+  - Confirmed alignment with specifications in `docs/scenarios/SC-02-ad-compromise.yaml` and provisioning variables.
+
+
