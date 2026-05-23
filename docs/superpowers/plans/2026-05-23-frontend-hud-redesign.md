@@ -48,10 +48,10 @@ Wrap the main router in `App.jsx` with the `HudEnvironment` to provide the persi
 - Modify: `frontend/src/components/ui/Card.jsx`
 - Modify: `frontend/src/components/ui/Badge.jsx`
 
-- [ ] **Step 1: Restyle UI Primitives**
+- [x] **Step 1: Restyle UI Primitives**
 Apply `backdrop-blur`, `clip-path` angled corners, and glowing borders. Replace Inter with Orbitron for headers and JetBrains Mono for data.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 `git add frontend/src/components/ui/ && git commit -m "style: rework UI primitives to HUD aesthetic"`
 
 ### Task 4: Cinematic Dashboard (The Briefing)

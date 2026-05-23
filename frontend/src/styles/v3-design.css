@@ -75,13 +75,14 @@
     justify-content: center;
     gap: 8px;
     padding: 10px 20px;
-    border-radius: var(--radius-md);
-    font-family: var(--font-display);
-    font-size: 14px;
+    font-family: var(--font-mono); /* JetBrains Mono */
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     cursor: pointer;
     border: 1px solid transparent;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
     transition: transform var(--dur-pop) var(--ease-pop),
                 background var(--dur-enter) var(--ease-glide),
                 box-shadow var(--dur-enter) var(--ease-glide),
@@ -93,39 +94,46 @@
   .btn-v3:disabled { opacity: 0.45; cursor: not-allowed; }
   .btn-v3:disabled:active { transform: none; }
 
-  .btn-v3-sm { padding: 7px 14px; font-size: 13px; }
-  .btn-v3-lg { padding: 14px 28px; font-size: 15px; }
+  .btn-v3-sm { padding: 7px 14px; font-size: 11px; }
+  .btn-v3-lg { padding: 14px 28px; font-size: 14px; }
 
-  /* Primary red */
+  /* HUD Glowing Crimson (Red Team) */
   .btn-v3-red {
-    background: linear-gradient(180deg, #ff4747, #ff2b2b);
+    background: rgba(255, 0, 85, 0.15);
     color: #fff;
-    box-shadow: 0 4px 16px rgba(255,59,59,0.32), inset 0 1px 0 rgba(255,255,255,0.18);
+    border-color: rgba(255, 0, 85, 0.5);
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
   .btn-v3-red:hover:not(:disabled) {
-    box-shadow: 0 8px 28px rgba(255,59,59,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+    background: rgba(255, 0, 85, 0.35);
+    border-color: rgba(255, 0, 85, 1);
+    box-shadow: 0 0 18px rgba(255, 0, 85, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
   }
 
-  /* Primary blue */
+  /* HUD Glowing Cyan (Blue Team) */
   .btn-v3-blue {
-    background: linear-gradient(180deg, #4a96ff, #2b7eff);
+    background: rgba(0, 243, 255, 0.15);
     color: #fff;
-    box-shadow: 0 4px 16px rgba(59,139,255,0.32), inset 0 1px 0 rgba(255,255,255,0.18);
+    border-color: rgba(0, 243, 255, 0.5);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
   .btn-v3-blue:hover:not(:disabled) {
-    box-shadow: 0 8px 28px rgba(59,139,255,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+    background: rgba(0, 243, 255, 0.35);
+    border-color: rgba(0, 243, 255, 1);
+    box-shadow: 0 0 18px rgba(0, 243, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
   }
 
-  /* Subtle (default) */
+  /* Subtle (HUD Dark glass) */
   .btn-v3-subtle {
-    background: var(--surface-2);
+    background: rgba(19, 22, 29, 0.65);
+    backdrop-filter: blur(8px);
     color: var(--text-primary);
     border-color: var(--border);
   }
   .btn-v3-subtle:hover:not(:disabled) {
-    background: var(--surface-3);
+    background: rgba(34, 38, 47, 0.85);
     border-color: var(--border-glow);
   }
 
@@ -137,26 +145,29 @@
   }
   .btn-v3-ghost:hover:not(:disabled) {
     color: var(--text-primary);
-    background: rgba(255,255,255,0.03);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--border);
   }
 
-  /* Danger (outline) */
+  /* Danger (HUD Warning) */
   .btn-v3-danger {
-    background: transparent;
-    color: var(--red-primary);
-    border-color: rgba(255,59,59,0.4);
+    background: rgba(255, 34, 68, 0.05);
+    color: var(--critical);
+    border-color: rgba(255, 34, 68, 0.4);
   }
   .btn-v3-danger:hover:not(:disabled) {
-    background: rgba(255,59,59,0.08);
-    border-color: var(--red-primary);
+    background: rgba(255, 34, 68, 0.2);
+    border-color: var(--critical);
+    box-shadow: 0 0 12px rgba(255, 34, 68, 0.3);
   }
 
   /* ── v3 Card (resting surface with optional lift) ── */
   .card-v3 {
     position: relative;
-    background: var(--surface-1);
+    background: rgba(13, 15, 20, 0.7);
+    backdrop-filter: blur(16px);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
     box-shadow: var(--elev-1);
     transition: border-color var(--dur-enter) var(--ease-glide),
                 transform var(--dur-enter) var(--ease-enter),
@@ -166,7 +177,7 @@
   .card-v3-interactive:hover {
     border-color: var(--border-glow);
     transform: translateY(-2px);
-    box-shadow: var(--elev-2);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(59, 139, 255, 0.08);
   }
   /* 2.5D tilt — used on scenario cards / dashboard hero row */
   .card-v3-tilt {
@@ -190,12 +201,13 @@
     inset: 0;
     background: radial-gradient(
       400px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(255,255,255,0.06),
+      rgba(255, 255, 255, 0.05),
       transparent 40%
     );
     opacity: 0;
     transition: opacity var(--dur-enter) var(--ease-glide);
     pointer-events: none;
+    z-index: 1;
   }
   .card-v3-spotlight:hover::before { opacity: 1; }
 
@@ -205,7 +217,7 @@
     align-items: center;
     gap: 6px;
     padding: 3px 8px;
-    border-radius: 999px;
+    clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
     font-family: var(--font-mono);
     font-size: 10.5px;
     font-weight: 600;
@@ -213,11 +225,11 @@
     text-transform: uppercase;
     line-height: 1;
   }
-  .badge-v3-red    { background: rgba(255,59,59,0.12);  color: var(--red-primary); }
-  .badge-v3-blue   { background: rgba(59,139,255,0.12); color: var(--blue-primary); }
-  .badge-v3-green  { background: rgba(0,255,136,0.10);  color: var(--green-signal); }
-  .badge-v3-amber  { background: rgba(255,170,0,0.12);  color: var(--amber-warn); }
-  .badge-v3-neutral{ background: rgba(255,255,255,0.04); color: var(--text-secondary); border: 1px solid var(--border); }
+  .badge-v3-red    { background: rgba(255, 0, 85, 0.12); border: 1px solid rgba(255, 0, 85, 0.25); color: #ff3b3b; }
+  .badge-v3-blue   { background: rgba(0, 243, 255, 0.12); border: 1px solid rgba(0, 243, 255, 0.25); color: #00f3ff; }
+  .badge-v3-green  { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.2); color: var(--green-signal); }
+  .badge-v3-amber  { background: rgba(255, 170, 0, 0.12); border: 1px solid rgba(255, 170, 0, 0.25); color: var(--amber-warn); }
+  .badge-v3-neutral{ background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); color: var(--text-secondary); }
 
   /* ── Stat (KPI tile) ───────────────────────────── */
   .stat-v3 {
