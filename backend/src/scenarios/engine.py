@@ -344,7 +344,7 @@ async def _check_completion_signals(
         result = await db.execute(
             select(func.count()).select_from(Note).where(
                 Note.session_id == session_id,
-                Note.tag == tag,
+                Note.tag == tag.lstrip("#"),
             )
         )
         actual = result.scalar() or 0

@@ -114,21 +114,67 @@ export function useTerminal({
   useEffect(() => { inputDisabledRef.current = inputDisabled }, [inputDisabled])
 
   const trackCommandInput = useCallback((data) => {
-    if (!data || data.startsWith('\x1b')) return
-    const chars = data.replace(/\r\n/g, '\n').split('')
-    chars.forEach((char) => {
-      if (char === '\r' || char === '\n') {
-        const cmd = lineBufferRef.current.trim()
-        if (cmd && onCommandRef.current) onCommandRef.current(cmd)
-        lineBufferRef.current = ''
-      } else if (char === '\x7f' || char === '\b') {
-        lineBufferRef.current = lineBufferRef.current.slice(0, -1)
-      } else if (char === '\x03' || char === '\x04') {
-        lineBufferRef.current = ''
-      } else if (char >= ' ') {
-        lineBufferRef.current += char
+    if (!data) return
+
+    // 1. Check if this is a paste or multi-character input containing Enter/Newline
+    const hasEnter = data.includes('\r') || data.includes('\n')
+    if (hasEnter && data.trim() && data.replace(/[\r\n]/g, '').trim()) {
+      const parts = data.split(/[\r\n]+/)
+      parts.forEach((part) => {
+        const cleaned = part.trim()
+        if (cleaned && onCommandRef.current) {
+          onCommandRef.current(cleaned)
+        }
+      })
+      return
+    }
+
+    // 2. If it's just the Enter key (e.g. '\r' or '\n')
+    if (hasEnter) {
+      const term = termRef.current
+      const buffer = term?.buffer?.active
+      if (!buffer) return
+
+      const currentRowIdx = buffer.baseRow + buffer.cursorY
+      let startRowIdx = currentRowIdx
+
+      // Trace back to the start of the command if it wrapped
+      while (startRowIdx > 0) {
+        const line = buffer.getLine(startRowIdx)
+        if (line && line.isWrapped) {
+          startRowIdx -= 1
+        } else {
+          break
+        }
       }
-    })
+
+      let fullLine = ''
+      for (let i = startRowIdx; i <= currentRowIdx; i++) {
+        const line = buffer.getLine(i)
+        if (line) {
+          fullLine += line.translateToString(true)
+        }
+      }
+
+      // Clean prompt
+      let cleaned = fullLine
+      const linuxPrompt = /^.*?@[a-zA-Z0-9_.-]+:.*?[#$]\s*/
+      const windowsPrompt = /^[a-zA-Z]:\\[^>]*>\s*/
+      const simplePrompt = /^[$#>] \s*/
+
+      if (linuxPrompt.test(cleaned)) {
+        cleaned = cleaned.replace(linuxPrompt, '')
+      } else if (windowsPrompt.test(cleaned)) {
+        cleaned = cleaned.replace(windowsPrompt, '')
+      } else if (simplePrompt.test(cleaned)) {
+        cleaned = cleaned.replace(simplePrompt, '')
+      }
+
+      cleaned = cleaned.trim()
+      if (cleaned && onCommandRef.current) {
+        onCommandRef.current(cleaned)
+      }
+    }
   }, [])
 
   const sendInput = useCallback((data) => {

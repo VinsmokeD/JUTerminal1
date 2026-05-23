@@ -121,6 +121,15 @@ Canva connector status checked on 2026-05-22:
 - Canva brand-template search requires a paid Canva plan in this account.
 - Plan should therefore use a custom University of Jordan inspired visual system and Canva free-form generated/report layouts where available.
 
+Selected Canva direction:
+
+- Candidate 2 was selected on 2026-05-23.
+- Editable design id: `DAHKeHjt8IY`
+- Edit URL: https://www.canva.com/d/HiO92F8_1b90Umj
+- View URL: https://www.canva.com/d/AWvF-sEqVnIMkdU
+- Title: `Report - CyberSim Project Report`
+- Page count: 17
+
 Canva deliverables:
 
 - Defense slide deck: 18 to 25 slides.
@@ -1261,3 +1270,16 @@ Verification gates:
 9. Collect fresh test outputs for Chapter 6.
 10. Build Canva deck/poster from finalized diagrams and screenshots.
 
+## 14. Standing Handoff Rule
+
+Every documentation handoff should propose the next phase before stopping. The proposal should include:
+
+- Goal.
+- Why the phase comes next.
+- Acceptance criteria.
+- Files to create or modify.
+- Dependencies.
+- Verification.
+- The next likely phase after that.
+
+Current proposed next phase lives in `docs/final-report/next-phase-proposal.md`.

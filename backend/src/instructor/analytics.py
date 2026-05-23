@@ -243,7 +243,7 @@ async def calculate_session_struggle(db: AsyncSession, session: Session, now: da
         # Check notes
         notes_res = await db.execute(
             select(func.count(Note.id))
-            .where(Note.session_id == session.id, Note.tag == "#finding")
+            .where(Note.session_id == session.id, Note.tag == "finding")
         )
         findings_count = notes_res.scalar() or 0
         

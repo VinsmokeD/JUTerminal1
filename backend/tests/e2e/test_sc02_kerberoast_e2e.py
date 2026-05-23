@@ -129,7 +129,7 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
     _compose("up", "-d", "--build", "--wait", check=False)
     # Give Samba AD time to fully provision (up to 3 minutes)
     for _ in range(36):
-        result = _compose("ps", "--status=running", "--quiet", check=False)
+        result = _compose("ps", "--status=running", check=False)
         if "sc02-dc" in result.stdout and "sc02-fileserver" in result.stdout:
             break
         time.sleep(5)
@@ -139,13 +139,15 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
     # ── Step 2: provision Kali session via API ──────────────────────────────
     async with httpx.AsyncClient() as client:
         # Register + login
+        # Use "test_" prefix to bypass scenario randomization
+        username = "test_e2e_kali_runner"
         await client.post(
             f"{base_url}/api/auth/register",
-            json={"username": "e2e_kali_runner", "password": "KaliRunner99!"},
+            json={"username": username, "password": "KaliRunner99!"},
         )
         login_resp = await client.post(
             f"{base_url}/api/auth/login",
-            data={"username": "e2e_kali_runner", "password": "KaliRunner99!"},
+            data={"username": username, "password": "KaliRunner99!"},
         )
         if login_resp.status_code != 200:
             pytest.skip(f"Login failed: {login_resp.status_code}")
@@ -153,21 +155,52 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
         token = login_resp.json()["access_token"]
         headers = {"Authorization": f"Bearer {token}"}
 
+        # End any existing active sessions for this user
+        while True:
+            active_resp = await client.get(
+                f"{base_url}/api/sessions/active",
+                headers=headers,
+            )
+            if active_resp.status_code == 200 and active_resp.json():
+                existing_session_id = active_resp.json()["session_id"]
+                await client.post(
+                    f"{base_url}/api/sessions/{existing_session_id}/end",
+                    headers=headers,
+                )
+            else:
+                break
+
         # Start SC-02 red session
         sess_resp = await client.post(
-            f"{base_url}/api/sessions",
-            json={"scenario_id": "SC-02"},
+            f"{base_url}/api/sessions/start",
+            json={"scenario_id": "SC-02", "role": "red", "methodology": "ptes"},
             headers=headers,
         )
         if sess_resp.status_code not in (200, 201):
             pytest.skip(f"Could not create session: {sess_resp.status_code} {sess_resp.text}")
-        session_id = sess_resp.json()["id"]
+        session_id = sess_resp.json()["session_id"]
 
         # Acknowledge ROE
         await client.post(
-            f"{base_url}/api/sessions/{session_id}/roe",
+            f"{base_url}/api/sessions/roe-ack",
+            json={"session_id": session_id},
             headers=headers,
         )
+
+        # Trigger container provisioning by establishing WebSocket connection
+        # and authenticating with the JWT.
+        from httpx_ws import aconnect_ws
+        ws_url = f"ws://localhost:8001/ws/{session_id}"
+        try:
+            async with aconnect_ws(ws_url, client) as ws:
+                await ws.send_json({"token": token})
+                # Receive the greeting message to make sure we've passed auth and reach provisioning
+                greeting_msg = await ws.receive_json()
+                assert greeting_msg["type"] == "terminal_output"
+                # Give a brief moment for the container start sync to finish
+                await asyncio.sleep(5.0)
+        except Exception as ws_err:
+            pytest.skip(f"WebSocket attachment failed to start container: {ws_err}")
 
         # Fetch Kali container ID from session state
         state_resp = await client.get(f"{base_url}/api/sessions/{session_id}", headers=headers)

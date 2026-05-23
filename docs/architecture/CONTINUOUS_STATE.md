@@ -4548,4 +4548,88 @@ $ python3 -m py_compile src/main.py  # ✓
 * **Verification**:
   - Confirmed alignment with specifications in `docs/scenarios/SC-02-ad-compromise.yaml` and provisioning variables.
 
+### [2026-05-23 11:15:51 +03:00] - Codex (Final Report Documentation Batch 1 and Canva Candidate 2 Selection)
+* **Status**: Complete - converted Canva candidate 2 into the editable visual report direction and created the first concrete final-report documentation workspace.
+* **Why**: The user selected Canva candidate 2 and asked to continue the documentation work needed for a professional, highly detailed graduation project package.
+* **Where**:
+  - Canva design `DAHKeHjt8IY` - created editable design titled `Report - CyberSim Project Report`.
+  - `docs/architecture/GRADUATION_DOCUMENTATION_MASTER_PLAN.md` - updated with the selected Canva design id and links.
+  - `docs/final-report/README.md` - added the final-report workspace index and selected Canva direction.
+  - `docs/final-report/design-and-canva-direction.md` - added the visual identity, palette, typography, Canva adaptation plan, diagram rules, and screenshot rules.
+  - `docs/final-report/report-production-checklist.md` - added the source-freeze-to-final-export checklist.
+  - `docs/final-report/requirements-traceability-matrix.md` - added functional and non-functional requirement traceability.
+  - `docs/final-report/technical-architecture-atlas.md` - added architecture views, diagram registry, and design decisions.
+  - `docs/final-report/api-reference.md` - added the current FastAPI route reference grouped by subsystem.
+  - `docs/final-report/database-reference.md` - added the SQLAlchemy/PostgreSQL schema reference.
+  - `docs/final-report/references.md` - added the working citation list.
+  - `docs/final-report/chapters/chapter-01-introduction.md` - drafted Chapter 1 source text.
+  - `docs/final-report/chapters/chapter-03-requirements.md` - drafted Chapter 3 source text.
+  - `docs/final-report/diagrams/catalog.md` - added the first diagram batch catalog.
+  - `docs/final-report/diagrams/source/c4-context.mmd` - added the system context diagram source.
+  - `docs/final-report/diagrams/source/c4-container.mmd` - added the container architecture diagram source.
+  - `docs/final-report/diagrams/source/dfd-level-0.mmd` - added the DFD Level 0 source.
+  - `docs/final-report/diagrams/source/erd-core-schema.mmd` - added the ERD source.
+  - `docs/final-report/diagrams/source/docker-topology.mmd` - added the Docker topology source.
+  - `docs/final-report/diagrams/source/red-blue-event-sequence.mmd` - added the Red-to-Blue event sequence source.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Used the Canva connector to create the editable selected candidate from job `c5e6b2f8-decb-4558-a513-006c296692cc` and candidate `dg-91d1d896-b3f4-43df-8037-f9908d6834f5`.
+  - Recorded the editable Canva edit URL `https://www.canva.com/d/HiO92F8_1b90Umj` and view URL `https://www.canva.com/d/AWvF-sEqVnIMkdU`.
+  - Built the documentation workspace around the KASIT handbook structure while separating formal report sources, commercial visual guidance, technical references, diagram sources, and evidence planning.
+  - Started the first source chapters and technical appendices without touching existing backend/frontend code changes in the working tree.
+* **Verification**:
+  - `git diff --check -- docs\final-report docs\architecture\GRADUATION_DOCUMENTATION_MASTER_PLAN.md docs\architecture\CONTINUOUS_STATE.md` -> exit 0; Git printed only the normal CRLF conversion warning for the master plan file.
+  - `rg -n "[^\x00-\x7F]" docs\final-report docs\architecture\GRADUATION_DOCUMENTATION_MASTER_PLAN.md` -> exit 1, meaning no non-ASCII matches were found after replacing tree glyphs in the final-report README.
+  - `rg -n "[ \t]+$" docs\final-report docs\architecture\GRADUATION_DOCUMENTATION_MASTER_PLAN.md` -> exit 1, meaning no trailing whitespace matches were found.
+  - `Get-ChildItem docs\final-report -Recurse -File | Measure-Object` -> 17 files in the new documentation workspace.
 
+### [2026-05-23 11:17:00 +03:00] - Antigravity (Terminal Command Capture and AI Tutor UI Overhaul)
+* **Status**: Complete - Implemented xterm.js buffer-based command capture and completely redesigned the AI Tutor panel UI layout.
+* **Why**: To fix missing SIEM logs during live terminal attacks and provide a premium, modern, and highly readable Socratic AI Tutor experience.
+* **Where**:
+  - `frontend/src/hooks/useTerminal.js` - updated command tracking to extract from active xterm.js screen buffer on Enter, with standard Linux/Windows prompt cleaning.
+  - `frontend/src/components/hints/AiHintPanel.jsx` - overhauled design, added segmented mode slider, progress stepper, Socratic tag parser, and custom chat bubble avatars.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Command capture: synchronous line-character building replaced with reading from `buffer.baseRow + buffer.cursorY`, handling multiline wrapping and prompt clean regex. Tab autocompletion and arrows/history now register correctly, triggering backend SIEM telemetry and discoveries.
+  - UI Design: Reworked the AI Tutor panel with glassmorphism, glowing segmented slide-controls, horizontal connected circular stepper for phase tracking, Socratic observation tag splits, chat dialogue style avatars (`AI`, `SCAN`, `SYS`, `L1`-`L3`), and auto-scroll logic.
+* **Verification**:
+  - `npm run lint` -> completed with 0 errors/warnings.
+  - `npm run build` -> Vite compilation completed successfully in 9.31s with 0 errors.
+  - `python -m pytest` -> 188 passed, 1 skipped.
+  - `python scripts/demo_check.py --scenarios all` -> ALL 22 checks passed successfully (Docker compose, backend/health, deep readiness I/O, frontend serving, SC-01/02/03 network ports).
+
+### [2026-05-23 11:20:08 +03:00] - Codex (Standing Next-Phase Proposal Rule)
+* **Status**: Complete - recorded the user's instruction that documentation handoffs should always include the next proposed phase.
+* **Why**: The user said to "propose the next phase always", so future documentation work needs an explicit next-step phase proposal rather than ending without a handoff direction.
+* **Where**:
+  - `docs/final-report/next-phase-proposal.md` - added the current proposed next phase.
+  - `docs/architecture/GRADUATION_DOCUMENTATION_MASTER_PLAN.md` - added the standing handoff rule and pointer to the current proposal file.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Defined the standing rule: every documentation handoff should include a goal, rationale, acceptance criteria, files, dependencies, verification, and the next likely phase.
+  - Proposed Documentation Phase 2: Evidence Capture and Architecture Diagram Export.
+  - Scoped the phase around rendering/exporting the first architecture diagrams, creating evidence scaffolding, and drafting Chapter 4 from verified architecture sources.
+* **Verification**:
+  - Pending final formatting checks after this entry.
+
+### [2026-05-23 11:20:56 +03:00] - Codex (Cross-Agent Skill Installation)
+* **Status**: Complete - selected and installed the most useful external Claude/Codex skills for CyberSim engineering, design, research, diagrams, writing, repository packaging, and verification workflows across Codex, Claude, and Antigravity.
+* **Why**: The user asked to choose the good skills from the supplied list, install them, set them up, and also make them available to Antigravity and Claude.
+* **Where**:
+  - `C:\Users\Mahmo\.codex\skills\` - installed 34 selected skill directories for Codex.
+  - `C:\Users\Mahmo\.claude\skills\` - installed the same 34 selected skill directories for Claude Code.
+  - `C:\Users\Mahmo\.agents\skills\` - installed the same 34 selected skill directories for the existing shared Antigravity/agent skill root.
+  - `C:\Users\Mahmo\.gemini\antigravity\skills\` - mirrored the same 34 selected skill directories into Antigravity's native skill root.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this continuity entry.
+* **What & How**:
+  - Used the bundled Codex `skill-installer` helper script to install GitHub-backed skills with real `SKILL.md` files only.
+  - Installed design/frontend skills: `frontend-design`, `canvas-design`, `algorithmic-art`, `color-expert`, `web-design-guidelines`, `vite`, and `vitest`.
+  - Installed research/documentation skills: `academic-paper`, `academic-paper-reviewer`, `academic-pipeline`, `academic-deep-research`, `deep-research-engine`, `web-scraper`, `balanced`, `humanizer`, and `beautiful-prose`.
+  - Installed engineering workflow skills from Superpowers: `brainstorming`, `writing-plans`, `executing-plans`, `verification-before-completion`, `systematic-debugging`, `test-driven-development`, `using-git-worktrees`, `using-superpowers`, `subagent-driven-development`, `dispatching-parallel-agents`, `requesting-code-review`, `receiving-code-review`, `finishing-a-development-branch`, and `writing-skills`.
+  - Installed supporting output/tooling skills: `hand-drawn-diagrams`, `skill-seekers`, `repomix-explorer`, and `remotion`.
+  - Excluded unrelated or high-risk categories from the supplied list, including health/DNA, direct social publishing, ad extraction, music production, and marketing-only skills that do not materially support CyberSim's current build or graduation deliverables.
+* **Verification**:
+  - Verified each selected skill has a `SKILL.md` in all four roots: Codex 34/34, Claude 34/34, shared Antigravity/agent 34/34, native Antigravity 34/34.
+  - `docker compose config --quiet` -> exit 0.
+  - `git diff --check -- docs/architecture/CONTINUOUS_STATE.md` -> exit 0; Git printed only the normal CRLF conversion warning.

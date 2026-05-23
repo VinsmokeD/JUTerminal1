@@ -270,9 +270,9 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
     rdns = false
     dns_lookup_realm = false
     dns_lookup_kdc = false
-    default_tkt_enctypes = aes256-cts rc4-hmac
-    default_tgs_enctypes = aes256-cts rc4-hmac
-    permitted_enctypes = aes256-cts rc4-hmac
+    default_tkt_enctypes = rc4-hmac
+    default_tgs_enctypes = rc4-hmac
+    permitted_enctypes = rc4-hmac
     allow_weak_crypto = true
 
 [realms]
