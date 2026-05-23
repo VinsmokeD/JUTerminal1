@@ -99,3 +99,7 @@ Verification:
 - Run documentation ASCII/trailing-whitespace checks.
 - Run `git diff --check` on modified documentation.
 - If the live stack is used, run `python scripts/demo_check.py` before screenshots.
+
+Prompt source:
+
+- Use the Phase 5 prompt in `docs/final-report/documentation-master-prompt-pack.md`.

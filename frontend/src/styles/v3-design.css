@@ -67,77 +67,95 @@
     box-shadow: var(--elev-3);
   }
 
-  /* ── v3 Button (extends .btn with refined states) ── */
+  /* ── v3 Button (tactile HUD button with brackets and corner ticks) ── */
   .btn-v3 {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 10px 20px;
-    font-family: var(--font-mono); /* JetBrains Mono */
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    padding: 10px 22px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     cursor: pointer;
-    border: 1px solid transparent;
-    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-    transition: transform var(--dur-pop) var(--ease-pop),
-                background var(--dur-enter) var(--ease-glide),
-                box-shadow var(--dur-enter) var(--ease-glide),
-                border-color var(--dur-enter) var(--ease-glide);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(13, 15, 20, 0.6);
+    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     white-space: nowrap;
     user-select: none;
+  }
+  .btn-v3::before {
+    content: '[';
+    margin-right: 4px;
+    opacity: 0.5;
+    transition: transform 0.2s;
+  }
+  .btn-v3::after {
+    content: ']';
+    margin-left: 4px;
+    opacity: 0.5;
+    transition: transform 0.2s;
+  }
+  .btn-v3:hover::before {
+    transform: translateX(-3px);
+    opacity: 1;
+  }
+  .btn-v3:hover::after {
+    transform: translateX(3px);
+    opacity: 1;
   }
   .btn-v3:active { transform: scale(0.97); }
   .btn-v3:disabled { opacity: 0.45; cursor: not-allowed; }
   .btn-v3:disabled:active { transform: none; }
 
-  .btn-v3-sm { padding: 7px 14px; font-size: 11px; }
-  .btn-v3-lg { padding: 14px 28px; font-size: 14px; }
+  .btn-v3-sm { padding: 6px 14px; font-size: 10px; }
+  .btn-v3-lg { padding: 14px 28px; font-size: 13px; }
 
-  /* HUD Glowing Crimson (Red Team) */
+  /* Crimson HUD Button (Red Team) */
   .btn-v3-red {
-    background: rgba(255, 0, 85, 0.15);
-    color: #fff;
-    border-color: rgba(255, 0, 85, 0.5);
-    box-shadow: 0 0 10px rgba(255, 0, 85, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: rgba(255, 0, 85, 0.06);
+    color: #ff3b3b;
+    border-color: rgba(255, 0, 85, 0.4);
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.1), inset 0 0 8px rgba(255, 0, 85, 0.05);
   }
   .btn-v3-red:hover:not(:disabled) {
-    background: rgba(255, 0, 85, 0.35);
-    border-color: rgba(255, 0, 85, 1);
-    box-shadow: 0 0 18px rgba(255, 0, 85, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
+    background: rgba(255, 0, 85, 0.18);
+    border-color: rgba(255, 0, 85, 0.9);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255, 0, 85, 0.4), inset 0 0 12px rgba(255, 0, 85, 0.1);
   }
 
-  /* HUD Glowing Cyan (Blue Team) */
+  /* Cyan HUD Button (Blue Team) */
   .btn-v3-blue {
-    background: rgba(0, 243, 255, 0.15);
-    color: #fff;
-    border-color: rgba(0, 243, 255, 0.5);
-    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: rgba(0, 243, 255, 0.06);
+    color: #00f3ff;
+    border-color: rgba(0, 243, 255, 0.4);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.1), inset 0 0 8px rgba(0, 243, 255, 0.05);
   }
   .btn-v3-blue:hover:not(:disabled) {
-    background: rgba(0, 243, 255, 0.35);
-    border-color: rgba(0, 243, 255, 1);
-    box-shadow: 0 0 18px rgba(0, 243, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
+    background: rgba(0, 243, 255, 0.18);
+    border-color: rgba(0, 243, 255, 0.9);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 12px rgba(0, 243, 255, 0.1);
   }
 
-  /* Subtle (HUD Dark glass) */
+  /* Subtle HUD Button (Holographic Gray) */
   .btn-v3-subtle {
-    background: rgba(19, 22, 29, 0.65);
-    backdrop-filter: blur(8px);
+    background: rgba(13, 15, 20, 0.8);
     color: var(--text-primary);
     border-color: var(--border);
   }
   .btn-v3-subtle:hover:not(:disabled) {
-    background: rgba(34, 38, 47, 0.85);
+    background: rgba(34, 38, 47, 0.9);
     border-color: var(--border-glow);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
   }
 
-  /* Ghost */
+  /* Ghost HUD Button */
   .btn-v3-ghost {
     background: transparent;
     color: var(--text-secondary);
@@ -145,41 +163,92 @@
   }
   .btn-v3-ghost:hover:not(:disabled) {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
     border-color: var(--border);
   }
 
-  /* Danger (HUD Warning) */
+  /* Danger HUD Button */
   .btn-v3-danger {
-    background: rgba(255, 34, 68, 0.05);
+    background: rgba(255, 34, 68, 0.03);
     color: var(--critical);
-    border-color: rgba(255, 34, 68, 0.4);
+    border-color: rgba(255, 34, 68, 0.3);
   }
   .btn-v3-danger:hover:not(:disabled) {
-    background: rgba(255, 34, 68, 0.2);
+    background: rgba(255, 34, 68, 0.15);
     border-color: var(--critical);
-    box-shadow: 0 0 12px rgba(255, 34, 68, 0.3);
+    box-shadow: 0 0 12px rgba(255, 34, 68, 0.25);
   }
 
-  /* ── v3 Card (resting surface with optional lift) ── */
+  /* ── v3 Card (Futuristic Tactical HUD Panel with outer corner brackets and diagnostics) ── */
   .card-v3 {
     position: relative;
-    background: rgba(13, 15, 20, 0.7);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--border);
-    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-    box-shadow: var(--elev-1);
-    transition: border-color var(--dur-enter) var(--ease-glide),
-                transform var(--dur-enter) var(--ease-enter),
-                box-shadow var(--dur-enter) var(--ease-glide);
+    background: rgba(4, 6, 9, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.02);
+    padding: 24px;
+    clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
+  /* Tactical corner brackets using absolute elements */
+  .card-v3::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 14px; height: 14px;
+    border-top: 2px solid rgba(59, 139, 255, 0.4);
+    border-left: 2px solid rgba(59, 139, 255, 0.4);
+    pointer-events: none;
+    transition: border-color 0.25s;
+  }
+  .card-v3::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0; width: 14px; height: 14px;
+    border-bottom: 2px solid rgba(59, 139, 255, 0.4);
+    border-right: 2px solid rgba(59, 139, 255, 0.4);
+    pointer-events: none;
+    transition: border-color 0.25s;
+  }
+
   .card-v3-interactive { cursor: pointer; }
   .card-v3-interactive:hover {
-    border-color: var(--border-glow);
+    border-color: rgba(59, 139, 255, 0.4);
     transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(59, 139, 255, 0.08);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 20px rgba(59, 139, 255, 0.15);
   }
-  /* 2.5D tilt — used on scenario cards / dashboard hero row */
+  .card-v3-interactive:hover::before {
+    border-top-color: rgba(59, 139, 255, 1);
+    border-left-color: rgba(59, 139, 255, 1);
+  }
+  .card-v3-interactive:hover::after {
+    border-bottom-color: rgba(59, 139, 255, 1);
+    border-right-color: rgba(59, 139, 255, 1);
+  }
+
+  /* Red Team variant of the Tactical Card */
+  .card-v3-red::before {
+    border-top-color: rgba(255, 0, 85, 0.4);
+    border-left-color: rgba(255, 0, 85, 0.4);
+  }
+  .card-v3-red::after {
+    border-bottom-color: rgba(255, 0, 85, 0.4);
+    border-right-color: rgba(255, 0, 85, 0.4);
+  }
+  .card-v3-red.card-v3-interactive:hover {
+    border-color: rgba(255, 0, 85, 0.4);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 0, 85, 0.15);
+  }
+  .card-v3-red.card-v3-interactive:hover::before {
+    border-top-color: rgba(255, 0, 85, 1);
+    border-left-color: rgba(255, 0, 85, 1);
+  }
+  .card-v3-red.card-v3-interactive:hover::after {
+    border-bottom-color: rgba(255, 0, 85, 1);
+    border-right-color: rgba(255, 0, 85, 1);
+  }
+
+  /* 2.5D tilt */
   .card-v3-tilt {
     transform-style: preserve-3d;
     perspective: 1000px;
@@ -190,7 +259,7 @@
     transform-style: preserve-3d;
   }
 
-  /* Spotlight effect: light follows cursor */
+  /* Spotlight effect */
   .card-v3-spotlight {
     position: relative;
     overflow: hidden;
@@ -211,25 +280,26 @@
   }
   .card-v3-spotlight:hover::before { opacity: 1; }
 
-  /* ── v3 Badge ──────────────────────────────────── */
+  /* ── v3 Badge (tactical military-grade badge with bracket edges) ── */
   .badge-v3 {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 3px 8px;
-    clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
+    padding: 4px 10px;
+    clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
     font-family: var(--font-mono);
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     line-height: 1;
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
-  .badge-v3-red    { background: rgba(255, 0, 85, 0.12); border: 1px solid rgba(255, 0, 85, 0.25); color: #ff3b3b; }
-  .badge-v3-blue   { background: rgba(0, 243, 255, 0.12); border: 1px solid rgba(0, 243, 255, 0.25); color: #00f3ff; }
-  .badge-v3-green  { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.2); color: var(--green-signal); }
-  .badge-v3-amber  { background: rgba(255, 170, 0, 0.12); border: 1px solid rgba(255, 170, 0, 0.25); color: var(--amber-warn); }
-  .badge-v3-neutral{ background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); color: var(--text-secondary); }
+  .badge-v3-red    { background: rgba(255, 0, 85, 0.08); border-color: rgba(255, 0, 85, 0.3); color: #ff3b3b; }
+  .badge-v3-blue   { background: rgba(0, 243, 255, 0.08); border-color: rgba(0, 243, 255, 0.3); color: #00f3ff; }
+  .badge-v3-green  { background: rgba(0, 255, 136, 0.08); border-color: rgba(0, 255, 136, 0.25); color: var(--green-signal); }
+  .badge-v3-amber  { background: rgba(255, 170, 0, 0.08); border-color: rgba(255, 170, 0, 0.25); color: var(--amber-warn); }
+  .badge-v3-neutral{ background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.08); color: var(--text-secondary); }
 
   /* ── Stat (KPI tile) ───────────────────────────── */
   .stat-v3 {
@@ -402,4 +472,55 @@
 @keyframes pulseSoft {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.55; }
+}
+
+/* ─── HUD Scanline & Dot Grid Utilities ────────────────────────────── */
+@keyframes scanline-v3 {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.card-v3 {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Diagonal overlay scanline */
+.card-v3::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 100%;
+  background: linear-gradient(180deg, transparent 0%, rgba(59, 139, 255, 0.015) 50%, transparent 100%);
+  pointer-events: none;
+  animation: scanline-v3 8s linear infinite;
+  z-index: 1;
+}
+
+.card-v3-red::after {
+  background: linear-gradient(180deg, transparent 0%, rgba(255, 0, 85, 0.015) 50%, transparent 100%);
+  animation-duration: 6s; /* Slightly faster scan for red team */
+}
+
+/* Tech dot grid visible inside card backgrounds */
+.card-v3-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
+  background-size: 16px 16px;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+.card-v3-spotlight:hover::before {
+  opacity: 0.8;
+}
+
+/* Tech indicator brackets for card headers */
+.card-v3-header-glow {
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.35);
+}
+.card-v3-header-glow-red {
+  text-shadow: 0 0 10px rgba(255, 0, 85, 0.35);
 }

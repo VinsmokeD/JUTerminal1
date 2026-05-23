@@ -32,6 +32,7 @@ Use the Canva design as the visual companion direction, not as the official form
 | Evidence bundle | Test output, screenshots, Docker/API evidence | Started |
 | Canva rewrite brief | Page-by-page CyberSim replacement plan for the selected Canva design | Started |
 | Tooling and skill log | Record of useful MCP, plugin, and skill usage | Started |
+| Documentation master prompt pack | Detailed context, phase prompts, tool plans, and remaining-roadmap prompts | Added |
 | Scenario dossiers | SC-01, SC-02, and SC-03 report-safe scenario summaries | Drafted |
 | Student and instructor manuals | User-facing workflow documentation | Drafted |
 | Maintainer operations manual | Installation, readiness, recovery, and evidence guidance | Drafted |
@@ -49,6 +50,7 @@ docs/final-report/
 +-- database-reference.md
 +-- references.md
 +-- canva-page-rewrite-brief.md
++-- documentation-master-prompt-pack.md
 +-- tooling-and-skill-usage.md
 +-- evidence/
 +|   +-- README.md

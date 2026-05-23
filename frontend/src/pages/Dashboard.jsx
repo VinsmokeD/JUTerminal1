@@ -185,19 +185,44 @@ export default function Dashboard() {
       />
 
       {/* Hero area with particle background */}
-      <div className="relative">
+      <div className="relative border-b border-cs-border bg-surface-1/40">
         <div className="absolute inset-0 h-64 overflow-hidden">
           <ParticleCanvas />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-void" />
         </div>
 
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 pt-12 pb-8">
-          <h1 className="text-3xl font-extrabold text-txt-primary mb-2 tracking-tight">Training Scenarios</h1>
-          <p className="text-txt-secondary text-sm max-w-lg">
-            {isBeginner
-              ? 'Choose a scenario to begin your training. Each one teaches different cybersecurity skills through hands-on practice in a safe, sandboxed environment.'
-              : 'Select a scenario, choose your role and methodology, then launch your session.'}
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="live-indicator">Briefing Terminal</span>
+                <span className="text-[10px] font-mono text-txt-dim tracking-widest">// SEC_LEVEL: CLASSIFIED //</span>
+              </div>
+              <h1 className="text-4xl font-extrabold text-txt-primary tracking-tight font-display card-v3-header-glow">
+                TACTICAL BRIEFING CENTER
+              </h1>
+              <p className="text-txt-secondary text-xs font-mono mt-2 max-w-lg">
+                {isBeginner
+                  ? 'Choose an operations environment below to begin hands-on practice inside isolated network subnets. Guided methodology gates and Socratic AI hints are enabled.'
+                  : 'Select an active scenario, choose your team deployment mode, configure methodology gates, and initialize the target environment.'}
+              </p>
+            </div>
+            {/* System Status Ticker */}
+            <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-surface-2/60 border border-cs-border rounded-cs max-w-md font-mono text-[10px] text-txt-secondary clip-chamfer-sm">
+              <div>
+                <span className="text-txt-dim block uppercase">Sandbox Node</span>
+                <span className="text-green-signal font-bold uppercase">Online (172.30.0.1)</span>
+              </div>
+              <div>
+                <span className="text-txt-dim block uppercase">Tutor API</span>
+                <span className="text-cs-blue font-bold uppercase">Ready (Socratic)</span>
+              </div>
+              <div>
+                <span className="text-txt-dim block uppercase">SIEM Core</span>
+                <span className="text-amber-warn font-bold uppercase">Indexing Logs</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -247,39 +272,46 @@ export default function Dashboard() {
         )}
 
         {/* Scenario filter bar */}
-        <div className="mb-5 flex flex-col gap-3 rounded-cs-lg border border-cs-border bg-surface-1/70 p-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-6 flex flex-col gap-4 rounded-cs border border-cs-border bg-surface-2/30 p-4 md:flex-row md:items-center md:justify-between clip-chamfer-sm">
           <div className="flex flex-1 flex-wrap items-center gap-2">
+            <span className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mr-2 select-none">Filters:</span>
             {FILTER_CHIPS.map((chip) => (
               <button
                 key={chip.id}
                 type="button"
                 onClick={() => setFilterChip(chip.id)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-mono transition-colors ${
-                  filterChip === chip.id ? 'border-cs-blue/40 bg-cs-blue/10 text-cs-blue' : 'border-cs-border text-txt-dim hover:text-txt-secondary'
+                className={`btn-v3 btn-v3-sm ${
+                  filterChip === chip.id ? 'btn-v3-blue' : 'btn-v3-subtle'
                 }`}
               >
                 {chip.label}
               </button>
             ))}
+            <div className="h-4 w-[1px] bg-cs-border mx-1 hidden md:block" />
             {DIFFICULTY_CHIPS.map((chip) => (
               <button
                 key={chip}
                 type="button"
                 onClick={() => setDifficultyChip(chip)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-mono transition-colors ${
-                  difficultyChip === chip ? 'border-amber-warn/40 bg-amber-warn/10 text-amber-warn' : 'border-cs-border text-txt-dim hover:text-txt-secondary'
+                className={`btn-v3 btn-v3-sm ${
+                  difficultyChip === chip ? 'btn-v3-red' : 'btn-v3-subtle'
                 }`}
               >
                 {chip}
               </button>
             ))}
           </div>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            className="input w-full text-xs font-mono md:max-w-[260px]"
-            placeholder="Search missions, tools, tactics"
-          />
+          <div className="relative w-full md:max-w-[260px]">
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="input w-full text-xs font-mono pl-8"
+              placeholder="SEARCH PROTOCOLS / LOGS..."
+            />
+            <svg className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
         </div>
 
         <motion.div 

@@ -28,7 +28,7 @@ The CyberSim platform has successfully achieved all six core objectives defined 
 
 ## 7.3 Discussion of Results
 
-The primary output of this project is a functional, integrated cybersecurity training platform that successfully bridges the gap between offensive and defensive training. 
+The primary output of this project is a functional, integrated cybersecurity training platform that successfully bridges the gap between offensive and defensive training.
 
 By linking the Kali PTY stream to live target telemetry, CyberSim makes cause-and-effect visible to students. The custom "Immersive HUD" frontend redesign provides an operator-centric, responsive visual environment, leveraging vanilla Three.js particle grids and glassmorphism.
 

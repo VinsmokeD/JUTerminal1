@@ -6,6 +6,7 @@ Use this checklist to drive the remaining documentation work from source freeze 
 
 - [x] Confirm current project scope: SC-01, SC-02, SC-03 only.
 - [x] Capture current `git status` and commit hash for documentation evidence.
+- [x] Create detailed documentation master prompt pack for remaining phases.
 - [ ] Confirm latest backend test count and frontend build status.
 - [ ] Export FastAPI OpenAPI JSON from `/api/docs` or `/openapi.json` if available.
 - [ ] Export current Docker Compose config with `docker compose config`.

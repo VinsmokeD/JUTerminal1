@@ -27,6 +27,9 @@ export default function ScenarioCard({
   const { bind } = useTilt({ maxTilt: 5, spotlight: true })
   const diffCls = DIFFICULTY_TONE[scenario.difficulty] || DIFFICULTY_TONE.Intermediate
   const accentBg = ACCENT_BAR[scenario.id] || ACCENT_BAR['SC-01']
+  const isRed = scenario.id === 'SC-01' || scenario.id === 'SC-02'
+  const cardThemeCls = isRed ? 'card-v3-red' : ''
+  const headerGlowCls = isRed ? 'card-v3-header-glow-red' : 'card-v3-header-glow'
 
   return (
     <div
@@ -42,11 +45,11 @@ export default function ScenarioCard({
       }}
     >
       <div
-        className="
-          relative overflow-hidden p-6 card-v3
+        className={`
+          relative overflow-hidden p-6 card-v3 ${cardThemeCls}
           transition-all duration-enter ease-enter
           group-hover:border-cs-border-glow
-        "
+        `}
         style={{
           transform: 'perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))',
           transformStyle: 'preserve-3d',
@@ -54,6 +57,11 @@ export default function ScenarioCard({
           willChange: 'transform',
         }}
       >
+        {/* Tactical bracket border highlight indicators */}
+        <div className="absolute top-1 right-2 p-2 font-mono text-[8px] text-txt-dim select-none pointer-events-none uppercase tracking-[0.2em] hidden group-hover:block animate-pulse">
+          {isRed ? '// OFFENSIVE_SYS //' : '// DEFENSIVE_SYS //'}
+        </div>
+
         {/* Spotlight glow following cursor */}
         <div
           aria-hidden
@@ -75,7 +83,7 @@ export default function ScenarioCard({
 
         {/* Title */}
         <h3
-          className="font-display font-extrabold text-txt-primary leading-tight mb-2"
+          className={`font-display font-extrabold text-txt-primary leading-tight mb-2 ${headerGlowCls}`}
           style={{ fontSize: '20px', transform: 'translateZ(20px)' }}
         >
           {scenario.title}

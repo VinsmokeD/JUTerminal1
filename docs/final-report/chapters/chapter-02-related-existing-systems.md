@@ -69,7 +69,7 @@ CyberSim addresses these limitations by providing a unified, dual-perspective pl
 - **Linked Workspaces**: Red Team actions instantly trigger real defensive telemetry via Filebeat and Elasticsearch, displaying severity-coded events in the Blue Team workspace.
 - **Methodology Gating**: Advanced commands are locked behind phase progression, requiring students to document findings in their notes before unlocking exploitation tools.
 - **Socratic AI Tutor**: A rate-limited, safety-bounded Gemini engine parses command history to provide conceptual guidance and Socratic questions, while avoiding direct exploit disclosure.
-- **Single-Node Deployment**: The entire stack—including frontend, backend, databases, Elasticsearch, and isolated target containers—runs on a single local host via Docker Compose, making it highly portable and demo-ready.
+- **Single-Node Deployment**: The entire stack, including frontend, backend, databases, Elasticsearch, and isolated target containers, runs on a single local host via Docker Compose, making it highly portable and demo-ready.
 
 ## 2.7 Comparison Matrix
 

@@ -46,21 +46,25 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
               <span className="text-txt-secondary text-sm hidden sm:inline group-hover:text-txt-primary transition-colors">{username}</span>
             </button>
             {skillLevel && (
-              <span className={`text-xs px-2 py-0.5 rounded-full border font-mono ${skillColors[skillLevel] || ''}`}>
+              <span className={`badge-v3 ${
+                skillLevel === 'beginner' ? 'badge-v3-green' : 
+                skillLevel === 'intermediate' ? 'badge-v3-amber' : 
+                'badge-v3-red'
+              }`}>
                 {skillLevel}
               </span>
             )}
             <button
               onClick={() => navigate('/settings')}
-              className="text-txt-dim hover:text-txt-secondary text-sm transition-colors font-mono"
+              className="text-txt-dim hover:text-txt-secondary text-xs transition-colors font-mono"
             >
-              Settings
+              [ Settings ]
             </button>
             <button
               onClick={logout}
-              className="text-txt-dim hover:text-txt-secondary text-sm transition-colors font-mono"
+              className="text-txt-dim hover:text-txt-secondary text-xs transition-colors font-mono"
             >
-              Sign out
+              [ Sign out ]
             </button>
           </div>
         )}
