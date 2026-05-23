@@ -1,0 +1,16 @@
+graph LR
+    Sess[Session Data] --> Collector[Data Collector]
+    Notes[Student Notes] --> Collector
+    Cmds[Command History] --> Collector
+    SIEM[Alert Triage] --> Collector
+    
+    Collector --> Agg[Aggregator & Kill-Chain Linker]
+    Agg --> Formatter[Report Formatter: MD/JSON]
+    Formatter --> Debrief[Debrief UI]
+    Formatter --> PDF[Instructor PDF Export]
+    
+    subgraph "Report Engine"
+    Collector
+    Agg
+    Formatter
+    end

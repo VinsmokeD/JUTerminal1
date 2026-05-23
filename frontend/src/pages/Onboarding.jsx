@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import useTilt from '../hooks/useTilt'
-import { Badge, Button } from '../components/ui'
+import { Badge } from '../components/ui'
 
 const LEVELS = [
   {
@@ -165,7 +165,7 @@ export default function Onboarding() {
             onClick={handleContinue}
             className={`w-full max-w-xs btn-v3 ${selected ? 'btn-v3-blue animate-pulse' : 'opacity-40 cursor-not-allowed'}`}
           >
-            INITIALIZE NEURAL LINK →
+            INITIALIZE NEURAL LINK -&gt;
           </button>
         </div>
       </div>

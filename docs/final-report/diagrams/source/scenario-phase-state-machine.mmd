@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> RECONNAISSANCE
+    RECONNAISSANCE --> SCANNING: Milestone Met
+    SCANNING --> ENUMERATION: Target Identified
+    ENUMERATION --> EXPLOITATION: Vulnerability Found
+    EXPLOITATION --> POST_EXPLOITATION: Shell Obtained
+    POST_EXPLOITATION --> [*]: Flags Captured
+
+    note right of RECONNAISSANCE: Gatekeeper checks notes & commands
+    note right of SCANNING: Prevents skipping to exploits

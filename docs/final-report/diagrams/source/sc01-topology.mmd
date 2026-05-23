@@ -1,0 +1,9 @@
+graph TD
+    subgraph "SC-01 Network (172.20.1.0/24)"
+    Attacker[Kali Container] --- WAF[ModSecurity WAF]
+    WAF --- WebApp[NovaMed Web App]
+    WebApp --- DB[MySQL/SQLite]
+    end
+    
+    WebApp -- Telemetry --> SIEM[Blue Team SIEM]
+    WAF -- Logs --> SIEM

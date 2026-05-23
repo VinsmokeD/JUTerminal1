@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 
 /**
- * CyberSimNav — Shared navigation bar with dual-square logo
+ * CyberSimNav - Shared navigation bar with dual-square logo
  * Used across all authenticated pages (Dashboard, Debrief, Instructor, etc.)
  *
  * Props:
@@ -12,13 +12,6 @@ import { useAuthStore } from '../../store/authStore'
 export default function CyberSimNav({ showUser = true, rightContent }) {
   const { username, logout, skillLevel } = useAuthStore()
   const navigate = useNavigate()
-
-  const skillColors = {
-    beginner: 'text-green-signal border-green-signal/30 bg-green-signal/5',
-    intermediate: 'text-amber-warn border-amber-warn/30 bg-amber-warn/5',
-    experienced: 'text-cs-red border-cs-red/30 bg-cs-red/5',
-    advanced: 'text-cs-red border-cs-red/30 bg-cs-red/5',
-  }
 
   return (
     <nav className="nav-bar">

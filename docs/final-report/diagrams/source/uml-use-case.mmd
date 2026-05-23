@@ -1,0 +1,34 @@
+graph LR
+    subgraph Actors
+    Student((Student))
+    Instructor((Instructor))
+    Admin((Admin))
+    end
+
+    subgraph "CyberSim Platform"
+    UC1(Register/Login)
+    UC2(Start Session)
+    UC3(Execute Red Commands)
+    UC4(Analyze Blue SIEM)
+    UC5(Request Socratic Hint)
+    UC6(Save Notes)
+    UC7(View Debrief)
+    UC8(Monitor Class)
+    UC9(Export Grades)
+    UC10(Manage System)
+    end
+
+    Student --> UC1
+    Student --> UC2
+    Student --> UC3
+    Student --> UC4
+    Student --> UC5
+    Student --> UC6
+    Student --> UC7
+
+    Instructor --> UC1
+    Instructor --> UC8
+    Instructor --> UC9
+    Instructor --> UC10
+
+    Admin --> UC10

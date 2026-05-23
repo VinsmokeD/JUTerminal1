@@ -1,0 +1,14 @@
+graph TD
+    Input[User Request / Context] --> Redact[PII & Secret Redaction]
+    Redact --> Context[Context Builder: Phase/Goal/History]
+    Context --> Policy[Safety Policy Filter]
+    Policy --> Provider[AI Provider: LLM]
+    Provider --> Sanitize[Output Sanitization & Redaction]
+    Sanitize --> Outcome[Socratic Hint / Guidance]
+    
+    subgraph "Safety Boundary"
+    Redact
+    Context
+    Policy
+    Sanitize
+    end

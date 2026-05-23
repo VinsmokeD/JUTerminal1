@@ -17,7 +17,7 @@ const InstructorDashboard = lazy(() => import('./pages/InstructorDashboard'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Profile = lazy(() => import('./pages/Profile'))
 
-// Loading fallback — dual-square logo + void background
+// Loading fallback - dual-square logo + void background
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center w-full h-screen bg-void">
@@ -55,7 +55,7 @@ function RequireOnboarding({ children }) {
 }
 
 function GlobalPalette() {
-  // Hide palette on auth screen — no point launching commands before login
+  // Hide palette on auth screen - no point launching commands before login
   const loc = useLocation()
   if (loc.pathname.startsWith('/auth')) return null
   return <CommandPalette />

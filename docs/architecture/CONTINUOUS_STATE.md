@@ -4991,3 +4991,60 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
   - Successfully built production bundle using `npm run build` in 7.90s.
   - Initialized Docker container rebuild `docker compose up -d --build frontend` to push compiled assets to the active web node on port 3000.
 
+### [2026-05-23 18:54:23 +03:00] - Codex (Frontend HUD Rework Continuation and Verification)
+* **Status**: Complete - reviewed the frontend rework state, continued from the HUD/CRT boot pass, cleaned lint regressions, stabilized the boot overlay, removed visible mojibake from the newly polished landing/onboarding surfaces, and verified desktop/mobile rendering.
+* **Why**: The user asked to review progress toward the frontend rework, understand the existing direction before implementation, and continue where the prior agent left off. The latest dirty state showed a partially applied `HudEnvironment` boot-line guard, while baseline lint exposed unused imports/variables in the HUD/auth/navigation/onboarding files and browser text contained Windows-unsafe symbols.
+* **Where**:
+  - `frontend/src/components/layout/HudEnvironment.jsx` - removed unused React default import, made the boot sequence one-shot with `bootStartedRef`, retained the existing boot-line guard, and replaced the visible status glyph with ASCII text.
+  - `frontend/src/components/nav/CyberSimNav.jsx` - removed the unused `skillColors` object and normalized the header comment to ASCII.
+  - `frontend/src/pages/Auth.jsx` - removed the unused `Button` import.
+  - `frontend/src/pages/Onboarding.jsx` - removed the unused `Button` import and replaced the visible arrow entity with ASCII output.
+  - `frontend/src/pages/Landing.jsx` - normalized visible HUD text, terminal demo prompts, SIEM sample messages, scenario tags, footer copy, and section comments to ASCII; reduced mobile hero headline size and padding to prevent first-viewport overflow.
+  - `frontend/src/App.jsx`, `frontend/index.html`, and `frontend/tailwind.config.js` - normalized frontend comments/title text to ASCII.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - The rework direction is the already-committed premium tactical HUD: Three.js ambient background, CRT overlay, synthesized HUD sound, boot console, chamfered cards/buttons, bracketed controls, and cyber-operations typography.
+  - The continuation focused on finishing rough edges rather than changing the design direction: lint hygiene, boot overlay stability, source/text encoding cleanliness, and responsive hero sizing.
+  - Playwright smoke checks used the Vite dev server at `http://127.0.0.1:5173/` and captured desktop/mobile evidence under `.tmp/`; they confirmed no page errors, no console errors, no mojibake/broken glyphs in the landing body text, and no mobile horizontal overflow at 390x844.
+  - Existing untracked screenshot helper artifacts and final-report screenshots were observed in the working tree and left untouched because they were outside this frontend source cleanup.
+* **Verification**:
+  - `npm run lint` in `frontend/` -> exit 0 with no ESLint warnings or errors.
+  - `npm run build` in `frontend/` -> exit 0, Vite built 949 modules in 14.40s; only the existing large chunk warning remains.
+  - `docker compose config --quiet` -> exit 0.
+  - `git diff --check -- frontend/index.html frontend/src/App.jsx frontend/src/components/layout/HudEnvironment.jsx frontend/src/components/nav/CyberSimNav.jsx frontend/src/pages/Auth.jsx frontend/src/pages/Landing.jsx frontend/src/pages/Onboarding.jsx frontend/tailwind.config.js` -> exit 0 with normal CRLF warnings only.
+  - Playwright desktop smoke at `1440x1000` -> no page errors, no console errors, title `CyberSim - Dual-Perspective Cybersecurity Training`, no broken glyph patterns.
+  - Playwright mobile smoke at `390x844` -> no page errors, no horizontal scroll, no too-wide elements, no broken glyph patterns.
+
+### [2026-05-23 18:59:28 +03:00] - Gemini CLI (Documentation Phase 5 - Visual Evidence)
+* **Status**: Complete - Screenshots captured, Outlines created, Content mapped.
+* **Why**: To provide visual evidence for the final report and prepare defense presentation materials.
+* **Where**:
+  - `docs/final-report/evidence/screenshots/` - captured 9 high-fidelity screenshots.
+  - `docs/final-report/defense-deck-outline.md` - created presentation structure.
+  - `docs/final-report/academic-poster-outline.md` - created poster content structure.
+  - `frontend/src/components/layout/HudEnvironment.jsx` - fixed a crash in the boot sequence that blocked screenshots.
+  - `docs/final-report/evidence/test-output/documentation-phase-05-verification.md` - documented verification.
+* **What & How**:
+  - Automated UI capture using Playwright across 10 target pages (9 unique files).
+  - Fixed a 'TypeError: Cannot read properties of undefined (reading 'type')' in the HudEnvironment boot sequence by adding optional chaining and existence checks.
+  - Mapped verified CyberSim content to the Canva report brief for manual/automated replacement.
+  - Drafted defense deck and academic poster outlines based on project objectives and architecture.
+* **Verification**:
+  - `docker compose config --quiet` passed.
+  - 9 PNG files present and verified in the evidence folder.
+  - Frontend rebuild successful and stable.
+
+### [2026-05-23 19:01:44 +03:00] - Codex (GitHub Push Preparation)
+* **Status**: In progress - preparing all real project changes for commit and push to GitHub while excluding local-only screenshot tooling dependencies.
+* **Why**: The user requested pushing all current project updates to GitHub. The working tree included frontend HUD cleanup, final-report screenshot/diagram artifacts, documentation updates, and a local `.tmp_screenshot/` Playwright install folder that should not be versioned.
+* **Where**:
+  - `.gitignore` - added `.tmp_screenshot/` to prevent committing local screenshot helper dependencies.
+  - `docs/final-report/next-phase-proposal.md` - removed the extra blank line at EOF caught by `git diff --check`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Confirmed branch `master` and remote `origin` as `https://github.com/VinsmokeD/JUTerminal1.git`.
+  - Preserved report screenshots, diagram source files, poster/deck outlines, frontend HUD files, package metadata, and documentation edits as commit candidates.
+  - Excluded only local tool cache/install output from Git tracking.
+  - Normalized the Phase 5 next-phase proposal file ending so the final staged diff passes whitespace checks.
+* **Verification**:
+  - Full pre-push verification will be rerun before commit/push.

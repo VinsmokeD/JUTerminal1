@@ -4,18 +4,19 @@ This folder will store screenshots used in the formal report, Canva visual repor
 
 ## Required Screenshot Set
 
-| Screenshot | Target file name | Use |
-| --- | --- | --- |
-| Landing page | `landing-page.png` | Product overview and first impression. |
-| Authentication page | `auth-page.png` | User access workflow. |
-| Scenario dashboard | `dashboard-scenarios.png` | Scenario selection and MVP scope. |
-| Red Team workspace | `red-workspace-terminal.png` | Terminal, methodology, notes, AI guidance. |
-| Blue Team workspace | `blue-workspace-siem.png` | SIEM feed, triage, forensics, containment. |
-| AI tutor panel | `ai-tutor-panel.png` | Socratic guidance and hint ladder. |
-| Debrief timeline | `debrief-killchain.png` | Red-to-Blue learning evidence. |
-| Instructor dashboard | `instructor-dashboard.png` | Monitoring, scoring, analytics, exports. |
-| Docker Desktop or CLI service status | `docker-services.png` | Deployment evidence. |
-| API docs or OpenAPI page | `api-docs.png` | Backend interface evidence. |
+| Screenshot | Target file name | Use | Status |
+| --- | --- | --- | --- |
+| Landing page | `landing-page.png` | Product overview and first impression. | ✅ Captured |
+| Authentication page | `auth-page.png` | User access workflow. | ✅ Captured |
+| Scenario dashboard | `dashboard-scenarios.png` | Scenario selection and MVP scope. | ✅ Captured |
+| Red Team workspace | `red-workspace-terminal.png` | Terminal, methodology, notes, AI guidance. | ✅ Captured |
+| Blue Team workspace | `blue-workspace-siem.png` | SIEM feed, triage, forensics, containment. | ✅ Captured |
+| AI tutor panel | `ai-tutor-panel.png` | Socratic guidance and hint ladder. | ⚠️ Use crop of Red Workspace |
+| Debrief timeline | `debrief-killchain.png` | Red-to-Blue learning evidence. | ✅ Captured |
+| Instructor dashboard | `instructor-dashboard.png` | Monitoring, scoring, analytics, exports. | ✅ Captured |
+| Docker Desktop or CLI service status | `docker-services.png` | Deployment evidence. | ✅ Captured (Health API) |
+| API docs or OpenAPI page | `api-docs.png` | Backend interface evidence. | ✅ Captured |
+
 
 ## Capture Rules
 

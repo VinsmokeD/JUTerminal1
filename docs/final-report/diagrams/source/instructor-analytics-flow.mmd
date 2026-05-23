@@ -1,0 +1,18 @@
+graph TD
+    Sess[Student Session] --> Metrics[Metrics Aggregator]
+    Metrics --> Progress[Completion Rate]
+    Metrics --> Scoring[Average Score]
+    Metrics --> Hints[Hint Usage Patterns]
+    
+    Progress --> Dash[Instructor Dashboard]
+    Scoring --> Dash
+    Hints --> Dash
+    
+    Dash --> Export[Grade Export: CSV/XLSX]
+    
+    subgraph "Learning Analytics"
+    Metrics
+    Progress
+    Scoring
+    Hints
+    end

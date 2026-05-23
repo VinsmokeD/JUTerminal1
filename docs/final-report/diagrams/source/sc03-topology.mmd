@@ -1,0 +1,11 @@
+graph TD
+    subgraph "SC-03 Network (172.20.3.0/24)"
+    Phish[GoPhish Server] --- Victim[Victim Client]
+    Attacker[Kali Container] --- Phish
+    Attacker --- Victim
+    Relay[Mail Relay] --- Phish
+    Relay --- Victim
+    end
+    
+    Victim -- EDR/Sysmon Logs --> SIEM[Blue Team SIEM]
+    Relay -- SMTP Logs --> SIEM

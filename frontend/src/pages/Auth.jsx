@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { Button } from '../components/ui'
 
 const TAGLINE = [
   { text: 'Attack.', className: 'text-cs-red', delay: 600 },

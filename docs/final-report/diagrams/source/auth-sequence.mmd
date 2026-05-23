@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant U as User (Browser)
+    participant F as Frontend (React)
+    participant A as API (FastAPI)
+    participant D as DB (PostgreSQL)
+
+    U->>F: Enter Credentials
+    F->>A: POST /api/auth/login
+    Note over A: Hash Validation (Bcrypt)
+    A->>D: Query User Record
+    D-->>A: User Record / Hash
+    alt Valid Credentials
+        Note over A: Generate JWT (RS256)
+        A-->>F: 200 OK + Bearer Token
+        F->>U: Redirect to Dashboard
+    else Invalid
+        A-->>F: 401 Unauthorized
+        F->>U: Show Error
+    end

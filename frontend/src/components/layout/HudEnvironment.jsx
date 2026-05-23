@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useSessionStore } from '../../store/sessionStore';
 import { hudSound } from '../../lib/hudSound';
 
 export default function HudEnvironment({ children }) {
   const canvasRef = useRef(null);
+  const bootStartedRef = useRef(false);
   const currentSession = useSessionStore((state) => state.currentSession);
   
   // HUD Customization states
@@ -29,6 +30,10 @@ export default function HudEnvironment({ children }) {
 
   // Bios boot sequence simulator
   useEffect(() => {
+    if (bootStartedRef.current) return;
+    bootStartedRef.current = true;
+    setBootLines([]);
+
     const lines = [
       { text: "CYBERSIM SECURITY SYSTEMS LTD. [BIOS V4.1]", type: "info" },
       { text: "CPU: OCTA-CORE SANDBOX PROCESSOR AT 3.80GHz", type: "info" },
@@ -48,7 +53,10 @@ export default function HudEnvironment({ children }) {
     let currentLine = 0;
     const interval = setInterval(() => {
       if (currentLine < lines.length) {
-        setBootLines((prev) => [...prev, lines[currentLine]]);
+        const nextLine = lines[currentLine];
+        if (nextLine) {
+          setBootLines((prev) => [...prev, nextLine]);
+        }
         currentLine++;
         // Play typing tick for boot text
         if (soundEnabled) {
@@ -295,13 +303,13 @@ export default function HudEnvironment({ children }) {
           <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col justify-start">
             <div className="mb-8 border border-[#00ff88]/30 p-4 bg-[#00ff88]/5 flex items-center justify-between text-xs text-[#00ff88]">
               <div>CYBERSIM BOOT UTILITY V4.1</div>
-              <div className="animate-pulse">● STACK ONLINE</div>
+              <div className="animate-pulse">STACK ONLINE</div>
             </div>
             
             <div className="space-y-1.5 overflow-y-auto max-h-[70vh]">
               {bootLines.map((line, i) => (
-                <div key={i} className={`boot-console-line ${line.type === 'warn' ? 'warn' : line.type === 'success' ? 'boot-console-line' : line.type === 'error' ? 'error' : 'info'}`}>
-                  {line.text}
+                <div key={i} className={`boot-console-line ${line?.type === 'warn' ? 'warn' : line?.type === 'success' ? 'boot-console-line' : line?.type === 'error' ? 'error' : 'info'}`}>
+                  {line?.text}
                 </div>
               ))}
               <div className="boot-console-line inline-block border-r border-[#00ff88] w-2 h-4 animate-pulse ml-1" />
@@ -359,4 +367,3 @@ export default function HudEnvironment({ children }) {
     </div>
   );
 }
-

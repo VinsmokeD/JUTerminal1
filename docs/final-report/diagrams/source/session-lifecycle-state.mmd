@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> STANDBY: App Loaded
+    STANDBY --> STARTING: POST /sessions/start
+    STARTING --> ROE_PENDING: Container Ready
+    ROE_PENDING --> ACTIVE: ROE Acknowledged
+    ACTIVE --> ACTIVE: Command/Note/Hint/Alert
+    ACTIVE --> ENDING: POST /sessions/end
+    ENDING --> COMPLETED: Cleanup Finished
+    COMPLETED --> [*]

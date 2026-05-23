@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* ── The Duality Palette ─────────────────────────── */
+        /* The Duality Palette */
         'cs-red': {
           DEFAULT: '#ff3b3b',
           glow: '#ff3b3b40',
@@ -17,7 +17,7 @@ export default {
           dim: '#3b8bff15',
           surface: '#080d1a',
         },
-        /* ── Neutrals ───────────────────────────────────── */
+        /* Neutrals */
         void: '#08090c',
         'surface-1': '#0d0f14',
         'surface-2': '#13161d',
@@ -26,16 +26,16 @@ export default {
         'surface-hover': '#1d212c',
         'cs-border': '#1e2230',
         'cs-border-glow': '#2a2f40',
-        /* ── Text (AA-contrast tuned) ───────────────────── */
+        /* Text (AA-contrast tuned) */
         'txt-primary': '#e8eaf0',
         'txt-secondary': '#9ba3b8',
         'txt-dim': '#5a6178',
         'txt-ghost': '#3a4054',
-        /* ── Accents ────────────────────────────────────── */
+        /* Accents */
         'green-signal': '#00ff88',
         'amber-warn': '#ffaa00',
         critical: '#ff2244',
-        /* ── HUD Immersive Glows ─────────────────────────── */
+        /* HUD Immersive Glows */
         'hud-void': '#030508',
         'hud-cyan': '#00f3ff',
         'hud-crimson': '#ff0055',
@@ -45,7 +45,7 @@ export default {
         mono: ['"JetBrains Mono"', '"Cascadia Code"', '"Fira Code"', 'monospace'],
       },
       fontSize: {
-        /* CyberSim type scale v3 — [size, { lineHeight, letterSpacing, fontWeight }] */
+        /* CyberSim type scale v3 - [size, { lineHeight, letterSpacing, fontWeight }] */
         'display-1': ['72px', { lineHeight: '76px', letterSpacing: '-0.04em', fontWeight: '800' }],
         'display-2': ['56px', { lineHeight: '60px', letterSpacing: '-0.03em', fontWeight: '800' }],
         'display-3': ['40px', { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '700' }],
@@ -83,7 +83,7 @@ export default {
         'focus-red':  '0 0 0 2px #08090c, 0 0 0 4px #ff3b3b',
       },
       transitionTimingFunction: {
-        /* Motion vocabulary — only these four are allowed */
+        /* Motion vocabulary - only these four are allowed */
         enter: 'cubic-bezier(0.16, 1, 0.3, 1)',
         pop:   'cubic-bezier(0.34, 1.56, 0.64, 1)',
         glide: 'cubic-bezier(0.4, 0, 0.2, 1)',
