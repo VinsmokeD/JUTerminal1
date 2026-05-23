@@ -59,13 +59,13 @@ Apply `backdrop-blur`, `clip-path` angled corners, and glowing borders. Replace 
 **Files:**
 - Modify: `frontend/src/pages/Dashboard.jsx`
 
-- [ ] **Step 1: Implement Staggered Entrance**
+- [x] **Step 1: Implement Staggered Entrance**
 Use Framer Motion to animate mission cards into view with a "digital assembly" effect.
 
-- [ ] **Step 2: Restyle Mission Cards**
+- [x] **Step 2: Restyle Mission Cards**
 Make them large, glassmorphic, and highly interactive.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 `git commit -am "feat: cinematic mission briefing dashboard"`
 
 ### Task 5: Immersive Operation (Workspaces)

@@ -43,10 +43,9 @@ export default function ScenarioCard({
     >
       <div
         className="
-          relative overflow-hidden p-6 rounded-cs-lg
-          bg-surface-1 border border-cs-border
-          shadow-z-1 transition-all duration-enter ease-enter
-          group-hover:border-cs-border-glow group-hover:shadow-z-2
+          relative overflow-hidden p-6 card-v3
+          transition-all duration-enter ease-enter
+          group-hover:border-cs-border-glow
         "
         style={{
           transform: 'perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))',

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
 import CyberSimNav from '../components/nav/CyberSimNav'
@@ -52,6 +53,30 @@ const FILTER_CHIPS = [
 ]
 
 const DIFFICULTY_CHIPS = ['All', 'Beginner', 'Intermediate', 'Advanced']
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 15
+    }
+  }
+}
 
 export default function Dashboard() {
   const { scenarios, fetchScenarios, startSession } = useSessionStore()
@@ -257,24 +282,30 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-3">
+        <motion.div 
+          className="grid gap-5 lg:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {scenariosLoading
             ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
             : filteredScenarios.map(sc => {
                 const summary = sc.description || SCENARIO_SUMMARIES[sc.id] || 'Hands-on mission in an isolated CyberSim training network.'
                 return (
-                  <ScenarioCard
-                    key={sc.id}
-                    scenario={sc}
-                    summary={summary}
-                    learnPoints={LEARN_POINTS[sc.id] || []}
-                    showLearnPoints={isBeginner}
-                    onClick={() => setBriefing(sc)}
-                  />
+                  <motion.div key={sc.id} variants={cardVariants} className="h-full">
+                    <ScenarioCard
+                      scenario={sc}
+                      summary={summary}
+                      learnPoints={LEARN_POINTS[sc.id] || []}
+                      showLearnPoints={isBeginner}
+                      onClick={() => setBriefing(sc)}
+                    />
+                  </motion.div>
                 )
               })
           }
-        </div>
+        </motion.div>
         {filteredScenarios.length === 0 && !scenariosLoading && (
           <div className="mt-6 rounded-cs border border-cs-border bg-surface-1 p-6 text-sm text-txt-dim">
             No scenarios match the current filters.
@@ -305,8 +336,8 @@ export default function Dashboard() {
 
       {/* Mission Briefing Modal */}
       {briefing && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="mission-modal bg-surface-1 border border-cs-border rounded-cs-lg shadow-2xl max-w-4xl w-full">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="mission-modal hud-glass-void clip-chamfer shadow-2xl max-w-4xl w-full">
             {/* Header */}
             <div className="flex-shrink-0 p-5 sm:p-6 border-b border-cs-border relative overflow-hidden">
               <div className="absolute inset-0 opacity-30" style={{
