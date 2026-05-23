@@ -5066,3 +5066,15 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
   - Pre-push `docker compose config --quiet` -> exit 0.
   - Pre-push `git diff --check` -> exit 0 after normal CRLF warnings and after fixing one extra blank line in `docs/final-report/next-phase-proposal.md`.
   - `git push origin master` -> exit 0.
+
+### [2026-05-23 19:05:16 +03:00] - Codex (Final Diagram Helper Push)
+* **Status**: Complete - included the remaining diagram dimension helper file and prepared a final clean-tree push.
+* **Why**: After pushing the main visual evidence commits, `git status` still showed `get_dims.ps1` as an untracked report/diagram helper. The user requested pushing all current updates.
+* **Where**:
+  - `get_dims.ps1` - added PowerShell helper that prints PNG export dimensions for the final-report diagram catalog.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Reviewed `get_dims.ps1` to confirm it only reads `docs/final-report/diagrams/export/png` images and prints dimensions.
+  - Added it to the final push batch instead of leaving an untracked file behind.
+* **Verification**:
+  - `git status --short` exposed only `get_dims.ps1` before this final batch.
