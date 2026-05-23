@@ -199,7 +199,7 @@ export default function Dashboard() {
                 <span className="text-[10px] font-mono text-txt-dim tracking-widest">// SEC_LEVEL: CLASSIFIED //</span>
               </div>
               <h1 className="text-4xl font-extrabold text-txt-primary tracking-tight font-display card-v3-header-glow">
-                TACTICAL BRIEFING CENTER
+                <span className="glitch-text" data-text="TACTICAL BRIEFING CENTER">TACTICAL BRIEFING CENTER</span>
               </h1>
               <p className="text-txt-secondary text-xs font-mono mt-2 max-w-lg">
                 {isBeginner
@@ -208,7 +208,7 @@ export default function Dashboard() {
               </p>
             </div>
             {/* System Status Ticker */}
-            <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-surface-2/60 border border-cs-border rounded-cs max-w-md font-mono text-[10px] text-txt-secondary clip-chamfer-sm">
+            <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-void/80 border border-cs-border rounded-cs max-w-md font-mono text-[10px] text-txt-secondary card-v3 card-v3-spotlight">
               <div>
                 <span className="text-txt-dim block uppercase">Sandbox Node</span>
                 <span className="text-green-signal font-bold uppercase">Online (172.30.0.1)</span>
@@ -305,10 +305,10 @@ export default function Dashboard() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="input w-full text-xs font-mono pl-8"
+              className="w-full text-xs font-mono pl-8 input-v3"
               placeholder="SEARCH PROTOCOLS / LOGS..."
             />
-            <svg className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="absolute left-2.5 top-3.5 w-3.5 h-3.5 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>

@@ -7,9 +7,9 @@ const ACCENT_BAR = {
 }
 
 const DIFFICULTY_TONE = {
-  Beginner:     'text-green-signal border-green-signal/30 bg-green-signal/8',
-  Intermediate: 'text-amber-warn   border-amber-warn/30   bg-amber-warn/8',
-  Advanced:     'text-cs-red       border-cs-red/30       bg-cs-red/8',
+  Beginner:     'badge-v3-green',
+  Intermediate: 'badge-v3-amber',
+  Advanced:     'badge-v3-red',
 }
 
 /**
@@ -76,7 +76,7 @@ export default function ScenarioCard({
           <span className="font-mono text-[10.5px] tracking-[0.12em] uppercase text-txt-dim">
             {scenario.id}
           </span>
-          <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] uppercase tracking-wider border ${diffCls}`}>
+          <span className={`badge-v3 ${diffCls}`}>
             {scenario.difficulty}
           </span>
         </div>
@@ -98,7 +98,7 @@ export default function ScenarioCard({
         {showLearnPoints && learnPoints.length > 0 && (
           <div className="mb-5 space-y-1.5">
             {learnPoints.slice(0, 3).map((l) => (
-              <div key={l} className="flex items-center gap-2 text-[12px] text-txt-secondary">
+              <div key={l} className="flex items-center gap-2 text-[12px] text-txt-secondary font-mono">
                 <span className="w-1 h-1 rounded-full bg-cs-blue flex-shrink-0" />
                 <span>{l}</span>
               </div>
@@ -110,7 +110,7 @@ export default function ScenarioCard({
         {scenario.frameworks?.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-5">
             {scenario.frameworks.slice(0, 4).map((f) => (
-              <span key={f} className="px-2 py-0.5 rounded-full font-mono text-[10px] border border-cs-border text-txt-dim">
+              <span key={f} className="badge-v3 badge-v3-neutral font-mono text-[9px]">
                 {f}
               </span>
             ))}

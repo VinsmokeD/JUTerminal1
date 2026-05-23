@@ -165,38 +165,37 @@ export default function Auth() {
 
             <form onSubmit={submit} className="space-y-4">
               <div>
-                <label className="input-label">Username</label>
+                <label className="input-label font-mono text-[10px] tracking-wider uppercase text-txt-dim">Username</label>
                 <input
                   type="text" value={username} onChange={(e) => setUsername(e.target.value)}
                   required autoFocus
-                  className="input font-mono text-sm focus:ring-2 focus:ring-cs-blue/60 focus:shadow-focus-blue"
-                  placeholder="Enter username"
+                  className={`w-full input-v3 ${mode === 'login' ? '' : 'input-v3-red'}`}
+                  placeholder="Enter operator username"
                 />
               </div>
               <div>
-                <label className="input-label">Password</label>
+                <label className="input-label font-mono text-[10px] tracking-wider uppercase text-txt-dim">Password</label>
                 <input
                   type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="input font-mono text-sm focus:ring-2 focus:ring-cs-blue/60 focus:shadow-focus-blue"
-                  placeholder="Enter password"
+                  className={`w-full input-v3 ${mode === 'login' ? '' : 'input-v3-red'}`}
+                  placeholder="Enter security key"
                 />
               </div>
 
               <div className={`transition-all duration-150 ${error ? 'opacity-100 translate-y-0' : 'pointer-events-none -translate-y-1 opacity-0'}`}>
                 {error && (
-                  <div className="text-cs-red text-xs bg-cs-red-surface border border-cs-red/20 rounded-cs-sm px-3 py-2.5">{error}</div>
+                  <div className="text-cs-red text-xs bg-cs-red-surface border border-cs-red/20 rounded-cs-sm px-3 py-2.5 font-mono">{error}</div>
                 )}
               </div>
 
-              <Button
+              <button
                 type="submit"
-                loading={loading}
-                variant={mode === 'login' ? 'blue' : 'red'}
-                className="w-full"
+                disabled={loading}
+                className={`w-full btn-v3 ${mode === 'login' ? 'btn-v3-blue' : 'btn-v3-red'}`}
               >
-                {mode === 'login' ? 'Sign in' : 'Create account'}
-              </Button>
+                {loading ? 'ESTABLISHING HANDSHAKE...' : mode === 'login' ? 'INITIALIZE INTERFACE' : 'REGISTER SECURE NODE'}
+              </button>
             </form>
           </div>
           <p className="text-center text-txt-dim text-xs mt-4 font-mono">University of Jordan</p>
