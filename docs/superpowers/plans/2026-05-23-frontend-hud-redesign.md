@@ -17,13 +17,13 @@
 - Modify: `frontend/index.html`
 - Modify: `frontend/src/index.css`
 
-- [ ] **Step 1: Inject HUD Fonts**
+- [x] **Step 1: Inject HUD Fonts**
 Add `<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=JetBrains+Mono:wght@400..800&display=swap" rel="stylesheet">` to `index.html`.
 
-- [ ] **Step 2: Update Tailwind Config**
+- [x] **Step 2: Update Tailwind Config**
 Extend theme with `hud-void`, `hud-cyan`, `hud-crimson` colors and custom `clip-path` utilities.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 `git add frontend/tailwind.config.js frontend/index.html && git commit -m "style: foundation for HUD redesign (fonts & colors)"`
 
 ### Task 2: Global HUD Atmosphere

@@ -35,9 +35,13 @@ export default {
         'green-signal': '#00ff88',
         'amber-warn': '#ffaa00',
         critical: '#ff2244',
+        /* ── HUD Immersive Glows ─────────────────────────── */
+        'hud-void': '#030508',
+        'hud-cyan': '#00f3ff',
+        'hud-crimson': '#ff0055',
       },
       fontFamily: {
-        display: ['"Outfit"', 'sans-serif'],
+        display: ['"Orbitron"', '"Outfit"', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Cascadia Code"', '"Fira Code"', 'monospace'],
       },
       fontSize: {
