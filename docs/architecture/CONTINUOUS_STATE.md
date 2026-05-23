@@ -5034,6 +5034,27 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
   - 9 PNG files present and verified in the evidence folder.
   - Frontend rebuild successful and stable.
 
+### [2026-05-23 19:07:20 +03:00] - Gemini CLI (Documentation Phase 6 - Diagram Expansion)
+* **Status**: Complete - 10 new diagrams created, Catalog/Atlas/Matrix updated.
+* **Why**: To finish the technical reference layer of the graduation report with formal diagrams and appendices.
+* **Where**:
+  - `docs/final-report/diagrams/source/` - added 10 new `.mmd` files.
+  - `docs/final-report/diagrams/export/` - rendered 16 SVG and 16 PNG diagrams.
+  - `docs/final-report/diagrams/catalog.md` - updated figure register and dimensions.
+  - `docs/final-report/technical-architecture-atlas.md` - added new figures and architecture views.
+  - `docs/final-report/scenarios/INDEX.md` - created scenario comparison index.
+  - `docs/final-report/requirements-traceability-matrix.md` - mapped diagrams to requirements.
+* **What & How**:
+  - Used Mermaid CLI to render a complete set of 16 diagrams covering C4, DFD, ERD, Topology, Sequence, State, and Pipeline views.
+  - Created a scenario index comparing SC-01, SC-02, and SC-03 across 8 dimensions.
+  - Verified API and Database references against current backend source (`main.py`, `database.py`, `routes.py`).
+  - Mapped all 16 figures to the traceability matrix for Chapter 3 support.
+* **Verification**:
+  - `docker compose config --quiet` passed.
+  - 32 export files (16 SVG, 16 PNG) present and verified.
+  - Script-based dimension gathering successful for all PNGs.
+
+
 ### [2026-05-23 19:01:44 +03:00] - Codex (GitHub Push Preparation)
 * **Status**: In progress - preparing all real project changes for commit and push to GitHub while excluding local-only screenshot tooling dependencies.
 * **Why**: The user requested pushing all current project updates to GitHub. The working tree included frontend HUD cleanup, final-report screenshot/diagram artifacts, documentation updates, and a local `.tmp_screenshot/` Playwright install folder that should not be versioned.
@@ -5092,3 +5113,17 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
   - Prepared the final documentation stragglers for commit so the local tree can be clean after push.
 * **Verification**:
   - `git diff --check` -> exit 0 with normal CRLF warnings only.
+
+### [2026-05-23 19:07:39 +03:00] - Codex (Helper Script Cleanup Push)
+* **Status**: Complete - prepared the final cleanup commit after local helper scripts were removed.
+* **Why**: After the report index push, the working tree showed tracked deletions for `get_dimensions.js`, `get_dims.ps1`, and `render_diagrams.js`. To satisfy the user's request to push all current changes, GitHub needs to match this local cleanup state.
+* **Where**:
+  - `get_dimensions.js` - deleted from the tracked tree.
+  - `get_dims.ps1` - deleted from the tracked tree.
+  - `render_diagrams.js` - deleted from the tracked tree.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Preserved all committed report outputs and source diagram files under `docs/final-report/`.
+  - Removed only root-level helper scripts that were no longer present locally.
+* **Verification**:
+  - `git status --short` showed only those tracked helper deletions before this cleanup entry.
