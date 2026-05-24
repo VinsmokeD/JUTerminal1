@@ -5127,3 +5127,35 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
   - Removed only root-level helper scripts that were no longer present locally.
 * **Verification**:
   - `git status --short` showed only those tracked helper deletions before this cleanup entry.
+
+### [2026-05-24 09:55:00 +03:00] - Antigravity (Frontend Review & Component Cleanup)
+* **Status**: Complete - verified zero runtime errors across all routes via Puppeteer and cleaned up redundant button classes.
+* **Why**: The user requested a review of the frontend to ensure stability after reporting an intermittent React `TypeError` (which was likely from a cached/stale build) and to keep the current design as it was deemed "good".
+* **Where**:
+  - `frontend/src/pages/Dashboard.jsx` - Replaced raw `button` tags with the custom `Button` component from the UI library for the briefing modal.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Wrote automated Puppeteer scripts to navigate to `/`, `/dashboard`, and session workspaces to guarantee that the UI renders without hitting `Cannot read properties of undefined (reading 'type')`.
+  - Refactored the Dashboard briefing actions to strictly use `Button variant="ghost"` and `variant="danger"`.
+  - Rebuilt the frontend via `npm run build` and ensured successful compilation with zero ESLint or build errors.
+* **Verification**:
+  - `npm run build` output: 949 modules transformed, successfully built in 8.05s.
+  - Puppeteer local smoke test reported zero `pageerror` or `console error` across all major routes.
+
+### [2026-05-24 10:16:00 +03:00] - Antigravity (HUD E2E Verification & Core Bugfixes)
+* **Status**: Complete - resolved critical bugs preventing natural overlay dismissal, and executed screenshot verification suite.
+* **Why**: The senior graduation examiner review required verifying Tasks 1–6 from HUD redesign, producing updated visual evidence, and addressing technical drifts (SQL mutations, missing WebSocket payload IDs).
+* **Where**:
+  - `backend/src/ws/routes.py` (lines 410-425) - added `session_id` to the WebSocket readiness updates.
+  - `backend/src/sessions/routes.py` (lines 414-419) - replaced in-place JSON modification of session metadata with a fresh dict assignment to ensure database commits dirty the attribute.
+  - `capture_screenshots_v2.js` (lines 53-65) - modified ensuring hook to dynamically wait for the Mission Readiness Overlay DOM element to detach.
+  - `screenshot-temp-env/capture_screenshots_v2.js` - updated script in the temporary environment.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Injected missing `session_id` key in `readiness_update` WS frame payload from backend, enabling frontend to pass the ID check and close overlay naturally.
+  - Fixed standard SQLAlchemy JSON trap by assigning `{**meta, "force_unlocked": True}` instead of mutating dict in-place, which correctly triggers database writes on override.
+  - Aligned Playwright screenshot hook to wait dynamically for `'text=MISSION READINESS REPORT'` selector with state `'detached'` rather than using hardcoded timeouts.
+* **Verification**:
+  - Reran full backend test suite (`pytest -q`): `188 passed, 1 skipped in 10.26s`.
+  - Serviced demo readiness checking (`python scripts/demo_check.py`): `ALL 12 CHECKS PASSED`.
+  - Executed high-fidelity visual capture (`node capture_screenshots_v2.js`): exit status 0, generating all 12 optimized screenshots in final-report evidence folder.

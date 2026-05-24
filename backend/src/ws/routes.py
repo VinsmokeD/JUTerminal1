@@ -411,6 +411,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     readiness_status = "ready"
                     await _send_json({
                         "type": "readiness_update",
+                        "session_id": session_id,
                         "status": "ready",
                         "force_unlocked": True,
                         "checks": {}
@@ -420,6 +421,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     readiness_status = res["status"]
                     await _send_json({
                         "type": "readiness_update",
+                        "session_id": session_id,
                         "status": res["status"],
                         "checks": res["checks"]
                     })

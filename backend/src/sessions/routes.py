@@ -413,8 +413,7 @@ async def override_readiness(
         raise HTTPException(status_code=404, detail="Session not found")
 
     meta = session.session_metadata or {}
-    meta["force_unlocked"] = True
-    session.session_metadata = meta
+    session.session_metadata = {**meta, "force_unlocked": True}
     await db.commit()
     return {"force_unlocked": True}
 

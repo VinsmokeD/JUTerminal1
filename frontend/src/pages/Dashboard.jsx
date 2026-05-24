@@ -491,20 +491,20 @@ export default function Dashboard() {
                 </div>
               )}
                 <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                  <button onClick={() => { setBriefing(null); setLaunchError(null) }} className="flex-1 btn btn-ghost justify-center text-sm">Cancel</button>
+                  <Button onClick={() => { setBriefing(null); setLaunchError(null) }} variant="ghost" className="flex-1 justify-center text-sm">Cancel</Button>
                   {activeMission ? (
-                    <button
+                    <Button
                       onClick={() => cancelMission(activeMission.id)}
                       disabled={!!cancelling}
-                      className="flex-1 btn btn-ghost justify-center text-sm text-cs-red border-cs-red/20 hover:bg-cs-red/10"
+                      variant="danger"
+                      className="flex-1 justify-center text-sm"
                     >
                       {cancelling === activeMission.id ? 'Terminating...' : `Cancel ${activeMission.scenario_id} first`}
-                    </button>
+                    </Button>
                   ) : (
-                    <button onClick={launch} disabled={!!launching}
-                      className="flex-1 btn btn-red justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                    <Button onClick={launch} disabled={!!launching} variant="red" className="flex-1 justify-center text-sm">
                       {launching ? 'Deploying environment...' : 'Start mission'}
-                    </button>
+                    </Button>
                   )}
                 </div>
             </div>
