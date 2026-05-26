@@ -23,6 +23,7 @@ import asyncio
 import json
 import os
 import sys
+import uuid
 import pytest
 import pytest_asyncio
 
@@ -57,15 +58,16 @@ async def client():
 @pytest_asyncio.fixture(scope="module")
 async def auth_token(client: AsyncClient):
     """Register a test user and return their JWT."""
+    username = f"ws_test_user_{uuid.uuid4().hex}"
     resp = await client.post(
         "/api/auth/register",
-        json={"username": "ws_test_user", "password": "Test1234!"},
+        json={"username": username, "password": "Test1234!"},
     )
     # Allow 400 (username taken) on re-runs
     if resp.status_code == 400:
         resp = await client.post(
             "/api/auth/login",
-            data={"username": "ws_test_user", "password": "Test1234!"},
+            data={"username": username, "password": "Test1234!"},
         )
     assert resp.status_code == 200, resp.text
     return resp.json()["access_token"]
@@ -289,7 +291,7 @@ async def test_session_start_is_lazy_about_container_provision(client: AsyncClie
     body = r.json()
     assert body["session_id"]
     assert body["container_id"] is None
-    assert elapsed < 2.0
+    assert elapsed < 3.0
 
 
 

@@ -1,98 +1,185 @@
 [
-  {
-    "id": "sc03-gophish-api",
-    "regex": "GoPhish|gophish|api/campaigns|Launching.*campaign|campaign.*start",
-    "what": "The GoPhish campaign infrastructure is responding.",
-    "why": "Campaign setup output is the bridge between OSINT/pretext work and victim telemetry.",
-    "next": "Confirm landing page URL resolves and the sending profile has valid SMTP config before launching. Check DMARC/SPF for the domain.",
-    "tags": ["phishing", "campaign"]
-  },
-  {
-    "id": "sc03-spf-softfail",
-    "regex": "v=spf1\\s+~all|softfail|DMARC.*not found|No DMARC|SPF.*FAIL|SPF.*SOFTFAIL|spf.*neutral",
-    "what": "The mail domain has weak SPF policy or missing DMARC record.",
-    "why": "Email authentication gaps mean spoofed emails from orion-tech.com pass basic gateway checks, enabling the phishing campaign.",
-    "next": "Document the DNS authentication evidence for SPF and DMARC and include the policy weakness in your phishing IR report.",
-    "tags": ["osint", "email-auth", "finding"]
-  },
-  {
-    "id": "sc03-email-opened",
-    "regex": "email.*opened|campaign.*open|tracking.*pixel|open.*event|phish.*opened|[0-9]+.*opened",
-    "what": "A victim opened the phishing email - tracking pixel confirmed delivery and open.",
-    "why": "Email open events from GoPhish confirm which recipients engaged with the phishing content.",
-    "next": "Check for credential submission events next; users who opened likely clicked. Correlate with SIEM timeline for victim host activity.",
-    "tags": ["phishing", "evidence"]
-  },
-  {
-    "id": "sc03-credentials-submitted",
-    "regex": "credentials.*submitted|captured.*username|form.*submitted|username.*password.*captured|gotcha|phish.*success",
-    "what": "A victim submitted credentials to the phishing landing page.",
-    "why": "Credential capture is a key escalation point because these credentials may give direct access to corporate systems.",
-    "next": "Document the submitted identity, landing-page timestamp, and any follow-on authentication evidence as a finding.",
-    "tags": ["phishing", "credentials", "finding"]
-  },
-  {
-    "id": "sc03-payload-generated",
-    "regex": "msfvenom|payload.*generated|encoder.*shikata|\\-p windows|\\-f exe|\\-f hta|\\-f docm|stageless",
-    "what": "A simulated payload marker is being prepared for the scenario.",
-    "why": "Payload family, delivery format, and callback metadata determine the blue-team detection path.",
-    "next": "Note the delivery format and callback indicators as IOCs without storing executable content.",
-    "tags": ["exploitation", "payload"]
-  },
-  {
-    "id": "sc03-macro-execution",
-    "regex": "WINWORD\\.EXE|EXCEL\\.EXE|4688|4104|cmd\\.exe.*WINWORD|powershell.*-enc|macro.*executed|AutoOpen|Document_Open",
-    "what": "Office macro or script execution evidence is visible.",
-    "why": "Process-creation telemetry (Sysmon EventID 1/4688) proves the payload was executed by a victim who opened the malicious document.",
-    "next": "Correlate the execution time with the email open timestamp to build the delivery-to-execution timeline for your IR report.",
-    "tags": ["execution", "blue-team", "finding"]
-  },
-  {
-    "id": "sc03-beacon-checkin",
-    "regex": "beacon|check-in|meterpreter.*session|\\[\\*\\].*session.*opened|reverse.*connected|LHOST.*connected|shell.*session",
-    "what": "A C2 session or callback channel is established.",
-    "why": "Callback traffic establishes post-exploitation capability and gives defenders a high-value network IOC.",
-    "next": "Document the callback IP, port, process context, and session timing as evidence.",
-    "tags": ["c2", "exploitation", "finding"]
-  },
-  {
-    "id": "sc03-persistence",
-    "regex": "schtasks|scheduled.*task|HKCU.*Run|HKLM.*Run|startup.*folder|WMI.*subscription|persistence.*created|autorun",
-    "what": "Persistence mechanism being created on the victim host.",
-    "why": "Persistence lets the attacker survive reboots. Scheduled tasks and registry run keys are the most common techniques (T1053/T1547).",
-    "next": "Document the persistence key/path as #finding. Blue Team: this is what must be found during the Eradicate phase.",
-    "tags": ["post-exploitation", "finding", "persistence"]
-  },
-  {
-    "id": "sc03-lateral-movement",
-    "regex": "pivot|proxychains|pass.*hash.*domain|wmiexec.*lateral|psexec.*\\\\\\\\|smbexec|lateral.*move",
-    "what": "Lateral movement from the initial victim host is in progress.",
-    "why": "Pivoting from the phishing victim to internal hosts escalates from a workstation compromise to a network-wide incident.",
-    "next": "Map the pivot path from initial victim to intermediate host to internal target. Each hop is a separate containment action in IR.",
-    "tags": ["exploitation", "lateral-movement"]
-  },
-  {
-    "id": "sc03-data-staging",
-    "regex": "7z|zip.*archive|rar.*archive|staging.*data|exfil|\\btar\\b.*cvzf|data.*compressed|archive.*created",
-    "what": "Data is being staged or compressed for exfiltration.",
-    "why": "Data staging and compression (T1074/T1560) is the penultimate step before exfiltration and a high data-impact indicator.",
-    "next": "Document the staged file path and size as #evidence. The archive name and destination IP are critical IOCs for the IR report.",
-    "tags": ["post-exploitation", "exfiltration", "finding"]
-  },
-  {
-    "id": "sc03-log-clearing",
-    "regex": "1102|wevtutil.*cl|Clear-EventLog|auditpol|log.*cleared|event.*cleared|EventLog.*Security",
-    "what": "Windows Event Log clearing activity detected (EventID 1102 or wevtutil).",
-    "why": "Log clearing (T1070.001) is an attacker anti-forensics action and indicates the attacker knew about detection.",
-    "next": "The 1102 event is self-logging. Document the time, subject account, and affected log as #evidence; this proves attacker access.",
-    "tags": ["anti-forensics", "blue-team", "finding"]
-  },
-  {
-    "id": "sc03-exfil-dns",
-    "regex": "dns.*tunnel|iodine|dnscat|TXT.*query.*[a-z0-9]{20}|base64.*dns|exfil.*dns",
-    "what": "DNS tunneling or DNS exfiltration pattern detected.",
-    "why": "DNS exfiltration bypasses traditional DLP and firewall egress rules by encoding data in DNS query labels.",
-    "next": "Review DNS telemetry for long TXT queries or repeated subdomain lookups against the same domain and preserve the IOC pattern.",
-    "tags": ["exfiltration", "c2", "blue-team"]
-  }
+    {
+        "id":  "sc03-gophish-api",
+        "regex":  "GoPhish|gophish|api/campaigns|Launching.*campaign|campaign.*start",
+        "what":  "The GoPhish campaign infrastructure is responding.",
+        "why":  "Campaign setup output is the bridge between OSINT/pretext work and victim telemetry.",
+        "next":  "Confirm landing page URL resolves and the sending profile has valid SMTP config before launching. Check DMARC/SPF for the domain.",
+        "tags":  [
+                     "phishing",
+                     "campaign"
+                 ],
+        "phases":  [
+                       1,
+                       2
+                   ]
+    },
+    {
+        "id":  "sc03-spf-softfail",
+        "regex":  "v=spf1\\s+~all|softfail|DMARC.*not found|No DMARC|SPF.*FAIL|SPF.*SOFTFAIL|spf.*neutral",
+        "what":  "The mail domain has weak SPF policy or missing DMARC record.",
+        "why":  "Email authentication gaps mean spoofed emails from orion-tech.com pass basic gateway checks, enabling the phishing campaign.",
+        "next":  "Document the DNS authentication evidence for SPF and DMARC and include the policy weakness in your phishing IR report.",
+        "tags":  [
+                     "osint",
+                     "email-auth",
+                     "finding"
+                 ],
+        "phases":  [
+                       1,
+                       2
+                   ]
+    },
+    {
+        "id":  "sc03-email-opened",
+        "regex":  "email.*opened|campaign.*open|tracking.*pixel|open.*event|phish.*opened|[0-9]+.*opened",
+        "what":  "A victim opened the phishing email - tracking pixel confirmed delivery and open.",
+        "why":  "Email open events from GoPhish confirm which recipients engaged with the phishing content.",
+        "next":  "Check for credential submission events next; users who opened likely clicked. Correlate with SIEM timeline for victim host activity.",
+        "tags":  [
+                     "phishing",
+                     "evidence"
+                 ],
+        "phases":  [
+                       2,
+                       3
+                   ]
+    },
+    {
+        "id":  "sc03-credentials-submitted",
+        "regex":  "credentials.*submitted|captured.*username|form.*submitted|username.*password.*captured|gotcha|phish.*success",
+        "what":  "A victim submitted credentials to the phishing landing page.",
+        "why":  "Credential capture is a key escalation point because these credentials may give direct access to corporate systems.",
+        "next":  "Document the submitted identity, landing-page timestamp, and any follow-on authentication evidence as a finding.",
+        "tags":  [
+                     "phishing",
+                     "credentials",
+                     "finding"
+                 ],
+        "phases":  [
+                       3
+                   ]
+    },
+    {
+        "id":  "sc03-payload-generated",
+        "regex":  "msfvenom|payload.*generated|encoder.*shikata|\\-p windows|\\-f exe|\\-f hta|\\-f docm|stageless",
+        "what":  "A simulated payload marker is being prepared for the scenario.",
+        "why":  "Payload family, delivery format, and callback metadata determine the blue-team detection path.",
+        "next":  "Note the delivery format and callback indicators as IOCs without storing executable content.",
+        "tags":  [
+                     "exploitation",
+                     "payload"
+                 ],
+        "phases":  [
+                       2,
+                       3
+                   ]
+    },
+    {
+        "id":  "sc03-macro-execution",
+        "regex":  "WINWORD\\.EXE|EXCEL\\.EXE|4688|4104|cmd\\.exe.*WINWORD|powershell.*-enc|macro.*executed|AutoOpen|Document_Open",
+        "what":  "Office macro or script execution evidence is visible.",
+        "why":  "Process-creation telemetry (Sysmon EventID 1/4688) proves the payload was executed by a victim who opened the malicious document.",
+        "next":  "Correlate the execution time with the email open timestamp to build the delivery-to-execution timeline for your IR report.",
+        "tags":  [
+                     "execution",
+                     "blue-team",
+                     "finding"
+                 ],
+        "phases":  [
+                       3,
+                       4
+                   ]
+    },
+    {
+        "id":  "sc03-beacon-checkin",
+        "regex":  "beacon|check-in|meterpreter.*session|\\[\\*\\].*session.*opened|reverse.*connected|LHOST.*connected|shell.*session",
+        "what":  "A C2 session or callback channel is established.",
+        "why":  "Callback traffic establishes post-exploitation capability and gives defenders a high-value network IOC.",
+        "next":  "Document the callback IP, port, process context, and session timing as evidence.",
+        "tags":  [
+                     "c2",
+                     "exploitation",
+                     "finding"
+                 ],
+        "phases":  [
+                       4
+                   ]
+    },
+    {
+        "id":  "sc03-persistence",
+        "regex":  "schtasks|scheduled.*task|HKCU.*Run|HKLM.*Run|startup.*folder|WMI.*subscription|persistence.*created|autorun",
+        "what":  "Persistence mechanism being created on the victim host.",
+        "why":  "Persistence lets the attacker survive reboots. Scheduled tasks and registry run keys are the most common techniques (T1053/T1547).",
+        "next":  "Document the persistence key/path as #finding. Blue Team: this is what must be found during the Eradicate phase.",
+        "tags":  [
+                     "post-exploitation",
+                     "finding",
+                     "persistence"
+                 ],
+        "phases":  [
+                       4,
+                       5
+                   ]
+    },
+    {
+        "id":  "sc03-lateral-movement",
+        "regex":  "pivot|proxychains|pass.*hash.*domain|wmiexec.*lateral|psexec.*\\\\\\\\|smbexec|lateral.*move",
+        "what":  "Lateral movement from the initial victim host is in progress.",
+        "why":  "Pivoting from the phishing victim to internal hosts escalates from a workstation compromise to a network-wide incident.",
+        "next":  "Map the pivot path from initial victim to intermediate host to internal target. Each hop is a separate containment action in IR.",
+        "tags":  [
+                     "exploitation",
+                     "lateral-movement"
+                 ],
+        "phases":  [
+                       4,
+                       5
+                   ]
+    },
+    {
+        "id":  "sc03-data-staging",
+        "regex":  "7z|zip.*archive|rar.*archive|staging.*data|exfil|\\btar\\b.*cvzf|data.*compressed|archive.*created",
+        "what":  "Data is being staged or compressed for exfiltration.",
+        "why":  "Data staging and compression (T1074/T1560) is the penultimate step before exfiltration and a high data-impact indicator.",
+        "next":  "Document the staged file path and size as #evidence. The archive name and destination IP are critical IOCs for the IR report.",
+        "tags":  [
+                     "post-exploitation",
+                     "exfiltration",
+                     "finding"
+                 ],
+        "phases":  [
+                       5
+                   ]
+    },
+    {
+        "id":  "sc03-log-clearing",
+        "regex":  "1102|wevtutil.*cl|Clear-EventLog|auditpol|log.*cleared|event.*cleared|EventLog.*Security",
+        "what":  "Windows Event Log clearing activity detected (EventID 1102 or wevtutil).",
+        "why":  "Log clearing (T1070.001) is an attacker anti-forensics action and indicates the attacker knew about detection.",
+        "next":  "The 1102 event is self-logging. Document the time, subject account, and affected log as #evidence; this proves attacker access.",
+        "tags":  [
+                     "anti-forensics",
+                     "blue-team",
+                     "finding"
+                 ],
+        "phases":  [
+                       5
+                   ]
+    },
+    {
+        "id":  "sc03-exfil-dns",
+        "regex":  "dns.*tunnel|iodine|dnscat|TXT.*query.*[a-z0-9]{20}|base64.*dns|exfil.*dns",
+        "what":  "DNS tunneling or DNS exfiltration pattern detected.",
+        "why":  "DNS exfiltration bypasses traditional DLP and firewall egress rules by encoding data in DNS query labels.",
+        "next":  "Review DNS telemetry for long TXT queries or repeated subdomain lookups against the same domain and preserve the IOC pattern.",
+        "tags":  [
+                     "exfiltration",
+                     "c2",
+                     "blue-team"
+                 ],
+        "phases":  [
+                       5
+                   ]
+    }
 ]

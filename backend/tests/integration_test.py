@@ -338,7 +338,9 @@ async def test_09d_submit_flag_route(
         headers={"Authorization": f"Bearer {auth_token}"},
     )
     assert resp.status_code == 200
-    assert resp.json() == {"valid": False}
+    body = resp.json()
+    assert body["valid"] is False
+    assert body["hint"]
 
     # Submit a valid flag
     resp = await client.post(

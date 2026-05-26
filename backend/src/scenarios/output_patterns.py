@@ -1,18 +1,21 @@
 """Scenario output fingerprint scanner for terminal teaching moments."""
+
 from __future__ import annotations
 
 import json
 import re
-import time
+from hashlib import sha1
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from src.cache.redis import cache_set_if_absent
+
 _PATTERN_DIR = Path(__file__).resolve().parent / "patterns"
 _ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 _buffers: dict[str, str] = {}
-_last_emit: dict[tuple[str, str], float] = {}
-_EMIT_TTL_SECONDS = 45.0
+_INSIGHT_DEDUP_TTL_SECONDS = 300
+_INSIGHT_COOLDOWN_SECONDS = 30
 _GENERIC_PATTERNS_RAW: list[dict[str, Any]] = [
     {
         "id": "shell-tool-usage",
@@ -29,14 +32,6 @@ _GENERIC_PATTERNS_RAW: list[dict[str, Any]] = [
         "why": "Shell flags such as -dc-ip or --rules-file only work when they are attached to the tool command they configure.",
         "next": "Put every option on the same command line as the tool. If you split lines, keep the backslash at the end of each continued line and do not submit a blank continuation line.",
         "tags": ["shell", "syntax"],
-    },
-    {
-        "id": "shell-placeholder",
-        "regex": r"syntax error near unexpected token|<[^>\s]+>",
-        "what": "A placeholder or shell metacharacter was submitted literally.",
-        "why": "Examples that show values like <NTLM_HASH> are prompts to replace that text with evidence you already collected.",
-        "next": "Go back to the previous evidence step, copy the real value from your output, and replace the placeholder before rerunning.",
-        "tags": ["shell", "evidence"],
     },
     {
         "id": "wordlist-missing",
@@ -62,7 +57,9 @@ def _generic_patterns() -> list[dict[str, Any]]:
     patterns: list[dict[str, Any]] = []
     for item in _GENERIC_PATTERNS_RAW:
         try:
-            patterns.append({**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)})
+            patterns.append(
+                {**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)}
+            )
         except (KeyError, re.error):
             continue
     return patterns
@@ -79,7 +76,9 @@ def _load_patterns(scenario_id: str) -> list[dict[str, Any]]:
     patterns: list[dict[str, Any]] = []
     for item in raw:
         try:
-            patterns.append({**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)})
+            patterns.append(
+                {**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)}
+            )
         except (KeyError, re.error):
             continue
     return patterns
@@ -89,6 +88,20 @@ def _clean_output(text: str) -> str:
     return _ANSI_RE.sub("", text).replace("\r", "")
 
 
+def _phase_matches(pattern: dict[str, Any], current_phase: int | None) -> bool:
+    phases = pattern.get("phases")
+    if current_phase is None or not phases:
+        return True
+    return int(current_phase) in {int(phase) for phase in phases}
+
+
+def _dedup_key(session_id: str, insight: dict[str, Any]) -> str:
+    fingerprint = sha1(
+        f"{insight.get('id', '')}:{insight.get('next', '')}".encode("utf-8")
+    ).hexdigest()
+    return f"insight:{session_id}:dedup:{fingerprint}"
+
+
 _BANNER_GUARD = re.compile(
     r"RED OBJECTIVE|BLUE OBJECTIVE|CyberSim Training(?: Platform)?|"
     r"Type 'scope'|Tools(?: available)?:\s*(nmap|gobuster|sqlmap|smbclient|kerbrute)",
@@ -96,7 +109,12 @@ _BANNER_GUARD = re.compile(
 )
 
 
-def scan_output_chunk(session_id: str, scenario_id: str, chunk: str) -> list[dict[str, Any]]:
+async def scan_output_chunk(
+    session_id: str,
+    scenario_id: str,
+    chunk: str,
+    current_phase: int | None = None,
+) -> list[dict[str, Any]]:
     """Return teaching insights found in completed terminal output lines."""
     if not chunk:
         return []
@@ -114,7 +132,6 @@ def scan_output_chunk(session_id: str, scenario_id: str, chunk: str) -> list[dic
     if not complete_lines:
         return []
 
-    now = time.monotonic()
     insights: list[dict[str, Any]] = []
     for line in complete_lines[-30:]:
         if not line.strip():
@@ -122,41 +139,69 @@ def scan_output_chunk(session_id: str, scenario_id: str, chunk: str) -> list[dic
         line_matched_specific = False
         for pattern in _load_patterns(scenario_id):
             compiled = pattern.get("_compiled")
-            if not compiled or not compiled.search(line):
+            if (
+                not compiled
+                or not _phase_matches(pattern, current_phase)
+                or not compiled.search(line)
+            ):
                 continue
             line_matched_specific = True
-            emit_key = (session_id, pattern.get("id", "unknown"))
-            if now - _last_emit.get(emit_key, 0.0) < _EMIT_TTL_SECONDS:
+            insight = {
+                "id": pattern.get("id"),
+                "matched_line": line[-500:],
+                "what": pattern.get("what", "Interesting output fingerprint detected."),
+                "why": pattern.get(
+                    "why", "This line can guide the next investigation step."
+                ),
+                "next": pattern.get(
+                    "next",
+                    "Record the evidence and continue with the scenario methodology.",
+                ),
+                "tags": pattern.get("tags", []),
+            }
+            if not await cache_set_if_absent(
+                _dedup_key(session_id, insight), "1", ttl=_INSIGHT_DEDUP_TTL_SECONDS
+            ):
                 continue
-            _last_emit[emit_key] = now
-            insights.append(
-                {
-                    "id": pattern.get("id"),
-                    "matched_line": line[-500:],
-                    "what": pattern.get("what", "Interesting output fingerprint detected."),
-                    "why": pattern.get("why", "This line can guide the next investigation step."),
-                    "next": pattern.get("next", "Record the evidence and continue with the scenario methodology."),
-                    "tags": pattern.get("tags", []),
-                }
-            )
+            cooldown_key = f"insight:{session_id}:cooldown"
+            if not await cache_set_if_absent(
+                cooldown_key, insight["id"] or "insight", ttl=_INSIGHT_COOLDOWN_SECONDS
+            ):
+                continue
+            insights.append(insight)
+            break
         if line_matched_specific:
             continue
         for pattern in _generic_patterns():
             compiled = pattern.get("_compiled")
-            if not compiled or not compiled.search(line):
+            if (
+                not compiled
+                or not _phase_matches(pattern, current_phase)
+                or not compiled.search(line)
+            ):
                 continue
-            emit_key = (session_id, pattern.get("id", "unknown"))
-            if now - _last_emit.get(emit_key, 0.0) < _EMIT_TTL_SECONDS:
+            insight = {
+                "id": pattern.get("id"),
+                "matched_line": line[-500:],
+                "what": pattern.get("what", "Interesting output fingerprint detected."),
+                "why": pattern.get(
+                    "why", "This line can guide the next investigation step."
+                ),
+                "next": pattern.get(
+                    "next",
+                    "Record the evidence and continue with the scenario methodology.",
+                ),
+                "tags": pattern.get("tags", []),
+            }
+            if not await cache_set_if_absent(
+                _dedup_key(session_id, insight), "1", ttl=_INSIGHT_DEDUP_TTL_SECONDS
+            ):
                 continue
-            _last_emit[emit_key] = now
-            insights.append(
-                {
-                    "id": pattern.get("id"),
-                    "matched_line": line[-500:],
-                    "what": pattern.get("what", "Interesting output fingerprint detected."),
-                    "why": pattern.get("why", "This line can guide the next investigation step."),
-                    "next": pattern.get("next", "Record the evidence and continue with the scenario methodology."),
-                    "tags": pattern.get("tags", []),
-                }
-            )
+            cooldown_key = f"insight:{session_id}:cooldown"
+            if not await cache_set_if_absent(
+                cooldown_key, insight["id"] or "insight", ttl=_INSIGHT_COOLDOWN_SECONDS
+            ):
+                continue
+            insights.append(insight)
+            break
     return insights

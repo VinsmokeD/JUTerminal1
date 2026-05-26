@@ -1,10 +1,10 @@
 {
   "reconnaissance": [
     {
-      "id": "sc01_recon_nmap_syn",
-      "trigger_pattern": "nmap\\s+.*-sS|-sT|-sU",
+      "id": "sc01_recon_nmap_any",
+      "trigger_pattern": "^\\s*nmap\\b",
       "severity": "LOW",
-      "message": "Network reconnaissance: nmap SYN scan detected on NovaMed infrastructure",
+      "message": "Network reconnaissance: nmap scan detected against NovaMed infrastructure",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Nmap Scripting Engine User-Agent\",\n  \"alert.severity\": 3,\n  \"alert.category\": \"Web Application Attack\",\n  \"alert.signature_id\": \"2009358\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 52418,\n  \"destination.ip\": \"172.20.1.20\",\n  \"destination.port\": 80,\n  \"network.transport\": \"tcp\",\n  \"rule.id\": \"2009358\",\n  \"host.hostname\": \"novamed-waf\",\n  \"observer.product\": \"Suricata\",\n  \"observer.version\": \"7.0.3\"\n}",
       "mitre_technique": "T1046",
       "mitre_id": "T1046",
@@ -13,7 +13,7 @@
     },
     {
       "id": "sc01_recon_nmap_version",
-      "trigger_pattern": "nmap\\s+.*-sV|--version-intensity",
+      "trigger_pattern": "^\\s*nmap\\b(?=.*(?:\\s-sV\\b|\\s--version-intensity\\b)).*$",
       "severity": "LOW",
       "message": "Service enumeration: nmap version scan — web server fingerprinted",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"apache.access\",\n  \"event.category\": \"web\",\n  \"http.request.method\": \"GET\",\n  \"url.path\": \"/\",\n  \"http.response.status_code\": 200,\n  \"http.response.bytes\": 4823,\n  \"user_agent.original\": \"Mozilla/5.0 (compatible; Nmap Scripting Engine; https://nmap.org/book/nse.html)\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.1.20\",\n  \"destination.port\": 80,\n  \"host.hostname\": \"novamed-webapp\",\n  \"log.level\": \"info\"\n}",
@@ -24,7 +24,7 @@
     },
     {
       "id": "sc01_recon_nikto",
-      "trigger_pattern": "nikto|nikto\\.pl",
+      "trigger_pattern": "^\\s*(?:nikto|nikto\\.pl)\\b.*$",
       "severity": "MED",
       "message": "Web vulnerability scanner: Nikto scanner signature detected by WAF",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"modsecurity.audit\",\n  \"event.category\": \"intrusion_detection\",\n  \"event.type\": \"alert\",\n  \"rule.id\": \"920100\",\n  \"rule.description\": \"Invalid HTTP Request Line — Scanner detected\",\n  \"http.request.method\": \"GET\",\n  \"url.path\": \"/cgi-bin/test.cgi\",\n  \"user_agent.original\": \"Mozilla/5.00 (Nikto/2.1.6) (Evasions:None) (Test:map_codes)\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.1.1\",\n  \"destination.port\": 80,\n  \"modsecurity.action\": \"BLOCKED\",\n  \"modsecurity.anomaly_score\": 10,\n  \"host.hostname\": \"novamed-waf\",\n  \"observer.product\": \"ModSecurity/CRS\"\n}",
@@ -35,7 +35,7 @@
     },
     {
       "id": "sc01_recon_curl_probe",
-      "trigger_pattern": "curl\\s+.*172\\.20\\.1\\.",
+      "trigger_pattern": "^\\s*curl\\b(?=.*172\\.20\\.1\\.).*$",
       "severity": "LOW",
       "message": "HTTP probe: direct curl request to NovaMed target (172.20.1.20)",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"apache.access\",\n  \"event.category\": \"web\",\n  \"http.request.method\": \"GET\",\n  \"url.path\": \"/\",\n  \"http.response.status_code\": 200,\n  \"http.response.bytes\": 4823,\n  \"user_agent.original\": \"curl/7.88.1\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.1.20\",\n  \"destination.port\": 80,\n  \"host.hostname\": \"novamed-webapp\",\n  \"log.level\": \"info\"\n}",
@@ -45,8 +45,30 @@
       "category": "reconnaissance"
     },
     {
+      "id": "sc01_recon_whatweb",
+      "trigger_pattern": "^\\s*whatweb\\b(?=.*172\\.20\\.1\\.(?:1|20))(?:.*)$",
+      "severity": "LOW",
+      "message": "Web fingerprinting: WhatWeb technology probe against NovaMed web surface",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"apache.access\",\n  \"event.category\": \"web\",\n  \"http.request.method\": \"GET\",\n  \"url.path\": \"/\",\n  \"http.response.status_code\": 200,\n  \"http.response.bytes\": 4823,\n  \"user_agent.original\": \"WhatWeb/0.5.5\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.1.20\",\n  \"destination.port\": 80,\n  \"host.hostname\": \"novamed-webapp\",\n  \"log.level\": \"info\"\n}",
+      "mitre_technique": "T1595",
+      "mitre_id": "T1595",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    },
+    {
+      "id": "sc01_recon_dns_probe",
+      "trigger_pattern": "^\\s*dig\\b(?=.*172\\.20\\.1\\.(?:1|20))(?:.*)$",
+      "severity": "LOW",
+      "message": "Network reconnaissance: DNS-style probing of NovaMed infrastructure identifiers",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"dns.log\",\n  \"event.category\": \"network\",\n  \"event.type\": \"lookup\",\n  \"dns.question.name\": \"172.20.1.20\",\n  \"dns.question.type\": \"PTR\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.1.20\",\n  \"destination.port\": 53,\n  \"network.transport\": \"udp\",\n  \"host.hostname\": \"novamed-webapp\",\n  \"log.level\": \"info\"\n}",
+      "mitre_technique": "T1590",
+      "mitre_id": "T1590",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    },
+    {
       "id": "sc01_recon_ftp_probe",
-      "trigger_pattern": "ftp\\s+.*172\\.20\\.1\\.20|nmap\\s+.*-p\\s*21",
+      "trigger_pattern": "^\\s*(?:ftp\\b(?=.*172\\.20\\.1\\.20)|nmap\\b(?=.*(?:\\s-p\\s*21\\b|\\s-p21\\b))).*$",
       "severity": "LOW",
       "message": "FTP service enumeration: banner grab on vsftpd port 21",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"vsftpd.log\",\n  \"event.category\": \"authentication\",\n  \"event.type\": \"start\",\n  \"log.level\": \"info\",\n  \"message\": \"CONNECT: Client connect: ip_address={src_ip}\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 53102,\n  \"destination.ip\": \"172.20.1.20\",\n  \"destination.port\": 21,\n  \"service.name\": \"vsftpd\",\n  \"service.version\": \"3.0.5\",\n  \"host.hostname\": \"novamed-webapp\"\n}",
@@ -57,7 +79,7 @@
     },
     {
       "id": "sc01_recon_ssh_probe",
-      "trigger_pattern": "ssh\\s+.*172\\.20\\.1\\.20|nmap\\s+.*-p\\s*22",
+      "trigger_pattern": "^\\s*(?:ssh\\b(?=.*172\\.20\\.1\\.20)|nmap\\b(?=.*(?:\\s-p\\s*22\\b|\\s-p22\\b))).*$",
       "severity": "LOW",
       "message": "SSH service enumeration: SSH banner grab on port 22",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"sshd.log\",\n  \"event.category\": \"authentication\",\n  \"event.type\": \"start\",\n  \"process.name\": \"sshd\",\n  \"process.pid\": 1234,\n  \"message\": \"Connection from {src_ip} port 54871 on 172.20.1.20 port 22\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 54871,\n  \"destination.ip\": \"172.20.1.20\",\n  \"destination.port\": 22,\n  \"host.hostname\": \"novamed-webapp\",\n  \"log.level\": \"info\"\n}",
@@ -70,7 +92,7 @@
   "enumeration": [
     {
       "id": "sc01_enum_gobuster",
-      "trigger_pattern": "gobuster|dir.*-w|--wordlist",
+      "trigger_pattern": "^\\s*gobuster\\b.*$",
       "severity": "MED",
       "message": "Directory enumeration: gobuster 404 flood — 312 req/min from single source",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"modsecurity.audit\",\n  \"event.category\": \"intrusion_detection\",\n  \"rule.id\": \"913100\",\n  \"rule.description\": \"Found User-Agent associated with security scanner\",\n  \"http.request.method\": \"GET\",\n  \"url.path\": \"/api/v1/patients/../../../../etc/passwd\",\n  \"http.response.status_code\": 404,\n  \"request.rate_per_minute\": 312,\n  \"user_agent.original\": \"gobuster/3.6\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.1.1\",\n  \"modsecurity.action\": \"ALERT\",\n  \"host.hostname\": \"novamed-waf\"\n}",

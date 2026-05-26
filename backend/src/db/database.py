@@ -1,18 +1,25 @@
 import uuid
+import sys
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, JSON, Float
+from sqlalchemy.pool import NullPool
 from src.config import settings
 
-engine = create_async_engine(
-    settings.POSTGRES_URL,
-    echo=settings.ENVIRONMENT == "development",
-    pool_size=20,
-    max_overflow=5,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-)
+_running_under_pytest = any("pytest" in arg for arg in sys.argv)
+
+_engine_options = {
+    "echo": settings.ENVIRONMENT == "development",
+    "pool_pre_ping": True,
+    "pool_recycle": 3600,
+}
+if settings.ENVIRONMENT == "test" or _running_under_pytest:
+    _engine_options["poolclass"] = NullPool
+else:
+    _engine_options.update({"pool_size": 20, "max_overflow": 5})
+
+engine = create_async_engine(settings.POSTGRES_URL, **_engine_options)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 

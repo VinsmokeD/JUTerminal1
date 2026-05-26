@@ -42,6 +42,12 @@ class _Result:
     def fetchone(self):
         return self._one
 
+    def fetchall(self):
+        return list(self._many)
+
+    def scalar(self):
+        return self._one
+
     def all(self):
         return list(self._many)
 
@@ -180,6 +186,8 @@ async def test_notes_create_and_list_round_trip_behavior():
     sess = _session()
     db = _FakeDb(
         _Result(one=sess),
+        _Result(one=2),
+        _Result(many=[]),
         _Result(one=sess),
         _Result(many=[_note(), _note(id="note-2", tag="evidence")]),
     )
@@ -256,17 +264,20 @@ async def test_reports_consolidated_endpoint_rejects_missing_session():
     assert exc.value.status_code == 404
 
 
-def test_output_patterns_sc01_sqli_output_triggers_insight(monkeypatch):
+@pytest.mark.asyncio
+async def test_output_patterns_sc01_sqli_output_triggers_insight():
     from src.scenarios import output_patterns
+    from src.cache import redis as redis_cache
 
-    monkeypatch.setattr(output_patterns.time, "monotonic", lambda: 1000.0)
     output_patterns._buffers.clear()
-    output_patterns._last_emit.clear()
+    redis_cache._memory_cache.clear()
+    redis_cache._memory_expiries.clear()
 
-    insights = output_patterns.scan_output_chunk(
+    insights = await output_patterns.scan_output_chunk(
         "sess-sqli",
         "SC-01",
         "Parameter 'id' is vulnerable. Type: UNION query\n",
+        3,
     )
 
     assert [item["id"] for item in insights] == ["sc01-sqlmap-injectable"]
@@ -274,37 +285,44 @@ def test_output_patterns_sc01_sqli_output_triggers_insight(monkeypatch):
     assert "id" in insights[0]["matched_line"]
 
 
-def test_output_patterns_sc02_failed_auth_triggers_insight(monkeypatch):
+@pytest.mark.asyncio
+async def test_output_patterns_sc02_failed_auth_triggers_insight():
     from src.scenarios import output_patterns
+    from src.cache import redis as redis_cache
 
-    monkeypatch.setattr(output_patterns.time, "monotonic", lambda: 2000.0)
     output_patterns._buffers.clear()
-    output_patterns._last_emit.clear()
+    redis_cache._memory_cache.clear()
+    redis_cache._memory_expiries.clear()
 
-    insights = output_patterns.scan_output_chunk(
+    insights = await output_patterns.scan_output_chunk(
         "sess-auth",
         "SC-02",
         "STATUS_LOGON_FAILURE for user jsmith during password spray\n",
+        3,
     )
 
     assert [item["id"] for item in insights] == ["sc02-password-spray"]
     assert "Password spray" in insights[0]["what"]
 
 
-def test_output_patterns_empty_chunk_returns_empty_list():
+@pytest.mark.asyncio
+async def test_output_patterns_empty_chunk_returns_empty_list():
     from src.scenarios.output_patterns import scan_output_chunk
 
-    assert scan_output_chunk("sess-empty", "SC-01", "") == []
+    assert await scan_output_chunk("sess-empty", "SC-01", "") == []
 
 
-def test_output_patterns_partial_line_is_buffered_not_emitted():
+@pytest.mark.asyncio
+async def test_output_patterns_partial_line_is_buffered_not_emitted():
     from src.scenarios import output_patterns
+    from src.cache import redis as redis_cache
 
     output_patterns._buffers.clear()
-    output_patterns._last_emit.clear()
+    redis_cache._memory_cache.clear()
+    redis_cache._memory_expiries.clear()
 
-    first = output_patterns.scan_output_chunk("sess-partial", "SC-01", "available databases")
-    second = output_patterns.scan_output_chunk("sess-partial", "SC-01", " [2]: novamed\n")
+    first = await output_patterns.scan_output_chunk("sess-partial", "SC-01", "available databases", 4)
+    second = await output_patterns.scan_output_chunk("sess-partial", "SC-01", " [2]: novamed\n", 4)
 
     assert first == []
     assert second[0]["id"] == "sc01-sqlmap-dbs"

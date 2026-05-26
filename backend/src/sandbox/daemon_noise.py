@@ -97,7 +97,7 @@ _NOISE_PROFILES: dict[str, dict] = {
     },
     "SC-03": {
         "http_targets": [
-            "http://172.20.3.40:3333/",
+            "http://172.20.3.10:3333/",
         ],
         "siem_events": [
             {

@@ -8,13 +8,13 @@
           "Step 3: Write down the simulated domain, likely email pattern, target role, and pretext idea before touching GoPhish."
         ],
         "L2": [
-          "Step 1: Scope the scenario network: mail relay 172.20.3.20, victim endpoint 172.20.3.30, GoPhish 172.20.3.40.",
+          "Step 1: Scope the scenario network: mail relay 172.20.3.20, victim endpoint 172.20.3.30, GoPhish 172.20.3.10.",
           "Step 2: Gather simulated OSINT for Orion Logistics. Look for employee names, department names, email formats, and business language you can reuse in the pretext.",
           "Step 3: Choose one target persona and one believable reason for the email. Keep it simple: invoice approval, shipment exception, or helpdesk verification."
         ],
         "L3": [
           "Step 1: Run `theHarvester -d orion-logistics.local -b all` if available. If the tool returns little data, document that result and use the scenario-provided persona.",
-          "Step 2: Check GoPhish reachability with `curl http://172.20.3.40:3333` and note whether the admin UI responds.",
+          "Step 2: Check GoPhish reachability with `curl http://172.20.3.10:3333` and note whether the admin UI responds.",
           "Step 3: Draft a one-sentence pretext: who is sending, why the recipient expects it, what action is requested, and what urgency is present.",
           "Step 4: Add a #finding note with the target persona, email format, chosen pretext, and why it fits Orion Logistics."
         ]
@@ -26,12 +26,12 @@
           "Step 3: Tracking matters. You need to measure sent, opened, clicked, submitted, and callback/execution events."
         ],
         "L2": [
-          "Step 1: Use GoPhish at 172.20.3.40:3333 and the internal SMTP relay at 172.20.3.20:25.",
+          "Step 1: Use GoPhish at 172.20.3.10:3333 and the internal SMTP relay at 172.20.3.20:25.",
           "Step 2: The email should match your Phase 1 pretext. Keep the action clear and realistic, and avoid overcomplicated wording.",
           "Step 3: The landing page should be a simulated Orion login or document portal. It must stay inside the lab and use simulated credentials only."
         ],
         "L3": [
-          "Step 1: Open GoPhish at `http://172.20.3.40:3333`. Use the scenario-provided credentials or the lab default shown in the container docs if prompted.",
+          "Step 1: Open GoPhish at `http://172.20.3.10:3333`. Use the scenario-provided credentials or the lab default shown in the container docs if prompted.",
           "Step 2: Create Sending Profile: SMTP host `172.20.3.20:25`, from address under `orion-logistics.local`, and a clear display name.",
           "Step 3: Create or select a target group with simulated recipients only.",
           "Step 4: Create an email template tied to your pretext. Include one tracked link to the lab landing page.",

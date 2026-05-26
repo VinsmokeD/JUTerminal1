@@ -2,7 +2,12 @@
 Phase 28 — Scenario Depth, Randomization & Dynamic Security.
 
 Deterministic session-level randomization seeded from MD5(session_id).
-Demo/test sessions are bypassed to preserve baseline testing pipelines.
+
+Default CyberSim sessions now use the static YAML flag values because instructor
+demos, docs, and the AI tutor all teach from the published scenario artifacts.
+Randomization remains available only when the session start API explicitly asks
+for it. This keeps viva/demo runs reproducible while preserving the production
+variant machinery for later classroom cohorts.
 """
 from __future__ import annotations
 
@@ -15,6 +20,8 @@ import uuid
 from typing import Any
 
 import logging
+
+from src.scenarios.loader import load_scenario
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +64,6 @@ _SC01_FLAG_PATHS: list[str] = [
 _SC01_DB_USERS: list[str] = ["novamed_app", "nm_service", "webuser", "api_prod"]
 _SC01_DB_PASSES: list[str] = ["P@ssw0rd!", "Nm@2024!", "S3rv1ce#!", "Pr0d!2025"]
 _SC01_VULNS: list[str] = ["sqli", "lfi"]
-_SC01_TARGET_IPS: list[str] = ["172.20.1.20", "172.20.1.25", "172.20.1.30"]
 
 # SC-02 randomization pools
 _SC02_DC_HOSTS: list[str] = ["NEXORA-DC01", "NEXORA-DC02", "NEXORA-AD01"]
@@ -71,7 +77,6 @@ _SC02_KERBEROASTABLE_SPNS: list[str] = [
     "svc_sql/NEXORA-DC01.nexora.local",
     "svc_iis/NEXORA-DC01.nexora.local",
 ]
-_SC02_TARGET_IPS: list[str] = ["172.20.2.20", "172.20.2.21", "172.20.2.22"]
 
 # SC-03 randomization pools
 _SC03_SUBJECTS: list[str] = [
@@ -91,7 +96,22 @@ _SC03_RELAY_ROUTES: list[str] = [
     "smtp.orion-internal.sim",
     "relay01.orion-logistics.sim",
 ]
-_SC03_TARGET_IPS: list[str] = ["172.20.3.20", "172.20.3.21", "172.20.3.22"]
+
+
+def _primary_target_ip(scenario_id: str) -> str:
+    spec = load_scenario(scenario_id)
+    for key in ("targets", "containers"):
+        for target in spec.get(key, []) or []:
+            if isinstance(target, dict) and target.get("ip"):
+                return str(target["ip"])
+
+    network = spec.get("network", {})
+    if isinstance(network, dict):
+        for host in network.get("hosts", []) or []:
+            if isinstance(host, dict) and host.get("ip"):
+                return str(host["ip"])
+
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +141,7 @@ def generate_randomized_session_metadata(
         db_user = rng.choice(_SC01_DB_USERS)
         db_pass = rng.choice(_SC01_DB_PASSES)
         primary_vuln = rng.choice(_SC01_VULNS)
-        target_ip = rng.choice(_SC01_TARGET_IPS)
+        target_ip = _primary_target_ip(scid)
         flag_value = f"FLAG{{NovaMed_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
         return {
             "seed": get_seed(session_id),
@@ -143,7 +163,7 @@ def generate_randomized_session_metadata(
         dc_host = rng.choice(_SC02_DC_HOSTS)
         gpp_dir = rng.choice(_SC02_GPP_DIRS)
         spn = rng.choice(_SC02_KERBEROASTABLE_SPNS)
-        target_ip = rng.choice(_SC02_TARGET_IPS)
+        target_ip = _primary_target_ip(scid)
         flag_value = f"FLAG{{Nexora_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
         return {
             "seed": get_seed(session_id),
@@ -165,7 +185,7 @@ def generate_randomized_session_metadata(
         subject = rng.choice(_SC03_SUBJECTS)
         pretext = rng.choice(_SC03_PRETEXTS)
         relay = rng.choice(_SC03_RELAY_ROUTES)
-        target_ip = rng.choice(_SC03_TARGET_IPS)
+        target_ip = _primary_target_ip(scid)
         flag_value = f"FLAG{{Orion_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
         return {
             "seed": get_seed(session_id),
@@ -208,13 +228,7 @@ def build_iptables_rules(
     scid = scenario_id.upper()
     virtual_ip = metadata.get("target_ip", "")
 
-    # Static real IPs per scenario
-    real_ips: dict[str, str] = {
-        "SC-01": "172.20.1.20",
-        "SC-02": "172.20.2.20",
-        "SC-03": "172.20.3.20",
-    }
-    real_ip = real_ips.get(scid, "")
+    real_ip = _primary_target_ip(scid)
 
     if not virtual_ip or not real_ip or virtual_ip == real_ip:
         return []

@@ -11,7 +11,9 @@ Responsibilities:
 from __future__ import annotations
 
 import json
+import ntpath
 import re
+import shlex
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -26,6 +28,7 @@ from src.scenarios.loader import (
     get_methodology_gate,
     get_soc_events,
     get_flags,
+    get_scoring,
     load_scenario,
 )
 
@@ -228,7 +231,9 @@ async def validate_flag(
             return {"valid": True, "already_captured": True, "flag_id": flag_id}
 
         # ── Award points ───────────────────────────────────────────────────
-        points = flag.get("points", 0)
+        points = flag.get("points")
+        if points is None:
+            points = get_scoring(scenario_id, "red").get("flag_bonuses", {}).get(flag_id, 0)
         captured.append(flag_id)
         cached["flags_captured"] = captured
         cached["score"] = cached.get("score", 100) + points
@@ -255,7 +260,15 @@ async def validate_flag(
             "points_awarded": points,
         }
 
-    return {"valid": False}
+    hints = [
+        str(flag.get("on_wrong_attempt_hint", "")).strip()
+        for flag in effective_flags
+        if str(flag.get("on_wrong_attempt_hint", "")).strip()
+    ]
+    response: dict[str, Any] = {"valid": False}
+    if hints:
+        response["hint"] = hints[0]
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -269,9 +282,15 @@ def _parse_tool(command: str) -> str:
     # Strip sudo, env vars, full paths
     cmd = command.strip()
     cmd = re.sub(r"^sudo\s+", "", cmd)
-    cmd = re.sub(r"^[A-Z_]+=\S+\s+", "", cmd)  # strip env vars like FOO=bar
-    parts = cmd.split()
-    joined = " ".join(parts).lower()
+    try:
+        parts = shlex.split(cmd, posix=True)
+    except ValueError:
+        parts = cmd.split()
+    while parts and "=" in parts[0]:
+        parts = parts[1:]
+    if not parts:
+        return ""
+
     impacket_aliases = {
         "getuserspns": "impacket-getuserspns",
         "secretsdump": "impacket-secretsdump",
@@ -281,13 +300,13 @@ def _parse_tool(command: str) -> str:
         "ticketer": "impacket-ticketer",
         "getnpusers": "impacket-getnpusers",
     }
+    first_token = ntpath.basename(parts[0].split("/")[-1]).lower()
+    first_token = first_token.removesuffix(".py")
     for marker, canonical in impacket_aliases.items():
-        if marker in joined:
+        if first_token == marker or first_token == f"impacket-{marker}":
             return canonical
 
-    # Take first token, strip leading path
-    first_token = parts[0] if parts else ""
-    return first_token.split("/")[-1].lower()
+    return first_token
 
 
 async def _get_current_phase(session_id: str, db: AsyncSession) -> int:
@@ -298,6 +317,8 @@ async def _get_current_phase(session_id: str, db: AsyncSession) -> int:
         select(DbSession.phase).where(DbSession.id == session_id)
     )
     row = result.scalar_one_or_none()
+    if hasattr(row, "phase"):
+        return int(row.phase)
     return int(row) if row else 1
 
 
@@ -328,14 +349,20 @@ async def _check_completion_signals(
     # 1. Tools used check
     required_tools: list[str] = signals.get("tools_used", [])
     if required_tools:
+        required = {t.lower() for t in required_tools}
         result = await db.execute(
             select(CommandLog.tool).where(
                 CommandLog.session_id == session_id,
-                CommandLog.tool.in_([t.lower() for t in required_tools]),
+                CommandLog.tool.in_(required),
             ).distinct()
         )
         used_tools = {row[0] for row in result.fetchall()}
-        if not any(t.lower() in used_tools for t in required_tools):
+        alternatives = {"gobuster", "ffuf", "dirb"}
+        if required & alternatives:
+            tools_satisfied = bool(required & used_tools)
+        else:
+            tools_satisfied = required.issubset(used_tools)
+        if not tools_satisfied:
             return False
 
     # 2. Minimum notes check

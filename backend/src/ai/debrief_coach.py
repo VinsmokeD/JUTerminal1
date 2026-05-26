@@ -73,48 +73,7 @@ FALLBACK_DEBRIEF = {
     }
 }
 
-# Regex to scrub flags and common credential patterns
-FLAG_REGEX = re.compile(r"FLAG\{[A-Za-z0-9_]+\}", re.IGNORECASE)
-CREDENTIAL_REGEX = re.compile(r"\b(password|passwd|pass|key|hash|secret|token|credential)\s*[:=]\s*([^\s,;\"']+)", re.IGNORECASE)
-
-def redact_text(text: str, session_metadata: dict | None) -> str:
-    """Scrub flags and dynamic credentials from text."""
-    if not text:
-        return ""
-    
-    # 1. Regex scrubbing
-    text = FLAG_REGEX.sub("[REDACTED_FLAG]", text)
-    
-    # 2. Scrub password/hash patterns
-    text = CREDENTIAL_REGEX.sub(r"\1: [REDACTED_CREDENTIAL]", text)
-    
-    # 3. Dynamic metadata scrubbing
-    if session_metadata:
-        # Collect values to redact (like generated flag hashes, randomized passwords/usernames)
-        sensitive_vals = []
-        
-        # Helper to extract strings from nested metadata dictionary
-        def extract_strings(val):
-            if isinstance(val, str):
-                if len(val) >= 4:  # Only redact meaningful strings
-                    sensitive_vals.append(val)
-            elif isinstance(val, dict):
-                for k, v in val.items():
-                    extract_strings(v)
-            elif isinstance(val, list):
-                for item in val:
-                    extract_strings(item)
-                    
-        extract_strings(session_metadata)
-        
-        # Redact each unique value
-        for val in sorted(set(sensitive_vals), key=len, reverse=True):
-            # Don't redact common short strings
-            if val in ("true", "false", "null", "none", "admin", "user"):
-                continue
-            text = text.replace(val, "[REDACTED_METADATA_SECRET]")
-            
-    return text
+from src.ai.security import redact_text
 
 async def generate_debrief_coaching(session_id: str, report_data: dict, db: AsyncSession) -> dict:
     """
@@ -191,13 +150,14 @@ Strict constraints:
 Do not wrap your response in markdown code blocks. Just return the JSON object."""
 
     payload = {
-        "model": "deepseek/deepseek-chat-v3-0324",
-        "max_tokens": 450,
+        "model": settings.OPENROUTER_MODEL,
+        "max_tokens": 800,
         "temperature": 0.3,
         "messages": [
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": f"Here is the student session context:\n{scrubbed_context}"},
         ],
+        "reasoning_effort": "xhigh",
     }
     headers = {
         "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
@@ -298,13 +258,14 @@ Constraints:
     scrubbed_question = redact_text(question, metadata)
     
     payload = {
-        "model": "deepseek/deepseek-chat-v3-0324",
+        "model": settings.OPENROUTER_MODEL,
         "max_tokens": 150,
         "temperature": 0.4,
         "messages": [
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": f"Student question: {scrubbed_question}"},
         ],
+        "reasoning_effort": "xhigh",
     }
     headers = {
         "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",

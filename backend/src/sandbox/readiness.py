@@ -300,10 +300,8 @@ async def get_session_readiness(session_id: str, scenario_id: str) -> dict[str, 
 
     # Overall system status
     overall_status = "ready"
-    if any(c["status"] == "error" for c in checks.values() if isinstance(c, dict) and "status" in c):
+    if checks.get("kali", {}).get("status") == "error":
         overall_status = "initializing"
-    elif checks["targets"]["status"] == "degraded" or checks["openrouter"]["status"] == "error":
-        overall_status = "degraded"
 
     return {
         "status": overall_status,

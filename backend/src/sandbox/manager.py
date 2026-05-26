@@ -8,6 +8,8 @@ import subprocess
 from pathlib import Path
 from typing import Tuple, Optional
 
+from sqlalchemy import select
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -17,11 +19,20 @@ try:
     _docker_available = True
 except ImportError:
     _docker_available = False
-    class DockerException(Exception): pass
-    class APIError(Exception): pass
-    class NotFound(Exception): pass
+
+    class DockerException(Exception):
+        pass
+
+    class APIError(Exception):
+        pass
+
+    class NotFound(Exception):
+        pass
+
 
 from src.config import settings
+from src.cache.redis import cache_get, cache_set
+from src.db.database import AsyncSessionLocal, Session
 
 # v2.0 guardrail — hardcoded, not configurable at runtime
 _CPU_PERIOD = 100000
@@ -106,6 +117,37 @@ async def exec_command(container_id: str, command: str) -> str:
         return f"[mock] {command}"
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, _exec_sync, container_id, command)
+
+
+async def get_kali_ip_for_session(session_id: str) -> str | None:
+    """Return the live Kali container IP for a session, with Redis caching."""
+    cache_key = f"session:{session_id}:kali_ip"
+    cached_ip = await cache_get(cache_key)
+    if isinstance(cached_ip, str) and cached_ip:
+        return cached_ip
+
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            select(Session.container_id, Session.network_name).where(
+                Session.id == session_id
+            )
+        )
+        row = result.one_or_none()
+
+    if row is None:
+        return None
+
+    container_id, network_name = row
+    if not container_id or container_id.startswith("mock-"):
+        return None
+
+    loop = asyncio.get_running_loop()
+    ip_address = await loop.run_in_executor(
+        None, _get_container_network_ip_sync, container_id, network_name
+    )
+    if ip_address:
+        await cache_set(cache_key, ip_address, ttl=28800)
+    return ip_address
 
 
 # ---------------------------------------------------------------------------
@@ -235,13 +277,15 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
         }
 
         if sc_num == "sc02":
-            env_vars.update({
-                "SC_DOMAIN": "nexora.local",
-                "SC_REALM": "NEXORA.LOCAL",
-                "SC_DC_IP": "172.20.2.20",
-                "SC_DC_NAME": "nexora-dc01.nexora.local",
-                "SC_FS_IP": "172.20.2.40",
-            })
+            env_vars.update(
+                {
+                    "SC_DOMAIN": "nexora.local",
+                    "SC_REALM": "NEXORA.LOCAL",
+                    "SC_DC_IP": "172.20.2.20",
+                    "SC_DC_NAME": "nexora-dc01.nexora.local",
+                    "SC_FS_IP": "172.20.2.40",
+                }
+            )
 
         container = client.containers.run(
             image=settings.KALI_IMAGE,
@@ -305,7 +349,9 @@ EOF
         return container.id, network_name
 
     except (DockerException, APIError, RuntimeError) as exc:
-        logger.error(f"[Sandbox] Docker unavailable for session {session_id}, container {container_name}: {exc}")
+        logger.error(
+            f"[Sandbox] Docker unavailable for session {session_id}, container {container_name}: {exc}"
+        )
         if settings.ENVIRONMENT == "development":
             print(
                 f"[Sandbox] Docker unavailable for session {session_id}, container {container_name}; using mock: {exc}"
@@ -332,7 +378,9 @@ def _ensure_sync(
                 return container.id, network_name, False
             container.remove(force=True)
         except (NotFound, DockerException, APIError, RuntimeError) as exc:
-            logger.warning(f"[Sandbox] Failed to ensure existing container {container_id} for session {session_id}: {exc}")
+            logger.warning(
+                f"[Sandbox] Failed to ensure existing container {container_id} for session {session_id}: {exc}"
+            )
 
     new_container_id, new_network_name = _start_sync(session_id, scenario_id)
     return new_container_id, new_network_name, new_container_id != container_id
@@ -361,3 +409,25 @@ def _exec_sync(container_id: str, command: str) -> str:
     except (NotFound, DockerException, APIError, RuntimeError) as exc:
         logger.error(f"[Sandbox] Exec error in container {container_id}: {exc}")
         return f"[exec error] {exc}"
+
+
+def _get_container_network_ip_sync(
+    container_id: str, network_name: str | None
+) -> str | None:
+    try:
+        client = _get_client()
+        container = client.containers.get(container_id)
+        networks = container.attrs.get("NetworkSettings", {}).get("Networks", {})
+        if network_name and network_name in networks:
+            ip_address = networks[network_name].get("IPAddress")
+            if ip_address:
+                return str(ip_address)
+        for details in networks.values():
+            ip_address = details.get("IPAddress")
+            if ip_address:
+                return str(ip_address)
+    except (NotFound, DockerException, APIError, RuntimeError) as exc:
+        logger.warning(
+            "[Sandbox] Failed to inspect container %s IP: %s", container_id, exc
+        )
+    return None

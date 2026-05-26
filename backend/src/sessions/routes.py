@@ -17,6 +17,7 @@ class SessionStart(BaseModel):
     scenario_id: str
     role: str  # "red" | "blue"
     methodology: str = "ptes"
+    randomized: bool = False
 
 
 class RoeAck(BaseModel):
@@ -75,7 +76,7 @@ async def start_session(
     is_automated_test_user = current_user.username.startswith(("test_", "test-"))
     session_metadata = (
         {}
-        if is_automated_test_user
+        if is_automated_test_user or not body.randomized
         else generate_randomized_session_metadata(new_session_id, scenario_id)
     )
 
@@ -88,8 +89,8 @@ async def start_session(
         session_metadata=session_metadata or None,
     )
     db.add(session)
+    await record_activity(db, current_user.id, "scenario_start", session.id, {"scenario_id": scenario_id, "role": body.role})
     await db.commit()
-    await db.refresh(session)
 
     # Cache session state for fast access
     state = {
@@ -103,9 +104,6 @@ async def start_session(
         "roe_acknowledged": False,
     }
     await cache_set(f"session:{session.id}:state", state, ttl=28800)
-
-    await record_activity(db, current_user.id, "scenario_start", session.id, {"scenario_id": scenario_id, "role": body.role})
-    await db.commit()
 
     return _session_dict(session)
 

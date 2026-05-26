@@ -88,6 +88,20 @@ async def cache_set(key: str, value: Any, ttl: int | None = None) -> None:
         await _get().set(key, serialised)
 
 
+async def cache_set_if_absent(key: str, value: Any, ttl: int) -> bool:
+    if _use_memory_fallback():
+        if _memory_is_expired(key):
+            pass
+        elif key in _memory_cache:
+            return False
+        _memory_cache[key] = value
+        _memory_expiries[key] = time.time() + ttl
+        return True
+
+    serialised = json.dumps(value) if not isinstance(value, str) else value
+    return bool(await _get().set(key, serialised, ex=ttl, nx=True))
+
+
 async def cache_delete(key: str) -> None:
     if _use_memory_fallback():
         _memory_cache.pop(key, None)
@@ -128,7 +142,9 @@ async def lpush_capped(key: str, value: Any, max_len: int = 10) -> None:
     async with client.pipeline() as pipe:
         pipe.lpush(key, serialised)
         pipe.ltrim(key, 0, max_len - 1)
-        pipe.expire(key, 86400)  # 1-day TTL — prevents accumulation on abandoned sessions
+        pipe.expire(
+            key, 86400
+        )  # 1-day TTL — prevents accumulation on abandoned sessions
         await pipe.execute()
 
 

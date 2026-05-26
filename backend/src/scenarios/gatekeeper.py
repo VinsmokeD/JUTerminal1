@@ -17,6 +17,8 @@ Usage:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import ntpath
+import shlex
 
 
 @dataclass(frozen=True)
@@ -185,14 +187,16 @@ def _parse_tool(command: str) -> str:
         stripped = stripped[5:].lstrip()
 
     # Strip env var assignments (FOO=bar cmd → cmd)
-    parts = stripped.split()
+    try:
+        parts = shlex.split(stripped, posix=True)
+    except ValueError:
+        parts = stripped.split()
     while parts and "=" in parts[0]:
         parts = parts[1:]
 
     if not parts:
         return ""
 
-    joined = " ".join(parts).lower()
     impacket_aliases = {
         "getuserspns": "impacket-getuserspns",
         "secretsdump": "impacket-secretsdump",
@@ -202,9 +206,10 @@ def _parse_tool(command: str) -> str:
         "ticketer": "impacket-ticketer",
         "getnpusers": "impacket-getnpusers",
     }
+    executable = ntpath.basename(parts[0].split("/")[-1]).lower()
+    executable = executable.removesuffix(".py")
     for marker, canonical in impacket_aliases.items():
-        if marker in joined:
+        if executable == marker or executable == f"impacket-{marker}":
             return canonical
 
-    # Strip absolute path prefix
-    return parts[0].split("/")[-1].lower()
+    return executable

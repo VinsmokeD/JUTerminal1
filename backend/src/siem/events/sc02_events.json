@@ -1,8 +1,19 @@
 {
   "reconnaissance": [
     {
+      "id": "sc02_recon_nmap_any",
+      "trigger_pattern": "^\\s*nmap\\b",
+      "severity": "LOW",
+      "message": "Network reconnaissance: nmap invocation observed against the NEXORA domain network",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Nmap activity observed\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.2.20\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1046",
+      "mitre_id": "T1046",
+      "cwe": "CWE-200",
+      "category": "reconnaissance"
+    },
+    {
       "id": "sc02_recon_nmap_syn",
-      "trigger_pattern": "nmap\\s+.*-sS|-sT|nmap\\s+172\\.20\\.2",
+      "trigger_pattern": "^\\s*nmap\\b(?=.*172\\.20\\.2\\.)?.*$",
       "severity": "LOW",
       "message": "Network reconnaissance: port scan detected on NEXORA domain network segment",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Nmap Scripting Engine User-Agent Detected\",\n  \"alert.severity\": 3,\n  \"alert.category\": \"Attempted Information Leak\",\n  \"alert.signature_id\": \"2009358\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 53621,\n  \"destination.ip\": \"172.20.2.20\",\n  \"destination.port\": 445,\n  \"network.transport\": \"tcp\",\n  \"network.protocol\": \"smb\",\n  \"host.hostname\": \"NEXORA-DC01\",\n  \"observer.product\": \"Suricata\",\n  \"observer.version\": \"7.0.3\"\n}",
@@ -13,7 +24,7 @@
     },
     {
       "id": "sc02_recon_port_scan",
-      "trigger_pattern": "nmap\\s+.*-p|--ports",
+      "trigger_pattern": "^\\s*nmap\\b(?=.*(?:\\s-p\\b|\\s-p\\S|\\s--ports\\b)).*$",
       "severity": "LOW",
       "message": "Port scanning: targeted enumeration of AD service ports (88/389/445/636)",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Potential VNC Scan (5900)\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.2.20\",\n  \"destination.port\": 88,\n  \"network.transport\": \"tcp\",\n  \"network.protocol\": \"kerberos\",\n  \"note\": \"Kerberos port 88 probed — likely domain reconn\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
@@ -24,6 +35,39 @@
     }
   ],
   "enumeration": [
+    {
+      "id": "sc02_enum_enum4linux_any",
+      "trigger_pattern": "^\\s*enum4linux(?:\\.pl)?\\b",
+      "severity": "MED",
+      "message": "SMB enumeration: enum4linux invocation observed against NEXORA",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"network\",\n  \"winlog.event_id\": 5140,\n  \"user.name\": \"ANONYMOUS LOGON\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1087.002",
+      "mitre_id": "T1087.002",
+      "cwe": "CWE-200",
+      "category": "enumeration"
+    },
+    {
+      "id": "sc02_enum_smbclient_any",
+      "trigger_pattern": "^\\s*smbclient\\b",
+      "severity": "MED",
+      "message": "SMB enumeration: smbclient invocation observed against NEXORA shares",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"network\",\n  \"winlog.event_id\": 5140,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1087.002",
+      "mitre_id": "T1087.002",
+      "cwe": "CWE-200",
+      "category": "enumeration"
+    },
+    {
+      "id": "sc02_enum_ldapsearch_any",
+      "trigger_pattern": "^\\s*ldapsearch\\b",
+      "severity": "MED",
+      "message": "LDAP enumeration: ldapsearch invocation observed against NEXORA directory services",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"iam\",\n  \"winlog.event_id\": 4662,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1087.002",
+      "mitre_id": "T1087.002",
+      "cwe": "CWE-200",
+      "category": "enumeration"
+    },
     {
       "id": "sc02_enum_enum4linux",
       "trigger_pattern": "enum4linux|enum4linux\\.pl|smbclient|samba",
@@ -49,6 +93,17 @@
   ],
   "bloodhound": [
     {
+      "id": "sc02_bloodhound_any",
+      "trigger_pattern": "^\\s*(?:bloodhound-python|bloodhound\\.py)\\b",
+      "severity": "MED",
+      "message": "BloodHound collection tooling invoked for Active Directory attack-path enumeration",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"iam\",\n  \"winlog.event_id\": 4662,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1087.002",
+      "mitre_id": "T1087.002",
+      "cwe": "CWE-200",
+      "category": "enumeration"
+    },
+    {
       "id": "sc02_bloodhound_collection",
       "trigger_pattern": "BloodHound|bloodhound|Invoke-BloodHound|SharpHound",
       "severity": "HIGH",
@@ -72,6 +127,28 @@
     }
   ],
   "kerberos": [
+    {
+      "id": "sc02_kerberos_getuserspns_any",
+      "trigger_pattern": "^\\s*(?:python3?\\s+)?(?:/opt/impacket/examples/)?GetUserSPNs\\.py\\s+\\S",
+      "severity": "HIGH",
+      "message": "Kerberos enumeration: GetUserSPNs invoked for service-principal discovery",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"authentication\",\n  \"winlog.event_id\": 4769,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1558.003",
+      "mitre_id": "T1558.003",
+      "cwe": "CWE-327",
+      "category": "kerberos"
+    },
+    {
+      "id": "sc02_kerberos_getnpusers_any",
+      "trigger_pattern": "^\\s*(?:python3?\\s+)?(?:/opt/impacket/examples/)?GetNPUsers\\.py\\s+\\S",
+      "severity": "HIGH",
+      "message": "Kerberos enumeration: GetNPUsers invoked for AS-REP roast discovery",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"authentication\",\n  \"winlog.event_id\": 4768,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1558.004",
+      "mitre_id": "T1558.004",
+      "cwe": "CWE-327",
+      "category": "kerberos"
+    },
     {
       "id": "sc02_kerberos_tgt_request",
       "trigger_pattern": "krbtgt|TGT|AS-REQ|kinit",
@@ -108,6 +185,17 @@
   ],
   "lateral_movement": [
     {
+      "id": "sc02_lateral_psexec_any",
+      "trigger_pattern": "^\\s*(?:python3?\\s+)?(?:/opt/impacket/examples/)?(?:psexec|smbexec|wmiexec)\\.py\\s+\\S",
+      "severity": "HIGH",
+      "message": "Lateral movement tooling invoked: Impacket remote execution utility observed",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"network\",\n  \"winlog.event_id\": 5145,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-FS01\"\n}",
+      "mitre_technique": "T1021.002",
+      "mitre_id": "T1021.002",
+      "cwe": "CWE-200",
+      "category": "lateral_movement"
+    },
+    {
       "id": "sc02_lateral_psexec",
       "trigger_pattern": "psexec|Invoke-PSExec|paexec",
       "severity": "CRITICAL",
@@ -131,6 +219,17 @@
     }
   ],
   "dcsync": [
+    {
+      "id": "sc02_dcsync_secretsdump_any",
+      "trigger_pattern": "^\\s*(?:python3?\\s+)?(?:/opt/impacket/examples/)?secretsdump\\.py\\s+\\S",
+      "severity": "CRITICAL",
+      "message": "DCSync tooling invoked: secretsdump execution observed against NEXORA",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"winlog.security\",\n  \"event.category\": \"iam\",\n  \"winlog.event_id\": 4662,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"NEXORA-DC01\"\n}",
+      "mitre_technique": "T1003.006",
+      "mitre_id": "T1003.006",
+      "cwe": "CWE-327",
+      "category": "dcsync"
+    },
     {
       "id": "sc02_dcsync_replication",
       "trigger_pattern": "dcsync|GetNCChanges|DCSync|DsGetNCChanges",

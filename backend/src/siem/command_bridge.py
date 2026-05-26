@@ -4,6 +4,7 @@ The Elasticsearch poller remains the production-style SIEM path. This bridge
 keeps the student UI responsive during labs by emitting scenario event-map
 telemetry for commands that clearly match a training detection.
 """
+
 from __future__ import annotations
 
 import json
@@ -18,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.cache.redis import publish
 from src.db.database import SiemEvent
+from src.sandbox.manager import get_kali_ip_for_session
 
 _EVENTS_DIR = Path(__file__).resolve().parent / "events"
 _TRAILING_CONTINUATION = re.compile(r"\\\s*$")
@@ -104,16 +106,20 @@ async def create_command_siem_events(
     db: AsyncSession,
 ) -> list[dict[str, Any]]:
     """Persist SIEM events for command-map matches and return WS payloads."""
-    source_ip = _source_ip_for_scenario(scenario_id)
+    source_ip = await get_kali_ip_for_session(session_id) or _source_ip_for_scenario(
+        scenario_id
+    )
     now = datetime.now(timezone.utc)
     payloads: list[dict[str, Any]] = []
 
     for matched in match_command_events(command, scenario_id):
         event_id = str(uuid.uuid4())
         severity = str(matched.get("severity", "LOW")).upper()
-        raw_log = _render_raw_log(str(matched.get("raw_log", command)), command, source_ip, now)
+        raw_log = _render_raw_log(
+            str(matched.get("raw_log", command)), command, source_ip, now
+        )
         category = matched.get("category")
-        source = "attacker"
+        source = "educational_bridge"
 
         db.add(
             SiemEvent(
@@ -122,7 +128,8 @@ async def create_command_siem_events(
                 severity=severity,
                 message=str(matched.get("message", "Training detection matched.")),
                 raw_log=raw_log,
-                mitre_technique=matched.get("mitre_technique") or matched.get("mitre_id"),
+                mitre_technique=matched.get("mitre_technique")
+                or matched.get("mitre_id"),
                 source_ip=source_ip,
                 source=source,
                 created_at=now,
@@ -136,7 +143,8 @@ async def create_command_siem_events(
                 "severity": severity,
                 "message": str(matched.get("message", "Training detection matched.")),
                 "raw_log": raw_log,
-                "mitre_technique": matched.get("mitre_technique") or matched.get("mitre_id"),
+                "mitre_technique": matched.get("mitre_technique")
+                or matched.get("mitre_id"),
                 "source": source,
                 "source_ip": source_ip,
                 "category": category,
@@ -150,6 +158,8 @@ async def create_command_siem_events(
     return payloads
 
 
-async def publish_command_siem_events(session_id: str, events: list[dict[str, Any]]) -> None:
+async def publish_command_siem_events(
+    session_id: str, events: list[dict[str, Any]]
+) -> None:
     for event in events:
         await publish(f"siem:{session_id}:feed", event)

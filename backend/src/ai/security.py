@@ -1,8 +1,16 @@
 import re
+from typing import NamedTuple
 from datetime import datetime, timezone
 
 from src.config import settings
 from src.cache.redis import cache_get, cache_set, cache_increment
+
+
+class SanitizationResult(NamedTuple):
+    text: str
+    was_flagged: bool
+    violations: list[str]
+    fallback_category: str | None
 
 # Define injection patterns that we should strip or escape from student input
 _INJECTION_MARKERS = [
@@ -28,6 +36,92 @@ _SENSITIVE_KEY_PARTS = (
     "api_key",
 )
 _REDACTED_VALUE = "<REDACTED - student must discover>"
+
+FLAG_REGEX = re.compile(r"FLAG\{[A-Za-z0-9_]+\}|FLAG-SC\d+-\d+|kerberoast_hash|dcsync_krbtgt_nthash", re.IGNORECASE)
+CREDENTIAL_REGEX = re.compile(r"\b(password|passwd|pass|key|hash|secret|token|credential)\s*[:=]\s*([^\s,;\"']+)", re.IGNORECASE)
+
+FORBIDDEN_PATTERNS: list[tuple[re.Pattern, str, str]] = [
+    (re.compile(r"\b(sqlmap|hydra|hashcat|john|metasploit|msfconsole|gobuster|ffuf|nikto|wpscan|wfuzz|enum4linux|crackmapexec|impacket-\w+)\s+-\w", re.IGNORECASE), "tool_with_flag", "tool_choice"),
+    (re.compile(r"\bnmap\s+-[a-zA-Z]"), "nmap_flag", "recon"),
+    (re.compile(r"['\"]\s*OR\s+['\"]?\s*1\s*['\"]?\s*=\s*['\"]?\s*1", re.IGNORECASE), "sqli_tautology", "sqli"),
+    (re.compile(r"\badmin['\"]?\s*--"), "sqli_admin_bypass", "sqli"),
+    (re.compile(r"UNION\s+SELECT", re.IGNORECASE), "sqli_union", "sqli"),
+    (re.compile(r"<script[^>]*>", re.IGNORECASE), "xss_script_tag", "xss"),
+    (re.compile(r"\bon(error|load|click)\s*=", re.IGNORECASE), "xss_event_handler", "xss"),
+    (re.compile(r"javascript\s*:", re.IGNORECASE), "xss_js_uri", "xss"),
+    (re.compile(r"\.\./\.\./|\.\.%2f\.\.%2f", re.IGNORECASE), "path_traversal", "lfi"),
+    (re.compile(r"\$\{jndi:", re.IGNORECASE), "log4shell", "deserialization"),
+    (re.compile(r"P@ssw0rd_NovaMed_2023!", re.IGNORECASE), "lab_cred_novamed", "credential"),
+    (re.compile(r"WebAppPass2024!", re.IGNORECASE), "lab_cred_webapp", "credential"),
+    (re.compile(r"Password123\b"), "lab_cred_jsmith", "credential"),
+    (re.compile(r"Backup2023!"), "lab_cred_svcbackup", "credential"),
+]
+
+
+SOCRATIC_FALLBACKS: dict[str, str] = {
+    "tool_choice": "What category of tool fits this phase? Before picking flags, what do you need to learn about the target?",
+    "recon": "What information do you need first? How would you discover what services are exposed without testing each port by hand?",
+    "sqli": "What character would break out of a SQL string literal? Once you've escaped that string context, what kind of logical condition would change the query's outcome regardless of the original value?",
+    "xss": "Where does user input end up rendered in the response? What HTML context is it placed inside?",
+    "lfi": "Where in the URL does the application accept a filename? What sequence moves a path up one directory level, and how many levels up is the file you want?",
+    "deserialization": "What kind of data does this endpoint deserialize? What would happen if the object had a side effect on construction?",
+    "credential": "Credentials are recovered through technique, not asked for. What attack class fits this account type, and what would you extract to attack it offline?",
+    "default": "Let's take a step back. What is your current goal in this phase, and what concept are you trying to apply?",
+}
+
+
+def sanitize_tutor_response(text: str) -> SanitizationResult:
+    """
+    Critical: do NOT match on /etc/passwd, /etc/shadow, or topic-name-only patterns.
+    Mentioning a sensitive file name in a conceptual context is permitted education.
+    Only payload shapes are filtered.
+    """
+    if not text:
+        return SanitizationResult(text=text, was_flagged=False, violations=[], fallback_category=None)
+
+    violations: list[str] = []
+    triggered_category: str | None = None
+
+    for pattern, label, category in FORBIDDEN_PATTERNS:
+        if pattern.search(text):
+            violations.append(label)
+            if triggered_category is None:
+                triggered_category = category
+
+    if violations:
+        clean = SOCRATIC_FALLBACKS.get(triggered_category or "default", SOCRATIC_FALLBACKS["default"])
+        return SanitizationResult(text=clean, was_flagged=True, violations=violations, fallback_category=triggered_category)
+
+    return SanitizationResult(text=text, was_flagged=False, violations=[], fallback_category=None)
+
+def redact_text(text: str, session_metadata: dict | None = None) -> str:
+    if not text:
+        return ""
+    # 1. Dynamic metadata scrubbing first to ensure exact strings in metadata
+    # are caught before regexes modify them
+    if session_metadata:
+        sensitive_vals = []
+        def extract_strings(val):
+            if isinstance(val, str):
+                if len(val) >= 4:
+                    sensitive_vals.append(val)
+            elif isinstance(val, dict):
+                for k, v in val.items():
+                    extract_strings(v)
+            elif isinstance(val, list):
+                for item in val:
+                    extract_strings(item)
+        extract_strings(session_metadata)
+        for val in sorted(set(sensitive_vals), key=len, reverse=True):
+            if val in ("true", "false", "null", "none", "admin", "user"):
+                continue
+            text = text.replace(val, "[REDACTED_METADATA_SECRET]")
+
+    # 2. Regex scrubbing
+    text = FLAG_REGEX.sub("[REDACTED_FLAG]", text)
+    # 3. Scrub password/hash patterns
+    text = CREDENTIAL_REGEX.sub(r"\1: [REDACTED_CREDENTIAL]", text)
+    return text
 
 
 def sanitize_untrusted(text: str | None) -> str:

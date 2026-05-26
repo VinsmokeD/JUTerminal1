@@ -48,9 +48,12 @@ COPY index.php /var/www/html/index.php
 COPY robots.txt /var/www/html/robots.txt
 COPY swagger.json /var/www/html/swagger.json
 COPY .env_leak /var/www/html/.env.bak
-COPY backup.zip /var/www/html/backup.zip
+COPY db_backup.sql /tmp/db_backup.sql
 COPY phpmyadmin/ /var/www/html/phpmyadmin/
 COPY git-seed/ /var/www/html/.git/
+COPY records-index.php /var/www/html/records/index.php
+RUN mkdir -p /var/www/html/admin
+COPY admin-config.php /var/www/html/admin/config.php
 
 # Create upload directory (writable — intentional for file upload vuln)
 RUN mkdir -p /var/www/html/uploads && chmod 777 /var/www/html/uploads
@@ -59,12 +62,32 @@ COPY uploads.htaccess /var/www/html/uploads/.htaccess
 # Create fake records
 RUN mkdir -p /var/www/html/records && \
     echo "Patient: John Smith\nDOB: 1985-03-12\nDiagnosis: Hypertension\nSSN: 123-45-6789" > /var/www/html/records/patient_1.txt && \
-    echo "Patient: Mary Johnson\nDOB: 1990-07-04\nDiagnosis: Type 2 Diabetes\nSSN: 987-65-4321" > /var/www/html/records/patient_2.txt
+    echo "Patient: Mary Johnson\nDOB: 1990-07-04\nDiagnosis: Type 2 Diabetes\nSSN: 987-65-4321" > /var/www/html/records/patient_2.txt && \
+    mkdir -p /var/www/html/backup && \
+    gzip -c /tmp/db_backup.sql > /var/www/html/backup/db_backup.sql.gz && \
+    rm -f /tmp/db_backup.sql
 
 # Apache ServerTokens — intentional information disclosure for training
 RUN echo "ServerSignature On" >> /etc/apache2/apache2.conf && \
     echo "ServerTokens Full" >> /etc/apache2/apache2.conf && \
-    echo 'Header set X-Powered-By "PHP/7.4.3"' > /etc/apache2/conf-enabled/novamed-headers.conf
+    echo 'Header set X-Powered-By "PHP/7.4.33"' > /etc/apache2/conf-enabled/novamed-headers.conf && \
+    printf '%s\n' \
+        'AliasMatch ^/records/?$ /var/www/html/records/index.php' \
+        '<Directory /var/www/html/records>' \
+        '    Options +Indexes' \
+        '    DirectorySlash Off' \
+        '    Require all granted' \
+        '</Directory>' \
+        '<Directory /var/www/html/backup>' \
+        '    Options +Indexes' \
+        '    Require all granted' \
+        '</Directory>' \
+        '<Directory /var/www/html>' \
+        '    AllowOverride All' \
+        '    Require all granted' \
+        '</Directory>' \
+        'FallbackResource /index.php' \
+        > /etc/apache2/conf-enabled/novamed-routes.conf
 
 # Add entrypoint script
 COPY entrypoint.sh /usr/local/bin/

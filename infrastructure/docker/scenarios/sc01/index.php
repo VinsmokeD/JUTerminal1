@@ -5,6 +5,8 @@
 
 session_start();
 
+$request_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
+
 function db() {
     static $pdo;
     if (!$pdo) {
@@ -17,6 +19,11 @@ function db() {
 }
 
 $page = $_GET['page'] ?? 'login';
+if ($request_path === '/login') {
+    $page = 'login';
+} elseif ($request_path === '/records') {
+    $page = 'records';
+}
 $error = '';
 $success = '';
 
@@ -88,15 +95,28 @@ if ($page === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // --- API endpoints ---
-if (strpos($_SERVER['REQUEST_URI'], '/api/v1/patients') !== false) {
+if (preg_match('#^/api/v1/patients(?:/(\d+))?/?$#', $request_path, $matches)) {
     header('Content-Type: application/json');
-    $id = (int)($_GET['id'] ?? 0);
+    $id = (int)($matches[1] ?? ($_GET['id'] ?? 0));
     if ($id) {
         // EDUCATIONAL FLAW: no authorization check - IDOR
-        $stmt = db()->prepare("SELECT id, name, dob, diagnosis FROM patients WHERE id = ?");
+        $stmt = db()->prepare("SELECT id, name, dob, diagnosis, ssn FROM patients WHERE id = ?");
         $stmt->execute([$id]);
         $patient = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo json_encode($patient ?: ['error' => 'Not found']);
+        if ($patient) {
+            $response = [
+                'id' => (int)$patient['id'],
+                'name' => $patient['name'],
+                'dob' => $patient['dob'],
+                'ssn' => $patient['ssn'],
+                'notes' => $patient['diagnosis'],
+                'flag' => ((int)$patient['id'] === 1042) ? 'Patient 1042: Aisha Rahman' : null,
+            ];
+            echo json_encode($response);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Not found']);
+        }
     } else {
         $patients = db()->query("SELECT id, name FROM patients LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($patients);
@@ -149,7 +169,7 @@ if (strpos($_SERVER['REQUEST_URI'], '/api/v1/patients') !== false) {
 <div class="card">
   <h2>Patient Login</h2>
   <!-- TODO: migrate from MD5, ticket NM-1284 -->
-  <!-- Legacy backup path moved; verify /backup.zip is no longer public before HIPAA audit. -->
+  <!-- Legacy backup exposure persists at /backup/ and must be remediated before the HIPAA audit. -->
   <?php if ($error): ?><div class="error"><?= $error ?></div><?php endif; ?>
   <form method="POST" action="?page=login">
     <label>Username</label>
@@ -224,7 +244,7 @@ if (strpos($_SERVER['REQUEST_URI'], '/api/v1/patients') !== false) {
 <?php endif; ?>
 
 <!-- INTENTIONAL: Server version disclosure via comment -->
-<!-- Apache/2.4.49 (Ubuntu) PHP/7.4.3 -->
+<!-- Apache/2.4.54 (Debian) PHP/7.4.33 -->
 <footer style="margin-top:24px;color:#777;font-size:12px;text-align:center">
   &copy; 2023 NovaMed Healthcare LLC | Powered by HealthStack CMS
 </footer>

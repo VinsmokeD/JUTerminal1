@@ -32,7 +32,8 @@ async def create_note(
     result = await db.execute(
         select(Session).where(Session.id == body.session_id, Session.user_id == current_user.id)
     )
-    if not result.scalar_one_or_none():
+    body_session = result.scalar_one_or_none()
+    if not body_session:
         raise HTTPException(status_code=404, detail="Session not found")
 
     note = Note(
@@ -45,6 +46,10 @@ async def create_note(
     await record_activity(db, current_user.id, "note_create", body.session_id, {"tag": body.tag})
     await db.commit()
     await db.refresh(note)
+
+    from src.scenarios.engine import try_advance_phase
+
+    await try_advance_phase(body.session_id, body_session.scenario_id, db)
     return _note_dict(note)
 
 

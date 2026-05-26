@@ -1,6 +1,17 @@
 {
   "osint": [
     {
+      "id": "sc03_osint_nmap_any",
+      "trigger_pattern": "^\\s*nmap\\b",
+      "severity": "LOW",
+      "message": "OSINT: nmap invocation observed against Orion Logistics infrastructure",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Nmap activity observed\",\n  \"source.ip\": \"{src_ip}\",\n  \"destination.ip\": \"172.20.3.10\",\n  \"host.hostname\": \"orion-phish\"\n}",
+      "mitre_technique": "T1046",
+      "mitre_id": "T1046",
+      "cwe": "CWE-200",
+      "category": "osint"
+    },
+    {
       "id": "sc03_osint_domain_enum",
       "trigger_pattern": "whois|nslookup|dig\\s|host\\s|assetfinder",
       "severity": "LOW",
@@ -13,7 +24,7 @@
     },
     {
       "id": "sc03_osint_mail_probe",
-      "trigger_pattern": "smtp.*probe|telnet.*25|mail.*open|mx.*record|nmap.*-p.*25",
+      "trigger_pattern": "^\\s*(?:swaks\\b|smtp\\b.*probe|telnet\\b.*25|mail\\b.*open|mx\\b.*record|nmap\\b(?=.*-p.*25)).*$",
       "severity": "LOW",
       "message": "OSINT: SMTP banner grab on mail relay (172.20.3.20:25)",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"postfix.log\",\n  \"event.category\": \"network\",\n  \"log.level\": \"info\",\n  \"process.name\": \"postfix/smtpd\",\n  \"process.pid\": 1102,\n  \"message\": \"connect from unknown[{src_ip}]\",\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 48201,\n  \"destination.ip\": \"172.20.3.20\",\n  \"destination.port\": 25,\n  \"service.name\": \"postfix\",\n  \"postfix.smtpd.status\": \"connect\",\n  \"host.hostname\": \"orion-mailrelay\"\n}",
@@ -24,7 +35,7 @@
     },
     {
       "id": "sc03_osint_port_scan",
-      "trigger_pattern": "nmap|port.*scan",
+      "trigger_pattern": "^\\s*nmap\\b.*$",
       "severity": "MED",
       "message": "Port scanning: service discovery on Orion Logistics infrastructure",
       "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"suricata.alert\",\n  \"event.category\": \"network\",\n  \"alert.signature\": \"ET SCAN Nmap Scripting Engine User-Agent\",\n  \"alert.severity\": 3,\n  \"source.ip\": \"{src_ip}\",\n  \"source.port\": 52890,\n  \"destination.ip\": \"172.20.3.20\",\n  \"destination.port\": 25,\n  \"network.transport\": \"tcp\",\n  \"host.hostname\": \"orion-mailrelay\",\n  \"observer.product\": \"Suricata\"\n}",
@@ -35,6 +46,28 @@
     }
   ],
   "phishing_prep": [
+    {
+      "id": "sc03_phish_gophish_admin",
+      "trigger_pattern": "^\\s*curl\\s+.*172\\.20\\.3\\.10:3333",
+      "severity": "LOW",
+      "message": "GoPhish admin interface probed on the canonical Orion phishing host",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"gophish.log\",\n  \"event.category\": \"web\",\n  \"http.request.method\": \"GET\",\n  \"url.domain\": \"172.20.3.10\",\n  \"url.port\": 3333,\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-phish\"\n}",
+      "mitre_technique": "T1583.006",
+      "mitre_id": "T1583.006",
+      "cwe": "CWE-200",
+      "category": "phishing_prep"
+    },
+    {
+      "id": "sc03_phish_landing_probe",
+      "trigger_pattern": "^\\s*curl\\s+.*172\\.20\\.3\\.10(?::80)?(?:/|$)",
+      "severity": "LOW",
+      "message": "Phishing landing host probed on the canonical Orion GoPhish runtime address",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"gophish.log\",\n  \"event.category\": \"web\",\n  \"http.request.method\": \"GET\",\n  \"url.domain\": \"172.20.3.10\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-phish\"\n}",
+      "mitre_technique": "T1583.006",
+      "mitre_id": "T1583.006",
+      "cwe": "CWE-200",
+      "category": "phishing_prep"
+    },
     {
       "id": "sc03_phishing_gophish_admin",
       "trigger_pattern": "gophish|campaign.*create|:3333",
@@ -59,6 +92,28 @@
     }
   ],
   "email_campaign": [
+    {
+      "id": "sc03_email_swaks_any",
+      "trigger_pattern": "^\\s*swaks\\b",
+      "severity": "MED",
+      "message": "Email delivery tooling invoked: swaks SMTP send observed",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"postfix.log\",\n  \"event.category\": \"email\",\n  \"process.name\": \"postfix/smtp\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-mailrelay\"\n}",
+      "mitre_technique": "T1566.002",
+      "mitre_id": "T1566.002",
+      "cwe": "CWE-200",
+      "category": "delivery"
+    },
+    {
+      "id": "sc03_email_sendmail_any",
+      "trigger_pattern": "^\\s*(?:sendmail|msmtp)\\b",
+      "severity": "MED",
+      "message": "Email delivery tooling invoked: local mail sender observed",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"postfix.log\",\n  \"event.category\": \"email\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-mailrelay\"\n}",
+      "mitre_technique": "T1566.002",
+      "mitre_id": "T1566.002",
+      "cwe": "CWE-200",
+      "category": "delivery"
+    },
     {
       "id": "sc03_email_campaign_launch",
       "trigger_pattern": "campaign.*launch|send.*email|campaign.*start",
@@ -129,6 +184,17 @@
     }
   ],
   "payload_execution": [
+    {
+      "id": "sc03_payload_msfvenom_any",
+      "trigger_pattern": "^\\s*msfvenom\\b",
+      "severity": "HIGH",
+      "message": "Payload preparation tooling invoked: msfvenom command observed",
+      "raw_log": "{\n  \"@timestamp\": \"LIVE\",\n  \"event.dataset\": \"sysmon\",\n  \"event.category\": \"process\",\n  \"process.name\": \"msfvenom\",\n  \"source.ip\": \"{src_ip}\",\n  \"host.hostname\": \"orion-phish\"\n}",
+      "mitre_technique": "T1587.001",
+      "mitre_id": "T1587.001",
+      "cwe": "CWE-94",
+      "category": "payload"
+    },
     {
       "id": "sc03_macro_execution",
       "trigger_pattern": "macro.*exec|vba.*exec|document.*open|mshta|wscript",
