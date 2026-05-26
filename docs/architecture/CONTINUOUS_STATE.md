@@ -5182,3 +5182,75 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
   - Reran full backend test suite (`pytest -q`): `188 passed, 1 skipped in 10.26s`.
   - Serviced demo readiness checking (`python scripts/demo_check.py`): `ALL 12 CHECKS PASSED`.
   - Executed high-fidelity visual capture (`node capture_screenshots_v2.js`): exit status 0, generating all 12 optimized screenshots in final-report evidence folder.
+
+### [2026-05-26 18:15:26 +03:00] - Codex (AI Monitor Probe Spam Regression Test)
+* **Status**: In progress - added the failing regression expectation for the SC-01/SC-02 tutor probe spam before changing production monitor logic.
+* **Why**: The target reachability socket probe can falsely mark an up sandbox target as offline and return the repeated "offline or still starting up" tutor message on unprompted WebSocket observations.
+* **Where**:
+  - `backend/tests/unit_test_scenarios.py` - changed the unreachable-probe test to assert that probe failure must not emit offline/startup guidance.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Kept the test focused on the existing `get_ai_hint` call path by monkeypatching `_probe_target` to return `False` and disabling `OPENROUTER_API_KEY`.
+  - The expected behavior is now silent/static Socratic fallback behavior, never the stale target-offline stub.
+* **Verification**:
+  - Pending red/green verification.
+
+### [2026-05-26 18:16:15 +03:00] - Codex (AI Monitor Regression Harness Correction)
+* **Status**: In progress - corrected the new regression test harness after the first run failed before exercising the monitor behavior.
+* **Why**: Python 3.14 did not provide an implicit default event loop for `asyncio.get_event_loop()`, so the test needed to follow the file's existing `pytest.mark.asyncio` pattern.
+* **Where**:
+  - `backend/tests/unit_test_scenarios.py` - converted `test_ai_probe_failure_does_not_emit_offline_message` to an async pytest test.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Replaced the manual event-loop call with `await monitor.get_ai_hint(...)`, keeping the same unreachable-probe assertion.
+* **Verification**:
+  - First red run failed on the event-loop harness, not the product behavior; the intended red run is pending.
+
+### [2026-05-26 18:16:56 +03:00] - Codex (AI Monitor Probe Spam Fix)
+* **Status**: In progress - removed the per-message target probe decision from the AI monitor hint path.
+* **Why**: The backend's socket probe can return false negatives across Docker network boundaries even when SC-01/SC-02 targets answer HTTP/SMB from the student sandbox, causing repeated false "scenario target offline" tutor messages.
+* **Where**:
+  - `backend/src/ai/monitor.py` - `get_ai_hint` now trusts scenario readiness/lifecycle checks and no longer returns the target-offline fallback from probe failure.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry.
+* **What & How**:
+  - Set `target_reachable` to `True` in the tutor context and removed the `if not target_reachable` early return.
+  - Kept the normal OpenRouter/static fallback/cooldown logic intact, so missing API keys still produce bounded Socratic guidance for meaningful commands without health-probe spam.
+* **Verification**:
+  - Red regression test previously failed with the offline/startup stub; green verification pending.
+
+### [2026-05-26 18:25:17 +03:00] - Codex (AI Monitor Probe Spam Fix Verification)
+* **Status**: Complete - AI monitor no longer emits the false target-offline fallback, regression coverage is green, and the running backend was restarted and live-checked through the WebSocket tutor path.
+* **Why**: The user reported repeated "scenario target offline" messages while SC-01 was demonstrably reachable; this was caused by a per-message backend probe being trusted more than the scenario readiness layer.
+* **Where**:
+  - `backend/src/ai/monitor.py` - removed the `_probe_target` call/early offline return from `get_ai_hint`, leaving `target_reachable=true` in the AI context.
+  - `backend/tests/unit_test_scenarios.py` - replaced the old offline-stub expectation with `test_ai_probe_failure_does_not_emit_offline_message`.
+  - `docs/architecture/CONTINUOUS_STATE.md` - this entry plus the in-progress TDD entries above.
+* **What & How**:
+  - Red test evidence: `python -m pytest tests/unit_test_scenarios.py::test_ai_probe_failure_does_not_emit_offline_message -q` initially failed because `get_ai_hint` returned the offline/startup stub.
+  - Green test evidence: the same targeted pytest passed after the monitor change.
+  - Restarted `cybersim-backend-1` so Uvicorn loaded the bind-mounted source change.
+  - Live WebSocket tutor check sent three `tutor_question` frames to session `0bd5325b-7b2b-4021-8206-95d24d307081` within roughly 30 seconds; all three returned tutor responses and `offline_or_starting_up_count=0`.
+  - Phase DB check used the actual schema column (`phase`); the requested `current_phase` column does not exist. The latest SC-01 session has three `flag:capture` rows (`FLAG-SC01-1`, `FLAG-SC01-2`, `FLAG-SC01-4`) but `sessions.phase=1` and Redis state `phase=1`, so phase advancement is a real backend/state issue separate from the probe fix.
+* **Verification**:
+  - `python -m pytest tests/unit_test_scenarios.py -q` -> `37 passed in 1.64s`.
+  - Full backend pytest with host-local DB/cache URLs -> `295 passed, 1 skipped in 8.52s`.
+  - `docker compose config --quiet` -> exit 0.
+  - `git diff --check -- backend/src/ai/monitor.py backend/tests/unit_test_scenarios.py docs/architecture/CONTINUOUS_STATE.md` -> exit 0 with normal CRLF conversion warnings only.
+  - `curl.exe -s http://localhost:8001/api/health/readiness` -> status `ok` for Postgres, Redis, Elasticsearch, and OpenRouter.
+
+### [2026-05-26 19:19:02 +0300] - Gemini CLI (Session Management & Auth Upgrades)
+* **Status**: Complete - Implemented auto sign-out, session 401 cleanup, return URL routing, and global active mission nav.
+* **Why**: The user requested professional session features: skipping sign-in when authenticated, timing out inactive sessions, fixing session invalidation state, and redirecting properly via back/return mechanisms.
+* **Where**:
+  - rontend/src/App.jsx - Added RequireUnauth and SessionManager wrappers.
+  - rontend/src/components/ui/SessionManager.jsx - New component tracking inactivity (30m limit, 2m warning modal).
+  - rontend/src/pages/Auth.jsx - Handles ReturnURL params.
+  - rontend/src/lib/api.js - Intercepts 401s, clears storage, and appends returnUrl query param.
+  - rontend/src/components/nav/CyberSimNav.jsx - Added global Active Mission pill.
+  - rontend/src/store/sessionStore.js - Added activeSession state.
+* **What & How**:
+  - Auth flow now passes state={{ from: location }} to preserve target routes, making the login screen smart.
+  - Inactivity tracker binds to mouse/keyboard/scroll events with throttling to auto-logout abandoned lab environments.
+  - 401 API responses comprehensively wipe all Zustand/localStorage state to fix ghost sessions.
+  - Signed-in users landing on / or /auth are immediately forwarded to their dashboard or previous route.
+  - Navigation bar queries /sessions/active to display an accessible return button across all portal pages.

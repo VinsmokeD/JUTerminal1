@@ -206,22 +206,13 @@ async def get_ai_hint(
     Call OpenRouter with full context for a learning hint.
     Rate-limited per session. Uses mode-aware system prompt.
     """
-    target = _get_primary_target(session_state.get("scenario_id", ""))
+    # The scenario lifecycle/readiness layer owns target health. Per-message
+    # socket probes create false negatives from Docker network boundaries and
+    # can spam students with offline guidance while the target is actually up.
     target_reachable = True
-    if target:
-        target_reachable = await asyncio.to_thread(_probe_target, *target)
 
     # Check if this is a tutor call (explicit request or free-text question)
     is_tutor_call = (hint_level is not None or question is not None)
-
-    # Only bypass OpenRouter for unprompted observations (hint_level is None and question is None).
-    if not target_reachable and not is_tutor_call:
-        return (
-            "The scenario target appears to be offline or still starting up. "
-            "Verify with: nc -zv <target_ip> <port>. "
-            "If containers are still provisioning, wait 30 seconds and retry. "
-            "Type 'reset' to restart the scenario if the target stays unreachable."
-        )
 
     if not settings.OPENROUTER_API_KEY:
         if is_tutor_call or _should_emit_static_command_hint(command):

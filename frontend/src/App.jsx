@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import CommandPalette from './components/palette/CommandPalette'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import HudEnvironment from './components/layout/HudEnvironment'
+import { SessionManager } from './components/ui/SessionManager'
 
 // Lazy-load heavy components with xterm and complex state
 const RedWorkspace = lazy(() => import('./pages/RedWorkspace'))
@@ -46,7 +47,25 @@ function LoadingSpinner() {
 
 function RequireAuth({ children }) {
   const token = useAuthStore((s) => s.token)
-  return token ? children : <Navigate to="/auth" replace />
+  const location = useLocation()
+  
+  if (!token) {
+    // Preserve the location they tried to access
+    return <Navigate to="/auth" state={{ from: location }} replace />
+  }
+  return children
+}
+
+function RequireUnauth({ children }) {
+  const token = useAuthStore((s) => s.token)
+  const location = useLocation()
+  
+  if (token) {
+    // Already logged in, redirect to dashboard or where they came from
+    const from = location.state?.from?.pathname || '/dashboard'
+    return <Navigate to={from} replace />
+  }
+  return children
 }
 
 function RequireOnboarding({ children }) {
@@ -65,87 +84,89 @@ export default function App() {
   return (
     <BrowserRouter>
       <HudEnvironment>
-        <GlobalPalette />
-        <Routes>
-          {/* Public landing page */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/onboarding" element={<RequireAuth><ErrorBoundary><Onboarding /></ErrorBoundary></RequireAuth>} />
-          <Route path="/dashboard" element={<RequireAuth><RequireOnboarding><ErrorBoundary><Dashboard /></ErrorBoundary></RequireOnboarding></RequireAuth>} />
-          <Route
-            path="/session/:sessionId/red"
-            element={
-              <RequireAuth>
-                <ErrorBoundary>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <RedWorkspace />
-                  </Suspense>
-                </ErrorBoundary>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/session/:sessionId/blue"
-            element={
-              <RequireAuth>
-                <ErrorBoundary>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <BlueWorkspace />
-                  </Suspense>
-                </ErrorBoundary>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/session/:sessionId/debrief"
-            element={
-              <RequireAuth>
-                <ErrorBoundary>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <Debrief />
-                  </Suspense>
-                </ErrorBoundary>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/instructor"
-            element={
-              <RequireAuth>
-                <ErrorBoundary>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <InstructorDashboard />
-                  </Suspense>
-                </ErrorBoundary>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <RequireAuth>
-                <ErrorBoundary>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <Settings />
-                  </Suspense>
-                </ErrorBoundary>
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <RequireAuth>
-                <ErrorBoundary>
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <Profile />
-                  </Suspense>
-                </ErrorBoundary>
-              </RequireAuth>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <SessionManager>
+          <GlobalPalette />
+          <Routes>
+            {/* Public landing page */}
+            <Route path="/" element={<RequireUnauth><Landing /></RequireUnauth>} />
+            <Route path="/auth" element={<RequireUnauth><Auth /></RequireUnauth>} />
+            <Route path="/onboarding" element={<RequireAuth><ErrorBoundary><Onboarding /></ErrorBoundary></RequireAuth>} />
+            <Route path="/dashboard" element={<RequireAuth><RequireOnboarding><ErrorBoundary><Dashboard /></ErrorBoundary></RequireOnboarding></RequireAuth>} />
+            <Route
+              path="/session/:sessionId/red"
+              element={
+                <RequireAuth>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <RedWorkspace />
+                    </Suspense>
+                  </ErrorBoundary>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/session/:sessionId/blue"
+              element={
+                <RequireAuth>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <BlueWorkspace />
+                    </Suspense>
+                  </ErrorBoundary>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/session/:sessionId/debrief"
+              element={
+                <RequireAuth>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Debrief />
+                    </Suspense>
+                  </ErrorBoundary>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/instructor"
+              element={
+                <RequireAuth>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <InstructorDashboard />
+                    </Suspense>
+                  </ErrorBoundary>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <RequireAuth>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Settings />
+                    </Suspense>
+                  </ErrorBoundary>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <RequireAuth>
+                  <ErrorBoundary>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Profile />
+                    </Suspense>
+                  </ErrorBoundary>
+                </RequireAuth>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </SessionManager>
       </HudEnvironment>
     </BrowserRouter>
   )

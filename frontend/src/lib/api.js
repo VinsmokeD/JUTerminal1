@@ -18,7 +18,15 @@ api.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/auth'
+      localStorage.removeItem('username')
+      localStorage.removeItem('skillLevel')
+      localStorage.removeItem('onboardingCompleted')
+      const currentPath = window.location.pathname
+      if (currentPath !== '/auth' && currentPath !== '/') {
+        window.location.href = `/auth?returnUrl=${encodeURIComponent(currentPath)}`
+      } else {
+        window.location.href = '/auth'
+      }
     }
     return Promise.reject(err)
   }

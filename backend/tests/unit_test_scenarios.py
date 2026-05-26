@@ -179,16 +179,17 @@ async def test_ai_rate_limit_returns_static_socratic_command_hint(monkeypatch):
     assert "What question" not in hint
 
 
-def test_ai_tutor_returns_offline_message_when_target_unreachable(monkeypatch):
-    import asyncio
+@pytest.mark.asyncio
+async def test_ai_probe_failure_does_not_emit_offline_message(monkeypatch):
     from src.ai import monitor
     monkeypatch.setattr(monitor, "_probe_target", lambda h, p, **kw: False)
+    monkeypatch.setattr(monitor.settings, "OPENROUTER_API_KEY", "")
     state = {"scenario_id": "SC-02", "phase": 1, "role": "red", "discoveries": {}}
-    result = asyncio.get_event_loop().run_until_complete(
-        monitor.get_ai_hint("sess-probe", state, "nmap -sV 172.20.2.20", None)
+    result = await monitor.get_ai_hint(
+        "sess-probe", state, "nmap -sV 172.20.2.20", None
     )
-    assert result is not None
-    assert "offline" in result.lower() or "starting up" in result.lower()
+    assert result is None or "offline" not in result.lower()
+    assert result is None or "starting up" not in result.lower()
 
 
 def test_explicit_hint_bypasses_offline_guard(monkeypatch):

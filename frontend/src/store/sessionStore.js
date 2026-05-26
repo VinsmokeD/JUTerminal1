@@ -7,6 +7,7 @@ const newestFirst = (events = []) => [...events].sort((a, b) => eventTime(b) - e
 export const useSessionStore = create((set, get) => ({
   scenarios: [],
   currentSession: null,
+  activeSession: null,
   phase: 1,
   score: 100,
   siemEvents: [],
@@ -20,10 +21,22 @@ export const useSessionStore = create((set, get) => ({
     set({ scenarios: res.data })
   },
 
+  fetchActiveSession: async () => {
+    try {
+      const res = await api.get('/sessions/active')
+      set({ activeSession: res.data })
+      return res.data
+    } catch {
+      set({ activeSession: null })
+      return null
+    }
+  },
+
   startSession: async (scenarioId, role, methodology) => {
     const res = await api.post('/sessions/start', { scenario_id: scenarioId, role, methodology })
     set({
       currentSession: res.data,
+      activeSession: res.data,
       phase: res.data.phase,
       score: res.data.score,
       siemEvents: [],
@@ -76,7 +89,7 @@ export const useSessionStore = create((set, get) => ({
   clearPendingEvidence: () => set({ pendingEvidence: null }),
 
   clearSession: () => set({
-    currentSession: null, phase: 1, score: 100, siemEvents: [],
+    currentSession: null, activeSession: null, phase: 1, score: 100, siemEvents: [],
     aiMode: 'learn', activeBranch: null, discoveries: { services: [], paths: [], vulns: [], credentials: [] },
     pendingEvidence: null,
   }),

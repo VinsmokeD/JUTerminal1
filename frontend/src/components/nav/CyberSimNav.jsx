@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import { useSessionStore } from '../../store/sessionStore'
 
 /**
  * CyberSimNav - Shared navigation bar with dual-square logo
@@ -11,7 +13,14 @@ import { useAuthStore } from '../../store/authStore'
  */
 export default function CyberSimNav({ showUser = true, rightContent }) {
   const { username, logout, skillLevel } = useAuthStore()
+  const { activeSession, fetchActiveSession } = useSessionStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (showUser && username) {
+      fetchActiveSession().catch(() => {})
+    }
+  }, [showUser, username, fetchActiveSession])
 
   return (
     <nav className="nav-bar">
@@ -26,6 +35,16 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
       {/* Right side */}
       <div className="flex items-center gap-6">
         {rightContent}
+
+        {activeSession && activeSession.id && window.location.pathname !== `/session/${activeSession.id}/${activeSession.role}` && (
+          <button
+            onClick={() => navigate(`/session/${activeSession.id}/${activeSession.role}`)}
+            className="hidden sm:flex items-center gap-2 btn-v3 btn-v3-sm border-cs-blue/30 text-cs-blue bg-cs-blue/10 hover:bg-cs-blue/20"
+          >
+            <span className="w-2 h-2 rounded-full bg-cs-blue animate-pulse-soft" />
+            <span className="font-mono uppercase tracking-wider text-[10px]">Active Mission</span>
+          </button>
+        )}
 
         {showUser && username && (
           <div className="flex items-center gap-4">
