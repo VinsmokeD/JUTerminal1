@@ -3,7 +3,6 @@ import ParticleCanvas from '../components/canvas/ParticleCanvas'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { usePerfTier } from '../components/ui/PerfTier'
-import { hudSound } from '../lib/hudSound'
 
 // three.js hero is lazy-loaded so workspace bundles never pay the cost
 const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
@@ -19,7 +18,6 @@ export default function Landing() {
   const tier = usePerfTier()
 
   const goToPlatform = () => {
-    hudSound.playSuccess()
     navigate(token ? '/dashboard' : '/auth')
   }
 

@@ -475,10 +475,6 @@
 }
 
 /* ─── HUD Scanline & Dot Grid Utilities ────────────────────────────── */
-@keyframes scanline-v3 {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
 
 /* CRT Screen Vignette and Curve Simulation */
 .crt-container {
@@ -486,35 +482,7 @@
   overflow: hidden;
 }
 
-.crt-screen::before {
-  content: " ";
-  display: block;
-  position: fixed;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  z-index: 999;
-  background-size: 100% 3px, 3px 100%;
-  pointer-events: none;
-}
 
-.crt-flicker {
-  animation: crt-flicker-anim 0.15s infinite;
-}
-
-@keyframes crt-flicker-anim {
-  0% { opacity: 0.99; }
-  50% { opacity: 0.985; }
-  100% { opacity: 0.99; }
-}
-
-/* Vignette shadow around screen edges */
-.crt-vignette {
-  position: fixed;
-  inset: 0;
-  box-shadow: inset 0 0 100px rgba(0,0,0,0.85);
-  pointer-events: none;
-  z-index: 998;
-}
 
 /* Dynamic CSS Text Glitch Effect */
 .glitch-text {
@@ -637,55 +605,7 @@
   border-width: 0 1px 1px 0;
 }
 
-.hud-coordinate-ticker {
-  font-family: var(--font-mono);
-  font-size: 8.5px;
-  letter-spacing: 0.1em;
-  color: var(--text-dim);
-  text-transform: uppercase;
-}
 
-/* Rotating radar scanner indicator */
-.radar-scanner {
-  position: relative;
-  width: 24px;
-  height: 24px;
-  border: 1px solid rgba(0, 243, 255, 0.25);
-  border-radius: 50%;
-}
-.radar-scanner::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, rgba(0, 243, 255, 0.12) 0deg, rgba(0, 243, 255, 0) 90deg);
-  animation: radar-sweep 2.5s linear infinite;
-}
-@keyframes radar-sweep {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Mechanical boot sequencer elements */
-.boot-console-line {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.6;
-  color: var(--green-signal);
-  text-shadow: 0 0 4px rgba(0, 255, 136, 0.4);
-}
-.boot-console-line.info {
-  color: var(--blue-primary);
-  text-shadow: 0 0 4px rgba(59, 139, 255, 0.4);
-}
-.boot-console-line.warn {
-  color: var(--amber-warn);
-  text-shadow: 0 0 4px rgba(255, 170, 0, 0.4);
-}
-.boot-console-line.error {
-  color: var(--critical);
-  text-shadow: 0 0 4px rgba(255, 34, 68, 0.4);
-}
 
 /* Custom HUD Input fields */
 .input-v3 {

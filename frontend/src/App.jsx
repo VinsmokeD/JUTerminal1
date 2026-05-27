@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import Landing from './pages/Landing'
@@ -7,7 +7,6 @@ import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import CommandPalette from './components/palette/CommandPalette'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
-import HudEnvironment from './components/layout/HudEnvironment'
 import { SessionManager } from './components/ui/SessionManager'
 
 // Lazy-load heavy components with xterm and complex state
@@ -81,10 +80,20 @@ function GlobalPalette() {
 }
 
 export default function App() {
+  const checkAuth = useAuthStore((s) => s.checkAuth)
+  const [isChecking, setIsChecking] = useState(true)
+
+  useEffect(() => {
+    checkAuth().finally(() => setIsChecking(false))
+  }, [checkAuth])
+
+  if (isChecking) {
+    return <LoadingSpinner />
+  }
+
   return (
     <BrowserRouter>
-      <HudEnvironment>
-        <SessionManager>
+      <SessionManager>
           <GlobalPalette />
           <Routes>
             {/* Public landing page */}
@@ -167,7 +176,6 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </SessionManager>
-      </HudEnvironment>
     </BrowserRouter>
   )
 }

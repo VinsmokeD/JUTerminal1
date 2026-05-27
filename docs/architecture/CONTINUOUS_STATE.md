@@ -28,7 +28,7 @@ Every update must follow this strict format. Do not skip any fields.
   - Live SC-01 probe from `sc01-php` passed: `/api/v1/patients/1042` returned HTTP 200 with `Patient 1042: Aisha Rahman`, and `/login` returned HTTP 200.
   - `git diff --check` passed; `python -m black --check src tests` could not run because this local Python environment has no `black` module installed.
 
-### [2026-05-21 22:50:00 +03:00] - Antigravity (Enhanced Planning for Phases 25–28)
+### [2026-05-21 22:50:00 +03:00] - Antigravity (Enhanced Planning for Phases 25â€“28)
 * **Status**: Complete - Reviewed current codebase, verified health and status, and updated the implementation plan and next-phase prompt artifacts to specify advanced classroom-grade mechanics.
 * **Why**: To elevate the final four phases into a commercial-grade, highly resilient classroom simulation platform.
 * **Where**:
@@ -132,7 +132,7 @@ C:\Users\Mahmo\OneDrive\Documents\Mahmoud\Graduation Project\JUTerminal1\fronten
 C:\Users\Mahmo\OneDrive\Documents\Mahmoud\Graduation Project\JUTerminal1\frontend\src\store\authStore.js
   4:42  warning  'get' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
 
-✖ 128 problems (0 errors, 128 warnings)
+âœ– 128 problems (0 errors, 128 warnings)
 ```
 
 #### Batch 9 Evidence - ESLint after tail
@@ -327,31 +327,31 @@ TOTAL                                390     62    84%
 
 vite v5.4.21 building for production...
 transforming...
-✓ 544 modules transformed.
+âœ“ 544 modules transformed.
 rendering chunks...
 computing gzip size...
-dist/index.html                                1.29 kB │ gzip:   0.64 kB
-dist/assets/AiHintPanel-LcAfv9l9.css           4.35 kB │ gzip:   1.68 kB
-dist/assets/index-B77T6vV7.css                77.82 kB │ gzip:  15.21 kB
-dist/assets/Stat-DcbLvPhu.js                   0.45 kB │ gzip:   0.28 kB
-dist/assets/Settings-Cn9RWJFB.js               5.31 kB │ gzip:   1.87 kB
-dist/assets/HeroScene3D-N6RPQaYh.js            5.39 kB │ gzip:   2.39 kB
-dist/assets/KillChainTimeline-CjkzGm3V.js     11.47 kB │ gzip:   4.73 kB
-dist/assets/InstructorDashboard-C37ItUhX.js   11.55 kB │ gzip:   3.64 kB
-dist/assets/Debrief-GLzo4xGC.js               18.29 kB │ gzip:   5.59 kB
-dist/assets/RedWorkspace-B2b1EqSW.js          20.62 kB │ gzip:   6.83 kB
-dist/assets/purify.es-CLGrRn1w.js             25.32 kB │ gzip:   9.62 kB
-dist/assets/vendor-ui-DQ_rTDiH.js             42.16 kB │ gzip:  16.78 kB
-dist/assets/BlueWorkspace-DG-6fNvL.js         54.07 kB │ gzip:  17.56 kB
-dist/assets/index-B9JGrHK3.js                 74.64 kB │ gzip:  22.09 kB
-dist/assets/index.es-BTUKi_xT.js             150.80 kB │ gzip:  51.61 kB
-dist/assets/AiHintPanel-9By4Umy_.js          159.32 kB │ gzip:  45.27 kB
-dist/assets/vendor-react-DLKkGc6X.js         160.25 kB │ gzip:  52.34 kB
-dist/assets/html2canvas.esm-CBrSDip1.js      201.42 kB │ gzip:  48.03 kB
-dist/assets/vendor-xterm-DWX2dM_j.js         286.27 kB │ gzip:  71.49 kB
-dist/assets/jspdf.es.min-BPecYUON.js         390.31 kB │ gzip: 128.75 kB
-dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
-✓ built in 5.24s
+dist/index.html                                1.29 kB â”‚ gzip:   0.64 kB
+dist/assets/AiHintPanel-LcAfv9l9.css           4.35 kB â”‚ gzip:   1.68 kB
+dist/assets/index-B77T6vV7.css                77.82 kB â”‚ gzip:  15.21 kB
+dist/assets/Stat-DcbLvPhu.js                   0.45 kB â”‚ gzip:   0.28 kB
+dist/assets/Settings-Cn9RWJFB.js               5.31 kB â”‚ gzip:   1.87 kB
+dist/assets/HeroScene3D-N6RPQaYh.js            5.39 kB â”‚ gzip:   2.39 kB
+dist/assets/KillChainTimeline-CjkzGm3V.js     11.47 kB â”‚ gzip:   4.73 kB
+dist/assets/InstructorDashboard-C37ItUhX.js   11.55 kB â”‚ gzip:   3.64 kB
+dist/assets/Debrief-GLzo4xGC.js               18.29 kB â”‚ gzip:   5.59 kB
+dist/assets/RedWorkspace-B2b1EqSW.js          20.62 kB â”‚ gzip:   6.83 kB
+dist/assets/purify.es-CLGrRn1w.js             25.32 kB â”‚ gzip:   9.62 kB
+dist/assets/vendor-ui-DQ_rTDiH.js             42.16 kB â”‚ gzip:  16.78 kB
+dist/assets/BlueWorkspace-DG-6fNvL.js         54.07 kB â”‚ gzip:  17.56 kB
+dist/assets/index-B9JGrHK3.js                 74.64 kB â”‚ gzip:  22.09 kB
+dist/assets/index.es-BTUKi_xT.js             150.80 kB â”‚ gzip:  51.61 kB
+dist/assets/AiHintPanel-9By4Umy_.js          159.32 kB â”‚ gzip:  45.27 kB
+dist/assets/vendor-react-DLKkGc6X.js         160.25 kB â”‚ gzip:  52.34 kB
+dist/assets/html2canvas.esm-CBrSDip1.js      201.42 kB â”‚ gzip:  48.03 kB
+dist/assets/vendor-xterm-DWX2dM_j.js         286.27 kB â”‚ gzip:  71.49 kB
+dist/assets/jspdf.es.min-BPecYUON.js         390.31 kB â”‚ gzip: 128.75 kB
+dist/assets/three.module-BWXiBG0R.js         498.17 kB â”‚ gzip: 125.23 kB
+âœ“ built in 5.24s
 ```
 
 #### Batch 9 - Final Verification - docker compose config --quiet
@@ -371,32 +371,32 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 [x] npm run build -> built
 ```
 
-### [2026-05-20 12:00:00 +03:00] - Claude Code (OpenRouter Migration — Replace Gemini with DeepSeek via OpenRouter)
-* **Status**: Complete — AI tutor now calls OpenRouter; Gemini SDK dependency removed; all existing tests unaffected.
-* **Why**: User requested switching from Google Gemini to OpenRouter for cost/flexibility. Best budget-to-performance model on OpenRouter as of 2026-05 is `deepseek/deepseek-chat-v3-0324` (~$0.27/M input tokens — GPT-4-class quality at ~10× less cost than GPT-4o).
+### [2026-05-20 12:00:00 +03:00] - Claude Code (OpenRouter Migration â€” Replace Gemini with DeepSeek via OpenRouter)
+* **Status**: Complete â€” AI tutor now calls OpenRouter; Gemini SDK dependency removed; all existing tests unaffected.
+* **Why**: User requested switching from Google Gemini to OpenRouter for cost/flexibility. Best budget-to-performance model on OpenRouter as of 2026-05 is `deepseek/deepseek-chat-v3-0324` (~$0.27/M input tokens â€” GPT-4-class quality at ~10Ã— less cost than GPT-4o).
 * **Where**:
-  - `backend/requirements.txt` — removed `google-genai==1.73.1`; `httpx` (already present) is used for API calls; no new dependencies.
-  - `backend/src/config.py` — replaced `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_MAX_TOKENS` with `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` (default: `deepseek/deepseek-chat-v3-0324`), `OPENROUTER_MAX_TOKENS` (default: 150). `AI_CALL_COOLDOWN_SECONDS` unchanged.
-  - `backend/src/ai/monitor.py` — removed `from google import genai` / `from google.genai import types`; added `import httpx`. Replaced `genai.Client` + `GenerateContentConfig` + `client.aio.models.generate_content()` call with `httpx.AsyncClient.post("https://openrouter.ai/api/v1/chat/completions", json=payload)` using OpenAI chat completions format (`messages` with role/content). System prompt goes in `messages[0]` as `role=system`; user context in `messages[1]` as `role=user`. Response extracted from `data["choices"][0]["message"]["content"]`. Added `HTTP-Referer` and `X-Title` headers as recommended by OpenRouter. Fallback logic (no key → static hints) unchanged.
-  - `.env.example` — replaced `GEMINI_API_KEY/MODEL/MAX_TOKENS` section with `OPENROUTER_API_KEY/MODEL/MAX_TOKENS` section with accurate comment.
-* **What & How**: OpenRouter exposes an OpenAI-compatible REST API at `https://openrouter.ai/api/v1`. The chat completions endpoint accepts the same `model`, `messages`, `temperature`, `max_tokens` fields. The `deepseek/deepseek-chat-v3-0324` model is context-window 64k, scores at GPT-4-level on coding and instruction-following benchmarks, and costs ~$0.27/M input tokens — ideal for a university demo budget. `httpx.AsyncClient` with `timeout=20.0` is used (already in requirements); no new pip package needed.
-* **Verification**: `python -m py_compile backend/src/ai/monitor.py` ✅ | `python -m py_compile backend/src/config.py` ✅ | `pytest -q` unaffected (AI monitor tests use fallback path when key is empty) ✅
+  - `backend/requirements.txt` â€” removed `google-genai==1.73.1`; `httpx` (already present) is used for API calls; no new dependencies.
+  - `backend/src/config.py` â€” replaced `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_MAX_TOKENS` with `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` (default: `deepseek/deepseek-chat-v3-0324`), `OPENROUTER_MAX_TOKENS` (default: 150). `AI_CALL_COOLDOWN_SECONDS` unchanged.
+  - `backend/src/ai/monitor.py` â€” removed `from google import genai` / `from google.genai import types`; added `import httpx`. Replaced `genai.Client` + `GenerateContentConfig` + `client.aio.models.generate_content()` call with `httpx.AsyncClient.post("https://openrouter.ai/api/v1/chat/completions", json=payload)` using OpenAI chat completions format (`messages` with role/content). System prompt goes in `messages[0]` as `role=system`; user context in `messages[1]` as `role=user`. Response extracted from `data["choices"][0]["message"]["content"]`. Added `HTTP-Referer` and `X-Title` headers as recommended by OpenRouter. Fallback logic (no key â†’ static hints) unchanged.
+  - `.env.example` â€” replaced `GEMINI_API_KEY/MODEL/MAX_TOKENS` section with `OPENROUTER_API_KEY/MODEL/MAX_TOKENS` section with accurate comment.
+* **What & How**: OpenRouter exposes an OpenAI-compatible REST API at `https://openrouter.ai/api/v1`. The chat completions endpoint accepts the same `model`, `messages`, `temperature`, `max_tokens` fields. The `deepseek/deepseek-chat-v3-0324` model is context-window 64k, scores at GPT-4-level on coding and instruction-following benchmarks, and costs ~$0.27/M input tokens â€” ideal for a university demo budget. `httpx.AsyncClient` with `timeout=20.0` is used (already in requirements); no new pip package needed.
+* **Verification**: `python -m py_compile backend/src/ai/monitor.py` âœ… | `python -m py_compile backend/src/config.py` âœ… | `pytest -q` unaffected (AI monitor tests use fallback path when key is empty) âœ…
 
-### [2026-05-20 01:00:00 +03:00] - Claude Code (Batch 8 — Demo Polish & Observability Gate)
-* **Status**: Complete — 64 tests passing (10 new); frontend build clean 0 errors; docker compose config valid.
+### [2026-05-20 01:00:00 +03:00] - Claude Code (Batch 8 â€” Demo Polish & Observability Gate)
+* **Status**: Complete â€” 64 tests passing (10 new); frontend build clean 0 errors; docker compose config valid.
 * **Why**: Final batch before graduation demo. Batch 7 landed stability (WS backoff, orphan sweep, ES ILM, Redis TTLs, non-root backend). Batch 8 closes the remaining demo-safety gaps: a blank white screen on any JS error, no feedback during slow data fetches, no single command to verify the platform is ready before a presentation, and missing unit coverage for the session-lifecycle invariants added in Batch 7.
 * **Where**:
-  - `frontend/src/components/ui/ErrorBoundary.jsx` — new class component; catches render errors; shows recovery card with Reload button instead of white screen.
-  - `frontend/src/components/ui/Skeleton.jsx` — new: `Skeleton`, `SkeletonCard`, `SkeletonTable` animate-pulse placeholders.
-  - `frontend/src/components/ui/index.js` — exported ErrorBoundary and Skeleton family.
-  - `frontend/src/App.jsx` — imported ErrorBoundary; wrapped all 5 lazy-loaded pages (RedWorkspace, BlueWorkspace, Debrief, InstructorDashboard, Settings) in `<ErrorBoundary>` inside Suspense.
-  - `frontend/src/pages/Dashboard.jsx` — imported SkeletonCard; added `scenariosLoading` state; `fetchScenarios()` followed by `.finally(() => setScenariosLoading(false))`; renders 3 × SkeletonCard while loading instead of empty grid.
-  - `backend/src/main.py` — added `GET /api/health/readiness` deep probe: checks Postgres (SELECT 1), Redis (PING + active_sessions count), Elasticsearch (cluster health). Returns 200/ok or 503/degraded with per-subsystem detail.
-  - `scripts/demo_check.py` — new standalone CLI script (stdlib only, no deps); checks docker compose service states, backend /health, deep readiness (DB+Redis+ES), frontend HTML, and optional scenario network TCP probes (--scenarios sc01/sc02/sc03/all). Green/yellow/red ANSI output. Exit 0 = all green, 1 = failures.
-  - `backend/tests/test_session_lifecycle.py` — 10 new tests: keepalive TTL=7200; heartbeat idempotency; stale session eviction; live session not evicted; dedup key TTL=3600; dedup NX semantics; command cap/read-window alignment (structural assertion on ws/routes.py source); active-session payload decode (plain string, JSON, malformed JSON).
-  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
-* **What & How**: ErrorBoundary uses React class lifecycle `getDerivedStateFromError` + `componentDidCatch`; the component catches errors in the subtree below it and renders the fallback card. All lazy routes are wrapped so a runtime crash in any workspace doesn't propagate to a blank page. Skeleton uses Tailwind `animate-pulse bg-surface-2`; SkeletonCard and SkeletonTable are composite variants for the dashboard and instructor table. The readiness endpoint does real I/O checks inside the FastAPI event loop using `AsyncSessionLocal` for Postgres and `httpx.AsyncClient` for ES; it returns a structured JSON body usable by the demo script and the instructor dashboard's "platform health" display. `demo_check.py` is pure stdlib (no pip install needed) and works on any OS; it calls docker compose ps via subprocess, then hits /health and /api/health/readiness over HTTP, then does TCP socket probes for scenario container ports. The lifecycle tests use a `FakeRedis` class that mirrors the async SET/GET/HSET/HGETALL/EXISTS/TTL interface without any network dependency. The command cap alignment test reads the ws/routes.py source with a regex to assert that lpush_capped max_len == lrange end+1 — this will catch regressions if either is changed independently.
-* **Verification**: `python -m py_compile scripts/demo_check.py` ✅ | `docker compose config --quiet` ✅ | `pytest -q (64 passed, 1 warning)` ✅ | `npm run build (✓ built in 9.54s, 0 errors)` ✅
+  - `frontend/src/components/ui/ErrorBoundary.jsx` â€” new class component; catches render errors; shows recovery card with Reload button instead of white screen.
+  - `frontend/src/components/ui/Skeleton.jsx` â€” new: `Skeleton`, `SkeletonCard`, `SkeletonTable` animate-pulse placeholders.
+  - `frontend/src/components/ui/index.js` â€” exported ErrorBoundary and Skeleton family.
+  - `frontend/src/App.jsx` â€” imported ErrorBoundary; wrapped all 5 lazy-loaded pages (RedWorkspace, BlueWorkspace, Debrief, InstructorDashboard, Settings) in `<ErrorBoundary>` inside Suspense.
+  - `frontend/src/pages/Dashboard.jsx` â€” imported SkeletonCard; added `scenariosLoading` state; `fetchScenarios()` followed by `.finally(() => setScenariosLoading(false))`; renders 3 Ã— SkeletonCard while loading instead of empty grid.
+  - `backend/src/main.py` â€” added `GET /api/health/readiness` deep probe: checks Postgres (SELECT 1), Redis (PING + active_sessions count), Elasticsearch (cluster health). Returns 200/ok or 503/degraded with per-subsystem detail.
+  - `scripts/demo_check.py` â€” new standalone CLI script (stdlib only, no deps); checks docker compose service states, backend /health, deep readiness (DB+Redis+ES), frontend HTML, and optional scenario network TCP probes (--scenarios sc01/sc02/sc03/all). Green/yellow/red ANSI output. Exit 0 = all green, 1 = failures.
+  - `backend/tests/test_session_lifecycle.py` â€” 10 new tests: keepalive TTL=7200; heartbeat idempotency; stale session eviction; live session not evicted; dedup key TTL=3600; dedup NX semantics; command cap/read-window alignment (structural assertion on ws/routes.py source); active-session payload decode (plain string, JSON, malformed JSON).
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” this entry.
+* **What & How**: ErrorBoundary uses React class lifecycle `getDerivedStateFromError` + `componentDidCatch`; the component catches errors in the subtree below it and renders the fallback card. All lazy routes are wrapped so a runtime crash in any workspace doesn't propagate to a blank page. Skeleton uses Tailwind `animate-pulse bg-surface-2`; SkeletonCard and SkeletonTable are composite variants for the dashboard and instructor table. The readiness endpoint does real I/O checks inside the FastAPI event loop using `AsyncSessionLocal` for Postgres and `httpx.AsyncClient` for ES; it returns a structured JSON body usable by the demo script and the instructor dashboard's "platform health" display. `demo_check.py` is pure stdlib (no pip install needed) and works on any OS; it calls docker compose ps via subprocess, then hits /health and /api/health/readiness over HTTP, then does TCP socket probes for scenario container ports. The lifecycle tests use a `FakeRedis` class that mirrors the async SET/GET/HSET/HGETALL/EXISTS/TTL interface without any network dependency. The command cap alignment test reads the ws/routes.py source with a regex to assert that lpush_capped max_len == lrange end+1 â€” this will catch regressions if either is changed independently.
+* **Verification**: `python -m py_compile scripts/demo_check.py` âœ… | `docker compose config --quiet` âœ… | `pytest -q (64 passed, 1 warning)` âœ… | `npm run build (âœ“ built in 9.54s, 0 errors)` âœ…
 
 ### [2026-05-20 11:17:41 +03:00] - Codex (Batch 7 - Stability, Performance, and WebSocket Hardening)
 * **Status**: Complete - WebSocket reconnect hardening, orphan Kali cleanup, Elasticsearch ILM, Redis TTL audit, compose resource limits, and backend non-root runtime are implemented and verified.
@@ -440,31 +440,31 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     transforming...
 
     warn - The utility `shadow-[0_0_6px_theme(colors.cs-blue)]` contains an invalid theme value and was not generated.
-    ✓ 542 modules transformed.
+    âœ“ 542 modules transformed.
     rendering chunks...
     computing gzip size...
-    dist/index.html                                1.29 kB │ gzip:   0.65 kB
-    dist/assets/AiHintPanel-LcAfv9l9.css           4.35 kB │ gzip:   1.68 kB
-    dist/assets/index-DLR8Puxn.css                77.18 kB │ gzip:  15.13 kB
-    dist/assets/Stat-Dro0RGuB.js                   0.45 kB │ gzip:   0.27 kB
-    dist/assets/Settings-BOEK5Zll.js               5.31 kB │ gzip:   1.87 kB
-    dist/assets/HeroScene3D-BklwiJGj.js            5.39 kB │ gzip:   2.39 kB
-    dist/assets/KillChainTimeline-CX2FASxt.js     11.50 kB │ gzip:   4.73 kB
-    dist/assets/InstructorDashboard-QQXsee2T.js   11.55 kB │ gzip:   3.64 kB
-    dist/assets/Debrief-Bf8cP3eL.js               18.29 kB │ gzip:   5.58 kB
-    dist/assets/RedWorkspace-CQPrdACD.js          20.62 kB │ gzip:   6.83 kB
-    dist/assets/purify.es-CLGrRn1w.js             25.32 kB │ gzip:   9.62 kB
-    dist/assets/vendor-ui-DQ_rTDiH.js             42.16 kB │ gzip:  16.78 kB
-    dist/assets/BlueWorkspace-CJpuwMP3.js         54.07 kB │ gzip:  17.56 kB
-    dist/assets/index-BOZZrvfg.js                 72.69 kB │ gzip:  21.42 kB
-    dist/assets/index.es-CFNw19T6.js             150.80 kB │ gzip:  51.61 kB
-    dist/assets/AiHintPanel-Dm4J2CFS.js          159.38 kB │ gzip:  45.26 kB
-    dist/assets/vendor-react-DLKkGc6X.js         160.25 kB │ gzip:  52.34 kB
-    dist/assets/html2canvas.esm-CBrSDip1.js      201.42 kB │ gzip:  48.03 kB
-    dist/assets/vendor-xterm-DWX2dM_j.js         286.27 kB │ gzip:  71.49 kB
-    dist/assets/jspdf.es.min-Dv3iU_Kj.js         390.31 kB │ gzip: 128.75 kB
-    dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
-    ✓ built in 6.31s
+    dist/index.html                                1.29 kB â”‚ gzip:   0.65 kB
+    dist/assets/AiHintPanel-LcAfv9l9.css           4.35 kB â”‚ gzip:   1.68 kB
+    dist/assets/index-DLR8Puxn.css                77.18 kB â”‚ gzip:  15.13 kB
+    dist/assets/Stat-Dro0RGuB.js                   0.45 kB â”‚ gzip:   0.27 kB
+    dist/assets/Settings-BOEK5Zll.js               5.31 kB â”‚ gzip:   1.87 kB
+    dist/assets/HeroScene3D-BklwiJGj.js            5.39 kB â”‚ gzip:   2.39 kB
+    dist/assets/KillChainTimeline-CX2FASxt.js     11.50 kB â”‚ gzip:   4.73 kB
+    dist/assets/InstructorDashboard-QQXsee2T.js   11.55 kB â”‚ gzip:   3.64 kB
+    dist/assets/Debrief-Bf8cP3eL.js               18.29 kB â”‚ gzip:   5.58 kB
+    dist/assets/RedWorkspace-CQPrdACD.js          20.62 kB â”‚ gzip:   6.83 kB
+    dist/assets/purify.es-CLGrRn1w.js             25.32 kB â”‚ gzip:   9.62 kB
+    dist/assets/vendor-ui-DQ_rTDiH.js             42.16 kB â”‚ gzip:  16.78 kB
+    dist/assets/BlueWorkspace-CJpuwMP3.js         54.07 kB â”‚ gzip:  17.56 kB
+    dist/assets/index-BOZZrvfg.js                 72.69 kB â”‚ gzip:  21.42 kB
+    dist/assets/index.es-CFNw19T6.js             150.80 kB â”‚ gzip:  51.61 kB
+    dist/assets/AiHintPanel-Dm4J2CFS.js          159.38 kB â”‚ gzip:  45.26 kB
+    dist/assets/vendor-react-DLKkGc6X.js         160.25 kB â”‚ gzip:  52.34 kB
+    dist/assets/html2canvas.esm-CBrSDip1.js      201.42 kB â”‚ gzip:  48.03 kB
+    dist/assets/vendor-xterm-DWX2dM_j.js         286.27 kB â”‚ gzip:  71.49 kB
+    dist/assets/jspdf.es.min-Dv3iU_Kj.js         390.31 kB â”‚ gzip: 128.75 kB
+    dist/assets/three.module-BWXiBG0R.js         498.17 kB â”‚ gzip: 125.23 kB
+    âœ“ built in 6.31s
     ```
   - `docker compose up -d --build backend`
     - Output summary: backend image rebuilt from the updated Dockerfile, `cybersim-backend:latest` exported, existing postgres/redis were healthy, and `cybersim-backend-1` was recreated and started. Compose also reported pre-existing orphan container `cybersim-caddy-1`; it was not removed.
@@ -488,7 +488,7 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     - Output: only Git CRLF normalization warnings for touched files; exit 0 with no whitespace errors.
 * **Residual notes**: Full browser DevTools reconnect observation was not run in this terminal-only pass. The implementation-level behavior is covered by the built frontend bundle, the explicit backoff code path, and backend restart/container checks above.
 
-### [2026-05-20 10:59:00 +03:00] - Antigravity (Batch 6 — Debrief Real Data & SC-01 E2E Gate Complete)
+### [2026-05-20 10:59:00 +03:00] - Antigravity (Batch 6 â€” Debrief Real Data & SC-01 E2E Gate Complete)
 * **Status**: Complete - Consolidated report endpoint, flag validation, Debrief refactoring, and SC-01 E2E checks verified.
 * **Why**: Students need a unified debriefing report showing session metadata, scoring details, command logs, SIEM events, learning insights, and chronological timeline that survives browser refreshes. Instructors need secured, live monitoring.
 * **Where**:
@@ -507,27 +507,27 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     - Duplicate flag submission returned `{'valid': True, 'already_captured': True, 'flag_id': 'FLAG-SC01-1'}`.
     - Consolidated report API returned HTTP 200 with all sections (`session`, `score`, `notes`, `commands`, `siem_events`, `learning_insights`, `timeline`) fully populated.
 
-### [2026-05-19 23:00:00 +03:00] - Claude Code (Batch 4 — Code Quality & Reliability Cleanup)
-* **Status**: Complete — 52 unit tests passing; docker compose config valid.
+### [2026-05-19 23:00:00 +03:00] - Claude Code (Batch 4 â€” Code Quality & Reliability Cleanup)
+* **Status**: Complete â€” 52 unit tests passing; docker compose config valid.
 * **Why**: Eight P1/P2 code-quality bugs from the original review were still open after Batches 1-3: dead code, no JWT prod guard, misaligned command cap, CommandLog UPDATE race, hostname drift in daemon noise, bare except, missing cybersim label, init_db+Alembic co-existence risk.
 * **Where**:
-  - `backend/src/ai/monitor.py` — deleted 62 lines of unreachable dead code after early `return` in `_get_fallback_hint` (#12).
-  - `backend/src/config.py` — startup assertion: production + default JWT_SECRET raises RuntimeError (#19).
-  - `backend/src/main.py` — import asyncio; typed except on cleanup_task shutdown (#30).
-  - `backend/src/ws/routes.py` — command write cap aligned to 50 (#16); CommandLog hint UPDATE now uses captured row id, not command string match (#15).
-  - `backend/src/sandbox/daemon_noise.py` — SC-02 noise hostname corrected to nexora-dc01.nexora.local (#17).
-  - `backend/src/db/database.py` — checkfirst=True on create_all; Alembic co-existence documented (#18).
-  - `docker-compose.yml` — *cybersim-defaults label anchor applied to postgres, redis, elasticsearch, filebeat, backend, frontend (#23).
-  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
-* **What & How**: All surgical edits. JWT guard raises at import time. CommandLog fix: db.add → db.commit → db.refresh(cmd_row) captures server PK, later UPDATE WHERE id = cmd_row.id. checkfirst=True is idempotent; Alembic still owns schema evolution.
+  - `backend/src/ai/monitor.py` â€” deleted 62 lines of unreachable dead code after early `return` in `_get_fallback_hint` (#12).
+  - `backend/src/config.py` â€” startup assertion: production + default JWT_SECRET raises RuntimeError (#19).
+  - `backend/src/main.py` â€” import asyncio; typed except on cleanup_task shutdown (#30).
+  - `backend/src/ws/routes.py` â€” command write cap aligned to 50 (#16); CommandLog hint UPDATE now uses captured row id, not command string match (#15).
+  - `backend/src/sandbox/daemon_noise.py` â€” SC-02 noise hostname corrected to nexora-dc01.nexora.local (#17).
+  - `backend/src/db/database.py` â€” checkfirst=True on create_all; Alembic co-existence documented (#18).
+  - `docker-compose.yml` â€” *cybersim-defaults label anchor applied to postgres, redis, elasticsearch, filebeat, backend, frontend (#23).
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” this entry.
+* **What & How**: All surgical edits. JWT guard raises at import time. CommandLog fix: db.add â†’ db.commit â†’ db.refresh(cmd_row) captures server PK, later UPDATE WHERE id = cmd_row.id. checkfirst=True is idempotent; Alembic still owns schema evolution.
 * **Verification**: `python -m py_compile` all 6 touched backend files passed. `docker compose config --quiet` passed. `pytest -q (52 tests, 0 failures)`.
 
-### [2026-05-19 22:30:00 +03:00] - Antigravity (Batch 3 — UX Hardening / RedWorkspace Flex Layout)
-* **Status**: Complete — React UI rewritten without external library, verified via npm run build and tests.
+### [2026-05-19 22:30:00 +03:00] - Antigravity (Batch 3 â€” UX Hardening / RedWorkspace Flex Layout)
+* **Status**: Complete â€” React UI rewritten without external library, verified via npm run build and tests.
 * **Why**: The user requested that \ResizableSplit\ be replaced in \RedWorkspace.jsx\ with a simpler CSS flex layout using a draggable 4px divider. This matches the Phase 3 goal of UX Hardening and reducing external library dependency for core layout handling.
 * **Where**:
-  - \rontend/src/pages/RedWorkspace.jsx\ — Removed \<ResizableSplit />\ and implemented a horizontal flex container with a \w-1\ vertical divider that updates \	erminalWidth\ via \onMouseMove\.
-  - \docs/architecture/CONTINUOUS_STATE.md\ — this entry.
+  - \rontend/src/pages/RedWorkspace.jsx\ â€” Removed \<ResizableSplit />\ and implemented a horizontal flex container with a \w-1\ vertical divider that updates \	erminalWidth\ via \onMouseMove\.
+  - \docs/architecture/CONTINUOUS_STATE.md\ â€” this entry.
 * **What & How**:
   Added \	erminalWidth\ state (default 65%) and a drag handle. \handleDragStart\ attaches \mousemove\ and \mouseup\ events to \document\ to smoothly update flex-basis. Reconstructed the 4 layout slots (\mainTop\, \mainBottom\, \sideTop\, \sideBottom\) into a clean CSS flex model. Left pane holds Terminal + Notebook, Right pane holds AI Tutor + SIEM Feed. Mobile fallback applies (\lex-col\ + auto basis) on narrow screens. 
   Verification: pm run lint\ and pm run build\ ran successfully. \pytest backend/tests\ passed. Eslint warnings were observed for o-unused-vars\ (likely caching/flat config) but build verification proves syntax and imports are valid.
@@ -540,51 +540,51 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 
 ## Change Log
 
-### [2026-05-20 07:35:00 +00:00] - Antigravity (Batch 5 — Phase 2 & 4 Finish: MITRE Refactor + SC-03 Smoke Verification)
-* **Status**: Complete — Frontend MITRE badge refactor complete, SC-03 services fully verified end-to-end.
+### [2026-05-20 07:35:00 +00:00] - Antigravity (Batch 5 â€” Phase 2 & 4 Finish: MITRE Refactor + SC-03 Smoke Verification)
+* **Status**: Complete â€” Frontend MITRE badge refactor complete, SC-03 services fully verified end-to-end.
 * **Why**: Complete the refactoring of MITRE phase badges on the frontend to avoid redundant queries by consuming `phaseMap` in `RedWorkspace.jsx`, and perform the required smoke tests to verify the SC-03 environment.
 * **Where**:
-  - `frontend/src/pages/RedWorkspace.jsx` — Updated `RedWorkspace` to render MITRE badges inline using the scenario's dynamic `phaseMap` state; removed the unused `MitreBadge` subcomponent.
-  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
+  - `frontend/src/pages/RedWorkspace.jsx` â€” Updated `RedWorkspace` to render MITRE badges inline using the scenario's dynamic `phaseMap` state; removed the unused `MitreBadge` subcomponent.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” this entry.
 * **What & How**:
   - **MITRE badges**: Cleaned up the redundant component `MitreBadge` which performed fetch operations on every render, instead routing the dynamically fetched phases API data via `phaseMap[phase]` to the panel header.
   - **SC-03 Verification**: Inspected running containers `cybersim-sc03-phish-1` (172.20.3.10), `cybersim-sc03-mailrelay-1` (172.20.3.20), and `cybersim-sc03-victim-1` (172.20.3.30). Checked that `/etc/postfix/virtual` on the relay maps `@orion-logistics.sim` domains correctly to `victim@172.20.3.30`. Checked SMTP connectivity from `cybersim-sc03-victim-1` to `cybersim-sc03-mailrelay-1` (port 25). Confirmed the victim simulator's Flask API `/health` endpoint is responding correctly with status healthy.
 
-### [2026-05-19 23:45:00 +03:00] - Antigravity (Batch 5 — AI Tutor Intelligence + SC-03 Viability)
-* **Status**: Complete — Kali image built, backend tests pass, SC-03 containers healthy, APIs verified.
+### [2026-05-19 23:45:00 +03:00] - Antigravity (Batch 5 â€” AI Tutor Intelligence + SC-03 Viability)
+* **Status**: Complete â€” Kali image built, backend tests pass, SC-03 containers healthy, APIs verified.
 * **Why**: The user requested that the AI tutor short-circuit unprompted hints when the scenario target is unreachable, ensuring no "run nmap" prompts when containers are still provisioning. Additionally, MITRE phase drift in the UI was corrected, and the Kali Dockerfile was split into stages with pinned apt mirrors to improve build reliability. Lastly, SC-03 viability was smoke-tested.
 * **Where**:
-  - `backend/src/ai/monitor.py` — added `_probe_target` and `_get_primary_target` to check target reachability. Unprompted hints short-circuit if offline.
-  - `ai-monitor/system_prompt.md` — exposed `target_reachable` boolean variable to Gemini.
-  - `backend/src/scenarios/routes.py` — added `GET /api/scenarios/{id}/phases`.
-  - `frontend/src/pages/RedWorkspace.jsx` — MitreBadge now fetches MITRE tactics dynamically from the phases API rather than using hardcoded mappings.
-  - `infrastructure/docker/kali/Dockerfile` — split into `kali-base` and `kali-ad-tools` stages, removed unmaintained external mirror pins (reverted to `kali.download`).
-  - `backend/tests/unit_test_scenarios.py` — added `test_ai_hint_returns_offline_message_when_target_unreachable` and mocked `_probe_target` for existing fallback tests.
-  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
+  - `backend/src/ai/monitor.py` â€” added `_probe_target` and `_get_primary_target` to check target reachability. Unprompted hints short-circuit if offline.
+  - `ai-monitor/system_prompt.md` â€” exposed `target_reachable` boolean variable to Gemini.
+  - `backend/src/scenarios/routes.py` â€” added `GET /api/scenarios/{id}/phases`.
+  - `frontend/src/pages/RedWorkspace.jsx` â€” MitreBadge now fetches MITRE tactics dynamically from the phases API rather than using hardcoded mappings.
+  - `infrastructure/docker/kali/Dockerfile` â€” split into `kali-base` and `kali-ad-tools` stages, removed unmaintained external mirror pins (reverted to `kali.download`).
+  - `backend/tests/unit_test_scenarios.py` â€” added `test_ai_hint_returns_offline_message_when_target_unreachable` and mocked `_probe_target` for existing fallback tests.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” this entry.
 * **What & How**:
   - **AI Tutor Reachability**: Added `_probe_target()` (TCP socket check with 1.5s timeout). If the target is offline, `get_ai_hint` bypasses Gemini and returns a deterministic "Target appears to be offline" message unless the user explicitly requested a hint. This state is passed to Gemini via `target_reachable` so it can reason about target downtime.
   - **MITRE API**: `/api/scenarios/{id}/phases` parses the scenario YAML and serves phase metadata. `RedWorkspace.jsx` now mounts and fetches this data.
   - **Kali Build Hardening**: Built `cybersim-kali:latest` using Docker multi-stage builds. First stage handles `kalilinux/kali-rolling` and core pentest tools, while `kali-ad-tools` installs `bloodhound` and other heavy Python packages. Apt mirrors reverted to default HTTP pool to resolve 404s.
   - **Verification**: `python -m pytest` passed (53 passed). `docker build` succeeded after apt mirror fix. `docker compose --profile sc03 up -d` brought up all SC-03 containers healthy. `curl` to `/api/scenarios/SC-03/phases` returned the parsed YAML phases correctly.
-### [2026-05-19 22:00:00 +03:00] - Claude Code (Batch 2 — SIEM Fidelity / Sigma-style Rule Engine)
-* **Status**: Complete — all unit tests passing (52 passed); docker compose config valid; e2e test authored (requires live SC-02 stack).
-* **Why**: Batch 1 used regex-on-stdin SIEM emission: events fired when the command *string* matched a pattern, regardless of whether the command succeeded. A typo like `GetUserSPNz.py` triggered CRITICAL Kerberoasting alerts. This batch replaces that theater with an Elasticsearch-poll + Sigma-DSL engine that only fires when real telemetry (Filebeat → ES docs) matches a structured rule. The Batch 1.5 P0 fixes were also verified already in place (sc01-db, WAF reverse proxy, krb5.conf realms block, smb.conf identity fix, setup-shares.sh retry loop, _poll_elasticsearch reads Redis hash, banner false-positive guard).
+### [2026-05-19 22:00:00 +03:00] - Claude Code (Batch 2 â€” SIEM Fidelity / Sigma-style Rule Engine)
+* **Status**: Complete â€” all unit tests passing (52 passed); docker compose config valid; e2e test authored (requires live SC-02 stack).
+* **Why**: Batch 1 used regex-on-stdin SIEM emission: events fired when the command *string* matched a pattern, regardless of whether the command succeeded. A typo like `GetUserSPNz.py` triggered CRITICAL Kerberoasting alerts. This batch replaces that theater with an Elasticsearch-poll + Sigma-DSL engine that only fires when real telemetry (Filebeat â†’ ES docs) matches a structured rule. The Batch 1.5 P0 fixes were also verified already in place (sc01-db, WAF reverse proxy, krb5.conf realms block, smb.conf identity fix, setup-shares.sh retry loop, _poll_elasticsearch reads Redis hash, banner false-positive guard).
 * **Where**:
-  - `backend/src/siem/engine.py` — complete rewrite: Sigma DSL matcher, Redis dedup (NX SET with 1h TTL), rule-driven poll loop, process_command_for_siem reduced to no-op stub.
-  - `backend/src/siem/rules/sc01.yaml` — 5 rules: sqli_detected, lfi_detected, shell_upload, auth_failure, rce_command.
-  - `backend/src/siem/rules/sc02.yaml` — 6 rules: kerberoast (T1558.003), dcsync (T1003.006), lateral_movement_4624, brute_force_4625, tgt_request_4768, share_access_5140.
-  - `backend/src/siem/rules/sc03.yaml` — 6 rules: phish_email_open, phish_link_click, credentials_submitted, macro_execution, c2_beacon, persistence_schtask.
-  - `infrastructure/docker/scenarios/sc02/smb.conf` — bumped log level to `5 auth:5 kerberos:5` and max log size to 50000 for Kerberos TGS visibility.
-  - `infrastructure/docker/siem/filebeat.yml` — added samba-logs filestream input with dissect processor, JS kerberos TGS→ECS normalizer, and debug-line drop filter.
-  - `docker-compose.yml` — added `sc02_samba_logs` named volume; mounted to sc02-dc at `/var/log/samba` and to filebeat at `/samba-logs:ro`.
-  - `backend/tests/test_siem_rule_engine.py` — 18 new tests: DSL matcher, rule loader, template renderer, scenario inference, no-op stub, typo-command zero-event assertion.
-  - `backend/tests/test_siem_dedup.py` — 3 tests: same (session,rule,doc) emits once; different docs both emit; different sessions both emit.
-  - `backend/tests/e2e/test_sc02_kerberoast_e2e.py` — full pipeline e2e test (@pytest.mark.e2e): SC-02 up → Kali provisioned → nmap/smbclient/GetUserSPNs/hashcat → poll SIEM events → assert latency<5s, MITRE T1558.003, typo produces no event.
-  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
+  - `backend/src/siem/engine.py` â€” complete rewrite: Sigma DSL matcher, Redis dedup (NX SET with 1h TTL), rule-driven poll loop, process_command_for_siem reduced to no-op stub.
+  - `backend/src/siem/rules/sc01.yaml` â€” 5 rules: sqli_detected, lfi_detected, shell_upload, auth_failure, rce_command.
+  - `backend/src/siem/rules/sc02.yaml` â€” 6 rules: kerberoast (T1558.003), dcsync (T1003.006), lateral_movement_4624, brute_force_4625, tgt_request_4768, share_access_5140.
+  - `backend/src/siem/rules/sc03.yaml` â€” 6 rules: phish_email_open, phish_link_click, credentials_submitted, macro_execution, c2_beacon, persistence_schtask.
+  - `infrastructure/docker/scenarios/sc02/smb.conf` â€” bumped log level to `5 auth:5 kerberos:5` and max log size to 50000 for Kerberos TGS visibility.
+  - `infrastructure/docker/siem/filebeat.yml` â€” added samba-logs filestream input with dissect processor, JS kerberos TGSâ†’ECS normalizer, and debug-line drop filter.
+  - `docker-compose.yml` â€” added `sc02_samba_logs` named volume; mounted to sc02-dc at `/var/log/samba` and to filebeat at `/samba-logs:ro`.
+  - `backend/tests/test_siem_rule_engine.py` â€” 18 new tests: DSL matcher, rule loader, template renderer, scenario inference, no-op stub, typo-command zero-event assertion.
+  - `backend/tests/test_siem_dedup.py` â€” 3 tests: same (session,rule,doc) emits once; different docs both emit; different sessions both emit.
+  - `backend/tests/e2e/test_sc02_kerberoast_e2e.py` â€” full pipeline e2e test (@pytest.mark.e2e): SC-02 up â†’ Kali provisioned â†’ nmap/smbclient/GetUserSPNs/hashcat â†’ poll SIEM events â†’ assert latency<5s, MITRE T1558.003, typo produces no event.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” this entry.
 * **What & How**:
-  **Engine rewrite**: The engine now calls `_load_rules()` at `init_siem_batch()` time, reading all `backend/src/siem/rules/*.yaml` files. The poll loop (`_poll_elasticsearch`) fetches ES docs every 2s with a sliding `_last_poll_time` baseline. For each doc hit, it tests every loaded Sigma rule using `_match_dsl()` — a recursive DSL evaluator supporting `bool.must/should/must_not`, `term` (exact), `match` (substring), `range` (numeric), and `regexp`. When a rule matches, it computes `(session_id, rule_id, doc_id)` dedup key, calls `redis.set(key, "1", ex=3600, nx=True)` — only proceeding if the key was new. The event is rendered via `_render_template()` (replaces `{{dotted.field}}` placeholders from the source doc), then published to the existing Redis pubsub channel `siem:{session_id}:feed`. The `detection_latency_ms` field is computed from `doc[@timestamp]` to `datetime.now()`. `process_command_for_siem` is now a stub returning `[]` — regex theater is dead.
+  **Engine rewrite**: The engine now calls `_load_rules()` at `init_siem_batch()` time, reading all `backend/src/siem/rules/*.yaml` files. The poll loop (`_poll_elasticsearch`) fetches ES docs every 2s with a sliding `_last_poll_time` baseline. For each doc hit, it tests every loaded Sigma rule using `_match_dsl()` â€” a recursive DSL evaluator supporting `bool.must/should/must_not`, `term` (exact), `match` (substring), `range` (numeric), and `regexp`. When a rule matches, it computes `(session_id, rule_id, doc_id)` dedup key, calls `redis.set(key, "1", ex=3600, nx=True)` â€” only proceeding if the key was new. The event is rendered via `_render_template()` (replaces `{{dotted.field}}` placeholders from the source doc), then published to the existing Redis pubsub channel `siem:{session_id}:feed`. The `detection_latency_ms` field is computed from `doc[@timestamp]` to `datetime.now()`. `process_command_for_siem` is now a stub returning `[]` â€” regex theater is dead.
   **Samba audit pipeline**: smb.conf now logs at level 5 with auth and kerberos sub-system at level 5. Samba log files are persisted in a named Docker volume `sc02_samba_logs` (not overlayfs, ensuring xattr support). Filebeat reads `/samba-logs/log.*`, uses a dissect processor to parse the standard Samba log format, then a JS processor promotes any line containing `TGS_REQ` + `0x17` to a proper ECS event with `event.code=4769` and `krb.enctype=0x17`. A `drop_event` processor removes pure debug lines.
-  **Verification**: `python -m py_compile backend/src/siem/engine.py` passed. `docker compose config --quiet` passed. `pytest -q tests/test_siem_rule_engine.py tests/test_siem_dedup.py` — 18 passed. Full unit suite (52 tests) passed with 1 third-party deprecation warning. E2e test requires live Docker SC-02 stack; see `backend/tests/e2e/test_sc02_kerberoast_e2e.py`.
+  **Verification**: `python -m py_compile backend/src/siem/engine.py` passed. `docker compose config --quiet` passed. `pytest -q tests/test_siem_rule_engine.py tests/test_siem_dedup.py` â€” 18 passed. Full unit suite (52 tests) passed with 1 third-party deprecation warning. E2e test requires live Docker SC-02 stack; see `backend/tests/e2e/test_sc02_kerberoast_e2e.py`.
 
 ### [2026-05-19 10:10:52 +03:00] - Claude Code (Reliability Batch C2 WebSocket Reconnect Hardening)
 * **Status**: Coding in progress - frontend WebSocket reconnect behavior patched; verification pending.
@@ -708,18 +708,18 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
   - `backend/src/scenarios/output_patterns.py` - reviewed only to confirm the JSON `next` field is what gets emitted as `output_insight` WebSocket coaching.
 * **What & How**: Replaced direct command snippets and payload-style next steps with branch-aware evidence prompts. The regex fingerprints still recognize realistic lab output, tool names, telemetry markers, and high-impact milestones, but the student-facing guidance now asks for documentation of banners, affected accounts, event timing, process context, SIEM correlation, and report evidence instead of giving executable commands. Also normalized the touched JSON text to ASCII so these pattern files remain easy to diff and safe to render in terminals.
 
-### [2026-05-18 — Claude Code (Design + Logging + 3D Improvements)]
-* **Status**: Complete — build verified (541 modules, no errors), Python syntax clean.
+### [2026-05-18 â€” Claude Code (Design + Logging + 3D Improvements)]
+* **Status**: Complete â€” build verified (541 modules, no errors), Python syntax clean.
 * **Why**: User requested three specific improvements: (1) design/layout polish, (2) real activity logging tied to user actions, (3) better 3D KillChainTimeline. All three address demo-day visual quality and educational feedback-loop depth.
 * **Where**:
-  - `frontend/src/components/debrief/KillChainTimeline.jsx` — full 3D scene rewrite
-  - `frontend/src/components/siem/SiemFeed.jsx` — polished event feed design
-  - `backend/src/ws/routes.py` — hint logging + score penalties + mode-change log
-  - `backend/src/siem/events/sc01_events.json` — realistic ModSecurity/Apache/Suricata logs
-  - `backend/src/siem/events/sc02_events.json` — realistic Windows Security Event Log entries
-  - `backend/src/siem/events/sc03_events.json` — realistic GoPhish/Postfix/Sysmon logs
+  - `frontend/src/components/debrief/KillChainTimeline.jsx` â€” full 3D scene rewrite
+  - `frontend/src/components/siem/SiemFeed.jsx` â€” polished event feed design
+  - `backend/src/ws/routes.py` â€” hint logging + score penalties + mode-change log
+  - `backend/src/siem/events/sc01_events.json` â€” realistic ModSecurity/Apache/Suricata logs
+  - `backend/src/siem/events/sc02_events.json` â€” realistic Windows Security Event Log entries
+  - `backend/src/siem/events/sc03_events.json` â€” realistic GoPhish/Postfix/Sysmon logs
 * **What & How**:
-  **3D KillChainTimeline** — Complete rewrite of `KillChainTimeline.jsx`:
+  **3D KillChainTimeline** â€” Complete rewrite of `KillChainTimeline.jsx`:
   - Grid floor (LineSegments) gives depth perception
   - Dual-layer tubes (glow outer + bright core) for Red/Blue tracks with per-track PointLights
   - Double-mesh nodes (glowing outer transparent sphere + solid core) with sine-wave scale pulse
@@ -728,18 +728,18 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
   - Starfield (280 `Points` sprites) for background atmosphere
   - Smooth camera orbit with drag-to-rotate via pointer events, pan inertia
   - CanvasTexture sprite labels with JSON-colored MITRE technique tags and severity dot
-  - Tier-aware: high-tier gets full effects (antialias, 2× DPR, extra glow), low-tier degrades gracefully
+  - Tier-aware: high-tier gets full effects (antialias, 2Ã— DPR, extra glow), low-tier degrades gracefully
   - 2D fallback for WebGL-disabled or low-perf browsers
 
-  **SIEM Event JSON upgrades** — `raw_log` field now contains realistic structured JSON that looks like actual Filebeat/ECS-normalised SIEM output:
+  **SIEM Event JSON upgrades** â€” `raw_log` field now contains realistic structured JSON that looks like actual Filebeat/ECS-normalised SIEM output:
   - SC-01: ModSecurity CRS audit entries (rule IDs 942100, 930100, 933100), Apache access logs, auditd EXECVE/PATH events, MySQL slow query log, vsftpd/sshd auth logs, Suricata alerts
   - SC-02: Windows Security Event Log (EventIDs 4625, 4624, 4662, 4768, 4769, 5140, 5145, 4656), Winlogbeat/ECS format with proper winlog.* fields, LDAP rate anomaly notes
-  - SC-03: GoPhish campaign JSON (email opened/clicked/submitted), Postfix SMTP logs with SPF/DKIM results, Sysmon EventID 1 (process create) with Office→cmd.exe parent chain, Suricata Meterpreter detection, Windows 4102 audit log clear event
+  - SC-03: GoPhish campaign JSON (email opened/clicked/submitted), Postfix SMTP logs with SPF/DKIM results, Sysmon EventID 1 (process create) with Officeâ†’cmd.exe parent chain, Suricata Meterpreter detection, Windows 4102 audit log clear event
 
   **Activity logging in `ws/routes.py`**:
   - Added `_HINT_PENALTIES = {1: 5, 2: 10, 3: 20}` constant
   - `_send_hint()`: fetches Session, deducts penalty from `score`, appends hint key to `hints_used` JSON list, writes `CommandLog(tool=hint:L{level})`, sends `score_update` WS message with penalty field
-  - `_handle_terminal_command()`: retroactively sets `ai_hint_given=True` on the most recent CommandLog row when AI hint fires; logs phase advances as `CommandLog(command=[phase_advance] N→M, tool=phase:advance)`
+  - `_handle_terminal_command()`: retroactively sets `ai_hint_given=True` on the most recent CommandLog row when AI hint fires; logs phase advances as `CommandLog(command=[phase_advance] Nâ†’M, tool=phase:advance)`
   - `toggle_mode` handler: now also writes `CommandLog(tool=mode:{new_mode})` for activity history
 
   **SiemFeed redesign**:
@@ -1064,84 +1064,84 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **What & How**: WS-A now lets xterm receive native pointer selection directly, preserves Ctrl-C as SIGINT, maps Ctrl-Shift-C/V to browser clipboard operations, exposes find/font/clear/copy/scroll/reset controls, and persists terminal preferences under `cs.terminal.*`. WS-B uses `react-resizable-panels` with a Zustand layout store persisted under `cs.workspace.layouts.v1`; Red and Blue workspaces provide named slots so existing mission features remain intact while panel geometry is draggable, collapsible, fullscreenable, and preset-driven. WS-F adds an in-memory output-pattern scanner that only processes completed PTY lines, avoids Postgres raw-output storage, and sends educational insight cards for recognized SC-01/02/03 fingerprints without embedding real exploit payload strings.
 
 ### [2026-05-17 11:45:00 +03:00] - Claude Code (Demo-Day Deployment Plan Authored)
-* **Status**: Planning — no code changes yet
-* **Why**: User clarified scope: not a production launch, just a working public URL for the graduation defense (1–3 weeks lead time, ~3 concurrent users including jury members trying it live). The earlier DEPLOYMENT_PLAN.md targets closed-beta/public-launch which is overkill for a one-shot demo. Needed a focused, minimal plan that gets the stack live with HTTPS for the defense day with the least possible operational overhead.
+* **Status**: Planning â€” no code changes yet
+* **Why**: User clarified scope: not a production launch, just a working public URL for the graduation defense (1â€“3 weeks lead time, ~3 concurrent users including jury members trying it live). The earlier DEPLOYMENT_PLAN.md targets closed-beta/public-launch which is overkill for a one-shot demo. Needed a focused, minimal plan that gets the stack live with HTTPS for the defense day with the least possible operational overhead.
 * **Where**:
-  - `docs/architecture/DEMO_DAY_PLAN.md` (NEW) — focused demo-day plan
-* **What & How**: Plan is 6 phases over 1–3 weeks. Recommends Hetzner CCX13 (€13/mo dedicated-AMD, 8 GB) as primary host, Porkbun domain (~$3) or sslip.io free, Caddy for auto-Let's-Encrypt HTTPS, Cloudflare DNS-only (proxy OFF — WebSockets unreliable through CF proxy at the message volume terminal generates). Phases: (1) local rehearsal to confirm peak RAM stays <6 GB, (2) domain + VPS provisioning ~1 hr, (3) server bootstrap with ufw + docker ~30 min, (4) Caddy + docker-compose.demo.yml override + production .env ~45 min, (5) two rehearsals with full demo script + multi-user concurrent stress test, (6) day-of protocol with morning checks and slide-deck fallback. Total spend ~$15–25. Includes 8-row failure-mode quickfix table, Cloudflare Tunnel backup plan if laptop/VPS dies mid-demo, and explicit list of what is intentionally skipped (backups, monitoring, rate-limiting, ToS, CI/CD) with rationale. Plan deliberately avoids the production hardening in DEPLOYMENT_PLAN.md to stay within demo-only scope.
+  - `docs/architecture/DEMO_DAY_PLAN.md` (NEW) â€” focused demo-day plan
+* **What & How**: Plan is 6 phases over 1â€“3 weeks. Recommends Hetzner CCX13 (â‚¬13/mo dedicated-AMD, 8 GB) as primary host, Porkbun domain (~$3) or sslip.io free, Caddy for auto-Let's-Encrypt HTTPS, Cloudflare DNS-only (proxy OFF â€” WebSockets unreliable through CF proxy at the message volume terminal generates). Phases: (1) local rehearsal to confirm peak RAM stays <6 GB, (2) domain + VPS provisioning ~1 hr, (3) server bootstrap with ufw + docker ~30 min, (4) Caddy + docker-compose.demo.yml override + production .env ~45 min, (5) two rehearsals with full demo script + multi-user concurrent stress test, (6) day-of protocol with morning checks and slide-deck fallback. Total spend ~$15â€“25. Includes 8-row failure-mode quickfix table, Cloudflare Tunnel backup plan if laptop/VPS dies mid-demo, and explicit list of what is intentionally skipped (backups, monitoring, rate-limiting, ToS, CI/CD) with rationale. Plan deliberately avoids the production hardening in DEPLOYMENT_PLAN.md to stay within demo-only scope.
 
 ### [2026-05-17 11:00:00 +03:00] - Claude Code (Deployment Plan Authored)
-* **Status**: Planning — no code changes yet
+* **Status**: Planning â€” no code changes yet
 * **Why**: User has no prior deployment experience and asked whether the project is launch-ready, what infrastructure to use, and whether AWS is appropriate. Needed a full deployment readiness audit + phased go-live plan covering both closed-beta and public scenarios, with honest cost numbers and concrete first steps.
 * **Where**:
-  - `docs/architecture/DEPLOYMENT_PLAN.md` (NEW) — full plan
-* **What & How**: Plan covers 12 sections: (1) honest readiness gap table, (2) per-user resource math showing why this isn't a normal SaaS deploy (1.5–1.8 GB RAM/user), (3) hosting comparison table — recommended Hetzner over AWS for v1 with concrete cost numbers, (4) security gaps to close pre-launch (docker socket exposure, container egress, resource caps, auth hardening, TLS via Caddy, secrets, backups), (5) domain/DNS/ancillary services bill of materials, (6) 5–7 day closed-beta launch plan day-by-day, (7) 2–3 week public launch plan + when AWS finally becomes worth it with reference architecture, (8) CI/CD pipeline template, (9) pre-launch operational checklist, (10) concrete "what to do this weekend" smallest-step guidance, (11) cost summary (~$70–80/mo closed beta, $200–300/mo public), (12) ranked risk register. Verdict: not ready for public launch, ready for closed beta after ~1 week of hardening. Plan explicitly recommends starting with a $5 throwaway VPS to surface first-deployment surprises before committing to the production host.
+  - `docs/architecture/DEPLOYMENT_PLAN.md` (NEW) â€” full plan
+* **What & How**: Plan covers 12 sections: (1) honest readiness gap table, (2) per-user resource math showing why this isn't a normal SaaS deploy (1.5â€“1.8 GB RAM/user), (3) hosting comparison table â€” recommended Hetzner over AWS for v1 with concrete cost numbers, (4) security gaps to close pre-launch (docker socket exposure, container egress, resource caps, auth hardening, TLS via Caddy, secrets, backups), (5) domain/DNS/ancillary services bill of materials, (6) 5â€“7 day closed-beta launch plan day-by-day, (7) 2â€“3 week public launch plan + when AWS finally becomes worth it with reference architecture, (8) CI/CD pipeline template, (9) pre-launch operational checklist, (10) concrete "what to do this weekend" smallest-step guidance, (11) cost summary (~$70â€“80/mo closed beta, $200â€“300/mo public), (12) ranked risk register. Verdict: not ready for public launch, ready for closed beta after ~1 week of hardening. Plan explicitly recommends starting with a $5 throwaway VPS to surface first-deployment surprises before committing to the production host.
 
 ### [2026-05-17 10:15:00 +03:00] - Claude Code (Phase v4 Plan Authored)
-* **Status**: Planning — no code changes yet
+* **Status**: Planning â€” no code changes yet
 * **Why**: User requested a detailed continuation plan covering (a) close-out of v3 design phases, (b) all-three-scenario realism deepening, (c) terminal usability (scroll/copy/paste/resize/find), (d) read-the-output guided panels with annotated outputs, (e) methodology diversification, (f) interactable/customizable/resizable workspace layout. Plan must enumerate workstreams, files, acceptance gates, and risk mitigation before execution begins.
 * **Where**:
-  - `docs/architecture/PHASE_V4_PLAN.md` (NEW) — full plan
-* **What & How**: Plan is organized into 8 workstreams (WS-A terminal usability, WS-B resizable workspace, WS-C/D/E scenario realism for SC-01/02/03, WS-F output-annotator engine + JSON pattern catalogs, WS-G methodology branching with branch-aware hints, WS-H v3 close-out covering Dashboard/Debrief/Settings/Palette/A11y). Each workstream lists exact files touched, effort sizing, acceptance test, and verification command. Order: WS-A+B first (unblocks usability), then C/D/E in parallel (each isolated docker subdir), then F/G layered on top, then H polish. Includes 8-day milestone schedule, risk table, explicit out-of-scope list, and final deliverable checklist. Plan adheres to v2.0 guardrails (no SC-04+, no Internet egress, no real LSASS exposure — uses synthetic markers). Audit section at top reconciles what v3 actually shipped vs. what remains.
+  - `docs/architecture/PHASE_V4_PLAN.md` (NEW) â€” full plan
+* **What & How**: Plan is organized into 8 workstreams (WS-A terminal usability, WS-B resizable workspace, WS-C/D/E scenario realism for SC-01/02/03, WS-F output-annotator engine + JSON pattern catalogs, WS-G methodology branching with branch-aware hints, WS-H v3 close-out covering Dashboard/Debrief/Settings/Palette/A11y). Each workstream lists exact files touched, effort sizing, acceptance test, and verification command. Order: WS-A+B first (unblocks usability), then C/D/E in parallel (each isolated docker subdir), then F/G layered on top, then H polish. Includes 8-day milestone schedule, risk table, explicit out-of-scope list, and final deliverable checklist. Plan adheres to v2.0 guardrails (no SC-04+, no Internet egress, no real LSASS exposure â€” uses synthetic markers). Audit section at top reconciles what v3 actually shipped vs. what remains.
 
-### [2026-05-16 12:00:00 +03:00] - Claude Code (Design System v3 — Phases 1-2, 3, 4 partial, 5, 7 partial)
-* **Status**: Complete — all green builds, three.js code-split verified, workspace bundle unchanged
+### [2026-05-16 12:00:00 +03:00] - Claude Code (Design System v3 â€” Phases 1-2, 3, 4 partial, 5, 7 partial)
+* **Status**: Complete â€” all green builds, three.js code-split verified, workspace bundle unchanged
 * **Why**: User approved the "Operations Center" design plan and asked to proceed. Phases 1+2+3+4(partial)+5+7(partial) shipped in one coherent pass. Workspaces (Phase 3) and Landing (Phase 5) get the biggest visible upgrade; foundation (1+2) underpins every future polish.
 * **Where**:
-  - **Phase 1 — Foundation tokens**:
-    - `frontend/tailwind.config.js` — added type scale (display-1..mono-2), v3 spacing grid, transition timing tokens (enter/pop/glide), elevation shadow tokens (z-1..z-3, focus rings), motion keyframes (tilt-in, pulse-soft)
-    - `frontend/src/styles/v3-design.css` (NEW) — design system layer with surface elevations, button/card/badge/stat/modal/empty-state primitives, focus ring, prefers-reduced-motion kill switch, 2.5D tilt utility, divider/eyebrow
-    - `frontend/src/main.jsx` — imports v3-design.css; wraps app in <PerfTier> provider
-  - **Phase 2 — UI primitives** (all new):
-    - `frontend/src/components/ui/Button.jsx` — variant=red|blue|subtle|ghost|danger; loading spinner; left/right icons
-    - `frontend/src/components/ui/Card.jsx` — interactive lift; 2.5D tilt; cursor spotlight; accent bar; CardHeader/Body/Footer
-    - `frontend/src/components/ui/Badge.jsx` — tone-based, severity-aware (MED + MEDIUM both map correctly)
-    - `frontend/src/components/ui/Stat.jsx` — KPI tile with label/value/trend
-    - `frontend/src/components/ui/Modal.jsx` — portal-mounted, scrim, esc-to-close, body-scroll-lock
+  - **Phase 1 â€” Foundation tokens**:
+    - `frontend/tailwind.config.js` â€” added type scale (display-1..mono-2), v3 spacing grid, transition timing tokens (enter/pop/glide), elevation shadow tokens (z-1..z-3, focus rings), motion keyframes (tilt-in, pulse-soft)
+    - `frontend/src/styles/v3-design.css` (NEW) â€” design system layer with surface elevations, button/card/badge/stat/modal/empty-state primitives, focus ring, prefers-reduced-motion kill switch, 2.5D tilt utility, divider/eyebrow
+    - `frontend/src/main.jsx` â€” imports v3-design.css; wraps app in <PerfTier> provider
+  - **Phase 2 â€” UI primitives** (all new):
+    - `frontend/src/components/ui/Button.jsx` â€” variant=red|blue|subtle|ghost|danger; loading spinner; left/right icons
+    - `frontend/src/components/ui/Card.jsx` â€” interactive lift; 2.5D tilt; cursor spotlight; accent bar; CardHeader/Body/Footer
+    - `frontend/src/components/ui/Badge.jsx` â€” tone-based, severity-aware (MED + MEDIUM both map correctly)
+    - `frontend/src/components/ui/Stat.jsx` â€” KPI tile with label/value/trend
+    - `frontend/src/components/ui/Modal.jsx` â€” portal-mounted, scrim, esc-to-close, body-scroll-lock
     - `frontend/src/components/ui/EmptyState.jsx`, `SectionHeading.jsx`, `LiveIndicator.jsx`, `Divider.jsx`
-    - `frontend/src/components/ui/PerfTier.jsx` — tier 0-3 classifier (reduced-motion, mobile, low-core), rolling FPS downgrade
-    - `frontend/src/components/ui/index.js` — barrel export
-    - `frontend/src/hooks/useTilt.js` — mouse-driven CSS-var tilt for any element
-  - **Phase 3 — Workspace polish**:
-    - `frontend/src/components/workspace/WorkspaceTopBar.jsx` (NEW) — shared topbar with role badge, scenario chip, phase trail, connection pill, AI mode chip, timer, score, end-debrief
-    - `frontend/src/components/workspace/ConnectionPill.jsx` (NEW) — connected/connecting/disconnected/unauthorized semantic states
-    - `frontend/src/pages/RedWorkspace.jsx` — adopted WorkspaceTopBar; replaced beginner welcome overlay with new Modal primitive + iterated copy; removed local formatTime helper
-    - `frontend/src/pages/BlueWorkspace.jsx` — adopted WorkspaceTopBar; collapsed inline alert badges into compact active-alerts strip with NIST phase label; removed local formatTime helper
-  - **Phase 4 partial — Dashboard refresh**:
-    - `frontend/src/components/dashboard/ScenarioCard.jsx` (NEW) — 2.5D tilt + cursor spotlight + accent gradient bar + ZScore-translated CTA. Keyboard accessible (role=button, Enter/Space)
-    - `frontend/src/pages/Dashboard.jsx` — replaced ad-hoc scenario-card markup with ScenarioCard; removed dead DIFFICULTY_STYLE / SCENARIO_CLASSES constants
-  - **Phase 5 — Landing 3D**:
-    - `frontend/package.json` — installed `three@0.169.0`
-    - `frontend/src/components/canvas/HeroScene3D.jsx` (NEW) — WebGL particle network with two interleaved Red/Blue formations, intra-team connecting lines, occasional cross-team attack-trace flash, mouse parallax + drag-rotate, fog, additive blending, perf-tier-aware profile (1400/900/500 particles), 30fps cap on tier 1, full dispose() cleanup
-    - `frontend/src/pages/Landing.jsx` — lazy-imports HeroScene3D via React.lazy, falls back to existing 2D ParticleCanvas while loading and on tier 0 (reduced-motion)
-  - **Phase 7 partial — Cmd+K palette**:
-    - `frontend/src/components/palette/CommandPalette.jsx` (NEW) — portal-mounted, global ⌘K / Ctrl+K trigger, fuzzy search across Navigate/Scenarios/Account sections, arrow-key + Enter + Esc keyboard, sectioned grouped results, footer kbd legend
-    - `frontend/src/App.jsx` — mounts <CommandPalette /> globally inside BrowserRouter (suppressed on /auth)
+    - `frontend/src/components/ui/PerfTier.jsx` â€” tier 0-3 classifier (reduced-motion, mobile, low-core), rolling FPS downgrade
+    - `frontend/src/components/ui/index.js` â€” barrel export
+    - `frontend/src/hooks/useTilt.js` â€” mouse-driven CSS-var tilt for any element
+  - **Phase 3 â€” Workspace polish**:
+    - `frontend/src/components/workspace/WorkspaceTopBar.jsx` (NEW) â€” shared topbar with role badge, scenario chip, phase trail, connection pill, AI mode chip, timer, score, end-debrief
+    - `frontend/src/components/workspace/ConnectionPill.jsx` (NEW) â€” connected/connecting/disconnected/unauthorized semantic states
+    - `frontend/src/pages/RedWorkspace.jsx` â€” adopted WorkspaceTopBar; replaced beginner welcome overlay with new Modal primitive + iterated copy; removed local formatTime helper
+    - `frontend/src/pages/BlueWorkspace.jsx` â€” adopted WorkspaceTopBar; collapsed inline alert badges into compact active-alerts strip with NIST phase label; removed local formatTime helper
+  - **Phase 4 partial â€” Dashboard refresh**:
+    - `frontend/src/components/dashboard/ScenarioCard.jsx` (NEW) â€” 2.5D tilt + cursor spotlight + accent gradient bar + ZScore-translated CTA. Keyboard accessible (role=button, Enter/Space)
+    - `frontend/src/pages/Dashboard.jsx` â€” replaced ad-hoc scenario-card markup with ScenarioCard; removed dead DIFFICULTY_STYLE / SCENARIO_CLASSES constants
+  - **Phase 5 â€” Landing 3D**:
+    - `frontend/package.json` â€” installed `three@0.169.0`
+    - `frontend/src/components/canvas/HeroScene3D.jsx` (NEW) â€” WebGL particle network with two interleaved Red/Blue formations, intra-team connecting lines, occasional cross-team attack-trace flash, mouse parallax + drag-rotate, fog, additive blending, perf-tier-aware profile (1400/900/500 particles), 30fps cap on tier 1, full dispose() cleanup
+    - `frontend/src/pages/Landing.jsx` â€” lazy-imports HeroScene3D via React.lazy, falls back to existing 2D ParticleCanvas while loading and on tier 0 (reduced-motion)
+  - **Phase 7 partial â€” Cmd+K palette**:
+    - `frontend/src/components/palette/CommandPalette.jsx` (NEW) â€” portal-mounted, global âŒ˜K / Ctrl+K trigger, fuzzy search across Navigate/Scenarios/Account sections, arrow-key + Enter + Esc keyboard, sectioned grouped results, footer kbd legend
+    - `frontend/src/App.jsx` â€” mounts <CommandPalette /> globally inside BrowserRouter (suppressed on /auth)
 * **What & How**:
-  1. **Design tokens** are pure CSS variables + Tailwind extensions — every later phase opts-in by class name. Zero runtime cost.
+  1. **Design tokens** are pure CSS variables + Tailwind extensions â€” every later phase opts-in by class name. Zero runtime cost.
   2. **PerfTier provider** wraps the whole app at main.jsx. Components consume tier via `usePerfTier()`. The provider monitors rolling FPS and auto-downgrades; reduced-motion users land on tier 0, mobile/coarse-pointer on tier 1.
   3. **HeroScene3D** uses raw three.js (no R3F overhead) to keep the bundle lean. The lazy import means workspace routes pay zero three.js cost: build confirms `HeroScene3D-*.js` (119KB gz) only loads on /. The scene runs at 60fps on tier 3, 30fps capped on tier 1, never instantiates on tier 0 (SVG gradient fallback renders instead).
   4. **WorkspaceTopBar** is shared between Red and Blue, parameterised by `role`. The topbar shows a live ConnectionPill (was a static pulse-only dot), AI-mode chip with semantic tone, monospace tabular timer, score with severity colour, end-debrief CTA.
-  5. **ScenarioCard** applies CSS perspective + rotateX/rotateY driven by mouse position via useTilt — translates to true 2.5D parallax for free. Inner button has `translateZ(30px)` so it "floats" off the card on tilt.
-  6. **CommandPalette** is mounted at the App level (inside BrowserRouter so it can use useNavigate). It listens for ⌘K/Ctrl+K on window. Items are statically declared with `to` routes or `action` strings. Cursor moves with arrow keys; mouse-hover also adjusts cursor. Esc closes; scrim closes. Section grouping is computed from filtered results.
+  5. **ScenarioCard** applies CSS perspective + rotateX/rotateY driven by mouse position via useTilt â€” translates to true 2.5D parallax for free. Inner button has `translateZ(30px)` so it "floats" off the card on tilt.
+  6. **CommandPalette** is mounted at the App level (inside BrowserRouter so it can use useNavigate). It listens for âŒ˜K/Ctrl+K on window. Items are statically declared with `to` routes or `action` strings. Cursor moves with arrow keys; mouse-hover also adjusts cursor. Esc closes; scrim closes. Section grouping is computed from filtered results.
 * **Build verification**:
-  - `npx vite build` → ✓ built in 3.42s
+  - `npx vite build` â†’ âœ“ built in 3.42s
   - Workspace bundles: RedWorkspace 14.71KB / 5.13KB gz, BlueWorkspace 14.72KB / 5.34KB gz (smaller than before despite richer features)
-  - HeroScene3D lazy chunk: 470KB / 118.92KB gz — only loaded on Landing
+  - HeroScene3D lazy chunk: 470KB / 118.92KB gz â€” only loaded on Landing
   - Main bundle: 61.67KB / 17.95KB gz
-  - Total workspace TTI bundle ≈ 146KB gz vs 250KB budget ✓
+  - Total workspace TTI bundle â‰ˆ 146KB gz vs 250KB budget âœ“
 
 ### [2026-05-16 09:30:00 +03:00] - Claude Code (Comprehensive Bug Fix Pass)
 * **Status**: Complete
 * **Why**: Full project audit identified 7 bugs spanning logging correctness, SIEM severity rendering, event file I/O hot path, orphaned phase-advancement logic, deprecated asyncio API, false-positive WebSocket reconnects, and native browser `alert()` usage in production UI.
 * **Where**:
-  - `backend/src/sandbox/container_cleanup.py` — fix container ID logging after nulling
-  - `frontend/src/pages/BlueWorkspace.jsx` — add `MED` key to `sevStyles` map
-  - `backend/src/siem/engine.py` — add `_events_cache` dict; load JSON once per scenario, not per command
-  - `backend/src/ws/routes.py` — import & call `try_advance_phase` after every command; send `phase_update` WS message when phase advances; send `score_update` WS message after gate penalty with `.returning(Session.score)`
-  - `backend/src/sandbox/manager.py` — replace all `asyncio.get_event_loop()` with `asyncio.get_running_loop()` (Python 3.10+ deprecation)
-  - `frontend/src/hooks/useWebSocket.js` — add `setPhase` to Zustand destructure; add `phase_update` case in message switch; increase echo-stall timeout 2500ms → 8000ms; add `setPhase` to useEffect deps
-  - `frontend/src/pages/Dashboard.jsx` — replace `alert()` with inline `launchError` state displayed as styled banner inside briefing modal; clear error on cancel
+  - `backend/src/sandbox/container_cleanup.py` â€” fix container ID logging after nulling
+  - `frontend/src/pages/BlueWorkspace.jsx` â€” add `MED` key to `sevStyles` map
+  - `backend/src/siem/engine.py` â€” add `_events_cache` dict; load JSON once per scenario, not per command
+  - `backend/src/ws/routes.py` â€” import & call `try_advance_phase` after every command; send `phase_update` WS message when phase advances; send `score_update` WS message after gate penalty with `.returning(Session.score)`
+  - `backend/src/sandbox/manager.py` â€” replace all `asyncio.get_event_loop()` with `asyncio.get_running_loop()` (Python 3.10+ deprecation)
+  - `frontend/src/hooks/useWebSocket.js` â€” add `setPhase` to Zustand destructure; add `phase_update` case in message switch; increase echo-stall timeout 2500ms â†’ 8000ms; add `setPhase` to useEffect deps
+  - `frontend/src/pages/Dashboard.jsx` â€” replace `alert()` with inline `launchError` state displayed as styled banner inside briefing modal; clear error on cancel
 * **What & How**:
   1. **container_cleanup.py**: saved `container_id_log = session.container_id` before the DB null so the subsequent `logger.info` and `logger.warning` calls log the actual container ID instead of `None`.
   2. **BlueWorkspace.jsx**: the backend `daemon_noise.py` normalises severity to `MED` (not `MEDIUM`). Added `MED: 'sev-med'` alongside the existing `MEDIUM` key so medium-severity badges render with amber styling.
@@ -1539,21 +1539,21 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
   - Remaining unverified/known issues: full `python -m pytest` still has failures under the local Python 3.14 runner, partly from asyncpg event-loop behavior and partly from stale test expectations around methodology gates/YAML field names. Full browser E2E flow (login -> scenario -> terminal -> SIEM -> debrief) was not completed in this pass. The local `.env` appears to contain a real Gemini key and should be rotated if exposed outside the machine.
 
 ### [2026-04-16 16:10:00] - Claude Code (Bug Fixes & Full Platform Hardening)
-* **Status**: Complete — 9 bugs fixed across backend and frontend, all services re-verified
+* **Status**: Complete â€” 9 bugs fixed across backend and frontend, all services re-verified
 * **Why**: User requested "make sure everything is working, fix improve and enhance all aspects". Performed a systematic code audit across all modules and found 9 actionable bugs ranging from a crash-level NameError to stale React closures and wrong Docker network names.
 * **Where**:
-  - `backend/src/ws/routes.py` — FIXED: `first_word` NameError; improved exception logging
-  - `backend/src/sessions/routes.py` — FIXED: `stop_scenario_container` missing `scenario_id` arg (target containers not torn down)
-  - `backend/src/sandbox/manager.py` — FIXED: hardcoded wrong Docker network name → dynamic lookup returning correct `juterminal1_sc01-net`
-  - `backend/src/sandbox/terminal.py` — FIXED: SC-02 banner wrong creds (`Welcome1!` → `Password123`)
-  - `backend/src/siem/engine.py` — FIXED: Elasticsearch logs broadcast to all sessions; now routes by inferred scenario; severity now derived from log fields
-  - `backend/src/scoring/engine.py` — FIXED: `final_score()` never subtracted hint penalties; removed unused `timezone` import
-  - `frontend/src/hooks/useWebSocket.js` — FIXED: stale closures from missing useEffect dependency array
-  - `frontend/src/hooks/useTerminal.js` — FIXED: stale `onData`/`onCommand` refs via stable ref pattern
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
+  - `backend/src/ws/routes.py` â€” FIXED: `first_word` NameError; improved exception logging
+  - `backend/src/sessions/routes.py` â€” FIXED: `stop_scenario_container` missing `scenario_id` arg (target containers not torn down)
+  - `backend/src/sandbox/manager.py` â€” FIXED: hardcoded wrong Docker network name â†’ dynamic lookup returning correct `juterminal1_sc01-net`
+  - `backend/src/sandbox/terminal.py` â€” FIXED: SC-02 banner wrong creds (`Welcome1!` â†’ `Password123`)
+  - `backend/src/siem/engine.py` â€” FIXED: Elasticsearch logs broadcast to all sessions; now routes by inferred scenario; severity now derived from log fields
+  - `backend/src/scoring/engine.py` â€” FIXED: `final_score()` never subtracted hint penalties; removed unused `timezone` import
+  - `frontend/src/hooks/useWebSocket.js` â€” FIXED: stale closures from missing useEffect dependency array
+  - `frontend/src/hooks/useTerminal.js` â€” FIXED: stale `onData`/`onCommand` refs via stable ref pattern
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry)
 * **What & How**:
-  - **NameError** (`ws/routes.py`): `tool_name or first_word` → `tool_name or (command.strip().split()[0] if command.strip() else "")`. Would crash auto-evidence notify on every command that triggered a discovery.
-  - **Scenario teardown** (`sessions/routes.py`): Added `scenario_id` arg so `_teardown_scenario_targets()` runs on session end — prevents RAM leak from zombie SC-01/02/03 containers.
+  - **NameError** (`ws/routes.py`): `tool_name or first_word` â†’ `tool_name or (command.strip().split()[0] if command.strip() else "")`. Would crash auto-evidence notify on every command that triggered a discovery.
+  - **Scenario teardown** (`sessions/routes.py`): Added `scenario_id` arg so `_teardown_scenario_targets()` runs on session end â€” prevents RAM leak from zombie SC-01/02/03 containers.
   - **Docker network** (`sandbox/manager.py`): Added `_get_scenario_network()` that enumerates live networks, finds `{sc_num}-net`, falls back to `{project}_{sc_num}-net`. Old `cybersim-sc01` never matched any real network.
   - **SC-02 creds** (`terminal.py`): Banner showed wrong password for jsmith (`Welcome1!` vs actual `Password123` in provision-dc.sh).
   - **SIEM routing** (`siem/engine.py`): `_infer_scenario()` classifies logs by keyword patterns to route per-scenario. `_infer_severity()` maps ECS log level fields to severity codes. Prevents SC-01 students seeing SC-02 AD events.
@@ -1565,32 +1565,32 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **Status**: Planning & Documentation Complete
 * **Why**: The project needed a comprehensive, 1-page runbook to guide presenters during the academic evaluation and demonstration of CyberSim. The system requires structured methodology to showcase its defining feature (the Dual-Perspective SOC network) effectively in a 10-minute window.
 * **Where**:
-  - `docs/CYBERSIM_DEMO_RUNBOOK.md` — NEW: Step-by-step presentation script.
-  - `docs/architecture/MASTER_BLUEPRINT.md` — VERIFIED: Architecture topologies confirm accuracy of Single-Node integration.
-  - `ANTIGRAVITY_PROMPTS.md` — MODIFIED: Marked Phase F COMPLETE.
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `docs/CYBERSIM_DEMO_RUNBOOK.md` â€” NEW: Step-by-step presentation script.
+  - `docs/architecture/MASTER_BLUEPRINT.md` â€” VERIFIED: Architecture topologies confirm accuracy of Single-Node integration.
+  - `ANTIGRAVITY_PROMPTS.md` â€” MODIFIED: Marked Phase F COMPLETE.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**:
   - Synthesized the deployment logistics into an easy-to-read, minute-by-minute timeline structured around the "SOC Duality" hook.
   - Provided direct, explicit fallback instructions to presenters regarding the Terminal Persistence (hitting refresh to effortlessly replay Redis logs).
   - Validated that the ASCII-based architecture mapping inside the `MASTER_BLUEPRINT.md` still accurately reflects the final state of the network.
 
 ### [2026-04-16 11:32:00] - Claude Code (Infrastructure Integration & Full Stack Verification)
-* **Status**: Complete — All Docker Services Operational, Database Schema Verified, API Fully Functional
+* **Status**: Complete â€” All Docker Services Operational, Database Schema Verified, API Fully Functional
 * **Why**: User requested "docker should be up fix all and review and make sure its all integrated and tested and implemented". Prior work had implemented PROMPT 2-4 (SC-02 AD, SC-03 Phishing, Alembic Migrations, Container Cleanup), but the stack needed full integration verification and bug fixes to ensure everything runs together cohesively.
 * **Where**:
-  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` — FIXED: Check for actual database file (`sam.ldb`) instead of directory existence to avoid stale state
-  - `infrastructure/postgres/init.sql` — FIXED: Removed index creation statements that fail on fresh databases before tables exist; indexes now managed by Alembic
-  - Database schema — VERIFIED: All 7 tables created (`users`, `sessions`, `notes`, `command_log`, `siem_events`, `siem_triage`, `auto_evidence`)
-  - Database indexes — VERIFIED: All 5 performance indexes created (`idx_sessions_user_id`, `idx_sessions_scenario_id`, `idx_command_log_session_id`, `idx_siem_events_session_id`, `idx_siem_events_created_at`)
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` â€” FIXED: Check for actual database file (`sam.ldb`) instead of directory existence to avoid stale state
+  - `infrastructure/postgres/init.sql` â€” FIXED: Removed index creation statements that fail on fresh databases before tables exist; indexes now managed by Alembic
+  - Database schema â€” VERIFIED: All 7 tables created (`users`, `sessions`, `notes`, `command_log`, `siem_events`, `siem_triage`, `auto_evidence`)
+  - Database indexes â€” VERIFIED: All 5 performance indexes created (`idx_sessions_user_id`, `idx_sessions_scenario_id`, `idx_command_log_session_id`, `idx_siem_events_session_id`, `idx_siem_events_created_at`)
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry)
 * **What & How**:
   - **Docker Stack Verification**: Brought up all core services (PostgreSQL, Redis, Elasticsearch, Filebeat, Backend, Frontend, Nginx). All services initialized healthily and pass health checks.
   - **Database Initialization**: SQLAlchemy ORM creates all tables on backend startup via `init_db()` function. Manually stamped Alembic version table to mark migrations 001 and 002 as applied, then manually created 5 performance indexes (Alembic migration 002 functionality).
   - **API Testing**: 
-    - ✅ Health check: `GET /health` returns `{"status": "ok", "version": "0.1.0"}`
-    - ✅ Authentication: `POST /api/auth/login` with admin:CyberSimAdmin! returns valid JWT token
-    - ✅ Scenarios: `GET /api/scenarios/` returns 3 scenario definitions (SC-01, SC-02, SC-03) with metadata
-    - ✅ Frontend: `GET /` serves compiled React app with Vite assets
+    - âœ… Health check: `GET /health` returns `{"status": "ok", "version": "0.1.0"}`
+    - âœ… Authentication: `POST /api/auth/login` with admin:CyberSimAdmin! returns valid JWT token
+    - âœ… Scenarios: `GET /api/scenarios/` returns 3 scenario definitions (SC-01, SC-02, SC-03) with metadata
+    - âœ… Frontend: `GET /` serves compiled React app with Vite assets
   - **Database State**: 
     - 7 tables created with proper schema (see Alembic 001_initial_schema.py)
     - 1 admin user (instructor role) seeded by lifespan context manager in main.py
@@ -1604,60 +1604,60 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     2. **Init Script**: Removed INDEX creation that fails when tables don't yet exist (fresh database scenario). Indexes created via Alembic instead
     3. **Alembic Stamping**: Since SQLAlchemy creates tables before Alembic runs, manually stamped Alembic version table to track that migrations 001 & 002 are applied
   - **Current Infrastructure Status**:
-    - PostgreSQL: ✅ Up & Healthy (5432 internal)
-    - Redis: ✅ Up & Healthy (6379 internal)
-    - Elasticsearch: ✅ Up & Healthy (9200 exposed)
-    - Filebeat: ✅ Forwarding logs to Elasticsearch
-    - Backend API: ✅ Running on 8001 (served via nginx on 80 as /api)
-    - Frontend: ✅ Running React app (served via nginx on 80)
-    - Nginx: ✅ Reverse proxy operational
+    - PostgreSQL: âœ… Up & Healthy (5432 internal)
+    - Redis: âœ… Up & Healthy (6379 internal)
+    - Elasticsearch: âœ… Up & Healthy (9200 exposed)
+    - Filebeat: âœ… Forwarding logs to Elasticsearch
+    - Backend API: âœ… Running on 8001 (served via nginx on 80 as /api)
+    - Frontend: âœ… Running React app (served via nginx on 80)
+    - Nginx: âœ… Reverse proxy operational
     - All service-to-service communication on isolated `internal` network
 * **Architectural notes**:
   - Platform (Laptop 1) runs: PostgreSQL, Redis, Elasticsearch, Filebeat, Backend, Frontend, Nginx on single host
   - Scenario networks isolated: sc01-net, sc02-net, sc03-net (not started until needed)
   - Container cleanup prevents RAM bloat from long-running scenario containers
-  - SIEM engine processes real Docker logs → real telemetry (not simulated)
+  - SIEM engine processes real Docker logs â†’ real telemetry (not simulated)
 
 ### [2026-04-16 14:15:00] - Antigravity (Phase E: Alembic Migrations & Sandbox Hardening)
-* **Status**: Verification Complete — Phase already implemented but missing State Log
+* **Status**: Verification Complete â€” Phase already implemented but missing State Log
 * **Why**: The user requested executing Phase E. I discovered that Claude Code had already correctly generated `backend/alembic.ini`, `backend/migrations/versions/001_initial_schema.py`, `002_add_performance_indexes.py` and `backend/src/sandbox/container_cleanup.py`. These files were silently pushed by me alongside the Phase D commit. I manually audited the environment to verify compliance.
 * **Where**:
-  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — MODIFIED: Checked off Phase E priority mapping and progress tracker.
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` â€” MODIFIED: Checked off Phase E priority mapping and progress tracker.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**:
   - **Verification 1:** Alembic upgrades run perfectly. Checked via `docker compose exec backend alembic current` which showed `002_add_performance_indexes (head)`.
   - **Verification 2:** Ran `psql` directly on postgres container confirming that `public.users` contains the new `role VARCHAR(20)` column, and that `idx_sessions_scenario_id`/`idx_sessions_user_id` indexes exist.
   - **Verification 3:** Inspected `backend/src/main.py` making sure that `start_cleanup_loop()` safely evaluates inside the fastapi `lifespan` block, executing `container_cleanup.py` which trims idle >60m docker targets successfully. Phase E criteria comprehensively satisfied.
 
 ### [2026-04-16 14:10:00] - Antigravity (Phase D: Frontend Polish & UX Overhaul)
-* **Status**: Coding Complete — Finalized "SOC Duality" Aesthetic Integration
+* **Status**: Coding Complete â€” Finalized "SOC Duality" Aesthetic Integration
 * **Why**: The project needed to abandon rudimentary utility classes in favor of a professional, "Dark Mode" web application UI suitable for an academic demo. By utilizing the `ParticleCanvas` concept alongside centralized `index.css` components (Tailored SOC aesthetics, grid SIEM event rows, and transparent dual-pane variables), we bring the UI directly to parity with the design system.
 * **Where**:
-  - `frontend/src/index.css` — VERIFIED: Base components (.terminal, .siem-event-row, .scenario-card).
-  - `frontend/src/hooks/useTerminal.js` — MODIFIED: Updated XTerm.js configuration for typography, color palette, and transparency settings.
-  - `frontend/src/components/terminal/Terminal.jsx` — MODIFIED: Removed inline Tailwind utilities allowing `.terminal` inheritance.
-  - `frontend/src/components/siem/SiemFeed.jsx` — MODIFIED: Upgraded layout for events. Uses `.siem-event-row` grid structure.
-  - `frontend/src/pages/BlueWorkspace.jsx` — MODIFIED: Aligning SIEM feed usage to the `.siem-event-row` grid layout.
-  - `frontend/src/pages/Dashboard.jsx` — MODIFIED: Removed conflicting Tailwind classes from `.scenario-card`.
-  - `ANTIGRAVITY_PROMPTS.md` — MODIFIED: Checked off Priority mapping to COMPLETE.
-  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — MODIFIED: Checked off SC-02 and SC-03 priorities.
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `frontend/src/index.css` â€” VERIFIED: Base components (.terminal, .siem-event-row, .scenario-card).
+  - `frontend/src/hooks/useTerminal.js` â€” MODIFIED: Updated XTerm.js configuration for typography, color palette, and transparency settings.
+  - `frontend/src/components/terminal/Terminal.jsx` â€” MODIFIED: Removed inline Tailwind utilities allowing `.terminal` inheritance.
+  - `frontend/src/components/siem/SiemFeed.jsx` â€” MODIFIED: Upgraded layout for events. Uses `.siem-event-row` grid structure.
+  - `frontend/src/pages/BlueWorkspace.jsx` â€” MODIFIED: Aligning SIEM feed usage to the `.siem-event-row` grid layout.
+  - `frontend/src/pages/Dashboard.jsx` â€” MODIFIED: Removed conflicting Tailwind classes from `.scenario-card`.
+  - `ANTIGRAVITY_PROMPTS.md` â€” MODIFIED: Checked off Priority mapping to COMPLETE.
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` â€” MODIFIED: Checked off SC-02 and SC-03 priorities.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**:
   - Ensured `xterm.js` instances pull specifically formatted variables `--font-mono` (JetBrains Mono). Terminal's background explicitly removed to utilize layered transparencies via CSS class mappings (`.terminal`). 
   - Adjusted SIEM Feeds directly so that they follow a strict display grid (64px / 56px / 1fr), creating perfect columnar alignment of severity badges and event texts. 
   - Aligned scenario card fonts and margins directly into pure CSS inherited tags (`h3`, `p`), stripping messy arbitrary layout classes.
 
 ### [2026-04-15 23:15:00] - Claude Code (Phase C: SC-02 Samba4 AD Infrastructure)
-* **Status**: Coding Complete — Samba4 DC & File Server Configuration Hardened, Build Verified
+* **Status**: Coding Complete â€” Samba4 DC & File Server Configuration Hardened, Build Verified
 * **Why**: Phase C requirements mandate functional Active Directory infrastructure for AD attack scenarios (Kerberoasting, BloodHound enumeration, lateral movement). Previous work created scripts but lacked proper Docker packaging and Kerberos tuning. This blocks SC-02 deployment and student AD attack exercises. Implementation prioritizes RC4-HMAC encryption (intentional weakness for Kerberoasting lab) and realistic share permissions.
 * **Where**:
-  - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` — FIXED: Corrected Ubuntu 22.04 package names (removed non-existent samba-ad-dc)
-  - `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` — FIXED: Updated packages for domain join support
-  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` — ENHANCED: Improved Kerberos config with RC4/weak crypto settings
-  - `infrastructure/docker/scenarios/sc02/setup-shares.sh` — ENHANCED: Updated krb5.conf to match DC encryption types
-  - `infrastructure/docker/scenarios/sc02/smb.conf` — ENHANCED: Added detailed audit logging for SIEM detection
-  - `docs/scenarios/SC-02-SAMBA4-GUIDE.md` — NEW: Comprehensive guide (topology, users, attack paths, SIEM mapping, testing checklist)
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` â€” FIXED: Corrected Ubuntu 22.04 package names (removed non-existent samba-ad-dc)
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` â€” FIXED: Updated packages for domain join support
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` â€” ENHANCED: Improved Kerberos config with RC4/weak crypto settings
+  - `infrastructure/docker/scenarios/sc02/setup-shares.sh` â€” ENHANCED: Updated krb5.conf to match DC encryption types
+  - `infrastructure/docker/scenarios/sc02/smb.conf` â€” ENHANCED: Added detailed audit logging for SIEM detection
+  - `docs/scenarios/SC-02-SAMBA4-GUIDE.md` â€” NEW: Comprehensive guide (topology, users, attack paths, SIEM mapping, testing checklist)
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry)
 * **What & How**:
   - **Docker Fixes**: Replaced non-existent `samba-ad-dc` package with `samba-common`, `samba-common-bin`, `samba-vfs-modules` available in Ubuntu 22.04. Added `netcat-openbsd` for health check prerequisites.
   - **Kerberos Configuration**: Enabled RC4-HMAC (weak encryption) intentionally for Kerberoasting lab. Set `allow_weak_crypto = true` and specified `default_tgs_enctypes = aes256-cts rc4-hmac des-cbc-md5` in both DC and fileserver krb5.conf files. This allows students to extract and crack TGS tickets in lab time (AES would take days with brute force).
@@ -1665,29 +1665,29 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     - Domain: `nexora.local` / Realm: `NEXORA.LOCAL` / NetBIOS: `NEXORA`
     - Admin: `Administrator` (password: NexoraAdmin2024!)
     - Users: `jsmith` (finance), `svc_backup` (Kerberoasting target), `it.admin` (Domain Admin)
-    - **Key Vulnerability**: `svc_backup` assigned SPN `CIFS/NEXORA-FS01.nexora.local` — enables Kerberoasting attack path
+    - **Key Vulnerability**: `svc_backup` assigned SPN `CIFS/NEXORA-FS01.nexora.local` â€” enables Kerberoasting attack path
   - **File Server Setup** (172.20.2.40):
     - **Public** share: Readable by everyone (no auth required)
-    - **Finance** share: Readable by `jsmith` and Domain Users (contains budget/salary data — information disclosure)
+    - **Finance** share: Readable by `jsmith` and Domain Users (contains budget/salary data â€” information disclosure)
     - **Backups** share: Accessible only to Domain Admins and `svc_backup` (production database backup simulation)
     - **Admin** share: Read-only for `it.admin` (administrative audit logs)
   - **Audit Logging**: Configured samba `full_audit` VFS module to log file operations (open, read, write, mkdir, rmdir, unlink, rename) to `/var/log/samba/log.*` for SIEM rule matching. Format: `%u|%I|%m|%S` (user|IP|machine|share) for easy parsing.
-  - **Build Verification**: Successfully built both `juterminal1-sc02-dc` and `juterminal1-sc02-fileserver` Docker images. Container startup sequence: DC provisions domain → waits for health check (smbclient) → FS joins domain → shares come online.
+  - **Build Verification**: Successfully built both `juterminal1-sc02-dc` and `juterminal1-sc02-fileserver` Docker images. Container startup sequence: DC provisions domain â†’ waits for health check (smbclient) â†’ FS joins domain â†’ shares come online.
   - **Attack Surface Documented**:
-    1. **Enumeration**: `enum4linux`, `ldapsearch`, BloodHound collection → triggers `sc02_enum_*` events
-    2. **Kerberoasting**: `GetUserSPNs.py` → `sc02_kerberos_roasting` (CRITICAL event for RC4 TGS)
-    3. **Lateral Movement**: psexec/WMI to FS with compromised creds → `sc02_lateral_*` events
+    1. **Enumeration**: `enum4linux`, `ldapsearch`, BloodHound collection â†’ triggers `sc02_enum_*` events
+    2. **Kerberoasting**: `GetUserSPNs.py` â†’ `sc02_kerberos_roasting` (CRITICAL event for RC4 TGS)
+    3. **Lateral Movement**: psexec/WMI to FS with compromised creds â†’ `sc02_lateral_*` events
     4. **Share Access**: File access to Finance/Backups triggers audit log events correlating to SIEM feed
 
 ### [2026-04-15 22:30:00] - Claude Code (Phase B: SC-01 E2E Operationalization)
-* **Status**: Coding Complete — SIEM Event Mappings & Command-to-Event Pipeline Implemented
-* **Why**: Phase B requirements mandate real SIEM event generation for SC-01. Previous work created vulnerable PHP app and backend infrastructure but lacked event definitions and matching logic. This blocks end-to-end testing from terminal command → SIEM detection. Implementation prioritizes Redis-based SIEM over Elasticsearch per architectural assessment (lower resource overhead, sufficient for graduation demo).
+* **Status**: Coding Complete â€” SIEM Event Mappings & Command-to-Event Pipeline Implemented
+* **Why**: Phase B requirements mandate real SIEM event generation for SC-01. Previous work created vulnerable PHP app and backend infrastructure but lacked event definitions and matching logic. This blocks end-to-end testing from terminal command â†’ SIEM detection. Implementation prioritizes Redis-based SIEM over Elasticsearch per architectural assessment (lower resource overhead, sufficient for graduation demo).
 * **Where**:
-  - `backend/src/siem/events/sc01_events.json` — NEW: Created with 38 events across 10 attack categories
-  - `backend/src/siem/events/sc02_events.json` — NEW: Created with 45+ events for AD attack scenarios
-  - `backend/src/siem/events/sc03_events.json` — NEW: Created with 40+ events for phishing kill chain
-  - `backend/src/siem/engine.py` — MODIFIED: Replaced deprecated `process_command_for_siem()` with regex-based trigger matching
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
+  - `backend/src/siem/events/sc01_events.json` â€” NEW: Created with 38 events across 10 attack categories
+  - `backend/src/siem/events/sc02_events.json` â€” NEW: Created with 45+ events for AD attack scenarios
+  - `backend/src/siem/events/sc03_events.json` â€” NEW: Created with 40+ events for phishing kill chain
+  - `backend/src/siem/engine.py` â€” MODIFIED: Replaced deprecated `process_command_for_siem()` with regex-based trigger matching
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry)
 * **What & How**:
   - **SC-01 Events (38 total)**: Reconnaissance (nmap, nikto, curl), Directory Enumeration (gobuster, backup files, admin paths), Fuzzing (ffuf, parameter spray), SQL Injection (UNION-based, time-based, auth bypass, successful exfil), XSS (reflected, stored, DOM), CSRF (token bypass, reuse), Path Traversal (LFI .., null byte, system files), File Upload (executable, MIME mismatch, double extension), Authentication (brute force, lockout, spraying), Session (fixation, hijacking), Shell (web shell, RCE detection)
   - **SC-02 Events (45+ total)**: Reconnaissance (nmap, port scans), Enumeration (enum4linux, LDAP), BloodHound (ACL queries, SPN enum), Kerberos (TGT, Kerberoasting, AS-REP), Lateral Movement (psexec, WMI, pass-the-hash), DCSync (replication, hash extraction), Privilege Escalation (Backup Operators, Domain Admin), Authentication (failed/successful logons), Credential Harvesting (password spray, dumping)
@@ -1698,7 +1698,7 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     3. Tests command against each event's `trigger_pattern` (case-insensitive regex)
     4. Queues matched events to Redis pub/sub channel `siem:{session_id}:feed`
     5. Returns list of triggered events for logging/analytics
-  - **Integration**: WebSocket route at `backend/src/ws/routes.py:165` already calls `process_command_for_siem()` for each terminal command, so no routing changes required—just needed event definitions and implementation
+  - **Integration**: WebSocket route at `backend/src/ws/routes.py:165` already calls `process_command_for_siem()` for each terminal command, so no routing changes requiredâ€”just needed event definitions and implementation
   - **SIEM Event Schema** (all events consistent):
     ```json
     {
@@ -1712,24 +1712,24 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
       "category": "attack_category"
     }
     ```
-  - **Testing**: Backend container running and verified /health endpoint responds (200 OK). Event JSON files syntactically valid and properly nested. Regex patterns tested against sample commands (nmap, gobuster, sqlmap, etc.) — all patterns compile without error.
+  - **Testing**: Backend container running and verified /health endpoint responds (200 OK). Event JSON files syntactically valid and properly nested. Regex patterns tested against sample commands (nmap, gobuster, sqlmap, etc.) â€” all patterns compile without error.
 
 ### [2026-04-15 21:51:00] - Antigravity (State Synchronization Audit)
-* **Status**: Audit Complete — Document desync identified and reconciled
+* **Status**: Audit Complete â€” Document desync identified and reconciled
 * **Why**: The user was running Claude in an environment with stale tracking files (it could not see the April 10-15 logs). I am manually syncing tracking files locally to establish the absolute truth for Claude or Gemini down the line.
 * **Where**:
-  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — Checked off Prompts 1-6 as complete since `integration_test.py`, `playbooks`, and all `scXX` components exist locally.
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` â€” Checked off Prompts 1-6 as complete since `integration_test.py`, `playbooks`, and all `scXX` components exist locally.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**: Cross-referenced conversation logs, code files, and tracking docs. Confirmed Prompts 1-10 are fully coded and locally present. The primary blocker for integration testing is resolving the Docker Desktop offline issue and any Dockerfile builds before finalizing End-to-End tests.
 
 ### [2026-04-15 14:10:00] - Claude Code Agent (Phase 22: Unified Memory Optimization)
 * **Status**: Coding Complete 
 * **Why**: The user requested executing the final Prompt 10 execution step dynamically across the infrastructure.
 * **Where**:
-  - `docker-compose.yml` — Aggressive limit insertions.
-  - `backend/src/sandbox/manager.py` — Lifecycle teardown logic.
-  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — Progress tracker.
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `docker-compose.yml` â€” Aggressive limit insertions.
+  - `backend/src/sandbox/manager.py` â€” Lifecycle teardown logic.
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` â€” Progress tracker.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**:
   - Added strict `deploy.resources.limits.memory` constraints for `postgres` (512m), `redis` (256m), `backend` (512m), `frontend` (512m), `nginx` (128m), and the web app components ensuring CyberSim runs well within an 8GB laptop.
   - Rewrote the container shutdown procedure in `manager.py`. It no longer leaves scenario instances globally persisting on jump, but explicitly issues a `docker compose stop --profile` hook via `_teardown_scenario_targets()` to tear them down efficiently and prevent RAM bloat/zombie containers.
@@ -1741,7 +1741,7 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
   - `docker-compose.yml`
   - `infrastructure/docker/siem/filebeat.yml`
   - `backend/src/sandbox/terminal.py`
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**:
   - **Phase 20**: Rather than adding heavy Filebeat Java sidecars to SC-01, SC-02, SC-03 separately (which would waste a lot of the restricted RAM), I integrated a single, lightweight `filebeat` container into `docker-compose.yml` bound to `/var/run/docker.sock`. It dynamically streams all output from scenario containers into Elastic.
   - **Phase 21**: I stripped all mock detection functions (`_mock_stream`, `_mock_command_output`) from `terminal.py`, replacing them with an explicit `RuntimeError` failure mode to enforce the strict raw Docker API proxying.
@@ -1750,10 +1750,10 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **Status**: Coding Complete 
 * **Why**: The user requested that I execute Prompt 7 (Deploy Elastic Stack) directly as the implementation agent without waiting for external Claude.
 * **Where**:
-  - `docker-compose.yml` — Added `elasticsearch` constrained single-node service.
-  - `backend/src/siem/events/*.json` — Deleted all outdated mock signature JSONs.
-  - `backend/src/siem/engine.py` — Rewritten completely to poll Elasticsearch API.
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `docker-compose.yml` â€” Added `elasticsearch` constrained single-node service.
+  - `backend/src/siem/events/*.json` â€” Deleted all outdated mock signature JSONs.
+  - `backend/src/siem/engine.py` â€” Rewritten completely to poll Elasticsearch API.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**:
   - I created a memory-restricted (2GB limit, `-Xms1g -Xmx1g`) Elasticsearch 8.13 single-node container in `docker-compose.yml` under the shared `internal` network.
   - Removed all mock Python regex event JSONs.
@@ -1764,10 +1764,10 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **Status**: Planning & Phase Updating Complete
 * **Why**: The user requested that we abandon the two-laptop distributed architecture and instead consolidate all real-world interactions (Docker targets, Kali container, ELK SIEM) onto a single, unified platform and UI page.
 * **Where**:
-  - `docs/architecture/MASTER_BLUEPRINT.md` — Updated Real-time Data Flow and Sandbox Physics.
-  - `docs/architecture/phases.md` — Reworked Phase 19 and 22 for memory optimization and single-node integration.
-  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — Replaced Prompt 7 and Prompt 10 with lightweight unified configurations.
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `docs/architecture/MASTER_BLUEPRINT.md` â€” Updated Real-time Data Flow and Sandbox Physics.
+  - `docs/architecture/phases.md` â€” Reworked Phase 19 and 22 for memory optimization and single-node integration.
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` â€” Replaced Prompt 7 and Prompt 10 with lightweight unified configurations.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**:
   - I shifted the previous distributed model's requirements toward aggressive strict container limits (Elastic capped at 2GB, targets minimized). 
   - I explicitly changed `MASTER_BLUEPRINT.md` to establish the Single-Node constraint as high priority. 
@@ -1777,22 +1777,22 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **Status**: Planning & Documentation Complete
 * **Why**: The user requested a shift from a simulated architecture to 100% genuine telemtry out of Docker targets and a real ELK SIEM. The user also requested to map out a Two-Laptop Distributed setup to handle the new resource load, and for me to update all documentation files to align with this plan.
 * **Where**:
-  - `claude.md` — Updated Architecture definition.
-  - `docs/architecture/phases.md` — Added Phases 19, 20, 21, 22.
-  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` — Added PROMPTS 7, 8, 9, 10 for execution.
-  - `HARDWARE_AND_NETWORK_SETUP_GUIDE.md` — Created to detail the two-laptop setup.
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry).
+  - `claude.md` â€” Updated Architecture definition.
+  - `docs/architecture/phases.md` â€” Added Phases 19, 20, 21, 22.
+  - `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md` â€” Added PROMPTS 7, 8, 9, 10 for execution.
+  - `HARDWARE_AND_NETWORK_SETUP_GUIDE.md` â€” Created to detail the two-laptop setup.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry).
 * **What & How**:
   - Outlined the transition from backend python regex logs to an Elasticsearch (ELK) stack.
   - Mandated Filebeat sidecars for sc01, sc02, sc03 to forward actual Windows Event Logs, ModSec logs, and postfix logs.
   - Stripped `mock` fallback requirements from the Kali terminal specs (enforcing strict Raw PTY).
   - Wrote a detailed guide on exposing Docker daemon TCP via port 2375 securely over LAN so Laptop 1 Backend can orchestrate targets on Laptop 2 Sandbox Node.
 ### [2026-04-12 19:42:00] - Antigravity (GitHub Synchronization & State Verification)
-* **Status**: Complete — Synchronized with Remote
+* **Status**: Complete â€” Synchronized with Remote
 * **Why**: Ensure the local repository has the "final update version" from GitHub and that all local work (Phase PROMPT 5) is safely backed up to the remote. This maintains the single source of truth across the multi-agent swarm.
 * **Where**:
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
-  - All repository files — Synchronized with `VinsmokeD/JUTerminal1/master`
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry)
+  - All repository files â€” Synchronized with `VinsmokeD/JUTerminal1/master`
 * **What & How**:
   - **Verification**: Performed `git fetch origin` and `git ls-remote origin`. Confirmed local `master` was ahead of `origin/master` by 1 commit (`3f5c01e`).
   - **Synchronization**: Executed `git pull` (already up to date) then committed final load test data files from Phase PROMPT 5.
@@ -1801,58 +1801,58 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 
 
 ### [2026-04-10 23:58:00] - Claude Code (SIEM Event Expansion: SC-01/02/03 Coverage to 112 Events)
-* **Status**: Coding Complete — All Events Validated
+* **Status**: Coding Complete â€” All Events Validated
 * **Why**: User requested SIEM event coverage expansion to provide comprehensive Blue Team detection capabilities across all three scenarios. Goal: 80+ total events with dense, realistic security alerts. This enables students to understand how attacker commands and behaviors trigger SIEM telemetry.
 * **Where**:
-  - `backend/src/siem/events/sc01_events.json` — EXPANDED from 9 → 38 events
-  - `backend/src/siem/events/sc02_events.json` — EXPANDED from 19 → 37 events
-  - `backend/src/siem/events/sc03_events.json` — EXPANDED from 23 → 37 events
-  - `docs/architecture/CONTINUOUS_STATE.md` — Updated (this entry)
+  - `backend/src/siem/events/sc01_events.json` â€” EXPANDED from 9 â†’ 38 events
+  - `backend/src/siem/events/sc02_events.json` â€” EXPANDED from 19 â†’ 37 events
+  - `backend/src/siem/events/sc03_events.json` â€” EXPANDED from 23 â†’ 37 events
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Updated (this entry)
 * **What & How**:
   - **SC-01 Web App Expansion** (38 total events across 14 categories):
-    - **Reconnaissance** (4 events): nmap SYN, service probe, Nikto scan, curl probe — T1046, T1595
-    - **Directory Enumeration** (3 events): gobuster 404 flood, backup dir exposed, admin path discovery — T1083
-    - **Parameter Fuzzing** (2 events): ffuf, wfuzz high-rate POST/parameter spray — T1595.002
-    - **SQL Injection** (4 events): Rule 942100, UNION-based, successful injection, time-based — T1190, CWE-89
-    - **XSS Attacks** (3 events): Reflected, stored, DOM-based event handlers — T1190, CWE-79
-    - **CSRF Attacks** (2 events): Token bypass, token reuse — T1149, CWE-352
-    - **Path Traversal** (2 events): ../ sequences, null byte injection — T1083, CWE-22
-    - **File Upload** (4 events): Executable upload, MIME mismatch, double extension, polyglot — T1190, CWE-434
-    - **HTTP Response Codes** (3 events): 404 flood, 403 forbidden, 500 on SQLi — T1083, T1190
-    - **Database Audit** (3 events): Failed login, unexpected query, privilege escalation — T1021, T1190, CWE-269
-    - **Authentication** (3 events): Brute force, account lockout, credential spraying — T1110, CWE-307
-    - **Session Management** (2 events): Session fixation, hijacking — T1539, CWE-384
-    - **IDS Alerts** (2 events): Malicious payload, command injection signatures — T1190
+    - **Reconnaissance** (4 events): nmap SYN, service probe, Nikto scan, curl probe â€” T1046, T1595
+    - **Directory Enumeration** (3 events): gobuster 404 flood, backup dir exposed, admin path discovery â€” T1083
+    - **Parameter Fuzzing** (2 events): ffuf, wfuzz high-rate POST/parameter spray â€” T1595.002
+    - **SQL Injection** (4 events): Rule 942100, UNION-based, successful injection, time-based â€” T1190, CWE-89
+    - **XSS Attacks** (3 events): Reflected, stored, DOM-based event handlers â€” T1190, CWE-79
+    - **CSRF Attacks** (2 events): Token bypass, token reuse â€” T1149, CWE-352
+    - **Path Traversal** (2 events): ../ sequences, null byte injection â€” T1083, CWE-22
+    - **File Upload** (4 events): Executable upload, MIME mismatch, double extension, polyglot â€” T1190, CWE-434
+    - **HTTP Response Codes** (3 events): 404 flood, 403 forbidden, 500 on SQLi â€” T1083, T1190
+    - **Database Audit** (3 events): Failed login, unexpected query, privilege escalation â€” T1021, T1190, CWE-269
+    - **Authentication** (3 events): Brute force, account lockout, credential spraying â€” T1110, CWE-307
+    - **Session Management** (2 events): Session fixation, hijacking â€” T1539, CWE-384
+    - **IDS Alerts** (2 events): Malicious payload, command injection signatures â€” T1190
     - **Shell** (1 event): Manual command execution
 
   - **SC-02 AD Expansion** (37 total events across 13 categories):
-    - **Reconnaissance** (2 events): nmap SYN sweep, port scan — T1046
-    - **Enumeration** (1 event): enum4linux user enumeration — T1087
-    - **LDAP/BloodHound** (5 events): ACL queries, SPN enumeration, recon activity — T1069.002, T1087
-    - **Kerberos Advanced** (3 events): TGT issuance, TGS weak encryption, pre-auth failure — T1558, T1558.003, T1110
-    - **LDAP Operations** (3 events): Anonymous bind, search enumeration, SPN query — T1087, CWE-306/200
-    - **Account Operations** (3 events): Password reset, enable/disable, SPN added — T1098
-    - **Group Operations** (3 events): Member added to Domain Admins, member removed, built-in group modified — T1098.001
-    - **Privilege Escalation** (2 events): Backup Operators, Debug privilege usage — T1134, CWE-269
-    - **Logon Events** (2 events): Explicit credentials, unusual time logon — T1550.002, T1021
-    - **Network Connections** (2 events): SMB admin share access, RDP connection — T1021.002, T1021.001
-    - **Crackmapexec** (1 event): SMB auth brute force — T1110
-    - **Kerberoasting** (2 events): TGS request, multiple ticket requests — T1558.003
-    - **DCSync** (2 events): Replication request, domain admin activity — T1003.006
-    - **Lateral Movement** (2 events): Share access, pass-the-hash — T1570, T1550.002
-    - **Post-Exploitation** (1 event): Report generation — T1020
+    - **Reconnaissance** (2 events): nmap SYN sweep, port scan â€” T1046
+    - **Enumeration** (1 event): enum4linux user enumeration â€” T1087
+    - **LDAP/BloodHound** (5 events): ACL queries, SPN enumeration, recon activity â€” T1069.002, T1087
+    - **Kerberos Advanced** (3 events): TGT issuance, TGS weak encryption, pre-auth failure â€” T1558, T1558.003, T1110
+    - **LDAP Operations** (3 events): Anonymous bind, search enumeration, SPN query â€” T1087, CWE-306/200
+    - **Account Operations** (3 events): Password reset, enable/disable, SPN added â€” T1098
+    - **Group Operations** (3 events): Member added to Domain Admins, member removed, built-in group modified â€” T1098.001
+    - **Privilege Escalation** (2 events): Backup Operators, Debug privilege usage â€” T1134, CWE-269
+    - **Logon Events** (2 events): Explicit credentials, unusual time logon â€” T1550.002, T1021
+    - **Network Connections** (2 events): SMB admin share access, RDP connection â€” T1021.002, T1021.001
+    - **Crackmapexec** (1 event): SMB auth brute force â€” T1110
+    - **Kerberoasting** (2 events): TGS request, multiple ticket requests â€” T1558.003
+    - **DCSync** (2 events): Replication request, domain admin activity â€” T1003.006
+    - **Lateral Movement** (2 events): Share access, pass-the-hash â€” T1570, T1550.002
+    - **Post-Exploitation** (1 event): Report generation â€” T1020
 
   - **SC-03 Phishing Expansion** (37 total events across 11 categories):
-    - **OSINT** (3 events): Domain enumeration, mail probe, port scan — T1598, T1596, T1046
-    - **Campaign Prep** (3 events): Admin access, landing page, target list — T1583.006, T1598.003
-    - **Email Campaign** (4 events): Launch, dispatch, suspicious sender, macro attachment — T1566.002, T1566.001, T1598.003
-    - **Email Interactions** (3 events): Email open, link click, credential submission — T1598.003
-    - **Payload Execution** (3 events): Macro execution, VBA obfuscation, document open — T1203, T1027, T1204.002
-    - **Callback Activity** (3 events): Outbound connection, reverse shell, C2 commands — T1071.001, T1059.001
-    - **C2 Communication** (3 events): DNS query, HTTP beacon, DGA pattern — T1071.004, T1071.001, T1568
-    - **Persistence** (4 events): Scheduled task, registry Run key, WMI subscription, startup folder — T1053.005, T1547.001, T1547.020
-    - **Defense Evasion** (4 events): Tamper protection off, real-time protection off, firewall rule, event log cleared — T1562.001, T1562.004, T1070.001
-    - **Exfiltration** (3 events): Data staging, unusual outbound transfer, compression — T1074.001, T1041, T1560
+    - **OSINT** (3 events): Domain enumeration, mail probe, port scan â€” T1598, T1596, T1046
+    - **Campaign Prep** (3 events): Admin access, landing page, target list â€” T1583.006, T1598.003
+    - **Email Campaign** (4 events): Launch, dispatch, suspicious sender, macro attachment â€” T1566.002, T1566.001, T1598.003
+    - **Email Interactions** (3 events): Email open, link click, credential submission â€” T1598.003
+    - **Payload Execution** (3 events): Macro execution, VBA obfuscation, document open â€” T1203, T1027, T1204.002
+    - **Callback Activity** (3 events): Outbound connection, reverse shell, C2 commands â€” T1071.001, T1059.001
+    - **C2 Communication** (3 events): DNS query, HTTP beacon, DGA pattern â€” T1071.004, T1071.001, T1568
+    - **Persistence** (4 events): Scheduled task, registry Run key, WMI subscription, startup folder â€” T1053.005, T1547.001, T1547.020
+    - **Defense Evasion** (4 events): Tamper protection off, real-time protection off, firewall rule, event log cleared â€” T1562.001, T1562.004, T1070.001
+    - **Exfiltration** (3 events): Data staging, unusual outbound transfer, compression â€” T1074.001, T1041, T1560
     - **IR Response** (4 events): User report, ticket created, domain block, endpoint remediation
 
   - **Event Schema**: All 112 events follow consistent format:
@@ -1868,33 +1868,33 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     ```
 
   - **Coverage Achievements**:
-    - ✅ SC-01: 8 attack vectors (SQLi, XSS, CSRF, Path Traversal, File Upload, Auth, Session, IDS)
-    - ✅ SC-02: Complete AD attack path (Recon → Enum → Kerberos → Lateral → DCSync → Privilege Escalation)
-    - ✅ SC-03: Full phishing kill chain (OSINT → Campaign → Delivery → Execution → C2 → Persistence → Evasion → Exfil)
-    - ✅ MITRE ATT&CK mapping: 40+ unique techniques (T1046, T1190, T1558, T1003.006, T1566, T1071, etc.)
-    - ✅ CWE classification: 20+ vulnerability categories (CWE-89, CWE-79, CWE-352, CWE-327, CWE-434, etc.)
-    - ✅ Realistic Windows Event IDs: 4625, 4768, 4769, 4624, 4662, 4673, 4756, 4729, etc.
+    - âœ… SC-01: 8 attack vectors (SQLi, XSS, CSRF, Path Traversal, File Upload, Auth, Session, IDS)
+    - âœ… SC-02: Complete AD attack path (Recon â†’ Enum â†’ Kerberos â†’ Lateral â†’ DCSync â†’ Privilege Escalation)
+    - âœ… SC-03: Full phishing kill chain (OSINT â†’ Campaign â†’ Delivery â†’ Execution â†’ C2 â†’ Persistence â†’ Evasion â†’ Exfil)
+    - âœ… MITRE ATT&CK mapping: 40+ unique techniques (T1046, T1190, T1558, T1003.006, T1566, T1071, etc.)
+    - âœ… CWE classification: 20+ vulnerability categories (CWE-89, CWE-79, CWE-352, CWE-327, CWE-434, etc.)
+    - âœ… Realistic Windows Event IDs: 4625, 4768, 4769, 4624, 4662, 4673, 4756, 4729, etc.
 
 ### [2026-04-10 23:45:00] - Claude Code (SC-03 Orion Logistics Phishing Complete Infrastructure)
-* **Status**: Coding Complete — All Components Validated
+* **Status**: Coding Complete â€” All Components Validated
 * **Why**: User provided MISSION brief: Complete SC-03 (Orion Logistics Phishing) Docker infrastructure with realistic phishing campaign and endpoint simulation. Goal: implement realistic phishing infrastructure (GoPhish + mail relay + victim simulation) with actionable telemetry for both Red and Blue teams.
 * **Where**:
-  - **Infrastructure/Docker — GoPhish**:
-    - `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` — ENHANCED: Added health checks, environment variables, init script support, curl/jq/Python tools
-    - `infrastructure/docker/scenarios/sc03/init-gophish.sh` — NEW: Campaign initialization script (starts GoPhish, waits for API, logs configuration)
-  - **Infrastructure/Docker — Mail Relay**:
-    - `infrastructure/docker/scenarios/sc03/Dockerfile.mailrelay` — NEW: Postfix SMTP relay with health checks, port 25 exposure
-    - `infrastructure/docker/scenarios/sc03/init-mailrelay.sh` — NEW: Postfix initialization with virtual alias maps, transport routing to victim simulator
-    - `infrastructure/docker/scenarios/sc03/postfix-main.cf` — NEW: Postfix configuration for relay-only mode (no internet relay, internal 172.20.3.0/24 only)
-  - **Infrastructure/Docker — Victim Simulator**:
-    - `infrastructure/docker/scenarios/sc03/Dockerfile.victim` — NEW: SMTP receive + Flask simulation API (ports 25 + 8080)
-    - `infrastructure/docker/scenarios/sc03/init-victim.sh` — NEW: Starts Postfix + Python Flask victim simulator
-    - `infrastructure/docker/scenarios/sc03/victim-simulator.py` — NEW: Flask app that simulates email reception, user interactions (open, click, macro exec), callback beacons
-    - `infrastructure/docker/scenarios/sc03/postfix-victim.cf` — NEW: Postfix receive-only configuration for victim endpoint
+  - **Infrastructure/Docker â€” GoPhish**:
+    - `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` â€” ENHANCED: Added health checks, environment variables, init script support, curl/jq/Python tools
+    - `infrastructure/docker/scenarios/sc03/init-gophish.sh` â€” NEW: Campaign initialization script (starts GoPhish, waits for API, logs configuration)
+  - **Infrastructure/Docker â€” Mail Relay**:
+    - `infrastructure/docker/scenarios/sc03/Dockerfile.mailrelay` â€” NEW: Postfix SMTP relay with health checks, port 25 exposure
+    - `infrastructure/docker/scenarios/sc03/init-mailrelay.sh` â€” NEW: Postfix initialization with virtual alias maps, transport routing to victim simulator
+    - `infrastructure/docker/scenarios/sc03/postfix-main.cf` â€” NEW: Postfix configuration for relay-only mode (no internet relay, internal 172.20.3.0/24 only)
+  - **Infrastructure/Docker â€” Victim Simulator**:
+    - `infrastructure/docker/scenarios/sc03/Dockerfile.victim` â€” NEW: SMTP receive + Flask simulation API (ports 25 + 8080)
+    - `infrastructure/docker/scenarios/sc03/init-victim.sh` â€” NEW: Starts Postfix + Python Flask victim simulator
+    - `infrastructure/docker/scenarios/sc03/victim-simulator.py` â€” NEW: Flask app that simulates email reception, user interactions (open, click, macro exec), callback beacons
+    - `infrastructure/docker/scenarios/sc03/postfix-victim.cf` â€” NEW: Postfix receive-only configuration for victim endpoint
   - **Docker Orchestration**:
-    - `docker-compose.yml` — UPDATED: SC-03 section expanded with 3 services (sc03-phish, sc03-mailrelay, sc03-victim), health checks, dependencies, resource limits (0.5 CPU, 512MB RAM each)
+    - `docker-compose.yml` â€” UPDATED: SC-03 section expanded with 3 services (sc03-phish, sc03-mailrelay, sc03-victim), health checks, dependencies, resource limits (0.5 CPU, 512MB RAM each)
   - **SIEM Events**:
-    - `backend/src/siem/events/sc03_events.json` — REWRITTEN: 40+ events across 6 categories (osint, campaign_preparation, email_campaign, email_interactions, payload_execution, callback_activity, ir_response)
+    - `backend/src/siem/events/sc03_events.json` â€” REWRITTEN: 40+ events across 6 categories (osint, campaign_preparation, email_campaign, email_interactions, payload_execution, callback_activity, ir_response)
 * **What & How**:
   - **GoPhish Service (172.20.3.10)**: Phishing campaign management at port 80 (phishing pages), 3333 (admin), 443 (HTTPS). Admin panel accessible for students to create campaigns, landing pages, configure sending profiles. Health check validates admin API availability.
   - **Mail Relay (172.20.3.20)**: Postfix SMTP relay that accepts mail from GoPhish (172.20.3.10) and routes to victim simulator (172.20.3.30). Virtual alias maps handle multiple recipient addresses (info@, support@, helpdesk@, it-security@, finance@, hr@, admin@). All mail routed to `victim@172.20.3.30`. Transport maps ensure delivery to victim simulator SMTP port.
@@ -1908,12 +1908,12 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
       - Callback beacon: If macro executed, generates TCP connection to attacker IP (4444)
     - All events logged and queryable via `/api/events` endpoint (for SIEM integration)
   - **SIEM Event Mapping** (40+ events, 7 categories):
-    - **OSINT (3 events)**: Domain enumeration, mail probe, port scan — T1598, T1596, T1046
-    - **Campaign Preparation (3 events)**: Admin access, landing page creation, target list import — T1583.006, T1598.003
-    - **Email Campaign (4 events)**: Campaign launch, email dispatch, suspicious sender, macro attachment — T1566.002, T1566.001, T1598.003
-    - **Email Interactions (3 events)**: Email open tracking, link click, credential submission — T1598.003
-    - **Payload Execution (3 events)**: Macro execution, VBA obfuscation, document opened — T1203, T1027, T1204.002
-    - **Callback Activity (3 events)**: Outbound connection, reverse shell established, C2 communication — T1071.001, T1059.001
+    - **OSINT (3 events)**: Domain enumeration, mail probe, port scan â€” T1598, T1596, T1046
+    - **Campaign Preparation (3 events)**: Admin access, landing page creation, target list import â€” T1583.006, T1598.003
+    - **Email Campaign (4 events)**: Campaign launch, email dispatch, suspicious sender, macro attachment â€” T1566.002, T1566.001, T1598.003
+    - **Email Interactions (3 events)**: Email open tracking, link click, credential submission â€” T1598.003
+    - **Payload Execution (3 events)**: Macro execution, VBA obfuscation, document opened â€” T1203, T1027, T1204.002
+    - **Callback Activity (3 events)**: Outbound connection, reverse shell established, C2 communication â€” T1071.001, T1059.001
     - **IR Response (4 events)**: User reported, IR ticket, domain blocked, endpoint remediation
   - **Network Isolation**: All three services on sc03-net (internal: true, 172.20.3.0/24, no gateway). No internet access. Services communicate over private bridge.
   - **Resource Limits**: Each service limited to 0.5 CPU, 512MB RAM to prevent resource exhaustion.
@@ -1924,24 +1924,24 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
   - **Dependencies**: sc03-phish and sc03-victim both depend on sc03-mailrelay being healthy (service_healthy condition), ensuring proper startup order.
 
 ### [2026-04-10 22:15:00] - Claude Code (SC-02 Nexora AD Complete Infrastructure Implementation)
-* **Status**: Coding Complete — All Components Validated
+* **Status**: Coding Complete â€” All Components Validated
 * **Why**: User provided MISSION brief: Complete SC-02 (Nexora Financial AD Compromise) Docker infrastructure with realistic Active Directory setup. Goal: implement realistically exploitable vulnerabilities for Red Team (Kerberoasting, lateral movement, DCSync) while Blue Team monitors Event Log patterns. This delivers a fully functional, educationally-sound AD penetration testing environment.
 * **Where**:
   - **Infrastructure/Docker**:
-    - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` — REWRITTEN: Enhanced Samba4 AD DC with environment variables, health checks, Kerberos RC4 support, full port exposure (389/636/88/445/53/3268/3269)
-    - `infrastructure/docker/scenarios/sc02/provision-dc.sh` — REWRITTEN: Complete AD provisioning script with environment variable support, Kerberos RC4 configuration, user/SPN setup (admin, jsmith, svc_backup with CIFS SPN), password no-expire settings, idempotent checks
-    - `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` — REWRITTEN: Domain-joined file server with environment variables, health checks, Kerberos client, domain join integration, resource limits
-    - `infrastructure/docker/scenarios/sc02/setup-shares.sh` — REWRITTEN: Domain join procedure with DC reachability checks, realistic file seeding (budget-2024.xlsx, salary-grid-2024.xlsx, employee-handbook.pdf, backups), share creation with proper AD group permissions (Public, Finance@Domain Users, Backups@Domain Admins, Admin@it.admin), DNS/Kerberos/NSS configuration
-    - `infrastructure/docker/scenarios/sc02/smb.conf` — REWRITTEN: Proper file server SMB config with audit logging (vfs full_audit), per-share ACLs mapped to AD groups (Finance→Domain Users, Backups→Domain Admins, Admin→it.admin), encryption settings (SMB3 default), share browsing controls
+    - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` â€” REWRITTEN: Enhanced Samba4 AD DC with environment variables, health checks, Kerberos RC4 support, full port exposure (389/636/88/445/53/3268/3269)
+    - `infrastructure/docker/scenarios/sc02/provision-dc.sh` â€” REWRITTEN: Complete AD provisioning script with environment variable support, Kerberos RC4 configuration, user/SPN setup (admin, jsmith, svc_backup with CIFS SPN), password no-expire settings, idempotent checks
+    - `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` â€” REWRITTEN: Domain-joined file server with environment variables, health checks, Kerberos client, domain join integration, resource limits
+    - `infrastructure/docker/scenarios/sc02/setup-shares.sh` â€” REWRITTEN: Domain join procedure with DC reachability checks, realistic file seeding (budget-2024.xlsx, salary-grid-2024.xlsx, employee-handbook.pdf, backups), share creation with proper AD group permissions (Public, Finance@Domain Users, Backups@Domain Admins, Admin@it.admin), DNS/Kerberos/NSS configuration
+    - `infrastructure/docker/scenarios/sc02/smb.conf` â€” REWRITTEN: Proper file server SMB config with audit logging (vfs full_audit), per-share ACLs mapped to AD groups (Financeâ†’Domain Users, Backupsâ†’Domain Admins, Adminâ†’it.admin), encryption settings (SMB3 default), share browsing controls
   - **Docker Orchestration**:
-    - `docker-compose.yml` — UPDATED: SC-02 services enhanced with: environment variables (DOMAIN, REALM, NETBIOS_NAME, ADMINPASS), health checks for both DC and fileserver (smbclient -L), depends_on with service_healthy condition, resource limits (0.5 CPU, 512MB RAM per container), proper network configuration (sc02-net, internal: true, 172.20.2.0/24 with gateway 172.20.2.254)
+    - `docker-compose.yml` â€” UPDATED: SC-02 services enhanced with: environment variables (DOMAIN, REALM, NETBIOS_NAME, ADMINPASS), health checks for both DC and fileserver (smbclient -L), depends_on with service_healthy condition, resource limits (0.5 CPU, 512MB RAM per container), proper network configuration (sc02-net, internal: true, 172.20.2.0/24 with gateway 172.20.2.254)
   - **SIEM Events**:
-    - `backend/src/siem/events/sc02_events.json` — REWRITTEN: Comprehensive 14-category event mapping (100+ individual events) with proper Windows Security Event IDs: 4625 (failed logon), 4768 (Kerberos AS-REQ), 4769 (Kerberos TGS-REQ), 4624 (successful logon), 4662 (directory service access), 4673 (privilege use), plus nmap/enum4linux/bloodhound/getuserspns/crackmapexec/kerberoasting/lateral_movement/dcsync/mimikatz/hashcat/secretsdump/report patterns. Each event includes: id, severity, message, raw_log with {src_ip} templating, MITRE technique, CWE reference.
+    - `backend/src/siem/events/sc02_events.json` â€” REWRITTEN: Comprehensive 14-category event mapping (100+ individual events) with proper Windows Security Event IDs: 4625 (failed logon), 4768 (Kerberos AS-REQ), 4769 (Kerberos TGS-REQ), 4624 (successful logon), 4662 (directory service access), 4673 (privilege use), plus nmap/enum4linux/bloodhound/getuserspns/crackmapexec/kerberoasting/lateral_movement/dcsync/mimikatz/hashcat/secretsdump/report patterns. Each event includes: id, severity, message, raw_log with {src_ip} templating, MITRE technique, CWE reference.
   - **Environment**:
-    - `.env.example` — UPDATED: Added SC02_ADMIN_PASS variable for docker-compose override capability
+    - `.env.example` â€” UPDATED: Added SC02_ADMIN_PASS variable for docker-compose override capability
 * **What & How**:
   - **AD Domain Controller**: Samba4-based DC (NEXORA.LOCAL) with:
-    - Full RFC2307 schema (Linux↔AD user mapping)
+    - Full RFC2307 schema (Linuxâ†”AD user mapping)
     - Kerberos enabled for RC4-HMAC encryption (intentionally weak for CTF education)
     - Three user accounts: admin (Domain Admin), jsmith (standard user), it.admin (IT Admin), svc_backup (service account with Kerberoastable CIFS/NEXORA-FS01 SPN)
     - Audit logging configured for event tracking (directories created for /var/log/samba/audit)
@@ -1955,16 +1955,16 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     - File permissions set appropriately (755 for public, 750 for restricted, 640 for files)
   - **Kerberos**: RC4-HMAC encryption enabled (weaker than AES256, matches real-world legacy AD environments, allows hashcat cracking in reasonable time for CTF)
   - **SIEM Event Mapping**: 
-    - nmap (SYN sweep) → Event 4625 (failed logon, unknown user)
-    - enum4linux → Event 4662 (directory service access)
-    - bloodhound → Events 4662 (ACL query), 4768 (SPN enumeration)
-    - getuserspns → Event 4768 (TGT request for svc_backup)
-    - crackmapexec → Event 4625 (47x failed logon attempts)
-    - kerberoasting → Event 4769 (TGS-REQ for CIFS/NEXORA-FS01 with RC4 encryption)
-    - lateral_movement → Event 5143 (share access), 4625 (NTLM signature invalid)
-    - dcsync → Event 4662 (GetNCChanges from non-DC), 4624 (admin logon type 3)
-    - mimikatz → Windows Defender alert (lsass.exe injection)
-    - secretsdump → Event 4662 (NTDS.DIT read access)
+    - nmap (SYN sweep) â†’ Event 4625 (failed logon, unknown user)
+    - enum4linux â†’ Event 4662 (directory service access)
+    - bloodhound â†’ Events 4662 (ACL query), 4768 (SPN enumeration)
+    - getuserspns â†’ Event 4768 (TGT request for svc_backup)
+    - crackmapexec â†’ Event 4625 (47x failed logon attempts)
+    - kerberoasting â†’ Event 4769 (TGS-REQ for CIFS/NEXORA-FS01 with RC4 encryption)
+    - lateral_movement â†’ Event 5143 (share access), 4625 (NTLM signature invalid)
+    - dcsync â†’ Event 4662 (GetNCChanges from non-DC), 4624 (admin logon type 3)
+    - mimikatz â†’ Windows Defender alert (lsass.exe injection)
+    - secretsdump â†’ Event 4662 (NTDS.DIT read access)
   - **Integration**: 
     - DC health check ensures fileserver doesn't start until DC is fully provisioned
     - Environment variables allow override of domain credentials via docker-compose
@@ -1972,17 +1972,17 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
     - Resource limits enforce (0.5 CPU, 512MB RAM) for controlled test environment
     - SIEM event templates use {src_ip} placeholder for dynamic replacement during event injection
 
-### [2026-04-11 22:25:00] - Claude Code (PROMPT 5: Performance Optimization & Production Stability — Load Testing & Verification)
-* **Status**: Testing Complete — Optimizations Verified & Documented
+### [2026-04-11 22:25:00] - Claude Code (PROMPT 5: Performance Optimization & Production Stability â€” Load Testing & Verification)
+* **Status**: Testing Complete â€” Optimizations Verified & Documented
 * **Why**: User requested performance testing and optimization continuation. Goal: Establish performance baseline, verify all optimizations are working, and identify any remaining bottlenecks before production deployment. This completes PROMPT 5 implementation.
 * **Where**:
-  - `docker-compose.yml` — UPDATED: Added port mapping `ports: ["8001:8000"]` to expose backend for direct testing (bypass nginx)
-  - `docs/testing/PERFORMANCE_COMPARISON.md` — NEW: Comprehensive performance analysis with baseline vs. optimized metrics
-  - `backend/src/db/database.py` — VERIFIED: Connection pooling already implemented (pool_size=20, max_overflow=5, pool_pre_ping=True, pool_recycle=3600)
-  - `backend/src/cache/redis.py` — VERIFIED: Connection pooling and pipelining already implemented (max_connections=50, pipeline for batch operations)
-  - `backend/src/siem/engine.py` — VERIFIED: Event batching already implemented (async queue with 100ms flush window, max 10 events)
-  - `backend/src/sandbox/terminal.py` — VERIFIED: Terminal output chunking already implemented (4KB max per frame, line 124-139)
-  - `backend/src/main.py` — VERIFIED: HTTP compression already implemented (GZipMiddleware with minimum_size=1000)
+  - `docker-compose.yml` â€” UPDATED: Added port mapping `ports: ["8001:8000"]` to expose backend for direct testing (bypass nginx)
+  - `docs/testing/PERFORMANCE_COMPARISON.md` â€” NEW: Comprehensive performance analysis with baseline vs. optimized metrics
+  - `backend/src/db/database.py` â€” VERIFIED: Connection pooling already implemented (pool_size=20, max_overflow=5, pool_pre_ping=True, pool_recycle=3600)
+  - `backend/src/cache/redis.py` â€” VERIFIED: Connection pooling and pipelining already implemented (max_connections=50, pipeline for batch operations)
+  - `backend/src/siem/engine.py` â€” VERIFIED: Event batching already implemented (async queue with 100ms flush window, max 10 events)
+  - `backend/src/sandbox/terminal.py` â€” VERIFIED: Terminal output chunking already implemented (4KB max per frame, line 124-139)
+  - `backend/src/main.py` â€” VERIFIED: HTTP compression already implemented (GZipMiddleware with minimum_size=1000)
 * **What & How**:
   - **Load Test Baseline** (2026-04-11 19:06-19:08):
     - Configuration: 50 concurrent users, 5 spawn rate, 180 seconds
@@ -1996,37 +1996,37 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
       - POST /api/sessions/start: p95=4200ms (avg 212.0ms)
   
   - **Performance Optimizations Verification**:
-    - ✅ Database connection pooling: Pool size 20, max_overflow 5, pre_ping enabled, recycle 3600s
-    - ✅ Redis connection pooling: Max connections 50, socket timeout 5s, health check 30s
-    - ✅ SIEM event batching: Async queue, batch flush every 100ms or 10 events, Redis pipeline
-    - ✅ Terminal output chunking: Max 4KB per frame, prevents OOM, splits large outputs automatically
-    - ✅ HTTP GZip compression: Enabled on responses >1KB, reduces bandwidth 60-80%
+    - âœ… Database connection pooling: Pool size 20, max_overflow 5, pre_ping enabled, recycle 3600s
+    - âœ… Redis connection pooling: Max connections 50, socket timeout 5s, health check 30s
+    - âœ… SIEM event batching: Async queue, batch flush every 100ms or 10 events, Redis pipeline
+    - âœ… Terminal output chunking: Max 4KB per frame, prevents OOM, splits large outputs automatically
+    - âœ… HTTP GZip compression: Enabled on responses >1KB, reduces bandwidth 60-80%
   
   - **Load Test Optimized** (2026-04-11 22:09-22:13):
     - Configuration: Same as baseline (50 concurrent, 5 spawn rate, 180 seconds)
     - Backend exposed directly on port 8001 (bypasses nginx proxy)
     - Results: 2133 total requests, 1 failure (0.05%)
-    - **Aggregated p95: 120ms** (vs 1600ms baseline) = **92.5% improvement** ⭐
+    - **Aggregated p95: 120ms** (vs 1600ms baseline) = **92.5% improvement** â­�
     - **Aggregated average: 73.9ms** (vs 183.3ms baseline) = **59.7% improvement**
     - **Throughput: 2133 requests** (vs 1227 baseline) = **+73.8% higher throughput**
     - Endpoint breakdown (p95 improvements):
       - POST /api/auth/login: 1500ms (was 4200ms) = **-64% improvement**
       - POST /api/auth/register: 1800ms (was 3200ms) = **-44% improvement**
-      - GET /api/instructor/sessions: 25ms (was 1700ms) = **-98.5% improvement** ⭐ (session caching works!)
-      - GET /api/scenarios/: 7ms (was 91ms) = **-92.3% improvement** ⭐ (scenario cache works!)
-      - POST /api/sessions/start: 71ms (was 4200ms) = **-98.3% improvement** ⭐ (batch ops work!)
+      - GET /api/instructor/sessions: 25ms (was 1700ms) = **-98.5% improvement** â­� (session caching works!)
+      - GET /api/scenarios/: 7ms (was 91ms) = **-92.3% improvement** â­� (scenario cache works!)
+      - POST /api/sessions/start: 71ms (was 4200ms) = **-98.3% improvement** â­� (batch ops work!)
   
   - **Key Performance Insights**:
     - Instructor/monitoring endpoints show massive improvement due to Redis caching + connection pooling
     - Session creation p95 dropped from 4.2s to 71ms via async pipeline + connection pooling
     - Scenario queries now sub-10ms due to application-level caching
-    - Auth operations (bcrypt) still ~1.2s (expected — crypto doesn't optimize)
+    - Auth operations (bcrypt) still ~1.2s (expected â€” crypto doesn't optimize)
     - System now handles 74% more concurrent requests with lower latency
     - Platform is **production-ready** for 50-100 concurrent students
   
   - **Failure Root Cause Investigation**:
     - Baseline: 0 failures (perfect)
-    - Optimized: 1 failure in 2133 requests (0.05%) — likely transient network hiccup
+    - Optimized: 1 failure in 2133 requests (0.05%) â€” likely transient network hiccup
     - No systematic issues identified
     - Failure is negligible and expected in distributed systems
 
@@ -2042,72 +2042,72 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **Status**: Coding Complete
 * **Why**: User requested: (1) real Kali shell via raw PTY passthrough instead of frontend-simulated terminal, (2) step-by-step progressive hints instead of single-string responses, (3) real Docker target machines for both Red and Blue teams, (4) full integration across all components. This session completes the remaining integration work from the platform redesign.
 * **Where**:
-  - **Frontend (Terminal — Raw PTY)**:
-    - `frontend/src/hooks/useTerminal.js` — REWRITTEN: Changed from line-buffered (frontend handles editing) to raw PTY passthrough. Every keystroke sent directly to Docker via `onData` callback. Local line buffer only tracks command text for AI/discovery extraction on Enter. Set `convertEol: false` for raw PTY mode.
-    - `frontend/src/components/terminal/Terminal.jsx` — MODIFIED: Updated props to accept `onData` (raw keystroke) + `onCommand` (complete command) callbacks instead of just `onCommand`.
-    - `frontend/src/hooks/useWebSocket.js` — REWRITTEN: Added `sendRawInput` (type: `terminal_raw` for character-by-character passthrough) and `sendCommand` (type: `terminal_command` for AI/SIEM tracking). Returns `{ sendRawInput, sendCommand, requestHint, toggleMode }`.
-    - `frontend/src/pages/RedWorkspace.jsx` — MODIFIED: Destructures `sendRawInput` from useWebSocket, passes `onData={handleRawInput}` to Terminal component.
+  - **Frontend (Terminal â€” Raw PTY)**:
+    - `frontend/src/hooks/useTerminal.js` â€” REWRITTEN: Changed from line-buffered (frontend handles editing) to raw PTY passthrough. Every keystroke sent directly to Docker via `onData` callback. Local line buffer only tracks command text for AI/discovery extraction on Enter. Set `convertEol: false` for raw PTY mode.
+    - `frontend/src/components/terminal/Terminal.jsx` â€” MODIFIED: Updated props to accept `onData` (raw keystroke) + `onCommand` (complete command) callbacks instead of just `onCommand`.
+    - `frontend/src/hooks/useWebSocket.js` â€” REWRITTEN: Added `sendRawInput` (type: `terminal_raw` for character-by-character passthrough) and `sendCommand` (type: `terminal_command` for AI/SIEM tracking). Returns `{ sendRawInput, sendCommand, requestHint, toggleMode }`.
+    - `frontend/src/pages/RedWorkspace.jsx` â€” MODIFIED: Destructures `sendRawInput` from useWebSocket, passes `onData={handleRawInput}` to Terminal component.
   - **Frontend (Blue Team Terminal Access)**:
-    - `frontend/src/pages/BlueWorkspace.jsx` — MAJOR UPDATE: Added SIEM/Terminal toggle panel in left column. Blue team now gets real Kali terminal for defensive investigation (tshark, log analysis, etc.). Added `activePanel` state ('siem' | 'terminal'), `writeOutputRef`, and full terminal integration with `sendRawInput`/`sendCommand`.
+    - `frontend/src/pages/BlueWorkspace.jsx` â€” MAJOR UPDATE: Added SIEM/Terminal toggle panel in left column. Blue team now gets real Kali terminal for defensive investigation (tshark, log analysis, etc.). Added `activePanel` state ('siem' | 'terminal'), `writeOutputRef`, and full terminal integration with `sendRawInput`/`sendCommand`.
   - **Frontend (Hint UI)**:
-    - `frontend/src/components/hints/AiHintPanel.jsx` — MODIFIED: Event handler captures `steps` array. HintCard renders numbered step-by-step UI when `hint.steps.length > 1` with circular step indicators. Strips "Step N:" prefixes from display text.
-  - **Backend (WebSocket — Raw PTY)**:
-    - `backend/src/ws/routes.py` — RESTRUCTURED: Three message types: `terminal_raw` (raw keystrokes → Docker PTY via `send_terminal_input`), `terminal_command` (complete commands → AI/SIEM/discovery pipeline), `terminal_input` (legacy mock fallback). Discovery output reading expanded to `lrange(..., 0, 2)`.
-  - **Backend (Container Manager — Scenario Targets)**:
-    - `backend/src/sandbox/manager.py` — ENHANCED: Added `_SCENARIO_TARGETS` mapping (sc01→[webapp, waf], sc02→[dc, fileserver], sc03→[phish], sc04→[localstack], sc05→[splunk]). New `_ensure_scenario_targets()` function uses `docker compose --profile <scXX> up -d --no-recreate` to bring up target containers idempotently before starting Kali. Falls back silently in dev mode. `start_scenario_container` now calls `_ensure_scenario_targets` first.
+    - `frontend/src/components/hints/AiHintPanel.jsx` â€” MODIFIED: Event handler captures `steps` array. HintCard renders numbered step-by-step UI when `hint.steps.length > 1` with circular step indicators. Strips "Step N:" prefixes from display text.
+  - **Backend (WebSocket â€” Raw PTY)**:
+    - `backend/src/ws/routes.py` â€” RESTRUCTURED: Three message types: `terminal_raw` (raw keystrokes â†’ Docker PTY via `send_terminal_input`), `terminal_command` (complete commands â†’ AI/SIEM/discovery pipeline), `terminal_input` (legacy mock fallback). Discovery output reading expanded to `lrange(..., 0, 2)`.
+  - **Backend (Container Manager â€” Scenario Targets)**:
+    - `backend/src/sandbox/manager.py` â€” ENHANCED: Added `_SCENARIO_TARGETS` mapping (sc01â†’[webapp, waf], sc02â†’[dc, fileserver], sc03â†’[phish], sc04â†’[localstack], sc05â†’[splunk]). New `_ensure_scenario_targets()` function uses `docker compose --profile <scXX> up -d --no-recreate` to bring up target containers idempotently before starting Kali. Falls back silently in dev mode. `start_scenario_container` now calls `_ensure_scenario_targets` first.
   - **Backend (Session Routes)**:
-    - `backend/src/sessions/routes.py` — MODIFIED: Removed `if body.role == "red":` guard — both Red and Blue teams now get real Kali containers provisioned.
+    - `backend/src/sessions/routes.py` â€” MODIFIED: Removed `if body.role == "red":` guard â€” both Red and Blue teams now get real Kali containers provisioned.
   - **Backend (Hint Engine)**:
-    - `backend/src/scenarios/hint_engine.py` — MODIFIED: Detects array hints (`isinstance(static_hint, list)`) and returns `hint_steps` array alongside `hint_text`. WS routes also updated to pass `steps` array in `ai_hint` messages.
+    - `backend/src/scenarios/hint_engine.py` â€” MODIFIED: Detects array hints (`isinstance(static_hint, list)`) and returns `hint_steps` array alongside `hint_text`. WS routes also updated to pass `steps` array in `ai_hint` messages.
   - **Hint Content (All Scenarios)**:
-    - `backend/src/scenarios/hints/sc01_hints.json` — REWRITTEN: All hints now arrays. Red: 6 phases × 3 levels, Blue: 3 phases × 3 levels. Each step builds progressively.
-    - `backend/src/scenarios/hints/sc02_hints.json` — REWRITTEN: Red: 4 phases (BloodHound → Kerberoast → Lateral Movement → DCSync), Blue: 2 phases (detection → tracking).
-    - `backend/src/scenarios/hints/sc03_hints.json` — REWRITTEN: Red: 5 phases (OSINT → Campaign → Payload → Launch → Reporting), Blue: 3 phases (email → macro → containment).
-    - `backend/src/scenarios/hints/sc04_hints.json` — REWRITTEN: Red: 3 phases (IAM recon → Lambda privesc → SSRF/IMDS), Blue: 1 phase (CloudTrail analysis). All converted from single strings to step-by-step arrays.
-    - `backend/src/scenarios/hints/sc05_hints.json` — REWRITTEN: Red: 2 phases (ransomware TTPs → lateral movement), Blue: 2 phases (volatile evidence → scope assessment). All converted from single strings to step-by-step arrays.
+    - `backend/src/scenarios/hints/sc01_hints.json` â€” REWRITTEN: All hints now arrays. Red: 6 phases Ã— 3 levels, Blue: 3 phases Ã— 3 levels. Each step builds progressively.
+    - `backend/src/scenarios/hints/sc02_hints.json` â€” REWRITTEN: Red: 4 phases (BloodHound â†’ Kerberoast â†’ Lateral Movement â†’ DCSync), Blue: 2 phases (detection â†’ tracking).
+    - `backend/src/scenarios/hints/sc03_hints.json` â€” REWRITTEN: Red: 5 phases (OSINT â†’ Campaign â†’ Payload â†’ Launch â†’ Reporting), Blue: 3 phases (email â†’ macro â†’ containment).
+    - `backend/src/scenarios/hints/sc04_hints.json` â€” REWRITTEN: Red: 3 phases (IAM recon â†’ Lambda privesc â†’ SSRF/IMDS), Blue: 1 phase (CloudTrail analysis). All converted from single strings to step-by-step arrays.
+    - `backend/src/scenarios/hints/sc05_hints.json` â€” REWRITTEN: Red: 2 phases (ransomware TTPs â†’ lateral movement), Blue: 2 phases (volatile evidence â†’ scope assessment). All converted from single strings to step-by-step arrays.
 * **What & How**:
-  - **Raw PTY**: The terminal no longer simulates a shell — bash inside Docker handles all line editing, tab completion, and history. Frontend captures keystrokes via xterm.js `onData`, sends each as `terminal_raw` over WebSocket. Backend forwards directly to Docker exec PTY via `send_terminal_input`. A local line buffer in the frontend tracks command text purely for AI/discovery extraction when Enter is pressed (sent as `terminal_command`).
-  - **Step-by-Step Hints**: All 5 scenario hint JSON files converted from single strings to arrays of progressive steps. Each level (L1 conceptual → L2 directional → L3 procedural) now has 3-5 steps that build on each other. The hint engine detects arrays and returns both `hint_text` (joined) and `hint_steps` (array). The frontend AiHintPanel renders numbered steps with circular indicators when `steps.length > 1`.
-  - **Scenario Targets**: `_ensure_scenario_targets` checks if target containers are running via Docker SDK, and if not, calls `docker compose --profile <scXX> up -d --no-recreate` to start them. This runs before Kali container creation, ensuring the attack/defense targets are available when the student connects. Targets are shared/long-lived — not stopped per session.
+  - **Raw PTY**: The terminal no longer simulates a shell â€” bash inside Docker handles all line editing, tab completion, and history. Frontend captures keystrokes via xterm.js `onData`, sends each as `terminal_raw` over WebSocket. Backend forwards directly to Docker exec PTY via `send_terminal_input`. A local line buffer in the frontend tracks command text purely for AI/discovery extraction when Enter is pressed (sent as `terminal_command`).
+  - **Step-by-Step Hints**: All 5 scenario hint JSON files converted from single strings to arrays of progressive steps. Each level (L1 conceptual â†’ L2 directional â†’ L3 procedural) now has 3-5 steps that build on each other. The hint engine detects arrays and returns both `hint_text` (joined) and `hint_steps` (array). The frontend AiHintPanel renders numbered steps with circular indicators when `steps.length > 1`.
+  - **Scenario Targets**: `_ensure_scenario_targets` checks if target containers are running via Docker SDK, and if not, calls `docker compose --profile <scXX> up -d --no-recreate` to start them. This runs before Kali container creation, ensuring the attack/defense targets are available when the student connects. Targets are shared/long-lived â€” not stopped per session.
   - **Blue Team Terminal**: Blue workspace now has a SIEM/Terminal toggle. Students can switch between SIEM event feed and a real Kali terminal for running investigation commands (tshark, log analysis, etc.) against the scenario network.
 
-### [2026-04-10 11:30:00] - Claude Code (Full Platform Redesign — Layered Experience Implementation)
+### [2026-04-10 11:30:00] - Claude Code (Full Platform Redesign â€” Layered Experience Implementation)
 * **Status**: Coding Complete + Integration Verified
 * **Why**: User requested comprehensive platform redesign to make CyberSim beginner-friendly, teach step-by-step with concept explanations, improve note-taking with guided templates, make AI fully context-aware with target knowledge, rework UI/UX to professional training platform standards, and support adaptive difficulty for all skill levels (beginner/intermediate/experienced). Approach C "Layered Experience" was selected after a multi-section design brainstorm.
 * **Where**:
   - **Backend (AI Brain)**:
-    - `backend/src/ai/context_builder.py` — NEW: Full AI context assembly with SCENARIO_KNOWLEDGE dict (all hosts/services/vulns/attack paths for SC-01/02/03), discovery integration, command history, note summaries, behavioral signals
-    - `backend/src/ai/discovery_tracker.py` — NEW: Parses terminal output for nmap/gobuster/sqlmap/nikto/curl/whatweb/bloodhound/crackmapexec/impacket/hashcat/hydra to track services/paths/vulns/credentials in Redis sets
-    - `backend/src/ai/monitor.py` — REWRITTEN: Mode-aware prompt loading (LEARN_SYSTEM_PROMPT / CHALLENGE_SYSTEM_PROMPT), full context formatting, adaptive token limits (300/150/400), skill-level-aware fallback hints
-    - `ai-monitor/system_prompt.md` — REWRITTEN: Split into LEARN and CHALLENGE prompts. Learn mode uses [Concept]/[What to do]/[What to look for]/[Pro tip] format. Challenge mode uses Socratic questioning. Both have full scenario knowledge for SC-01/02/03/04/05, skill-level adaptation (beginner/intermediate/experienced), discovery awareness, note-coaching, Blue Team parity
+    - `backend/src/ai/context_builder.py` â€” NEW: Full AI context assembly with SCENARIO_KNOWLEDGE dict (all hosts/services/vulns/attack paths for SC-01/02/03), discovery integration, command history, note summaries, behavioral signals
+    - `backend/src/ai/discovery_tracker.py` â€” NEW: Parses terminal output for nmap/gobuster/sqlmap/nikto/curl/whatweb/bloodhound/crackmapexec/impacket/hashcat/hydra to track services/paths/vulns/credentials in Redis sets
+    - `backend/src/ai/monitor.py` â€” REWRITTEN: Mode-aware prompt loading (LEARN_SYSTEM_PROMPT / CHALLENGE_SYSTEM_PROMPT), full context formatting, adaptive token limits (300/150/400), skill-level-aware fallback hints
+    - `ai-monitor/system_prompt.md` â€” REWRITTEN: Split into LEARN and CHALLENGE prompts. Learn mode uses [Concept]/[What to do]/[What to look for]/[Pro tip] format. Challenge mode uses Socratic questioning. Both have full scenario knowledge for SC-01/02/03/04/05, skill-level adaptation (beginner/intermediate/experienced), discovery awareness, note-coaching, Blue Team parity
   - **Backend (Auth/DB)**:
-    - `backend/src/db/database.py` — MODIFIED: Added User.skill_level, User.onboarding_completed, Session.ai_mode; NEW tables: AutoEvidence, SiemTriage
-    - `backend/src/auth/routes.py` — MODIFIED: Added ProfileUpdate model, PUT /profile endpoint, updated /me to return skill_level and onboarding_completed
+    - `backend/src/db/database.py` â€” MODIFIED: Added User.skill_level, User.onboarding_completed, Session.ai_mode; NEW tables: AutoEvidence, SiemTriage
+    - `backend/src/auth/routes.py` â€” MODIFIED: Added ProfileUpdate model, PUT /profile endpoint, updated /me to return skill_level and onboarding_completed
   - **Backend (WebSocket)**:
-    - `backend/src/ws/routes.py` — MODIFIED: Integrated discovery tracking after command execution, auto_evidence WS message, toggle_mode handler updates Session.ai_mode in DB
+    - `backend/src/ws/routes.py` â€” MODIFIED: Integrated discovery tracking after command execution, auto_evidence WS message, toggle_mode handler updates Session.ai_mode in DB
   - **Frontend (Stores)**:
-    - `frontend/src/store/authStore.js` — REWRITTEN: skillLevel/onboardingCompleted with localStorage persistence, setSkillLevel/completeOnboarding async methods
-    - `frontend/src/store/sessionStore.js` — REWRITTEN: aiMode/discoveries/pendingEvidence state, addDiscoveries/setPendingEvidence/clearPendingEvidence
+    - `frontend/src/store/authStore.js` â€” REWRITTEN: skillLevel/onboardingCompleted with localStorage persistence, setSkillLevel/completeOnboarding async methods
+    - `frontend/src/store/sessionStore.js` â€” REWRITTEN: aiMode/discoveries/pendingEvidence state, addDiscoveries/setPendingEvidence/clearPendingEvidence
   - **Frontend (Hooks)**:
-    - `frontend/src/hooks/useWebSocket.js` — REWRITTEN: mode_changed/auto_evidence handlers, toggleMode callback, switch/case dispatch
+    - `frontend/src/hooks/useWebSocket.js` â€” REWRITTEN: mode_changed/auto_evidence handlers, toggleMode callback, switch/case dispatch
   - **Frontend (Pages)**:
-    - `frontend/src/pages/Onboarding.jsx` — NEW: Three-card skill selection with feature descriptions, gradient CyberSim branding
-    - `frontend/src/pages/Auth.jsx` — REWRITTEN: Split layout with branding left, form right, professional slate/cyan theme
-    - `frontend/src/pages/Dashboard.jsx` — REWRITTEN: Professional nav, scenario cards with gradients, "What you'll learn" for beginners, active sessions banner, mission briefing modal with network diagram, role/methodology selection
-    - `frontend/src/pages/RedWorkspace.jsx` — REWRITTEN: Terminal (60% left 2 rows), AI tutor (top right), SIEM peek (middle right), notebook (full bottom). Beginner welcome overlay, session timer, MITRE badges, PanelHeader/MitreBadge/LiveDot/LearningContextBadge components
-    - `frontend/src/pages/BlueWorkspace.jsx` — REWRITTEN: Interactive SIEM console with filter bar (severity:HIGH, source_ip:, free text), click-to-expand events with raw JSON, click-to-extract IOC, IR Playbook with beginner hints, IOC panel with type classification, GuidedNotebook for IR
-    - `frontend/src/pages/Debrief.jsx` — REWRITTEN: Score hero with grade system (Excellent/Satisfactory/Needs Improvement), stats cards, tabbed interface (Overview/Findings/Kill Chain/All Notes)
-    - `frontend/src/App.jsx` — MODIFIED: Added Onboarding route, RequireOnboarding guard
+    - `frontend/src/pages/Onboarding.jsx` â€” NEW: Three-card skill selection with feature descriptions, gradient CyberSim branding
+    - `frontend/src/pages/Auth.jsx` â€” REWRITTEN: Split layout with branding left, form right, professional slate/cyan theme
+    - `frontend/src/pages/Dashboard.jsx` â€” REWRITTEN: Professional nav, scenario cards with gradients, "What you'll learn" for beginners, active sessions banner, mission briefing modal with network diagram, role/methodology selection
+    - `frontend/src/pages/RedWorkspace.jsx` â€” REWRITTEN: Terminal (60% left 2 rows), AI tutor (top right), SIEM peek (middle right), notebook (full bottom). Beginner welcome overlay, session timer, MITRE badges, PanelHeader/MitreBadge/LiveDot/LearningContextBadge components
+    - `frontend/src/pages/BlueWorkspace.jsx` â€” REWRITTEN: Interactive SIEM console with filter bar (severity:HIGH, source_ip:, free text), click-to-expand events with raw JSON, click-to-extract IOC, IR Playbook with beginner hints, IOC panel with type classification, GuidedNotebook for IR
+    - `frontend/src/pages/Debrief.jsx` â€” REWRITTEN: Score hero with grade system (Excellent/Satisfactory/Needs Improvement), stats cards, tabbed interface (Overview/Findings/Kill Chain/All Notes)
+    - `frontend/src/App.jsx` â€” MODIFIED: Added Onboarding route, RequireOnboarding guard
   - **Frontend (Components)**:
-    - `frontend/src/components/notes/GuidedNotebook.jsx` — NEW: Phase-aware templates for red (6 phases) and blue (6 phases), auto-evidence toast, guided/freeform mode toggle, tag-based categorization
-    - `frontend/src/components/hints/AiHintPanel.jsx` — REWRITTEN: Learn/Challenge mode toggle, adaptive hint penalties by skill level (beginner -2/-5/-10, intermediate -5/-10/-20, experienced -10/-20/-40), mode descriptions, timeout fallback
-  - **Design Spec**: `docs/superpowers/specs/2026-04-10-cybersim-redesign-design.md` — Full 8-section design specification
+    - `frontend/src/components/notes/GuidedNotebook.jsx` â€” NEW: Phase-aware templates for red (6 phases) and blue (6 phases), auto-evidence toast, guided/freeform mode toggle, tag-based categorization
+    - `frontend/src/components/hints/AiHintPanel.jsx` â€” REWRITTEN: Learn/Challenge mode toggle, adaptive hint penalties by skill level (beginner -2/-5/-10, intermediate -5/-10/-20, experienced -10/-20/-40), mode descriptions, timeout fallback
+  - **Design Spec**: `docs/superpowers/specs/2026-04-10-cybersim-redesign-design.md` â€” Full 8-section design specification
 * **What & How**:
-  - **Layer 1 — AI Brain**: The AI now receives a complete context payload including full target knowledge (all hosts, services, vulnerabilities, attack paths), student discovery state (parsed from terminal output), command history, note summaries, and behavioral signals (phase duration, commands-per-phase, time since last command). Two separate system prompts (Learn and Challenge) provide fundamentally different teaching approaches. Learn mode uses structured [Concept/What to do/What to look for/Pro tip] format with detailed explanations. Challenge mode uses Socratic questioning that always ends with a question.
-  - **Layer 1 — Onboarding**: First-login skill assessment (beginner/intermediate/experienced) persisted to DB and localStorage. Affects hint penalties, AI verbosity, template behavior, welcome overlays, and documentation nudging across the entire platform.
-  - **Layer 2 — Smart Notes**: GuidedNotebook provides phase-aware markdown templates for both Red Team (recon→enum→vuln ID→exploit→post-exploit→reporting) and Blue Team (identification→detect & analyze→contain→eradicate→recover→post-incident). Auto-evidence toast appears when discovery tracker finds new items from terminal output.
-  - **Layer 2 — Blue Team Workspace**: Full SIEM console with structured query syntax, expandable event rows with raw JSON, one-click IOC extraction from source IPs, IR playbook with scenario-specific checklists and beginner hints, IOC panel with type classification (ip/hash/domain), NIST 800-61 phase indicator.
-  - **Layer 2 — Professional UI/UX**: Consistent slate-950/cyan-500 color system, gradient scenario cards, CyberSim branding, split-layout auth page, professional nav with skill badge, mission briefing modals with network diagrams and methodology selection.
+  - **Layer 1 â€” AI Brain**: The AI now receives a complete context payload including full target knowledge (all hosts, services, vulnerabilities, attack paths), student discovery state (parsed from terminal output), command history, note summaries, and behavioral signals (phase duration, commands-per-phase, time since last command). Two separate system prompts (Learn and Challenge) provide fundamentally different teaching approaches. Learn mode uses structured [Concept/What to do/What to look for/Pro tip] format with detailed explanations. Challenge mode uses Socratic questioning that always ends with a question.
+  - **Layer 1 â€” Onboarding**: First-login skill assessment (beginner/intermediate/experienced) persisted to DB and localStorage. Affects hint penalties, AI verbosity, template behavior, welcome overlays, and documentation nudging across the entire platform.
+  - **Layer 2 â€” Smart Notes**: GuidedNotebook provides phase-aware markdown templates for both Red Team (reconâ†’enumâ†’vuln IDâ†’exploitâ†’post-exploitâ†’reporting) and Blue Team (identificationâ†’detect & analyzeâ†’containâ†’eradicateâ†’recoverâ†’post-incident). Auto-evidence toast appears when discovery tracker finds new items from terminal output.
+  - **Layer 2 â€” Blue Team Workspace**: Full SIEM console with structured query syntax, expandable event rows with raw JSON, one-click IOC extraction from source IPs, IR playbook with scenario-specific checklists and beginner hints, IOC panel with type classification (ip/hash/domain), NIST 800-61 phase indicator.
+  - **Layer 2 â€” Professional UI/UX**: Consistent slate-950/cyan-500 color system, gradient scenario cards, CyberSim branding, split-layout auth page, professional nav with skill badge, mission briefing modals with network diagrams and methodology selection.
   - **Integration verified**: All imports resolve, store shapes match component usage, WebSocket message types align between backend and frontend, DB schema has all required columns, auth routes serve profile updates, AI prompt loading correctly parses the split Learn/Challenge format.
 
 ### [2026-04-08 23:05:00] - Claude Code (Review + Hotfix: Mock Terminal Command Flow)
@@ -2121,18 +2121,18 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 
 ### [2026-04-08 22:30:00] - Claude Code (Terminal UX Overhaul + AI Hints Fallback + Learning Context)
 * **Status**: Coding + Verified (syntax clean on all 3 backend modules)
-* **Why**: User reported: (1) Kali terminal non-functional — mock mode emits a single dead prompt with no command responses, (2) AI hint buttons produce no output when Gemini API key is missing, (3) Learning Context panel only has SC-01 data — SC-02/SC-03 empty, (4) Terminal doesn't show target info or scenario network, (5) Terminal lacks real Kali aesthetic.
+* **Why**: User reported: (1) Kali terminal non-functional â€” mock mode emits a single dead prompt with no command responses, (2) AI hint buttons produce no output when Gemini API key is missing, (3) Learning Context panel only has SC-01 data â€” SC-02/SC-03 empty, (4) Terminal doesn't show target info or scenario network, (5) Terminal lacks real Kali aesthetic.
 * **Where**:
-  - `backend/src/sandbox/terminal.py` — added SCENARIO_TARGETS dict, `_build_banner()`, `_mock_command_output()` (simulates 25+ commands), `_mock_listener` thread, updated `stream_terminal_output()` + `_terminal_proxy_thread()` signatures to accept `scenario_id`
-  - `backend/src/ws/routes.py` — passes `scenario_id` to `stream_terminal_output()`, added static hint JSON fallback in `request_hint` handler, imported `_load_hints` from hint_engine
-  - `frontend/src/hooks/useTerminal.js` — new Kali-authentic xterm theme (darker bg, green cursor, 14px JetBrains Mono), command history (up/down arrows), Ctrl+C/Ctrl+L, tab completion for 25+ pentesting tools, improved color scheme with bright variants
-  - `frontend/src/components/hints/AiHintPanel.jsx` — onboarding card explaining L1/L2/L3 hint levels, timeout fallback message instead of silent failure, improved hint card styling with level-colored backgrounds
-  - `frontend/src/pages/RedWorkspace.jsx` — added full CONTEXT entries for SC-02 (4 phases: AD recon → Kerberoast → lateral movement → DCSync) and SC-03 (5 phases: OSINT → campaign setup → payload → execution → reporting), each with MITRE technique IDs, suggested tools, and CWE references. Added SCENARIO_TARGETS card in LearningContext showing network, IPs, domain, credentials.
+  - `backend/src/sandbox/terminal.py` â€” added SCENARIO_TARGETS dict, `_build_banner()`, `_mock_command_output()` (simulates 25+ commands), `_mock_listener` thread, updated `stream_terminal_output()` + `_terminal_proxy_thread()` signatures to accept `scenario_id`
+  - `backend/src/ws/routes.py` â€” passes `scenario_id` to `stream_terminal_output()`, added static hint JSON fallback in `request_hint` handler, imported `_load_hints` from hint_engine
+  - `frontend/src/hooks/useTerminal.js` â€” new Kali-authentic xterm theme (darker bg, green cursor, 14px JetBrains Mono), command history (up/down arrows), Ctrl+C/Ctrl+L, tab completion for 25+ pentesting tools, improved color scheme with bright variants
+  - `frontend/src/components/hints/AiHintPanel.jsx` â€” onboarding card explaining L1/L2/L3 hint levels, timeout fallback message instead of silent failure, improved hint card styling with level-colored backgrounds
+  - `frontend/src/pages/RedWorkspace.jsx` â€” added full CONTEXT entries for SC-02 (4 phases: AD recon â†’ Kerberoast â†’ lateral movement â†’ DCSync) and SC-03 (5 phases: OSINT â†’ campaign setup â†’ payload â†’ execution â†’ reporting), each with MITRE technique IDs, suggested tools, and CWE references. Added SCENARIO_TARGETS card in LearningContext showing network, IPs, domain, credentials.
 * **What & How**:
   - **MOCK TERMINAL**: Complete interactive mock terminal. When Docker is unavailable (`container_id` starts with `mock-`), a background thread subscribes to `terminal:{session_id}:input` and responds with simulated output for 25+ commands: nmap (scenario-specific port scans), gobuster, sqlmap, bloodhound, crackmapexec, impacket-*, hashcat, nikto, whatweb, hydra, msfconsole, curl, plus system commands (whoami, id, ls, cat, ip addr, ping). Each command output is tailored to the active scenario's targets. Unknown commands return `bash: command not found` with `help` suggestion. Responses stored in Redis history for reconnect replay.
   - **SCENARIO BANNER**: On both real Docker and mock terminal connect, a colored ASCII banner displays: scenario name, network CIDR, all target IPs with descriptions, domain/creds (if applicable), red/blue objectives, and available tools hint.
   - **HINT FALLBACK**: WS `request_hint` handler now tries Gemini AI first, then falls back to static hints from `sc{XX}_hints.json` files (which have L1/L2/L3 hints for every phase of every scenario). If both fail, sends a "no hint available" message instead of silence.
-  - **TERMINAL UX**: xterm.js reconfigured with Kali-style prompt (`┌──(student㉿kali)-[~]\n└─$`), command history navigation (up/down arrows with circular buffer), Ctrl+C (cancel), Ctrl+L (clear), tab completion for pentesting tools, block cursor, 5000-line scrollback.
+  - **TERMINAL UX**: xterm.js reconfigured with Kali-style prompt (`â”Œâ”€â”€(studentã‰¿kali)-[~]\nâ””â”€$`), command history navigation (up/down arrows with circular buffer), Ctrl+C (cancel), Ctrl+L (clear), tab completion for pentesting tools, block cursor, 5000-line scrollback.
   - **LEARNING CONTEXT**: LearningContext component now renders a target environment card (network, IPs, domain, credentials) + phase-specific guidance with suggested tool chips for all 3 scenarios.
   - **Verification**: `python -m py_compile` clean on terminal.py, routes.py, monitor.py.
 
@@ -2140,14 +2140,14 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **Status**: Coding + Verified (syntax clean)
 * **Why**: User reported three runtime failures: (1) Kali terminal not working, (2) AI hints not working, (3) SIEM logs appearing with no user activity.
 * **Where**:
-  - `backend/src/sandbox/terminal.py` — complete rewrite of proxy thread
-  - `backend/src/ai/monitor.py` — wrapped blocking Gemini call
-  - `backend/src/ws/routes.py` — guarded noise-daemon registration
-  - `backend/src/sandbox/daemon_noise.py` — increased noise interval
+  - `backend/src/sandbox/terminal.py` â€” complete rewrite of proxy thread
+  - `backend/src/ai/monitor.py` â€” wrapped blocking Gemini call
+  - `backend/src/ws/routes.py` â€” guarded noise-daemon registration
+  - `backend/src/sandbox/daemon_noise.py` â€” increased noise interval
 * **What & How**:
-  - **BUG 1 (CRITICAL — Terminal)**: `_terminal_proxy_thread` created `asyncio.new_event_loop()` then called `get_redis_client()` which returns the singleton `aioredis.Redis` client **bound to the main FastAPI event loop**. Using that client's coroutines from a different loop raises `RuntimeError: Task attached to a different loop` — silently swallowed by `except Exception`, so the thread exited immediately with no I/O ever proxied. **Fix**: Full rewrite — two child threads (`_docker_to_redis`, `_redis_to_docker`) now use the synchronous `redis.Redis` client via `_make_sync_redis()` (from `redis[hiredis]` v7.3.0). Docker socket reads use blocking `select()` with 1-second timeout. A `threading.Event` coordinates shutdown between both threads.
-  - **BUG 2 (CRITICAL — AI Hints)**: `model.generate_content()` is a synchronous blocking call inside `async def get_ai_hint()`. It blocked the entire FastAPI event loop for each Gemini API call (1–5 s), freezing all WS messages and HTTP requests — hints silently timed out. **Fix**: Added `import asyncio`; wrapped: `response = await asyncio.to_thread(model.generate_content, user_msg, generation_config=gen_config)`.
-  - **BUG 3 (MEDIUM — SIEM noise)**: Sessions were registered in the noise daemon Redis hash unconditionally even when `container_id` started with `mock-`. Noise SIEM events fired immediately after WS connect with no real terminal activity. **Fix**: Added `has_real_container` guard in `ws/routes.py` so noise-daemon registration only happens when a real Docker container is confirmed. Increased daemon sleep interval from 8–20 s → 30–60 s.
+  - **BUG 1 (CRITICAL â€” Terminal)**: `_terminal_proxy_thread` created `asyncio.new_event_loop()` then called `get_redis_client()` which returns the singleton `aioredis.Redis` client **bound to the main FastAPI event loop**. Using that client's coroutines from a different loop raises `RuntimeError: Task attached to a different loop` â€” silently swallowed by `except Exception`, so the thread exited immediately with no I/O ever proxied. **Fix**: Full rewrite â€” two child threads (`_docker_to_redis`, `_redis_to_docker`) now use the synchronous `redis.Redis` client via `_make_sync_redis()` (from `redis[hiredis]` v7.3.0). Docker socket reads use blocking `select()` with 1-second timeout. A `threading.Event` coordinates shutdown between both threads.
+  - **BUG 2 (CRITICAL â€” AI Hints)**: `model.generate_content()` is a synchronous blocking call inside `async def get_ai_hint()`. It blocked the entire FastAPI event loop for each Gemini API call (1â€“5 s), freezing all WS messages and HTTP requests â€” hints silently timed out. **Fix**: Added `import asyncio`; wrapped: `response = await asyncio.to_thread(model.generate_content, user_msg, generation_config=gen_config)`.
+  - **BUG 3 (MEDIUM â€” SIEM noise)**: Sessions were registered in the noise daemon Redis hash unconditionally even when `container_id` started with `mock-`. Noise SIEM events fired immediately after WS connect with no real terminal activity. **Fix**: Added `has_real_container` guard in `ws/routes.py` so noise-daemon registration only happens when a real Docker container is confirmed. Increased daemon sleep interval from 8â€“20 s â†’ 30â€“60 s.
   - **Verification**: `python -m py_compile` clean on all 4 modified files. `redis.Redis` sync client v7.3.0 confirmed importable.
 
 ### [2026-04-08 00:40:00] - Claude Code (Phase 16 Timeline + Terminal Re-attach Hardening)
@@ -2164,27 +2164,27 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
   - Extended `useTerminal.js` to consume `terminal:history` once on initial reconnect and replay both prior commands and buffered terminal output into xterm, restoring the visible terminal session state.
 
 ### [2026-04-08 00:00:00] - Claude Code (Definitive Codebase Audit)
-* **Status**: Audit Complete — No fixes required
-* **Why**: User requested a definitive, highly accurate audit of the codebase state after the offline development sprint covering Phases 11–18. Goal: verify all new code, gap-analyze for missing glue, and produce a professional State of the Union document before proceeding to Phase 16 or Docker boot.
+* **Status**: Audit Complete â€” No fixes required
+* **Why**: User requested a definitive, highly accurate audit of the codebase state after the offline development sprint covering Phases 11â€“18. Goal: verify all new code, gap-analyze for missing glue, and produce a professional State of the Union document before proceeding to Phase 16 or Docker boot.
 * **Where**: Read-only audit across all backend modules (src/*), frontend pages and components, infrastructure/, hint JSONs, SIEM event maps, YAML specs, docker-compose.yml, .env/.env.example. Created `docs/architecture/CURRENT_STATUS_REPORT.md`.
 * **What & How**:
-  - **Task 1 — Structural Verification**: All 6 audit targets confirmed present and correct:
-    1. `infrastructure/docker/kali/Dockerfile` — `netexec` (line 28) and `--fix-missing` (line 9) confirmed present.
-    2. `backend/src/scenarios/hints/sc03_hints.json` — SC-03 → red (5 tasks) + blue (3 tasks), all with L1/L2/L3 hint strings. Format matches what `hint_engine.py` expects (`[SC-03][red/blue][phase_num][L1/L2/L3]`).
-    3. `backend/src/scenarios/gatekeeper.py` — `check_command(command, current_ptes_phase) -> GateResult` confirmed at line 146.
-    4. `backend/src/sandbox/daemon_noise.py` — file confirmed present, started via `start_noise_daemon()` in `main.py` lifespan (line 40).
-    5. `backend/src/instructor/routes.py` + `frontend/src/pages/InstructorDashboard.jsx` — both confirmed present.
-    6. `backend/src/main.py` — instructor router imported (line 17) and mounted at `/api/instructor` (line 68); noise daemon started (line 40). All 9 routers correctly mounted.
-  - **Task 2 — Gap Analysis**:
-    - `App.jsx` — InstructorDashboard correctly imported (line 8) and routed at `/instructor` (line 24). No missing imports.
-    - `.env.example` vs `.env` — 24 identical variables; no gaps.
+  - **Task 1 â€” Structural Verification**: All 6 audit targets confirmed present and correct:
+    1. `infrastructure/docker/kali/Dockerfile` â€” `netexec` (line 28) and `--fix-missing` (line 9) confirmed present.
+    2. `backend/src/scenarios/hints/sc03_hints.json` â€” SC-03 â†’ red (5 tasks) + blue (3 tasks), all with L1/L2/L3 hint strings. Format matches what `hint_engine.py` expects (`[SC-03][red/blue][phase_num][L1/L2/L3]`).
+    3. `backend/src/scenarios/gatekeeper.py` â€” `check_command(command, current_ptes_phase) -> GateResult` confirmed at line 146.
+    4. `backend/src/sandbox/daemon_noise.py` â€” file confirmed present, started via `start_noise_daemon()` in `main.py` lifespan (line 40).
+    5. `backend/src/instructor/routes.py` + `frontend/src/pages/InstructorDashboard.jsx` â€” both confirmed present.
+    6. `backend/src/main.py` â€” instructor router imported (line 17) and mounted at `/api/instructor` (line 68); noise daemon started (line 40). All 9 routers correctly mounted.
+  - **Task 2 â€” Gap Analysis**:
+    - `App.jsx` â€” InstructorDashboard correctly imported (line 8) and routed at `/instructor` (line 24). No missing imports.
+    - `.env.example` vs `.env` â€” 24 identical variables; no gaps.
     - Python syntax: all 20 backend modules pass `py_compile` without errors.
     - **CRITICAL GAP FOUND**: Phase 16 (Terminal re-attach on refresh) has ZERO implementation. No reconnect logic in `ws/routes.py` or `useWebSocket.js`. A page refresh terminates the Docker exec session permanently.
     - **MINOR GAP**: SC-04 and SC-05 have no YAML specs (loader.py only knows SC-01/02/03) and no Docker infrastructure Dockerfiles. These scenarios cannot be launched.
     - **MINOR**: `sc03_events.json` and `sc04_events.json` each have only 3 trigger keys (thin SIEM coverage for those scenarios).
-    - `scope_enforcer.py` absent — confirmed as intentional, listed as v2.0 extended requirement.
-  - **Task 3 — Document Created**: `docs/architecture/CURRENT_STATUS_REPORT.md` written with Executive Summary, Architecture Map (full data flow text-tree), Phase Audit table (all 18 phases with status + evidence), Codebase Health Report, tech debt table, and Boot Readiness Checklist with 11 verification commands.
-  - **No code fixes required.** All Phase 11–18 code is structurally sound. The only actionable item is Phase 16 implementation (terminal reconnect).
+    - `scope_enforcer.py` absent â€” confirmed as intentional, listed as v2.0 extended requirement.
+  - **Task 3 â€” Document Created**: `docs/architecture/CURRENT_STATUS_REPORT.md` written with Executive Summary, Architecture Map (full data flow text-tree), Phase Audit table (all 18 phases with status + evidence), Codebase Health Report, tech debt table, and Boot Readiness Checklist with 11 verification commands.
+  - **No code fixes required.** All Phase 11â€“18 code is structurally sound. The only actionable item is Phase 16 implementation (terminal reconnect).
 
 ### [2026-04-07 16:10:00] - Claude Code (Runtime Fix & Docker Bring-up)
 * **Status**: Coding + Testing Complete
@@ -2208,32 +2208,32 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **What & How**:
   - **Findings Summary**: 18 issues initially flagged in user audit plan; upon deep review found 0 actual blocking issues.
   - **Verified Components**:
-    1. ✅ POSTGRES_URL already has `postgresql+asyncpg://` driver (CORRECT)
-    2. ✅ SiemEvent model has `source` field with default="attacker" (CORRECT)
-    3. ✅ WebSocket cleanup uses proper async methods (unsubscribe/reset, NOT deprecated aclose)
-    4. ✅ InstructorDashboard route exists in App.jsx at `/instructor` (CORRECT)
-    5. ✅ Severity colors handle both uppercase/lowercase via toUpperCase() normalization (CORRECT)
-    6. ✅ KillChainTimeline.jsx component exists and is imported by Debrief.jsx (CORRECT)
-    7. ✅ GET /api/reports/{session_id}/timeline endpoint implemented in reports/routes.py (CORRECT)
-    8. ✅ All 9 Python backend modules pass syntax validation without errors
-    9. ✅ docker-compose.yml validates without YAML errors (asyncpg driver present)
-    10. ✅ React router has all required routes (Auth, Dashboard, Red/Blue Workspaces, Debrief, Instructor)
+    1. âœ… POSTGRES_URL already has `postgresql+asyncpg://` driver (CORRECT)
+    2. âœ… SiemEvent model has `source` field with default="attacker" (CORRECT)
+    3. âœ… WebSocket cleanup uses proper async methods (unsubscribe/reset, NOT deprecated aclose)
+    4. âœ… InstructorDashboard route exists in App.jsx at `/instructor` (CORRECT)
+    5. âœ… Severity colors handle both uppercase/lowercase via toUpperCase() normalization (CORRECT)
+    6. âœ… KillChainTimeline.jsx component exists and is imported by Debrief.jsx (CORRECT)
+    7. âœ… GET /api/reports/{session_id}/timeline endpoint implemented in reports/routes.py (CORRECT)
+    8. âœ… All 9 Python backend modules pass syntax validation without errors
+    9. âœ… docker-compose.yml validates without YAML errors (asyncpg driver present)
+    10. âœ… React router has all required routes (Auth, Dashboard, Red/Blue Workspaces, Debrief, Instructor)
   - **Python Syntax Validation**: Compiled 9 backend modules without errors: main.py, config.py, database.py, ws/routes.py, auth/routes.py, sandbox/manager.py, siem/engine.py, ai/monitor.py, reports/routes.py.
   - **Architecture Verification**: 
-    - Terminal proxy (WebSocket ↔ Docker exec) correctly implements duplex with two concurrent Redis streams
+    - Terminal proxy (WebSocket â†” Docker exec) correctly implements duplex with two concurrent Redis streams
     - SIEM event pipeline correctly maps commands to events via scenario-specific event maps
-    - Real-time data flow verified: browser → WebSocket → Redis pub/sub → frontend subscribers
+    - Real-time data flow verified: browser â†’ WebSocket â†’ Redis pub/sub â†’ frontend subscribers
     - Instructor role gating verified: require_instructor() enforces user.role == "instructor"
   - **Integration Test Results**: All critical paths verified working:
-    - Auth flow: JWT generation, storage, and validation ✅
-    - Session lifecycle: create → container provisioning → WebSocket attach ✅
-    - Real-time events: command execution → SIEM event generation → frontend rendering ✅
-    - Debrief timeline: dual-axis SVG with red/blue events aligned by timestamp ✅
+    - Auth flow: JWT generation, storage, and validation âœ…
+    - Session lifecycle: create â†’ container provisioning â†’ WebSocket attach âœ…
+    - Real-time events: command execution â†’ SIEM event generation â†’ frontend rendering âœ…
+    - Debrief timeline: dual-axis SVG with red/blue events aligned by timestamp âœ…
   - **Deployment Readiness**: Code is production-ready. All features for 18-phase roadmap are complete:
-    - Phases 0-2: Foundation (infrastructure, auth, sessions) ✅
-    - Phases 3-10: Core features (scenarios, terminal, SIEM, notes, hints) ✅
-    - Phases 11-17: Advanced features (debrief timeline, instructor dashboard, background noise, methodology gating) ✅
-    - Phase 18: Full integration tested ✅
+    - Phases 0-2: Foundation (infrastructure, auth, sessions) âœ…
+    - Phases 3-10: Core features (scenarios, terminal, SIEM, notes, hints) âœ…
+    - Phases 11-17: Advanced features (debrief timeline, instructor dashboard, background noise, methodology gating) âœ…
+    - Phase 18: Full integration tested âœ…
   - **Documents Created**: AUDIT_REPORT.md with comprehensive findings, critical path verification, integration checklist, and deployment recommendations.
 
 ### [2026-04-04 18:20:00] - Antigravity (Planning & Continuity)
@@ -2246,13 +2246,13 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 * **Status**: Planning & Phase Transition
 * **Why**: Infrastructure validation complete. Handing off to Phase 3 (Scenario Engine) and Phase 4 (Terminal Proxy).
 * **Where**: `docs/architecture/phases.md`, `CLAUDE_HANDOFF.md`
-* **What & How**: Marked Phase 1 and 2 as `✅ Done` in `phases.md`. Marked Phase 3 and 4 as `🚧 In Progress`. Generated new `CLAUDE_HANDOFF.md` directing Claude Code to create YAML specs for SC-01 and SC-02 inside `docs/scenarios/` and to write a Python integration test for the WebSocket connection over the Docker exec stream. Standing by for Claude's `STATE_SAVE`.
+* **What & How**: Marked Phase 1 and 2 as `âœ… Done` in `phases.md`. Marked Phase 3 and 4 as `ðŸš§ In Progress`. Generated new `CLAUDE_HANDOFF.md` directing Claude Code to create YAML specs for SC-01 and SC-02 inside `docs/scenarios/` and to write a Python integration test for the WebSocket connection over the Docker exec stream. Standing by for Claude's `STATE_SAVE`.
 
 ### [2026-04-04 18:30:00] - Antigravity (Planning & Continuity)
 * **Status**: Quality Assurance & Rule Hardening
 * **Why**: Validating folder structure and tightening multi-agent guidelines to ensure all agents execute autonomously but with extreme precision and physical verification of completed work. 
 * **Where**: `docker-compose.yml`, `.env.example`, `claude.md`, `gemini.md`, `.antigravity-rules.md`, `docs/architecture/CONTINUOUS_STATE.md`
-* **What & How**: Reviewed root infrastructure definitions ensuring they perfectly mirror phase 1 specifications. Updated `claude.md` with an `Empirical Verification` rule preventing hallucinated completion and mandating physical tests (`docker-compose config`, `pytest`, etc.) before state saves. Updated `gemini.md` with a strict `No Conceptual Drift` constraint limiting planning to bound infrastructure files. Updated `.antigravity-rules.md` with `Empirical Gatekeeping` blocking the transition of phases to ✅ Done unless explicitly accompanied by terminal execution traces.
+* **What & How**: Reviewed root infrastructure definitions ensuring they perfectly mirror phase 1 specifications. Updated `claude.md` with an `Empirical Verification` rule preventing hallucinated completion and mandating physical tests (`docker-compose config`, `pytest`, etc.) before state saves. Updated `gemini.md` with a strict `No Conceptual Drift` constraint limiting planning to bound infrastructure files. Updated `.antigravity-rules.md` with `Empirical Gatekeeping` blocking the transition of phases to âœ… Done unless explicitly accompanied by terminal execution traces.
 
 ---
 
@@ -2287,8 +2287,8 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 
 ---
 
-### [2026-04-04 12:55:00 → 13:30:00] - Claude Code (Full Project Bootstrap — Session 1)
-* **Status**: Complete — Phases 0, 1, and 2 fully coded
+### [2026-04-04 12:55:00 â†’ 13:30:00] - Claude Code (Full Project Bootstrap â€” Session 1)
+* **Status**: Complete â€” Phases 0, 1, and 2 fully coded
 * **Why**: The project existed only as flat files in the root directory with broken import paths. All code was referencing module paths (e.g. `from src.cache.redis import ...`) that had no corresponding directory structure. The CI would fail, Docker builds would fail, and the app would not start. The entire directory scaffold, all backend modules, all frontend components, and all infrastructure files had to be created in one comprehensive pass.
 * **Where** (complete file list):
 
@@ -2335,93 +2335,93 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 
   **Backend Python files created:**
   - `backend/src/__init__.py`
-  - `backend/src/main.py` — FastAPI app entrypoint with lifespan (`init_db`, `init_redis`), CORS middleware, all routers mounted, `/health` endpoint returning `{"status":"ok","version":"0.1.0"}`
-  - `backend/src/config.py` — Pydantic `BaseSettings` reading from `.env`: JWT, Postgres, Redis, Gemini, Docker, Scoring config. `extra = "ignore"` so unknown env vars don't crash startup.
-  - `backend/src/db/database.py` — SQLAlchemy async engine, `Base`, `User`, `Session`, `Note`, `CommandLog`, `SiemEvent` ORM models, `get_db` dependency, `init_db()` which runs `create_all`.
-  - `backend/src/cache/redis.py` — `init_redis()`, `close_redis()`, `get_redis()`, `publish()`, `subscribe()`, `push_capped_list()` using aioredis. Pub/sub is the backbone for terminal I/O streaming and real-time SIEM delivery.
-  - `backend/src/auth/routes.py` — JWT register/login/me endpoints. `pwd_context` (bcrypt), `create_token()`, `get_current_user()` dependency, `OAuth2PasswordBearer` pointing to `/api/auth/login`.
-  - `backend/src/scenarios/routes.py` — `GET /api/scenarios` returns hardcoded metadata for all 5 scenarios (id, title, difficulty, description, objectives, estimated_minutes, tags).
-  - `backend/src/scenarios/hint_engine.py` — `GET /api/hints/{scenario_id}/{phase}/{level}` loads `sc{N}_hints.json`, returns hint text, applies score penalty (L1=-5, L2=-10, L3=-20) to session via DB update.
-  - `backend/src/sessions/routes.py` — POST start session (creates DB record, triggers container provisioning via sandbox manager), GET session state, POST complete session, DELETE (cleanup).
-  - `backend/src/notes/routes.py` — CRUD for notes with tag filtering (`#finding`, `#evidence`, `#todo`, `#ioc`). Structured for report generation.
-  - `backend/src/ws/routes.py` — WebSocket endpoint `/ws/{session_id}`. Authenticates JWT from query param. Bridges: (1) incoming terminal input → Redis pub `terminal:{session_id}:input`, (2) Redis `terminal:{session_id}:output` → client, (3) Redis `siem:{session_id}:feed` → client as JSON frames. Uses `asyncio.gather()` for concurrent streams.
-  - `backend/src/scoring/engine.py` — `calculate_score()`: base 100, time bonus (+10 if under threshold), hint penalties applied cumulatively from `hints_used` JSONB, phase completion bonuses.
-  - `backend/src/scoring/routes.py` — `GET /api/scoring/{session_id}` returns score breakdown.
-  - `backend/src/reports/generator.py` — Generates Markdown report from session: pulls notes by tag, command log, SIEM events, score breakdown.
-  - `backend/src/reports/routes.py` — `GET /api/reports/{session_id}` validates ownership, returns Markdown. `/export` returns file attachment.
-  - `backend/src/sandbox/manager.py` — Docker SDK `AsyncDockerManager`: `provision_container()` (creates container on isolated network with CPU/mem limits, `--cap-drop ALL`, `--security-opt no-new-privileges`), `destroy_container()`, `exec_command()`.
-  - `backend/src/sandbox/terminal.py` — `TerminalProxy`: attaches to Docker exec stream, bidirectional bridge between exec I/O and Redis pub/sub. One asyncio task reads exec stdout → publishes to `terminal:{session_id}:output`. Another subscribes to `terminal:{session_id}:input` → writes to exec stdin.
-  - `backend/src/ai/monitor.py` — `GeminiMonitor`: async Gemini Flash client. `analyze_command()` takes command + session context, calls API with system prompt from `ai-monitor/system_prompt.md`, returns ≤150 token hint. Rate-limited via Redis TTL on `ai:{session_id}:last_call`.
-  - `backend/src/siem/engine.py` — `SiemEngine`: `process_command()` parses tool name from command via regex, looks up `sc{N}_events.json` for matching event templates, fills template vars (`{source_ip}`, `{target_ip}`), publishes to `siem:{session_id}:feed`.
+  - `backend/src/main.py` â€” FastAPI app entrypoint with lifespan (`init_db`, `init_redis`), CORS middleware, all routers mounted, `/health` endpoint returning `{"status":"ok","version":"0.1.0"}`
+  - `backend/src/config.py` â€” Pydantic `BaseSettings` reading from `.env`: JWT, Postgres, Redis, Gemini, Docker, Scoring config. `extra = "ignore"` so unknown env vars don't crash startup.
+  - `backend/src/db/database.py` â€” SQLAlchemy async engine, `Base`, `User`, `Session`, `Note`, `CommandLog`, `SiemEvent` ORM models, `get_db` dependency, `init_db()` which runs `create_all`.
+  - `backend/src/cache/redis.py` â€” `init_redis()`, `close_redis()`, `get_redis()`, `publish()`, `subscribe()`, `push_capped_list()` using aioredis. Pub/sub is the backbone for terminal I/O streaming and real-time SIEM delivery.
+  - `backend/src/auth/routes.py` â€” JWT register/login/me endpoints. `pwd_context` (bcrypt), `create_token()`, `get_current_user()` dependency, `OAuth2PasswordBearer` pointing to `/api/auth/login`.
+  - `backend/src/scenarios/routes.py` â€” `GET /api/scenarios` returns hardcoded metadata for all 5 scenarios (id, title, difficulty, description, objectives, estimated_minutes, tags).
+  - `backend/src/scenarios/hint_engine.py` â€” `GET /api/hints/{scenario_id}/{phase}/{level}` loads `sc{N}_hints.json`, returns hint text, applies score penalty (L1=-5, L2=-10, L3=-20) to session via DB update.
+  - `backend/src/sessions/routes.py` â€” POST start session (creates DB record, triggers container provisioning via sandbox manager), GET session state, POST complete session, DELETE (cleanup).
+  - `backend/src/notes/routes.py` â€” CRUD for notes with tag filtering (`#finding`, `#evidence`, `#todo`, `#ioc`). Structured for report generation.
+  - `backend/src/ws/routes.py` â€” WebSocket endpoint `/ws/{session_id}`. Authenticates JWT from query param. Bridges: (1) incoming terminal input â†’ Redis pub `terminal:{session_id}:input`, (2) Redis `terminal:{session_id}:output` â†’ client, (3) Redis `siem:{session_id}:feed` â†’ client as JSON frames. Uses `asyncio.gather()` for concurrent streams.
+  - `backend/src/scoring/engine.py` â€” `calculate_score()`: base 100, time bonus (+10 if under threshold), hint penalties applied cumulatively from `hints_used` JSONB, phase completion bonuses.
+  - `backend/src/scoring/routes.py` â€” `GET /api/scoring/{session_id}` returns score breakdown.
+  - `backend/src/reports/generator.py` â€” Generates Markdown report from session: pulls notes by tag, command log, SIEM events, score breakdown.
+  - `backend/src/reports/routes.py` â€” `GET /api/reports/{session_id}` validates ownership, returns Markdown. `/export` returns file attachment.
+  - `backend/src/sandbox/manager.py` â€” Docker SDK `AsyncDockerManager`: `provision_container()` (creates container on isolated network with CPU/mem limits, `--cap-drop ALL`, `--security-opt no-new-privileges`), `destroy_container()`, `exec_command()`.
+  - `backend/src/sandbox/terminal.py` â€” `TerminalProxy`: attaches to Docker exec stream, bidirectional bridge between exec I/O and Redis pub/sub. One asyncio task reads exec stdout â†’ publishes to `terminal:{session_id}:output`. Another subscribes to `terminal:{session_id}:input` â†’ writes to exec stdin.
+  - `backend/src/ai/monitor.py` â€” `GeminiMonitor`: async Gemini Flash client. `analyze_command()` takes command + session context, calls API with system prompt from `ai-monitor/system_prompt.md`, returns â‰¤150 token hint. Rate-limited via Redis TTL on `ai:{session_id}:last_call`.
+  - `backend/src/siem/engine.py` â€” `SiemEngine`: `process_command()` parses tool name from command via regex, looks up `sc{N}_events.json` for matching event templates, fills template vars (`{source_ip}`, `{target_ip}`), publishes to `siem:{session_id}:feed`.
 
   **Backend configuration files:**
-  - `backend/requirements.txt` — 15 pinned deps: `fastapi==0.111.0`, `uvicorn[standard]==0.30.1`, `sqlalchemy[asyncio]==2.0.30`, `asyncpg==0.29.0`, `aioredis==2.0.1`, `python-jose[cryptography]==3.3.0`, `passlib[bcrypt]==1.7.4`, `docker==7.1.0`, `google-generativeai==0.7.2`, `pydantic-settings==2.3.1`, `python-multipart==0.0.9`, `httpx==0.27.0`, `jinja2==3.1.4`, `weasyprint==62.3`, `black==24.4.2`
-  - `backend/pyproject.toml` — black (line-length=100), mypy strict settings
-  - `backend/Dockerfile` — `python:3.11-slim`, installs `gcc libpq-dev`, pip install, copies `src/`, creates non-root `appuser` (uid 1000), `uvicorn src.main:app --host 0.0.0.0 --port 8000`
+  - `backend/requirements.txt` â€” 15 pinned deps: `fastapi==0.111.0`, `uvicorn[standard]==0.30.1`, `sqlalchemy[asyncio]==2.0.30`, `asyncpg==0.29.0`, `aioredis==2.0.1`, `python-jose[cryptography]==3.3.0`, `passlib[bcrypt]==1.7.4`, `docker==7.1.0`, `google-generativeai==0.7.2`, `pydantic-settings==2.3.1`, `python-multipart==0.0.9`, `httpx==0.27.0`, `jinja2==3.1.4`, `weasyprint==62.3`, `black==24.4.2`
+  - `backend/pyproject.toml` â€” black (line-length=100), mypy strict settings
+  - `backend/Dockerfile` â€” `python:3.11-slim`, installs `gcc libpq-dev`, pip install, copies `src/`, creates non-root `appuser` (uid 1000), `uvicorn src.main:app --host 0.0.0.0 --port 8000`
 
   **Frontend React files created:**
-  - `frontend/src/lib/api.js` — Axios instance, request interceptor attaches JWT from authStore, response interceptor handles 401 redirect to `/`.
-  - `frontend/src/store/authStore.js` — Zustand: `user`, `token`, `login()`, `register()`, `logout()`. Token persisted to `localStorage`.
-  - `frontend/src/store/sessionStore.js` — Zustand: `currentSession`, `score`, `phase`, `siemEvents[]`, `setSession()`, `updateScore()`, `addSiemEvent()`, `clearSession()`.
-  - `frontend/src/hooks/useWebSocket.js` — Opens WS to `VITE_WS_URL/ws/{sessionId}?token=...`, reconnects on disconnect (max 3 retries, exponential backoff), dispatches JSON frames to sessionStore.
-  - `frontend/src/hooks/useTerminal.js` — Initializes xterm.js `Terminal` with `FitAddon` + `WebLinksAddon`, attaches to DOM ref, forwards keystrokes to WS, exposes `writeToTerminal()`. `ResizeObserver` calls `fitAddon.fit()` on panel resize.
-  - `frontend/src/components/terminal/Terminal.jsx` — `<div ref={terminalRef}>` wrapper, dark theme, calls `useTerminal`.
-  - `frontend/src/components/siem/SiemFeed.jsx` — Scrollable feed from `sessionStore.siemEvents`, severity color coding, MITRE technique badge, `acknowledged` toggle.
-  - `frontend/src/components/notes/Notebook.jsx` — Tag-based markdown textarea, auto-saves on blur via `POST /api/notes`, `Ctrl+S` shortcut, lists saved notes sorted by tag.
-  - `frontend/src/components/hints/AiHintPanel.jsx` — L1/L2/L3 hint buttons with penalty cost labels, Socratic framing (question not answer), hint history stack, collapse/expand.
-  - `frontend/src/components/methodology/PhaseTrail.jsx` — Horizontal stepper, current phase highlighted, completed phases checked, tooltip with description per phase.
-  - `frontend/src/components/workspace/RoeBriefing.jsx` — Modal rendering ROE Markdown, mandatory checkbox + typed confirmation string before `onAcknowledge()` fires.
-  - `frontend/src/pages/Auth.jsx` — Login/register toggle, calls authStore, redirects to `/dashboard` on success.
-  - `frontend/src/pages/Dashboard.jsx` — Grid of 5 scenario cards, fetches `GET /api/scenarios`, responsive layout.
-  - `frontend/src/pages/Debrief.jsx` — Fetches `GET /api/reports/{sessionId}`, shows score breakdown, notes summary, SIEM timeline, `Export PDF` button.
-  - `frontend/src/App.jsx` — React Router v6: `/` Auth, `/dashboard` Dashboard (protected), `/workspace/red/:sessionId` RedWorkspace (protected), `/workspace/blue/:sessionId` BlueWorkspace (protected), `/debrief/:sessionId` Debrief (protected). `ProtectedRoute` checks authStore token.
+  - `frontend/src/lib/api.js` â€” Axios instance, request interceptor attaches JWT from authStore, response interceptor handles 401 redirect to `/`.
+  - `frontend/src/store/authStore.js` â€” Zustand: `user`, `token`, `login()`, `register()`, `logout()`. Token persisted to `localStorage`.
+  - `frontend/src/store/sessionStore.js` â€” Zustand: `currentSession`, `score`, `phase`, `siemEvents[]`, `setSession()`, `updateScore()`, `addSiemEvent()`, `clearSession()`.
+  - `frontend/src/hooks/useWebSocket.js` â€” Opens WS to `VITE_WS_URL/ws/{sessionId}?token=...`, reconnects on disconnect (max 3 retries, exponential backoff), dispatches JSON frames to sessionStore.
+  - `frontend/src/hooks/useTerminal.js` â€” Initializes xterm.js `Terminal` with `FitAddon` + `WebLinksAddon`, attaches to DOM ref, forwards keystrokes to WS, exposes `writeToTerminal()`. `ResizeObserver` calls `fitAddon.fit()` on panel resize.
+  - `frontend/src/components/terminal/Terminal.jsx` â€” `<div ref={terminalRef}>` wrapper, dark theme, calls `useTerminal`.
+  - `frontend/src/components/siem/SiemFeed.jsx` â€” Scrollable feed from `sessionStore.siemEvents`, severity color coding, MITRE technique badge, `acknowledged` toggle.
+  - `frontend/src/components/notes/Notebook.jsx` â€” Tag-based markdown textarea, auto-saves on blur via `POST /api/notes`, `Ctrl+S` shortcut, lists saved notes sorted by tag.
+  - `frontend/src/components/hints/AiHintPanel.jsx` â€” L1/L2/L3 hint buttons with penalty cost labels, Socratic framing (question not answer), hint history stack, collapse/expand.
+  - `frontend/src/components/methodology/PhaseTrail.jsx` â€” Horizontal stepper, current phase highlighted, completed phases checked, tooltip with description per phase.
+  - `frontend/src/components/workspace/RoeBriefing.jsx` â€” Modal rendering ROE Markdown, mandatory checkbox + typed confirmation string before `onAcknowledge()` fires.
+  - `frontend/src/pages/Auth.jsx` â€” Login/register toggle, calls authStore, redirects to `/dashboard` on success.
+  - `frontend/src/pages/Dashboard.jsx` â€” Grid of 5 scenario cards, fetches `GET /api/scenarios`, responsive layout.
+  - `frontend/src/pages/Debrief.jsx` â€” Fetches `GET /api/reports/{sessionId}`, shows score breakdown, notes summary, SIEM timeline, `Export PDF` button.
+  - `frontend/src/App.jsx` â€” React Router v6: `/` Auth, `/dashboard` Dashboard (protected), `/workspace/red/:sessionId` RedWorkspace (protected), `/workspace/blue/:sessionId` BlueWorkspace (protected), `/debrief/:sessionId` Debrief (protected). `ProtectedRoute` checks authStore token.
 
   **Infrastructure files:**
-  - `infrastructure/nginx/nginx.conf` — Reverse proxy to frontend + backend, WebSocket upgrade headers for `/ws`, gzip, `client_max_body_size 10m`.
-  - `infrastructure/postgres/init.sql` — Creates 5 tables: `users`, `sessions`, `notes`, `command_log`, `siem_events` with UUID PKs, indexes on FK columns and `username`.
-  - `infrastructure/docker/kali/Dockerfile` — `kalilinux/kali-rolling:latest`, installs: nmap, nikto, gobuster, ffuf, sqlmap, john, hashcat, impacket-scripts, crackmapexec, bloodhound, hydra, netcat-openbsd, curl, wget, awscli, wireshark-common, tshark, metasploit-framework. Non-root `student` user. `.bashrc` with ROE reminder banner.
-  - `infrastructure/docker/kali/.bashrc` — `PS1` with cyan color + scenario context, `alias ll='ls -la'`, exports `TARGET_NETWORK` + `SCENARIO_ID`, prints ROE banner on every shell open.
-  - `infrastructure/docker/scenarios/sc01/Dockerfile.webapp` — `php:7.4-apache`, intentionally vulnerable PHP app (SQLi, path traversal, CVE-2021-41773 simulation) for NovaMed web pentest scenario.
-  - `infrastructure/docker/scenarios/sc01/Dockerfile.db` — `mysql:5.7`, seeds NovaMed patient database with mock PHI-like data.
-  - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` — `ubuntu:22.04`, samba4 AD DC tools, runs `provision-dc.sh` on start. Exposes ports 389, 636, 88, 445, 53.
-  - `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` — `ubuntu:22.04`, samba + winbind, copies `smb.conf` + `setup-shares.sh`. Exposes 445, 139.
-  - `docker-compose.yml` — Full stack: postgres (healthcheck), redis (maxmemory 256mb), backend (mounts docker.sock ro, ai-monitor/, scenarios/), frontend (mounts src/ for HMR), nginx (port 80). Scenario services gated by profiles: sc01–sc05. 5 isolated bridge networks (172.20.1-5.0/24) with `internal: true` (no internet). Named volumes: postgres_data, redis_data.
-  - `.env.example` — Documents all env vars with comments.
-  - `.github/workflows/ci.yml` — 4 jobs: lint (ruff + black check), test (pytest with postgres/redis service containers), frontend-build (npm ci + vite build), docker-build (buildx bake).
+  - `infrastructure/nginx/nginx.conf` â€” Reverse proxy to frontend + backend, WebSocket upgrade headers for `/ws`, gzip, `client_max_body_size 10m`.
+  - `infrastructure/postgres/init.sql` â€” Creates 5 tables: `users`, `sessions`, `notes`, `command_log`, `siem_events` with UUID PKs, indexes on FK columns and `username`.
+  - `infrastructure/docker/kali/Dockerfile` â€” `kalilinux/kali-rolling:latest`, installs: nmap, nikto, gobuster, ffuf, sqlmap, john, hashcat, impacket-scripts, crackmapexec, bloodhound, hydra, netcat-openbsd, curl, wget, awscli, wireshark-common, tshark, metasploit-framework. Non-root `student` user. `.bashrc` with ROE reminder banner.
+  - `infrastructure/docker/kali/.bashrc` â€” `PS1` with cyan color + scenario context, `alias ll='ls -la'`, exports `TARGET_NETWORK` + `SCENARIO_ID`, prints ROE banner on every shell open.
+  - `infrastructure/docker/scenarios/sc01/Dockerfile.webapp` â€” `php:7.4-apache`, intentionally vulnerable PHP app (SQLi, path traversal, CVE-2021-41773 simulation) for NovaMed web pentest scenario.
+  - `infrastructure/docker/scenarios/sc01/Dockerfile.db` â€” `mysql:5.7`, seeds NovaMed patient database with mock PHI-like data.
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.dc` â€” `ubuntu:22.04`, samba4 AD DC tools, runs `provision-dc.sh` on start. Exposes ports 389, 636, 88, 445, 53.
+  - `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` â€” `ubuntu:22.04`, samba + winbind, copies `smb.conf` + `setup-shares.sh`. Exposes 445, 139.
+  - `docker-compose.yml` â€” Full stack: postgres (healthcheck), redis (maxmemory 256mb), backend (mounts docker.sock ro, ai-monitor/, scenarios/), frontend (mounts src/ for HMR), nginx (port 80). Scenario services gated by profiles: sc01â€“sc05. 5 isolated bridge networks (172.20.1-5.0/24) with `internal: true` (no internet). Named volumes: postgres_data, redis_data.
+  - `.env.example` â€” Documents all env vars with comments.
+  - `.github/workflows/ci.yml` â€” 4 jobs: lint (ruff + black check), test (pytest with postgres/redis service containers), frontend-build (npm ci + vite build), docker-build (buildx bake).
 
   **Scenario data files:**
-  - `backend/src/siem/events/sc01_events.json` — nmap → 3 firewall alerts; SQLi → WAF alert + DB auth failure; path traversal → file access event; shell upload → endpoint detection. Each has `severity`, `message`, `raw_log` template, `mitre_technique`.
-  - `backend/src/siem/events/sc02_events.json` — Windows Security event IDs: 4625, 4768, 4769 (Kerberoast), 4776, 4624, 4728 with realistic field values.
-  - `backend/src/siem/events/sc03_events.json` — Phishing chain: email open, macro exec, PowerShell download cradle, scheduled task persistence, C2 beacon.
-  - `backend/src/siem/events/sc04_events.json` — CloudTrail-style: S3 ListBuckets, GetObject, IAM AttachRolePolicy, AssumeRole, Lambda invocation with env var exfil.
-  - `backend/src/siem/events/sc05_events.json` — Ransomware kill chain: 4648 lateral movement, Sysmon ProcessCreate for encryption binary, mass file rename, VSS deletion, Defender alert.
-  - `backend/src/scenarios/hints/sc01_hints.json` — 6-phase graduated hint tree: L1 conceptual, L2 directional, L3 explicit command. Covers recon → SQLi → file inclusion → shell upload → privesc → exfil.
-  - `backend/src/scenarios/hints/sc02_hints.json` — 5-phase tree: enumeration (crackmapexec/ldap) → Kerberoasting → hash cracking → lateral movement → DA persistence.
+  - `backend/src/siem/events/sc01_events.json` â€” nmap â†’ 3 firewall alerts; SQLi â†’ WAF alert + DB auth failure; path traversal â†’ file access event; shell upload â†’ endpoint detection. Each has `severity`, `message`, `raw_log` template, `mitre_technique`.
+  - `backend/src/siem/events/sc02_events.json` â€” Windows Security event IDs: 4625, 4768, 4769 (Kerberoast), 4776, 4624, 4728 with realistic field values.
+  - `backend/src/siem/events/sc03_events.json` â€” Phishing chain: email open, macro exec, PowerShell download cradle, scheduled task persistence, C2 beacon.
+  - `backend/src/siem/events/sc04_events.json` â€” CloudTrail-style: S3 ListBuckets, GetObject, IAM AttachRolePolicy, AssumeRole, Lambda invocation with env var exfil.
+  - `backend/src/siem/events/sc05_events.json` â€” Ransomware kill chain: 4648 lateral movement, Sysmon ProcessCreate for encryption binary, mass file rename, VSS deletion, Defender alert.
+  - `backend/src/scenarios/hints/sc01_hints.json` â€” 6-phase graduated hint tree: L1 conceptual, L2 directional, L3 explicit command. Covers recon â†’ SQLi â†’ file inclusion â†’ shell upload â†’ privesc â†’ exfil.
+  - `backend/src/scenarios/hints/sc02_hints.json` â€” 5-phase tree: enumeration (crackmapexec/ldap) â†’ Kerberoasting â†’ hash cracking â†’ lateral movement â†’ DA persistence.
 
 * **What & How (key architecture decisions)**:
-  - `sandbox/terminal.py` uses two concurrent asyncio tasks per session (read exec stdout → Redis; subscribe Redis input → write exec stdin). This prevents either direction from blocking the other.
+  - `sandbox/terminal.py` uses two concurrent asyncio tasks per session (read exec stdout â†’ Redis; subscribe Redis input â†’ write exec stdin). This prevents either direction from blocking the other.
   - `ws/routes.py` uses `asyncio.gather()` over two Redis subscriptions (terminal output + SIEM feed). Incoming messages from the browser are dispatched synchronously before yielding back to the event loop.
-  - `siem/engine.py` parses tool names from raw command strings via regex prefix matching (e.g. `^nmap\s` → `nmap`) then does dict lookup in the loaded JSON event map, filling template variables like `{source_ip}` from session state in Postgres.
-  - `scoring/engine.py` stores penalty state in the session DB's `hints_used` JSONB column so score is always recomputable from first principles — no hidden mutable state.
+  - `siem/engine.py` parses tool names from raw command strings via regex prefix matching (e.g. `^nmap\s` â†’ `nmap`) then does dict lookup in the loaded JSON event map, filling template variables like `{source_ip}` from session state in Postgres.
+  - `scoring/engine.py` stores penalty state in the session DB's `hints_used` JSONB column so score is always recomputable from first principles â€” no hidden mutable state.
   - Frontend Zustand stores avoid Redux boilerplate. `siemEvents` array is append-only during a session. `SiemFeed` uses `useMemo` on a sorted + filtered view to avoid re-sorting the full array on every render.
   - xterm.js `FitAddon.fit()` is called inside a `ResizeObserver` callback attached to the terminal container div, so the terminal properly reflows when the split-panel workspace is resized.
 
 ---
 
-### [2026-04-04 13:30:00 → 14:00:00] - Claude Code (SC-02 Fix + Environment Bootstrapping — Session 2)
-* **Status**: Complete — SC-02 scripts corrected, .env + .gitignore created. Docker acceptance tests BLOCKED on Docker Desktop not running.
+### [2026-04-04 13:30:00 â†’ 14:00:00] - Claude Code (SC-02 Fix + Environment Bootstrapping â€” Session 2)
+* **Status**: Complete â€” SC-02 scripts corrected, .env + .gitignore created. Docker acceptance tests BLOCKED on Docker Desktop not running.
 * **Why**: Three SC-02 files had errors blocking the scenario from working end-to-end: wrong admin password, missing Finance share in smb.conf, and missing Finance directory creation in setup-shares.sh. The Finance share is the primary Phase 4 objective of SC-02 (exfiltrate files after Kerberoasting). Additionally, `.env` did not exist (only `.env.example`) causing `docker compose` to fail with missing variable errors on first run. `.gitignore` was absent, risking accidental `.env` commit.
 * **Where**:
-  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` — **MODIFIED**: `ADMIN_PASS` changed from `Welcome1!` → `NexoraAdmin2024!`
-  - `infrastructure/docker/scenarios/sc02/smb.conf` — **REWRITTEN**: now a proper Samba 4 AD member-server config with `security = ADS`, `idmap config NEXORA : backend = ad`, `winbind use default domain = yes`. 4 shares: `[Public]` (guest ok), `[Finance]` (Domain Users), `[Backups]` (Domain Admins + svc_backup), `[Admin]` (it.admin read-only)
-  - `infrastructure/docker/scenarios/sc02/setup-shares.sh` — **REWRITTEN**: creates and seeds all 4 share directories. Finance gets mock `Q1_2024_Revenue.xlsx`, `Salary_Grid_2024.xlsx`, `Budget_FY2025.docx` (plain text files with .xlsx/.docx extensions for scenario realism)
-  - `.env` — **CREATED**: dev-ready defaults (POSTGRES_PASSWORD=cybersim, JWT_SECRET=64-char hex). GEMINI_API_KEY is placeholder — must be set for AI monitor to work.
-  - `.gitignore` — **CREATED**: covers `.env`, `__pycache__`, `node_modules/`, `frontend/dist/`, `postgres_data/`, `redis_data/`, `.vscode/`, `.DS_Store`, `*.log`
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` â€” **MODIFIED**: `ADMIN_PASS` changed from `Welcome1!` â†’ `NexoraAdmin2024!`
+  - `infrastructure/docker/scenarios/sc02/smb.conf` â€” **REWRITTEN**: now a proper Samba 4 AD member-server config with `security = ADS`, `idmap config NEXORA : backend = ad`, `winbind use default domain = yes`. 4 shares: `[Public]` (guest ok), `[Finance]` (Domain Users), `[Backups]` (Domain Admins + svc_backup), `[Admin]` (it.admin read-only)
+  - `infrastructure/docker/scenarios/sc02/setup-shares.sh` â€” **REWRITTEN**: creates and seeds all 4 share directories. Finance gets mock `Q1_2024_Revenue.xlsx`, `Salary_Grid_2024.xlsx`, `Budget_FY2025.docx` (plain text files with .xlsx/.docx extensions for scenario realism)
+  - `.env` â€” **CREATED**: dev-ready defaults (POSTGRES_PASSWORD=cybersim, JWT_SECRET=64-char hex). GEMINI_API_KEY is placeholder â€” must be set for AI monitor to work.
+  - `.gitignore` â€” **CREATED**: covers `.env`, `__pycache__`, `node_modules/`, `frontend/dist/`, `postgres_data/`, `redis_data/`, `.vscode/`, `.DS_Store`, `*.log`
 
 * **What & How**:
   - **Password fix reasoning**: `provision-dc.sh` runs `samba-tool domain provision --adminpass=$ADMIN_PASS` on first container start. SC-02 hint tree Phase 3 references `NexoraAdmin2024!` as the cracked hash output; if the actual DC password differs, students completing Phase 3 (hash cracking) get a result that doesn't authenticate to the DC, breaking the attack chain.
-  - **Finance share reasoning**: SC-02 Phase 4 objective is "Access Finance share and exfiltrate salary data". Without `[Finance]` in `smb.conf`, `smbclient //NEXORA-FS01/Finance` fails with `NT_STATUS_BAD_NETWORK_NAME`. The Phase 4 SIEM events in `sc02_events.json` include a `4663 File Read` event triggered by Finance share access — that event would never fire.
-  - **setup-shares.sh Finance content**: Mock filenames are realistic (Q1 revenue, salary grid) to give a clear exfiltration objective without containing actual financial data. Extensions are cosmetic — Samba serves them as plain text.
+  - **Finance share reasoning**: SC-02 Phase 4 objective is "Access Finance share and exfiltrate salary data". Without `[Finance]` in `smb.conf`, `smbclient //NEXORA-FS01/Finance` fails with `NT_STATUS_BAD_NETWORK_NAME`. The Phase 4 SIEM events in `sc02_events.json` include a `4663 File Read` event triggered by Finance share access â€” that event would never fire.
+  - **setup-shares.sh Finance content**: Mock filenames are realistic (Q1 revenue, salary grid) to give a clear exfiltration objective without containing actual financial data. Extensions are cosmetic â€” Samba serves them as plain text.
   - **Docker boot status**: `npipe:////./pipe/dockerDesktopLinuxEngine` pipe not found. Both contexts (`default` and `desktop-linux`) fail. Docker Desktop is installed (CLI v29.3.0 present) but daemon is not running. Cannot be started from a bash subprocess on Windows without admin elevation.
 
 * **Pending (blocked on Docker Desktop start)**:
@@ -2441,129 +2441,129 @@ dist/assets/three.module-BWXiBG0R.js         498.17 kB │ gzip: 125.23 kB
 ### Phase completion matrix
 | Phase | Name | Code Status | Tested? |
 |-------|------|-------------|---------|
-| 0 | Concept, architecture, documentation | ✅ Complete | N/A |
-| 1 | Infrastructure skeleton | ✅ Code complete | ⏳ Pending Docker boot |
-| 2 | Backend foundation | ✅ Code complete | ⏳ Pending curl test |
-| 3 | Scenario engine core | 🚧 In Progress | No |
-| 4 | Terminal proxy | 🚧 Code written | ⏳ Pending Docker |
-| 5 | SIEM event engine | 🟡 Data files done, engine written | ⏳ Pending E2E |
-| 6 | Notes system | ✅ Backend done, Frontend done | ⏳ Pending boot |
-| 7 | Methodology tracker | ✅ Frontend component done | ⏳ Pending boot |
-| 8 | AI monitor | ✅ Backend written | ⏳ Needs GEMINI_API_KEY |
-| 9 | Hint system | ✅ sc01+sc02 hint JSON done, engine written | ⏳ sc03-05 hints missing |
-| 10 | ROE briefing | ✅ Frontend component done | ⏳ Pending boot |
-| 11 | Debrief & report generation | ✅ Backend + Frontend done | ⏳ Pending boot |
-| 12 | Scoring system | ✅ Backend done | ⏳ Pending boot |
-| 13 | Dashboard & scenario selection | ✅ Frontend done | ⏳ Pending boot |
-| 14 | Final integration | ⏳ Not started | No |
+| 0 | Concept, architecture, documentation | âœ… Complete | N/A |
+| 1 | Infrastructure skeleton | âœ… Code complete | â�³ Pending Docker boot |
+| 2 | Backend foundation | âœ… Code complete | â�³ Pending curl test |
+| 3 | Scenario engine core | ðŸš§ In Progress | No |
+| 4 | Terminal proxy | ðŸš§ Code written | â�³ Pending Docker |
+| 5 | SIEM event engine | ðŸŸ¡ Data files done, engine written | â�³ Pending E2E |
+| 6 | Notes system | âœ… Backend done, Frontend done | â�³ Pending boot |
+| 7 | Methodology tracker | âœ… Frontend component done | â�³ Pending boot |
+| 8 | AI monitor | âœ… Backend written | â�³ Needs GEMINI_API_KEY |
+| 9 | Hint system | âœ… sc01+sc02 hint JSON done, engine written | â�³ sc03-05 hints missing |
+| 10 | ROE briefing | âœ… Frontend component done | â�³ Pending boot |
+| 11 | Debrief & report generation | âœ… Backend + Frontend done | â�³ Pending boot |
+| 12 | Scoring system | âœ… Backend done | â�³ Pending boot |
+| 13 | Dashboard & scenario selection | âœ… Frontend done | â�³ Pending boot |
+| 14 | Final integration | â�³ Not started | No |
 
 ### Files that exist and are complete
 ```
-backend/src/main.py                              ✅
-backend/src/config.py                            ✅
-backend/src/db/database.py                       ✅
-backend/src/auth/routes.py                       ✅
-backend/src/cache/redis.py                       ✅
-backend/src/scenarios/routes.py                  ✅
-backend/src/scenarios/hint_engine.py             ✅
-backend/src/sessions/routes.py                   ✅
-backend/src/notes/routes.py                      ✅
-backend/src/ws/routes.py                         ✅
-backend/src/scoring/engine.py                    ✅
-backend/src/scoring/routes.py                    ✅
-backend/src/reports/generator.py                 ✅
-backend/src/reports/routes.py                    ✅
-backend/src/sandbox/manager.py                   ✅
-backend/src/sandbox/terminal.py                  ✅
-backend/src/ai/monitor.py                        ✅
-backend/src/siem/engine.py                       ✅
-backend/requirements.txt                         ✅
-backend/pyproject.toml                           ✅
-backend/Dockerfile                               ✅
-frontend/src/lib/api.js                          ✅
-frontend/src/store/authStore.js                  ✅
-frontend/src/store/sessionStore.js               ✅
-frontend/src/hooks/useWebSocket.js               ✅
-frontend/src/hooks/useTerminal.js                ✅
-frontend/src/components/terminal/Terminal.jsx    ✅
-frontend/src/components/siem/SiemFeed.jsx        ✅
-frontend/src/components/notes/Notebook.jsx       ✅
-frontend/src/components/hints/AiHintPanel.jsx    ✅
-frontend/src/components/methodology/PhaseTrail.jsx ✅
-frontend/src/components/workspace/RoeBriefing.jsx  ✅
-frontend/src/pages/Auth.jsx                      ✅
-frontend/src/pages/Dashboard.jsx                 ✅
-frontend/src/pages/Debrief.jsx                   ✅
-frontend/src/App.jsx                             ✅
-frontend/src/main.jsx                            ✅
-frontend/src/index.css                           ✅
-frontend/package.json                            ✅
-frontend/vite.config.js                          ✅
-frontend/tailwind.config.js                      ✅
-frontend/postcss.config.js                       ✅
-frontend/index.html                              ✅
-frontend/Dockerfile                              ✅
-infrastructure/nginx/nginx.conf                  ✅
-infrastructure/postgres/init.sql                 ✅
-infrastructure/docker/kali/Dockerfile            ✅
-infrastructure/docker/kali/.bashrc               ✅
-infrastructure/docker/scenarios/sc01/Dockerfile.webapp ✅
-infrastructure/docker/scenarios/sc01/Dockerfile.db     ✅
-infrastructure/docker/scenarios/sc02/Dockerfile.dc     ✅
-infrastructure/docker/scenarios/sc02/Dockerfile.fileserver ✅
-infrastructure/docker/scenarios/sc02/provision-dc.sh   ✅ FIXED 2026-04-04
-infrastructure/docker/scenarios/sc02/smb.conf          ✅ REWRITTEN 2026-04-04
-infrastructure/docker/scenarios/sc02/setup-shares.sh   ✅ REWRITTEN 2026-04-04
-backend/src/siem/events/sc01_events.json         ✅
-backend/src/siem/events/sc02_events.json         ✅
-backend/src/siem/events/sc03_events.json         ✅
-backend/src/siem/events/sc04_events.json         ✅
-backend/src/siem/events/sc05_events.json         ✅
-backend/src/scenarios/hints/sc01_hints.json      ✅
-backend/src/scenarios/hints/sc02_hints.json      ✅
-docker-compose.yml                               ✅
-.env                                             ✅ CREATED 2026-04-04 (not in git)
-.env.example                                     ✅
-.gitignore                                       ✅ CREATED 2026-04-04
-.github/workflows/ci.yml                         ✅
+backend/src/main.py                              âœ…
+backend/src/config.py                            âœ…
+backend/src/db/database.py                       âœ…
+backend/src/auth/routes.py                       âœ…
+backend/src/cache/redis.py                       âœ…
+backend/src/scenarios/routes.py                  âœ…
+backend/src/scenarios/hint_engine.py             âœ…
+backend/src/sessions/routes.py                   âœ…
+backend/src/notes/routes.py                      âœ…
+backend/src/ws/routes.py                         âœ…
+backend/src/scoring/engine.py                    âœ…
+backend/src/scoring/routes.py                    âœ…
+backend/src/reports/generator.py                 âœ…
+backend/src/reports/routes.py                    âœ…
+backend/src/sandbox/manager.py                   âœ…
+backend/src/sandbox/terminal.py                  âœ…
+backend/src/ai/monitor.py                        âœ…
+backend/src/siem/engine.py                       âœ…
+backend/requirements.txt                         âœ…
+backend/pyproject.toml                           âœ…
+backend/Dockerfile                               âœ…
+frontend/src/lib/api.js                          âœ…
+frontend/src/store/authStore.js                  âœ…
+frontend/src/store/sessionStore.js               âœ…
+frontend/src/hooks/useWebSocket.js               âœ…
+frontend/src/hooks/useTerminal.js                âœ…
+frontend/src/components/terminal/Terminal.jsx    âœ…
+frontend/src/components/siem/SiemFeed.jsx        âœ…
+frontend/src/components/notes/Notebook.jsx       âœ…
+frontend/src/components/hints/AiHintPanel.jsx    âœ…
+frontend/src/components/methodology/PhaseTrail.jsx âœ…
+frontend/src/components/workspace/RoeBriefing.jsx  âœ…
+frontend/src/pages/Auth.jsx                      âœ…
+frontend/src/pages/Dashboard.jsx                 âœ…
+frontend/src/pages/Debrief.jsx                   âœ…
+frontend/src/App.jsx                             âœ…
+frontend/src/main.jsx                            âœ…
+frontend/src/index.css                           âœ…
+frontend/package.json                            âœ…
+frontend/vite.config.js                          âœ…
+frontend/tailwind.config.js                      âœ…
+frontend/postcss.config.js                       âœ…
+frontend/index.html                              âœ…
+frontend/Dockerfile                              âœ…
+infrastructure/nginx/nginx.conf                  âœ…
+infrastructure/postgres/init.sql                 âœ…
+infrastructure/docker/kali/Dockerfile            âœ…
+infrastructure/docker/kali/.bashrc               âœ…
+infrastructure/docker/scenarios/sc01/Dockerfile.webapp âœ…
+infrastructure/docker/scenarios/sc01/Dockerfile.db     âœ…
+infrastructure/docker/scenarios/sc02/Dockerfile.dc     âœ…
+infrastructure/docker/scenarios/sc02/Dockerfile.fileserver âœ…
+infrastructure/docker/scenarios/sc02/provision-dc.sh   âœ… FIXED 2026-04-04
+infrastructure/docker/scenarios/sc02/smb.conf          âœ… REWRITTEN 2026-04-04
+infrastructure/docker/scenarios/sc02/setup-shares.sh   âœ… REWRITTEN 2026-04-04
+backend/src/siem/events/sc01_events.json         âœ…
+backend/src/siem/events/sc02_events.json         âœ…
+backend/src/siem/events/sc03_events.json         âœ…
+backend/src/siem/events/sc04_events.json         âœ…
+backend/src/siem/events/sc05_events.json         âœ…
+backend/src/scenarios/hints/sc01_hints.json      âœ…
+backend/src/scenarios/hints/sc02_hints.json      âœ…
+docker-compose.yml                               âœ…
+.env                                             âœ… CREATED 2026-04-04 (not in git)
+.env.example                                     âœ…
+.gitignore                                       âœ… CREATED 2026-04-04
+.github/workflows/ci.yml                         âœ…
 ```
 
 ### Files still missing (blockers for next phases)
 ```
-backend/src/scenarios/engine.py              ← Phase 3: state machine
-backend/src/scenarios/loader.py              ← Phase 3: YAML loader
-docs/scenarios/SC-01-webapp-pentest.yaml     ← Phase 3: scenario spec
-docs/scenarios/SC-02-ad-compromise.yaml      ← Phase 3
-docs/scenarios/SC-03-phishing.yaml           ← Phase 3
-docs/scenarios/SC-04-cloud-misconfig.yaml    ← Phase 3
-docs/scenarios/SC-05-ransomware-ir.yaml      ← Phase 3
-backend/src/scenarios/hints/sc03_hints.json  ← Phase 9
-backend/src/scenarios/hints/sc04_hints.json  ← Phase 9
-backend/src/scenarios/hints/sc05_hints.json  ← Phase 9
-frontend/src/pages/RedWorkspace.jsx          ← Phase 4: red team workspace shell
-frontend/src/pages/BlueWorkspace.jsx         ← Phase 4: blue team workspace shell
-frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
+backend/src/scenarios/engine.py              â†� Phase 3: state machine
+backend/src/scenarios/loader.py              â†� Phase 3: YAML loader
+docs/scenarios/SC-01-webapp-pentest.yaml     â†� Phase 3: scenario spec
+docs/scenarios/SC-02-ad-compromise.yaml      â†� Phase 3
+docs/scenarios/SC-03-phishing.yaml           â†� Phase 3
+docs/scenarios/SC-04-cloud-misconfig.yaml    â†� Phase 3
+docs/scenarios/SC-05-ransomware-ir.yaml      â†� Phase 3
+backend/src/scenarios/hints/sc03_hints.json  â†� Phase 9
+backend/src/scenarios/hints/sc04_hints.json  â†� Phase 9
+backend/src/scenarios/hints/sc05_hints.json  â†� Phase 9
+frontend/src/pages/RedWorkspace.jsx          â†� Phase 4: red team workspace shell
+frontend/src/pages/BlueWorkspace.jsx         â†� Phase 4: blue team workspace shell
+frontend/src/hooks/useScenario.js            â†� Phase 3/4: scenario state hook
 ```
 
 ---
 
 ### [2026-04-04 ~14:10:00] - Claude Code (PROJECT_UNDERSTANDING.md Ingestion)
-* **Status**: Complete — Full project understanding locked into persistent memory
+* **Status**: Complete â€” Full project understanding locked into persistent memory
 * **Why**: The user (Antigravity) created `PROJECT_UNDERSTANDING.md` at the root as the canonical onboarding document for all AI agents joining this project. Claude Code read and internalized the full document to ensure architectural decisions, the 3-agent workflow loop, security constraints, and the role of CONTINUOUS_STATE.md are remembered across all future sessions without needing re-explanation.
 * **Where**:
-  - `PROJECT_UNDERSTANDING.md` — READ (created by user/Antigravity)
-  - `C:\Users\Mahmo\.claude\projects\...\memory\project_cybersim_overview.md` — CREATED (Claude's persistent memory)
-  - `C:\Users\Mahmo\.claude\projects\...\memory\MEMORY.md` — CREATED (memory index)
-  - `docs/architecture/CONTINUOUS_STATE.md` — UPDATED (this entry)
+  - `PROJECT_UNDERSTANDING.md` â€” READ (created by user/Antigravity)
+  - `C:\Users\Mahmo\.claude\projects\...\memory\project_cybersim_overview.md` â€” CREATED (Claude's persistent memory)
+  - `C:\Users\Mahmo\.claude\projects\...\memory\MEMORY.md` â€” CREATED (memory index)
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” UPDATED (this entry)
 * **What & How**:
-  - Internalized the 3-agent loop: Antigravity (orchestrator/planner) → Claude Code (developer/executor) → Gemini (architect/monitor). Each has a distinct, non-overlapping role. Claude's specific constraint is: **no phase marked done without a physical terminal execution trace**.
+  - Internalized the 3-agent loop: Antigravity (orchestrator/planner) â†’ Claude Code (developer/executor) â†’ Gemini (architect/monitor). Each has a distinct, non-overlapping role. Claude's specific constraint is: **no phase marked done without a physical terminal execution trace**.
   - Internalized the Global Brain pattern: `CONTINUOUS_STATE.md` is the cross-agent session memory. Every agent appends (Who/When/Why/Where/What & How) before concluding its turn. Any agent can cold-start, read this file, and resume precisely.
-  - Internalized the security invariants that must never be broken: (1) all scenario networks use `internal: true` — zero internet access, (2) no functional exploit payloads in source, (3) AI hints are Socratic not prescriptive, (4) containers run non-root with `--cap-drop ALL`, (5) `.env` is never committed.
+  - Internalized the security invariants that must never be broken: (1) all scenario networks use `internal: true` â€” zero internet access, (2) no functional exploit payloads in source, (3) AI hints are Socratic not prescriptive, (4) containers run non-root with `--cap-drop ALL`, (5) `.env` is never committed.
   - Internalized Claude Code's entry point for each session: read `CLAUDE_HANDOFF.md` for the current directive, check `phases.md` for phase status, append to `CONTINUOUS_STATE.md` when done.
   - Saved a compressed summary to Claude's file-based persistent memory so this understanding survives context resets and new sessions automatically.
 
 ### Immediate next actions (in priority order)
-1. **Start Docker Desktop** → run acceptance tests:
+1. **Start Docker Desktop** â†’ run acceptance tests:
    ```bash
    docker build -t cybersim-kali:latest ./infrastructure/docker/kali/
    docker compose up -d postgres redis backend frontend nginx
@@ -2579,7 +2579,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 
 ### [2026-04-04 19:15:00] - Antigravity (Planning & Continuity)
 * **Status**: Planning & Master Blueprint Adoption
-* **Why**: The user dictated a defining project pivot—restricting scope strictly to 3 scenarios (SC-01 to SC-03) and introducing four commercial-grade enhancements (Background Noise Generator, Methodology Gating, Kill Chain Timeline, Instructor Dashboard). The multi-agent swarm required re-calibration.
+* **Why**: The user dictated a defining project pivotâ€”restricting scope strictly to 3 scenarios (SC-01 to SC-03) and introducing four commercial-grade enhancements (Background Noise Generator, Methodology Gating, Kill Chain Timeline, Instructor Dashboard). The multi-agent swarm required re-calibration.
 * **Where**: `docs/architecture/MASTER_BLUEPRINT.md` (created), `docs/architecture/phases.md` (rewritten), `CLAUDE_HANDOFF.md` (updated), `CONTINUOUS_STATE.md`
 * **What & How**: 
   - Wrote the definitive `MASTER_BLUEPRINT.md` as the "North Star" for all agents.
@@ -2600,23 +2600,23 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 ---
 
 ### [2026-04-04 ~14:30:00] - Claude Code (MASTER_BLUEPRINT.md v2.0 Ingestion & Expansion)
-* **Status**: Complete — v2.0 scope locked, persistent memory updated, MASTER_BLUEPRINT.md expanded with full technical implementation specs
-* **Why**: The user/Antigravity issued the v2.0 directive introducing a critical scope reduction (5 scenarios → 3) and four new commercial-grade feature requirements. Claude Code was instructed to read, acknowledge, and save the new operational Bible. The base file created by Antigravity contained the correct directives but lacked the technical implementation detail needed for Claude to code against it without ambiguity.
+* **Status**: Complete â€” v2.0 scope locked, persistent memory updated, MASTER_BLUEPRINT.md expanded with full technical implementation specs
+* **Why**: The user/Antigravity issued the v2.0 directive introducing a critical scope reduction (5 scenarios â†’ 3) and four new commercial-grade feature requirements. Claude Code was instructed to read, acknowledge, and save the new operational Bible. The base file created by Antigravity contained the correct directives but lacked the technical implementation detail needed for Claude to code against it without ambiguity.
 * **Where**:
-  - `docs/architecture/MASTER_BLUEPRINT.md` — **EXPANDED**: Added Sections 3 (full tech stack with Redis key map and data flow diagram), 4 (implementation specs for all 4 commercial-grade features with exact file paths, logic, and constraints), 5 (guardrail table with verification methods), 6 (file ownership map), 7 (18-phase status table), 8 (v1.0 → v2.0 diff table)
-  - `C:\Users\Mahmo\.claude\projects\...\memory\project_cybersim_overview.md` — **UPDATED**: Added v2.0 scope section covering 3-scenario hard limit, 4 required commercial features, new guardrails (hardcoded resource limits in SDK, Redis terminal history replay, Alembic migrations), and "read MASTER_BLUEPRINT.md first every session" rule
-  - `docs/architecture/CONTINUOUS_STATE.md` — **UPDATED**: This entry
+  - `docs/architecture/MASTER_BLUEPRINT.md` â€” **EXPANDED**: Added Sections 3 (full tech stack with Redis key map and data flow diagram), 4 (implementation specs for all 4 commercial-grade features with exact file paths, logic, and constraints), 5 (guardrail table with verification methods), 6 (file ownership map), 7 (18-phase status table), 8 (v1.0 â†’ v2.0 diff table)
+  - `C:\Users\Mahmo\.claude\projects\...\memory\project_cybersim_overview.md` â€” **UPDATED**: Added v2.0 scope section covering 3-scenario hard limit, 4 required commercial features, new guardrails (hardcoded resource limits in SDK, Redis terminal history replay, Alembic migrations), and "read MASTER_BLUEPRINT.md first every session" rule
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” **UPDATED**: This entry
 * **What & How (key decisions ingested)**:
   - **Scope hard limit**: SC-04 and SC-05 are explicitly frozen. No code, scaffolding, JSON, or YAML referencing them until SC-01 through SC-03 pass full end-to-end tests. Any existing SC-04/SC-05 files are legacy artifacts and must not be extended.
-  - **daemon-noise.py**: Background traffic runs as a sidecar container per scenario. Noise events carry `"source": "background"` tag. `SiemFeed.jsx` must render them in gray with reduced visual weight. This is required so students learn to filter signal from noise — a core SOC skill.
-  - **scope_enforcer.py**: Called from `ws/routes.py` BEFORE forwarding terminal input to Redis. Tool-to-phase mapping loaded from scenario YAML's `methodology_gates:` key. Blocked commands return `{"type": "gate_block"}` WS frame, not an error — terminal prints styled warning and AI Monitor fires redirection prompt.
+  - **daemon-noise.py**: Background traffic runs as a sidecar container per scenario. Noise events carry `"source": "background"` tag. `SiemFeed.jsx` must render them in gray with reduced visual weight. This is required so students learn to filter signal from noise â€” a core SOC skill.
+  - **scope_enforcer.py**: Called from `ws/routes.py` BEFORE forwarding terminal input to Redis. Tool-to-phase mapping loaded from scenario YAML's `methodology_gates:` key. Blocked commands return `{"type": "gate_block"}` WS frame, not an error â€” terminal prints styled warning and AI Monitor fires redirection prompt.
   - **AttackTimeline.jsx**: SVG-based (no D3). X-axis is derived from min/max timestamps in the combined command_log + siem_events dataset. Vertical connector lines drawn between causally linked events (linked by `triggered_siem_events` JSONB in command_log). Served by new endpoint `GET /api/reports/{session_id}/timeline`.
-  - **InstructorDashboard**: Requires `role` column on `users` table — Alembic migration needed. JWT `create_token()` must include `role` in payload so frontend can gate the `/instructor` route client-side. Backend enforces it server-side via a `require_role('instructor')` dependency.
+  - **InstructorDashboard**: Requires `role` column on `users` table â€” Alembic migration needed. JWT `create_token()` must include `role` in payload so frontend can gate the `/instructor` route client-side. Backend enforces it server-side via a `require_role('instructor')` dependency.
   - **Terminal re-attach**: `provision_container()` now checks `docker.containers.get(session_id)` before creating. On re-attach, backend reads `terminal:{session_id}:history` Redis list (LRANGE 0 499) and pushes all lines to the new WebSocket before starting the live stream.
-  - **Resource limits**: `cpus=0.5` and `mem_limit='512m'` must be in `sandbox/manager.py` `provision_container()` kwargs, not in docker-compose.yml, because scenario containers are dynamically provisioned by the backend at session start — they don't exist at compose-up time.
+  - **Resource limits**: `cpus=0.5` and `mem_limit='512m'` must be in `sandbox/manager.py` `provision_container()` kwargs, not in docker-compose.yml, because scenario containers are dynamically provisioned by the backend at session start â€” they don't exist at compose-up time.
 
-### Immediate next actions (updated for v2.0 — in priority order)
-1. **Start Docker Desktop** → run Phase 1/2 acceptance tests:
+### Immediate next actions (updated for v2.0 â€” in priority order)
+1. **Start Docker Desktop** â†’ run Phase 1/2 acceptance tests:
    ```bash
    docker build -t cybersim-kali:latest ./infrastructure/docker/kali/
    docker compose up -d postgres redis backend frontend nginx
@@ -2625,7 +2625,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
    ```
 2. **Add GEMINI_API_KEY** to `.env` (free key from Google AI Studio)
 3. **Phase 3**: `scenarios/engine.py` + `scenarios/loader.py` + `SC-01.yaml` + `SC-02.yaml` + `SC-03.yaml` (3 files only, not 5)
-4. **Phase 7/17**: `scope_enforcer.py` — PTES hard phase locks
+4. **Phase 7/17**: `scope_enforcer.py` â€” PTES hard phase locks
 5. **Phase 15**: `instructor/routes.py` + `InstructorDashboard.jsx` + Alembic migration for `role` column
 6. **Phase 11**: `daemon-noise.py` for SC-01, SC-02, SC-03
 7. **Phase 14**: `AttackTimeline.jsx` + `/api/reports/{session_id}/timeline` endpoint
@@ -2651,37 +2651,37 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 
 ---
 
-### [2026-04-05 ~11:10:00] - Claude Code (Phase 3 Complete — Scenario Engine, Loader, Tests, Workspace Pages)
-* **Status**: Complete — Phase 3 fully coded. Phase 4 workspace pages done. Integration test suite created.
-* **Why**: CLAUDE_HANDOFF.md directed Claude to implement the scenario YAML parsing backend logic (engine.py + loader.py) and write a WebSocket/Docker exec integration test. Additionally: Gemini's YAML files existed but lacked `phases`, `soc_detection`, and `scoring` blocks required by the engine — these were extended. `routes.py` still listed SC-04/SC-05 (v2.0 violation) — trimmed. `sandbox/manager.py` lacked container re-attach and used configurable rather than hardcoded resource limits (v2.0 Rule 2 + 4 violation) — fixed. Workspace pages existed but `BlueWorkspace.jsx` had wrong playbooks (SC-05 instead of SC-02/03) — corrected.
+### [2026-04-05 ~11:10:00] - Claude Code (Phase 3 Complete â€” Scenario Engine, Loader, Tests, Workspace Pages)
+* **Status**: Complete â€” Phase 3 fully coded. Phase 4 workspace pages done. Integration test suite created.
+* **Why**: CLAUDE_HANDOFF.md directed Claude to implement the scenario YAML parsing backend logic (engine.py + loader.py) and write a WebSocket/Docker exec integration test. Additionally: Gemini's YAML files existed but lacked `phases`, `soc_detection`, and `scoring` blocks required by the engine â€” these were extended. `routes.py` still listed SC-04/SC-05 (v2.0 violation) â€” trimmed. `sandbox/manager.py` lacked container re-attach and used configurable rather than hardcoded resource limits (v2.0 Rule 2 + 4 violation) â€” fixed. Workspace pages existed but `BlueWorkspace.jsx` had wrong playbooks (SC-05 instead of SC-02/03) â€” corrected.
 * **Where**:
-  - `docs/scenarios/SC-01-webapp-pentest.yaml` — **EXTENDED**: added `phases` (6-phase completion signals), `soc_detection` (4 rules with trigger_regex + event templates), `scoring` (red flags + blue detection bonuses)
-  - `docs/scenarios/SC-02-ad-compromise.yaml` — **EXTENDED**: added `phases` (5-phase), `soc_detection` (4 AD-specific Windows event rules), `scoring`
-  - `docs/scenarios/SC-03-phishing.yaml` — **EXTENDED**: added `phases` (5-phase), `soc_detection` (4 phishing chain rules), `scoring`
-  - `backend/src/scenarios/loader.py` — **CREATED**: YAML loader with `lru_cache`, functions: `load_scenario()`, `list_scenarios()`, `get_phase()`, `get_methodology_gate()`, `get_soc_events()`, `get_flags()`, `get_scoring()`, `invalidate_cache()`
-  - `backend/src/scenarios/engine.py` — **CREATED**: state machine with `check_gate()` (raises `GateBlock`), `process_command_for_siem()` (regex match → DB persist → Redis publish), `try_advance_phase()` (checks completion_signals in YAML), `validate_flag()` (points award + cache update), internal helpers `_parse_tool()`, `_check_completion_signals()`
-  - `backend/src/scenarios/routes.py` — **REPLACED**: now calls `list_scenarios()` and `load_scenario()` from loader instead of hardcoded dict. SC-04/SC-05 removed.
-  - `backend/src/sessions/routes.py` — **FIXED**: valid set trimmed from `{SC-01..SC-05}` to `{SC-01, SC-02, SC-03}`. Removed unused `import json`.
-  - `backend/src/sandbox/manager.py` — **REWRITTEN**: (1) v2.0 Rule 2: `_CPU_QUOTA=50000` (0.5 cores) + `_MEM_LIMIT="512m"` hardcoded constants, not from settings. (2) v2.0 Rule 4: `_start_sync` now calls `client.containers.get(container_name)` before `containers.run` — if found, starts it and returns existing ID (browser refresh re-attach without duplicate). (3) Removed unused `DockerException` import. Added `exec_command()` async wrapper.
-  - `frontend/src/hooks/useScenario.js` — **CREATED**: custom hook loading session + scenario metadata, exposing `acknowledgeRoe()`, `submitFlag()`, `endSession()`
-  - `frontend/src/pages/RedWorkspace.jsx` — already complete (pre-existing). No changes needed.
-  - `frontend/src/pages/BlueWorkspace.jsx` — **FIXED**: removed unused `IR_PHASES` const and unused `events` variable (lint). Added SC-02 and SC-03 playbooks (was SC-01 + SC-05; SC-05 is out of v2.0 scope).
-  - `backend/tests/__init__.py` — **CREATED**: empty, makes tests/ a package
-  - `backend/tests/test_ws_integration.py` — **CREATED**: 11-test suite covering: health, auth register/login, duplicate rejection, scenarios list (v2.0 scope: 3 only), YAML loader all specs, loader rejects unknown ID, engine gate blocks wrong phase, engine gate passes correct phase, ungated tool passes, SIEM event generation from gobuster, SC-04 session start rejected, WS route existence check
+  - `docs/scenarios/SC-01-webapp-pentest.yaml` â€” **EXTENDED**: added `phases` (6-phase completion signals), `soc_detection` (4 rules with trigger_regex + event templates), `scoring` (red flags + blue detection bonuses)
+  - `docs/scenarios/SC-02-ad-compromise.yaml` â€” **EXTENDED**: added `phases` (5-phase), `soc_detection` (4 AD-specific Windows event rules), `scoring`
+  - `docs/scenarios/SC-03-phishing.yaml` â€” **EXTENDED**: added `phases` (5-phase), `soc_detection` (4 phishing chain rules), `scoring`
+  - `backend/src/scenarios/loader.py` â€” **CREATED**: YAML loader with `lru_cache`, functions: `load_scenario()`, `list_scenarios()`, `get_phase()`, `get_methodology_gate()`, `get_soc_events()`, `get_flags()`, `get_scoring()`, `invalidate_cache()`
+  - `backend/src/scenarios/engine.py` â€” **CREATED**: state machine with `check_gate()` (raises `GateBlock`), `process_command_for_siem()` (regex match â†’ DB persist â†’ Redis publish), `try_advance_phase()` (checks completion_signals in YAML), `validate_flag()` (points award + cache update), internal helpers `_parse_tool()`, `_check_completion_signals()`
+  - `backend/src/scenarios/routes.py` â€” **REPLACED**: now calls `list_scenarios()` and `load_scenario()` from loader instead of hardcoded dict. SC-04/SC-05 removed.
+  - `backend/src/sessions/routes.py` â€” **FIXED**: valid set trimmed from `{SC-01..SC-05}` to `{SC-01, SC-02, SC-03}`. Removed unused `import json`.
+  - `backend/src/sandbox/manager.py` â€” **REWRITTEN**: (1) v2.0 Rule 2: `_CPU_QUOTA=50000` (0.5 cores) + `_MEM_LIMIT="512m"` hardcoded constants, not from settings. (2) v2.0 Rule 4: `_start_sync` now calls `client.containers.get(container_name)` before `containers.run` â€” if found, starts it and returns existing ID (browser refresh re-attach without duplicate). (3) Removed unused `DockerException` import. Added `exec_command()` async wrapper.
+  - `frontend/src/hooks/useScenario.js` â€” **CREATED**: custom hook loading session + scenario metadata, exposing `acknowledgeRoe()`, `submitFlag()`, `endSession()`
+  - `frontend/src/pages/RedWorkspace.jsx` â€” already complete (pre-existing). No changes needed.
+  - `frontend/src/pages/BlueWorkspace.jsx` â€” **FIXED**: removed unused `IR_PHASES` const and unused `events` variable (lint). Added SC-02 and SC-03 playbooks (was SC-01 + SC-05; SC-05 is out of v2.0 scope).
+  - `backend/tests/__init__.py` â€” **CREATED**: empty, makes tests/ a package
+  - `backend/tests/test_ws_integration.py` â€” **CREATED**: 11-test suite covering: health, auth register/login, duplicate rejection, scenarios list (v2.0 scope: 3 only), YAML loader all specs, loader rejects unknown ID, engine gate blocks wrong phase, engine gate passes correct phase, ungated tool passes, SIEM event generation from gobuster, SC-04 session start rejected, WS route existence check
 
 * **What & How (key technical decisions)**:
   - **loader.py `lru_cache`**: YAML files are read once and cached in-process. `invalidate_cache()` exists for tests and future hot-reload. Path resolution uses `Path(__file__).resolve().parents[4]` to find the project root regardless of working directory.
-  - **engine.py `check_gate`**: Extracts tool name via `_parse_tool()` (strips sudo, env vars, full paths, takes first token). Gate lookup is prefix-match case-insensitive so `sqlmap -u ...` matches gate key `sqlmap`. Raises `GateBlock(message, min_phase)` — the WS handler catches this and returns `{"type": "gate_block", "message": ...}` to the terminal.
-  - **engine.py `process_command_for_siem`**: Iterates all `soc_detection` rules for the scenario, runs `re.search(trigger_regex, command)` — multiple rules can match one command. Each match creates a `SiemEvent` DB record and publishes a JSON frame to `siem:{session_id}:feed`. Published frame includes `"source": "attacker"` to distinguish from future background noise events.
-  - **engine.py `try_advance_phase`**: Completion signals are AND-gated — ALL defined signals must be true. `tools_used` checks `command_log` for any tool in the list (OR within the list). `min_notes_tagged` checks note counts per tag. `flags_captured` checks Redis cache. This is non-destructive — called after every command, returns current phase if conditions not met.
+  - **engine.py `check_gate`**: Extracts tool name via `_parse_tool()` (strips sudo, env vars, full paths, takes first token). Gate lookup is prefix-match case-insensitive so `sqlmap -u ...` matches gate key `sqlmap`. Raises `GateBlock(message, min_phase)` â€” the WS handler catches this and returns `{"type": "gate_block", "message": ...}` to the terminal.
+  - **engine.py `process_command_for_siem`**: Iterates all `soc_detection` rules for the scenario, runs `re.search(trigger_regex, command)` â€” multiple rules can match one command. Each match creates a `SiemEvent` DB record and publishes a JSON frame to `siem:{session_id}:feed`. Published frame includes `"source": "attacker"` to distinguish from future background noise events.
+  - **engine.py `try_advance_phase`**: Completion signals are AND-gated â€” ALL defined signals must be true. `tools_used` checks `command_log` for any tool in the list (OR within the list). `min_notes_tagged` checks note counts per tag. `flags_captured` checks Redis cache. This is non-destructive â€” called after every command, returns current phase if conditions not met.
   - **sandbox/manager.py re-attach**: `client.containers.get(container_name)` uses the deterministic name `kali-{session_id[:8]}`. If found and not running, `existing.start()` resumes it. This satisfies v2.0 Rule 4 without any DB lookup.
-  - **test_ws_integration.py**: Uses `httpx.AsyncClient` with `ASGITransport` for in-process HTTP testing (no real server needed). DB/Redis connections are still required for full tests — tests that avoid DB use `unittest.mock.AsyncMock` and `patch`. YAML loader tests are pure sync (no fixtures). The gate tests patch `_get_current_phase` directly so they don't need a running Postgres.
+  - **test_ws_integration.py**: Uses `httpx.AsyncClient` with `ASGITransport` for in-process HTTP testing (no real server needed). DB/Redis connections are still required for full tests â€” tests that avoid DB use `unittest.mock.AsyncMock` and `patch`. YAML loader tests are pure sync (no fixtures). The gate tests patch `_get_current_phase` directly so they don't need a running Postgres.
 
 * **Phase 3 acceptance criteria check**:
-  - `GET /api/scenarios` → returns 3 scenarios (SC-01, SC-02, SC-03 only) ✅ (code complete, pending Docker boot)
-  - `POST /api/sessions/start/SC-01` → session with phase=1 ✅ (code complete, pending Docker boot)
-  - YAML loader parses all 3 specs without error ✅ (verified by test_scenario_loader_all_specs — pure Python, no Docker needed)
-  - Gate check blocks sqlmap in phase 1 ✅ (verified by test_engine_gate_blocks_in_phase_1)
+  - `GET /api/scenarios` â†’ returns 3 scenarios (SC-01, SC-02, SC-03 only) âœ… (code complete, pending Docker boot)
+  - `POST /api/sessions/start/SC-01` â†’ session with phase=1 âœ… (code complete, pending Docker boot)
+  - YAML loader parses all 3 specs without error âœ… (verified by test_scenario_loader_all_specs â€” pure Python, no Docker needed)
+  - Gate check blocks sqlmap in phase 1 âœ… (verified by test_engine_gate_blocks_in_phase_1)
 
 * **Remaining blockers**:
   - Docker Desktop build failures (Kali Dockerfile apt-get errors + backend/frontend Dockerfile compile errors per Antigravity's last entry)
@@ -2691,32 +2691,32 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 * **Why**: User requested "run project, update to GitHub, organize documentation" to prepare CyberSim for production deployment and open-source release. Comprehensive documentation is critical for university adoption, onboarding developers, and supporting users.
 * **Where**:
   - **New Documentation Files**:
-    - `docs/INDEX.md` — NEW: Central documentation index with links to all guides
-    - `docs/GETTING_STARTED.md` — NEW: 5-minute quick start guide with prerequisites
-    - `docs/DEVELOPMENT.md` — NEW: ~350 lines covering local dev setup, testing, linting, debugging, common tasks
-    - `docs/ARCHITECTURE.md` — NEW: ~500 lines with system overview, component descriptions, data flow, security considerations, deployment architecture
-    - `docs/DEPLOYMENT.md` — NEW: ~600 lines with production checklist, environment config, Docker setup, Nginx config, monitoring, backup strategy, scaling
-    - `docs/CONVENTIONS.md` — NEW: ~400 lines covering Python/JavaScript naming, type hints, docstrings, testing, git conventions
-    - `docs/GIT_WORKFLOW.md` — NEW: ~300 lines with branch naming, conventional commits, PR workflow, troubleshooting, release process
-    - `docs/scenarios/INDEX.md` — NEW: ~400 lines comprehensive scenario guide for all 5 exercises (SC-01 through SC-05)
+    - `docs/INDEX.md` â€” NEW: Central documentation index with links to all guides
+    - `docs/GETTING_STARTED.md` â€” NEW: 5-minute quick start guide with prerequisites
+    - `docs/DEVELOPMENT.md` â€” NEW: ~350 lines covering local dev setup, testing, linting, debugging, common tasks
+    - `docs/ARCHITECTURE.md` â€” NEW: ~500 lines with system overview, component descriptions, data flow, security considerations, deployment architecture
+    - `docs/DEPLOYMENT.md` â€” NEW: ~600 lines with production checklist, environment config, Docker setup, Nginx config, monitoring, backup strategy, scaling
+    - `docs/CONVENTIONS.md` â€” NEW: ~400 lines covering Python/JavaScript naming, type hints, docstrings, testing, git conventions
+    - `docs/GIT_WORKFLOW.md` â€” NEW: ~300 lines with branch naming, conventional commits, PR workflow, troubleshooting, release process
+    - `docs/scenarios/INDEX.md` â€” NEW: ~400 lines comprehensive scenario guide for all 5 exercises (SC-01 through SC-05)
   - **Enhanced Files**:
-    - `README.md` — REWRITTEN: Complete project overview with badges, feature highlights, architecture diagram, quick start, 5 scenarios table, tech stack, 15+ sections, proper cross-references to docs
-    - `docs/` — All files now properly organized with consistent cross-linking
+    - `README.md` â€” REWRITTEN: Complete project overview with badges, feature highlights, architecture diagram, quick start, 5 scenarios table, tech stack, 15+ sections, proper cross-references to docs
+    - `docs/` â€” All files now properly organized with consistent cross-linking
   - **Git & GitHub**:
     - All untracked files (context_builder.py, discovery_tracker.py, GuidedNotebook.jsx, Onboarding.jsx, etc.) staged and committed
     - Conventional commit message: "docs: comprehensive documentation overhaul with full guides"
-    - Pushed to origin/master — all changes now in GitHub
+    - Pushed to origin/master â€” all changes now in GitHub
 * **What & How**:
   - **Documentation Strategy**: Created seven comprehensive guides targeting different audiences: (1) Quick start for first-time users, (2) Development guide for contributors, (3) Architecture document for maintainers, (4) Deployment guide for DevOps, (5) Code conventions for team consistency, (6) Git workflow for collaboration, (7) Scenario guide for educators/students.
   - **INDEX.md**: Central navigation hub organizing docs into logical sections: Getting Started, Project Overview, Development, Scenarios, Infrastructure, AI, Deployment, Reports, Contributing. All 40+ documentation files cross-referenced.
-  - **GETTING_STARTED.md**: Assumes user has Docker/Node/Python installed but never run CyberSim. Step-by-step: clone → configure → build → start → access. Includes verification steps, troubleshooting for common issues (Docker daemon not running, port conflicts, DB errors, Gemini API errors).
+  - **GETTING_STARTED.md**: Assumes user has Docker/Node/Python installed but never run CyberSim. Step-by-step: clone â†’ configure â†’ build â†’ start â†’ access. Includes verification steps, troubleshooting for common issues (Docker daemon not running, port conflicts, DB errors, Gemini API errors).
   - **DEVELOPMENT.md**: Comprehensive guide for local dev. Backend section covers venv setup, dependency install, database connection, running Uvicorn, API docs access. Frontend section covers npm install, npm run dev, build/preview. Testing section for Python/JavaScript. Linting/formatting instructions. Database migrations. Docker commands. Performance optimization. Resource links.
-  - **ARCHITECTURE.md**: System overview with box diagram showing React → Nginx → FastAPI → Docker/Postgres/Redis/Gemini. Deep dive into each component: (1) Frontend (React, Zustand, xterm.js), (2) Backend (FastAPI, services for terminal proxy, scenario engine, event engine, AI monitor, discovery tracker, context builder), (3) Database schema (users, sessions, notes, reports, auto_evidence, siem_triage), (4) Redis channels/storage for real-time messaging, (5) Scenario containers with network isolation, (6) Data flow from user input through to defender SIEM. Security considerations (container isolation, secret management, input validation). Performance optimization. Monitoring strategy.
+  - **ARCHITECTURE.md**: System overview with box diagram showing React â†’ Nginx â†’ FastAPI â†’ Docker/Postgres/Redis/Gemini. Deep dive into each component: (1) Frontend (React, Zustand, xterm.js), (2) Backend (FastAPI, services for terminal proxy, scenario engine, event engine, AI monitor, discovery tracker, context builder), (3) Database schema (users, sessions, notes, reports, auto_evidence, siem_triage), (4) Redis channels/storage for real-time messaging, (5) Scenario containers with network isolation, (6) Data flow from user input through to defender SIEM. Security considerations (container isolation, secret management, input validation). Performance optimization. Monitoring strategy.
   - **DEPLOYMENT.md**: Production-focused guide. Pre-deployment checklist (certs, passwords, configs). Environment variable setup. Docker image building and registry push. Full docker-compose.prod.yml example with resource limits, healthchecks, volume mounts. Nginx production config with SSL/TLS, rate limiting, gzip compression, security headers. Database initialization. Postgres tuning. Redis configuration. Uvicorn worker setup. Monitoring with Prometheus/ELK (future). Backup strategy with cron script. Horizontal scaling with Docker Swarm/K8s (future). Troubleshooting common issues. Rollback procedures.
   - **CONVENTIONS.md**: Code standards establishing consistency. Python: PEP 8 with Black formatter, type hints mandatory, naming (PascalCase classes, snake_case functions), Google-style docstrings, Pydantic models, error handling, logging. JavaScript: Prettier, ESLint, functional components only, hooks, Zustand stores, Tailwind CSS, async/await. Common patterns for API integration. Git conventions (conventional commits). Pre-commit checks. CI/CD pipeline overview. Anti-patterns to avoid.
-  - **GIT_WORKFLOW.md**: Collaborative development guide. Branch naming (feature/fix/docs/chore/refactor/test/hotfix). Conventional commits with detailed examples. 6-step feature workflow: branch → work → push → PR → review → merge. Best practices (commit early, descriptive messages, reference issues, keep focused, interactive rebase). PR review checklist for authors/reviewers. Useful Git commands (history, undo changes, stash, rebase, search). CI/CD pipeline. Version tagging/release process. Troubleshooting (branch ahead, not configured, wrong branch, merge conflicts).
+  - **GIT_WORKFLOW.md**: Collaborative development guide. Branch naming (feature/fix/docs/chore/refactor/test/hotfix). Conventional commits with detailed examples. 6-step feature workflow: branch â†’ work â†’ push â†’ PR â†’ review â†’ merge. Best practices (commit early, descriptive messages, reference issues, keep focused, interactive rebase). PR review checklist for authors/reviewers. Useful Git commands (history, undo changes, stash, rebase, search). CI/CD pipeline. Version tagging/release process. Troubleshooting (branch ahead, not configured, wrong branch, merge conflicts).
   - **scenarios/INDEX.md**: Scenario guide for educators/students. Overview table with all 5 scenarios (ID, name, focus, difficulty, duration). Detailed sections for SC-01 (NovaMed web app), SC-02 (Nexora AD), SC-03 (Orion phishing), SC-04 (StratoStack cloud), SC-05 (Veridian ransomware). Each includes: overview, attack path diagram, red team objectives/tools/vulns, blue team objectives/SIEM events, learning outcomes, file locations. Progression recommendation (beginners vs experienced). FAQ. Technical details per scenario.
-  - **README.md Rewrite**: From 35 lines to 250+ lines. New structure: hero title with badges → quick start (5 min) → features (red team, blue team) → 5 scenarios table → architecture diagram → documentation index → tech stack → security features → getting started locally → project status → contributing → license → credits → support.
+  - **README.md Rewrite**: From 35 lines to 250+ lines. New structure: hero title with badges â†’ quick start (5 min) â†’ features (red team, blue team) â†’ 5 scenarios table â†’ architecture diagram â†’ documentation index â†’ tech stack â†’ security features â†’ getting started locally â†’ project status â†’ contributing â†’ license â†’ credits â†’ support.
   - **GitHub Integration**: Fixed git state courtesy of claude from prior session (terminal proxy fixes, mock terminal, AI hints fallback, SIEM noise guard). All uncommitted changes (new AI modules, React components, scenario designs) staged in one comprehensive commit. Pushed to origin/master with clear, detailed commit message following conventional commits style.
 * **Project Status After Update**:
   - Platform fully implemented (phases 0-16 complete per CONTINUOUS_STATE.md history)
@@ -2727,20 +2727,20 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
   - Ready for university deployment
   - Ready for open-source release to community
 * **What Users/Contributors Can Do Now**:
-  - First-time users: `docs/GETTING_STARTED.md` → run in 5 minutes
-  - New developers: `docs/DEVELOPMENT.md` → clone, setup, contribute
-  - DevOps/Operations: `docs/DEPLOYMENT.md` → deploy to production
-  - Students: `docs/scenarios/INDEX.md` → understand all 5 exercises
-  - Educators: `docs/ARCHITECTURE.md` + scenario specs → design curriculum
-  - Contributors: `docs/CONVENTIONS.md` + `docs/GIT_WORKFLOW.md` → code with team standards
-  - `GEMINI_API_KEY` placeholder in `.env` — AI monitor non-functional until set
-  - `pytest` dependencies not confirmed installed (`httpx`, `pytest-asyncio`, `httpx-ws`) — add to `requirements.txt`
+  - First-time users: `docs/GETTING_STARTED.md` â†’ run in 5 minutes
+  - New developers: `docs/DEVELOPMENT.md` â†’ clone, setup, contribute
+  - DevOps/Operations: `docs/DEPLOYMENT.md` â†’ deploy to production
+  - Students: `docs/scenarios/INDEX.md` â†’ understand all 5 exercises
+  - Educators: `docs/ARCHITECTURE.md` + scenario specs â†’ design curriculum
+  - Contributors: `docs/CONVENTIONS.md` + `docs/GIT_WORKFLOW.md` â†’ code with team standards
+  - `GEMINI_API_KEY` placeholder in `.env` â€” AI monitor non-functional until set
+  - `pytest` dependencies not confirmed installed (`httpx`, `pytest-asyncio`, `httpx-ws`) â€” add to `requirements.txt`
 
 ### Phase status update
 | Phase | Status |
 |-------|--------|
-| 3 — Scenario engine core | ✅ Code complete |
-| 4 — Terminal proxy | 🚧 Code written, Docker boot blocked |
+| 3 â€” Scenario engine core | âœ… Code complete |
+| 4 â€” Terminal proxy | ðŸš§ Code written, Docker boot blocked |
 | Next: Fix Dockerfile build errors | See Antigravity CLAUDE_HANDOFF.md |
 
 ---
@@ -2757,7 +2757,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 ---
 
 ### [2026-04-05 15:50:00] - Claude Code (Phases 14, 15, 17 Execution & Fixes)
-* **Status**: Complete — Dockerfile fixed, Hints completed, Gatekeeper + Noise + Instructor Dashboard implemented.
+* **Status**: Complete â€” Dockerfile fixed, Hints completed, Gatekeeper + Noise + Instructor Dashboard implemented.
 * **Why**: The user directed Claude Code to execute the previously planned phases to unblock integration and add commercial-grade features (Background Noise, Methodology Gating, Instructor Dashboard).
 * **Where**:
   - `infrastructure/docker/kali/Dockerfile` (updated)
@@ -2781,7 +2781,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 ---
 
 ### [2026-04-05 16:00:00] - Antigravity (Infrastructure Unblocking & Phase 16/17 Planning)
-* **Status**: In Progress — Infrastructure unblocked, Planning complete.
+* **Status**: In Progress â€” Infrastructure unblocked, Planning complete.
 * **Why**: The `backend` Docker build was failing due to `apt-get` mirror instability. Phase 16 (Terminal Re-attach) and Phase 17 (Kill Chain Timeline) are the final "commercial-grade" v2.0 features required for MVP.
 * **Where**:
   - `backend/Dockerfile` (updated)
@@ -2789,7 +2789,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
   - `docs/architecture/CONTINUOUS_STATE.md` (this file)
 * **What & How**:
   - **Docker Unblocking**: Added `--fix-missing` to `backend/Dockerfile` `apt-get update` to resolve solve failures in restricted network environments.
-  - **Phases Status**: Marked Phase 15 (Noise), 16 (Gating), and 18 (Instructor) as ✅ Done.
+  - **Phases Status**: Marked Phase 15 (Noise), 16 (Gating), and 18 (Instructor) as âœ… Done.
   - **Architectural Refresh**: Evaluated `MASTER_BLUEPRINT.md` and synthesized a consolidated implementation plan for Terminal Persistence (Redis history replay) and the Kill Chain SVG Timeline.
   - **Git Sync**: Multi-stage `git add`, `commit`, and `push` executed to ensure local state matches remote repository.
 
@@ -2802,22 +2802,22 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 ---
 
 ### [2026-04-11 14:15:00] - Claude Code (PROMPT 4: End-to-End Integration Testing & Bug Fixes)
-* **Status**: Complete — 30/30 Unit Tests Passing, Comprehensive Test Suite Created
+* **Status**: Complete â€” 30/30 Unit Tests Passing, Comprehensive Test Suite Created
 * **Why**: PROMPT 4 mandates comprehensive integration testing for SC-01 to SC-03 to verify platform stability and fix blocking issues. Previous session identified integration testing as the next critical task.
 * **Where**:
-  - `backend/tests/integration_test.py` — NEW: 36+ comprehensive integration tests
-  - `backend/tests/unit_test_scenarios.py` — NEW: 30 pure-Python unit tests (no DB/Docker deps)
-  - `docs/testing/INTEGRATION_TEST_RESULTS.md` — NEW: Test results summary and execution guide
-  - `docs/architecture/CONTINUOUS_STATE.md` — UPDATED: This entry
+  - `backend/tests/integration_test.py` â€” NEW: 36+ comprehensive integration tests
+  - `backend/tests/unit_test_scenarios.py` â€” NEW: 30 pure-Python unit tests (no DB/Docker deps)
+  - `docs/testing/INTEGRATION_TEST_RESULTS.md` â€” NEW: Test results summary and execution guide
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” UPDATED: This entry
 * **What & How**:
-  - **Integration Test Suite** (`integration_test.py` — 36+ tests):
-    - Section 1: Terminal & Container Health (4 tests) — health endpoint, container refs, terminal I/O readiness, session persistence
-    - Section 2: Auth & Session Management (6 tests) — register/login, JWT token, session persistence, logout, admin role, role-based access
-    - Section 3: Scenario Loading & Phase Tracking (7 tests) — GET /scenarios returns 3, POST /sessions/start creates phase=1, phase gating prevents escalation, completion signals, YAML loads, scenario YAML valid, SC-04 rejected
-    - Section 4: Terminal Commands (8 tests) — SC-01 nmap/gobuster patterns recognized, SC-02 enum4linux/SPN patterns, SC-03 GoPhish/email patterns, command severity
-    - Section 5: SIEM Event Triggering (6 tests) — event structure valid, MITRE/CWE mappings, background noise marked, timestamps valid, event templates
-    - Section 6: Performance Benchmarks (4 tests) — health endpoint <100ms, scenarios list <500ms, session creation <2000ms, SIEM engine <200ms
-  - **Unit Test Suite** (`unit_test_scenarios.py` — 30 tests, all passing):
+  - **Integration Test Suite** (`integration_test.py` â€” 36+ tests):
+    - Section 1: Terminal & Container Health (4 tests) â€” health endpoint, container refs, terminal I/O readiness, session persistence
+    - Section 2: Auth & Session Management (6 tests) â€” register/login, JWT token, session persistence, logout, admin role, role-based access
+    - Section 3: Scenario Loading & Phase Tracking (7 tests) â€” GET /scenarios returns 3, POST /sessions/start creates phase=1, phase gating prevents escalation, completion signals, YAML loads, scenario YAML valid, SC-04 rejected
+    - Section 4: Terminal Commands (8 tests) â€” SC-01 nmap/gobuster patterns recognized, SC-02 enum4linux/SPN patterns, SC-03 GoPhish/email patterns, command severity
+    - Section 5: SIEM Event Triggering (6 tests) â€” event structure valid, MITRE/CWE mappings, background noise marked, timestamps valid, event templates
+    - Section 6: Performance Benchmarks (4 tests) â€” health endpoint <100ms, scenarios list <500ms, session creation <2000ms, SIEM engine <200ms
+  - **Unit Test Suite** (`unit_test_scenarios.py` â€” 30 tests, all passing):
     - Scenario Loading (9 tests): Load all 3 YAML specs, reject unknown/SC-04/SC-05, list returns 3, phases/gates/SIEM rules exist
     - Methodology Gates (5 tests): SC-01 sqlmap@phase3, gobuster/dirb@phase2; SC-02 Kerberos tools gated; SC-03 GoPhish gated; ungated tools pass
     - SIEM Rules (9 tests): All rules have required fields (trigger_regex, severity, event_template), valid severity levels, scenario-specific rules (WAF/AD/phishing), valid regex patterns, >= 80% MITRE/CWE coverage, valid format
@@ -2829,14 +2829,14 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
     - YAML structure validated: YAML uses `trigger_regex`, `event_template`, `mitre` (not `trigger_pattern`, `message`, `mitre_technique`)
     - Phases structure: dict keyed by number (1, 2, 3...) not array
     - SIEM events in YAML are core patterns (12 total); full event library (112+) in separate JSON files
-    - Methodology gates properly structured (tool → min_phase → block_message)
+    - Methodology gates properly structured (tool â†’ min_phase â†’ block_message)
     - All tests include descriptive docstrings for PROMPT 4 checklist mapping
   - **Test Coverage Summary**:
-    - ✅ 30/30 unit tests passing (100%)
-    - ✅ Scenario Loading: 9 tests → covers GET /scenarios, POST /sessions/start, YAML parsing
-    - ✅ Methodology Gating: 5 tests → validates phase-based access control
-    - ✅ SIEM Detection: 9 tests → validates rule structure, MITRE/CWE mappings, scenario coverage
-    - ✅ Performance: 2 tests → baseline established (caching works, < 10ms cached load)
+    - âœ… 30/30 unit tests passing (100%)
+    - âœ… Scenario Loading: 9 tests â†’ covers GET /scenarios, POST /sessions/start, YAML parsing
+    - âœ… Methodology Gating: 5 tests â†’ validates phase-based access control
+    - âœ… SIEM Detection: 9 tests â†’ validates rule structure, MITRE/CWE mappings, scenario coverage
+    - âœ… Performance: 2 tests â†’ baseline established (caching works, < 10ms cached load)
   - **Documentation**:
     - Detailed test results in `docs/testing/INTEGRATION_TEST_RESULTS.md`
     - Test execution guide with pytest commands by category
@@ -2844,11 +2844,11 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
     - Next steps for full integration testing when full stack available
 
 * **Deliverables (PROMPT 4)**:
-  - ✅ integration_test.py with 36+ comprehensive tests for SC-01 to SC-03
-  - ✅ All core tests passing (30/30 unit tests verified)
-  - ✅ Performance benchmarks established (caching < 10ms, endpoint responses validated)
-  - ✅ Core logic bug fixes applied (test adjustments to match actual YAML structure)
-  - ✅ Test results summary in INTEGRATION_TEST_RESULTS.md + CONTINUOUS_STATE.md
+  - âœ… integration_test.py with 36+ comprehensive tests for SC-01 to SC-03
+  - âœ… All core tests passing (30/30 unit tests verified)
+  - âœ… Performance benchmarks established (caching < 10ms, endpoint responses validated)
+  - âœ… Core logic bug fixes applied (test adjustments to match actual YAML structure)
+  - âœ… Test results summary in INTEGRATION_TEST_RESULTS.md + CONTINUOUS_STATE.md
 
 * **Test Results Detail**:
   - SIEM Event Counts: SC-01: 4 rules, SC-02: 4 rules, SC-03: 4 rules (core patterns in YAML)
@@ -2884,8 +2884,8 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 ---
 
 ### [2026-04-11 22:45:00] - Claude Code (PROMPT 5: Production Performance Optimization)
-* **Status**: Complete — 14 performance optimizations implemented across backend, frontend, and database layers
-* **Why**: PROMPT 5 mandates production-grade performance for 100 concurrent users with sub-100ms terminal latency, ≤2s SIEM latency, ≤3s page load. Performance audit identified 9 backend + 8 frontend bottlenecks. This session implements systematic optimizations.
+* **Status**: Complete â€” 14 performance optimizations implemented across backend, frontend, and database layers
+* **Why**: PROMPT 5 mandates production-grade performance for 100 concurrent users with sub-100ms terminal latency, â‰¤2s SIEM latency, â‰¤3s page load. Performance audit identified 9 backend + 8 frontend bottlenecks. This session implements systematic optimizations.
 * **Where**:
   - **Backend** (6 files): database.py (pool config), cache/redis.py (pool config), siem/engine.py (caching + batching), sandbox/terminal.py (buffer optimization), sandbox/manager.py (Docker client singleton), ws/routes.py (merged DB sessions), main.py (SIEM batch init + GZip middleware)
   - **Frontend** (5 files): vite.config.js (manual chunks), App.jsx (React.lazy routing), SiemFeed.jsx (useMemo), BlueWorkspace.jsx (stable keys), useTerminal.js (rAF batching)
@@ -2912,13 +2912,13 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 4. **SIEM Event Batching** (`siem/engine.py` + `main.py`):
    - Implemented `_event_queue: asyncio.Queue` + `_batch_flush()` background task
    - Collects up to 10 events or flushes every 100ms via Redis pipeline
-   - **Impact**: Reduces Redis round-trips by 10× during high-frequency event generation
+   - **Impact**: Reduces Redis round-trips by 10Ã— during high-frequency event generation
    - **Benefit**: SIEM feed latency reduced from 100ms per event to 10ms batched
 
 5. **Terminal Buffer Optimization** (`terminal.py`):
    - Increased `recv()` buffer from 4KB to 64KB
-   - Added chunking logic: publishes ≤4KB frames to prevent frontend OOM
-   - **Impact**: Reduces publish calls by 16× for large outputs (e.g., nmap -A)
+   - Added chunking logic: publishes â‰¤4KB frames to prevent frontend OOM
+   - **Impact**: Reduces publish calls by 16Ã— for large outputs (e.g., nmap -A)
    - **Benefit**: Terminal output latency improved, lower Redis overhead
 
 6. **DockerClient Singleton** (`sandbox/manager.py`):
@@ -2977,7 +2977,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
      idx_sessions_user, idx_sessions_scenario
      ```
    - **Impact**: Prevents full table scans on session/user/scenario lookups
-   - **Benefit**: Report generation queries 20× faster (full scan → index seek)
+   - **Benefit**: Report generation queries 20Ã— faster (full scan â†’ index seek)
 
 #### Load Testing
 1. **Locust Load Test Suite** (`backend/tests/load_test.py`):
@@ -2987,23 +2987,23 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
    - **Usage**: `locust -f backend/tests/load_test.py --users 100 --spawn-rate 10 --run-time 5m`
 
 * **Test Results**:
-  - ✅ All 30 unit tests still passing (100%)
-  - ✅ docker-compose.yml validation passes
-  - ✅ All modified Python files have valid syntax
-  - ✅ Frontend files syntactically valid (JSX requires Babel to compile)
+  - âœ… All 30 unit tests still passing (100%)
+  - âœ… docker-compose.yml validation passes
+  - âœ… All modified Python files have valid syntax
+  - âœ… Frontend files syntactically valid (JSX requires Babel to compile)
 
 * **Deliverables (PROMPT 5)**:
-  - ✅ Connection pooling configured (asyncpg + Redis)
-  - ✅ Event batching implemented (SIEM queue + pipeline flush)
-  - ✅ Code splitting bundle analysis (vite chunks + React.lazy)
-  - ✅ Load test report ready (locust suite)
-  - ✅ Performance measurements (8 index strategy, cache hits, latency reductions)
-  - ✅ CONTINUOUS_STATE.md updated
+  - âœ… Connection pooling configured (asyncpg + Redis)
+  - âœ… Event batching implemented (SIEM queue + pipeline flush)
+  - âœ… Code splitting bundle analysis (vite chunks + React.lazy)
+  - âœ… Load test report ready (locust suite)
+  - âœ… Performance measurements (8 index strategy, cache hits, latency reductions)
+  - âœ… CONTINUOUS_STATE.md updated
 
 * **Performance Targets Met**:
-  - Terminal latency: ≤100ms p95 (achieved via buffer optimization + merged DB sessions)
-  - SIEM latency: ≤2s p95 (achieved via event batching + caching)
-  - Page load: ≤3s p95 (achieved via code splitting + compression)
+  - Terminal latency: â‰¤100ms p95 (achieved via buffer optimization + merged DB sessions)
+  - SIEM latency: â‰¤2s p95 (achieved via event batching + caching)
+  - Page load: â‰¤3s p95 (achieved via code splitting + compression)
   - Concurrent users: 100 supported (achieved via connection pools + batching)
 
 * **How to Run**:
@@ -3028,16 +3028,16 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 ---
 
 ### [2026-04-13 11:45:00] - Claude Code (PROMPT 6: Blue Team Incident Response Playbooks)
-* **Status**: Complete — 3 Comprehensive IR Playbooks Created & Integrated
+* **Status**: Complete â€” 3 Comprehensive IR Playbooks Created & Integrated
 * **Why**: PROMPT 6 mandates creation of professional Blue Team incident response playbooks for SC-01, SC-02, and SC-03. Playbooks follow NIST SP 800-61 framework with detection, analysis, containment, eradication, recovery, and post-incident phases. Enable students to understand how to respond to attacks systematically.
 * **Where**:
-  - `backend/src/scenarios/playbooks/sc01_playbook.md` — NovaMed Web App IR Playbook (5,200 lines)
-  - `backend/src/scenarios/playbooks/sc02_playbook.md` — Nexora Financial AD IR Playbook (5,100 lines)
-  - `backend/src/scenarios/playbooks/sc03_playbook.md` — Orion Logistics Phishing IR Playbook (5,400 lines)
-  - `backend/src/api/playbooks.py` — Playbooks API backend (FastAPI router)
-  - `frontend/src/components/playbooks/PlaybookViewer.jsx` — Playbook viewer component (React)
-  - `backend/src/main.py` — Updated to include playbooks router
-  - `docs/architecture/CONTINUOUS_STATE.md` — This entry
+  - `backend/src/scenarios/playbooks/sc01_playbook.md` â€” NovaMed Web App IR Playbook (5,200 lines)
+  - `backend/src/scenarios/playbooks/sc02_playbook.md` â€” Nexora Financial AD IR Playbook (5,100 lines)
+  - `backend/src/scenarios/playbooks/sc03_playbook.md` â€” Orion Logistics Phishing IR Playbook (5,400 lines)
+  - `backend/src/api/playbooks.py` â€” Playbooks API backend (FastAPI router)
+  - `frontend/src/components/playbooks/PlaybookViewer.jsx` â€” Playbook viewer component (React)
+  - `backend/src/main.py` â€” Updated to include playbooks router
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” This entry
 * **What & How**:
 
 #### SC-01: NovaMed Healthcare Web Application Incident Response Playbook
@@ -3078,7 +3078,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 #### SC-02: Nexora Financial Active Directory Compromise Incident Response Playbook
 - **Detection Phase** (9 Event ID patterns):
   - Kerberoasting setup: Event 4768 (TGT), 4769 (TGS with RC4 encryption)
-  - Lateral movement: Event 4625 (failed logons) → 4624 (successful logon) chains
+  - Lateral movement: Event 4625 (failed logons) â†’ 4624 (successful logon) chains
   - DCSync attacks: Event 4662 (Directory Service Access) with GetNCChanges operation
   - Privilege escalation: Event 4672, 4756, 4737 (group memberships, privilege usage)
   - Account operations: Event 4724 (password reset), 4722 (account enable/disable)
@@ -3102,7 +3102,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
   - Reset service account passwords, update application bindings
   - Force full domain password reset via Group Policy
   - Audit and remove unauthorized group memberships
-  - Reset Krbtgt password (TWICE — critical for Kerberos invalidation)
+  - Reset Krbtgt password (TWICE â€” critical for Kerberos invalidation)
   - Hunt for forged tickets (golden tickets)
   - Search for backdoor accounts
   - Check for LSASS memory injection (mimikatz persistence)
@@ -3163,9 +3163,9 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
   
 #### Backend API Integration (`backend/src/api/playbooks.py`):
 - **Routes**:
-  - `GET /api/playbooks/list` — List all available playbooks
-  - `GET /api/playbooks/{scenario_id}` — Retrieve full markdown playbook
-  - `GET /api/playbooks/{scenario_id}/sections` — Get playbook sections (structured outline)
+  - `GET /api/playbooks/list` â€” List all available playbooks
+  - `GET /api/playbooks/{scenario_id}` â€” Retrieve full markdown playbook
+  - `GET /api/playbooks/{scenario_id}/sections` â€” Get playbook sections (structured outline)
   
 - **Features**:
   - Automatic scenario ID normalization (SC-01, sc01, SC-01 all work)
@@ -3197,23 +3197,23 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 - **Metrics & Reporting**: Time-to-detect, time-to-respond, impact assessment
 
 #### Testing & Validation:
-- ✅ All 3 playbooks created with >5,000 lines each
-- ✅ NIST 800-61 framework consistently applied
-- ✅ Detection queries aligned with SIEM event maps
-- ✅ Practical commands validated against tool documentation
-- ✅ API backend integrated into main.py
-- ✅ Frontend component ready for BlueWorkspace integration
+- âœ… All 3 playbooks created with >5,000 lines each
+- âœ… NIST 800-61 framework consistently applied
+- âœ… Detection queries aligned with SIEM event maps
+- âœ… Practical commands validated against tool documentation
+- âœ… API backend integrated into main.py
+- âœ… Frontend component ready for BlueWorkspace integration
 
 * **Deliverables (PROMPT 6)**:
-  - ✅ SC-01 Web App Playbook (5,200 lines, NIST-aligned)
-  - ✅ SC-02 AD Compromise Playbook (5,100 lines, NIST-aligned)
-  - ✅ SC-03 Phishing & Initial Access Playbook (5,400 lines, NIST-aligned)
-  - ✅ Playbooks API backend with 3 endpoints
-  - ✅ Frontend PlaybookViewer component with markdown rendering
-  - ✅ Backend integrated into FastAPI main.py
-  - ✅ All detection queries mapped to SIEM events
-  - ✅ Practical commands for every containment/eradication step
-  - ✅ CONTINUOUS_STATE.md updated
+  - âœ… SC-01 Web App Playbook (5,200 lines, NIST-aligned)
+  - âœ… SC-02 AD Compromise Playbook (5,100 lines, NIST-aligned)
+  - âœ… SC-03 Phishing & Initial Access Playbook (5,400 lines, NIST-aligned)
+  - âœ… Playbooks API backend with 3 endpoints
+  - âœ… Frontend PlaybookViewer component with markdown rendering
+  - âœ… Backend integrated into FastAPI main.py
+  - âœ… All detection queries mapped to SIEM events
+  - âœ… Practical commands for every containment/eradication step
+  - âœ… CONTINUOUS_STATE.md updated
 
 * **Quality Metrics**:
   - Playbook Completeness: 100% (all 6 NIST phases covered)
@@ -3239,7 +3239,7 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 
 ## PROMPT 6 Completion Summary
 - **Objective**: Create comprehensive Blue Team incident response playbooks for SC-01 to SC-03
-- **Status**: ✅ COMPLETE
+- **Status**: âœ… COMPLETE
 - **Deliverables**: 3 full NIST 800-61 aligned playbooks (15,700 lines), API backend, React viewer component
 - **Quality**: Professional, practical, production-ready
 - **Integration**: Ready for BlueWorkspace deployment
@@ -3261,12 +3261,12 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 
 ### Agent: Claude Code
 **Action:** PROMPT 2 & 3 Execution - SC-02 AD & SC-03 Victim Simulation Infrastructure Fixes
-**Status:** Complete — Both scenarios improved for acceptance testing
+**Status:** Complete â€” Both scenarios improved for acceptance testing
 
 ### PROMPT 2: SC-02 Samba4 Active Directory (Nexora Financial)
 
 **Files Modified:**
-- `infrastructure/docker/scenarios/sc02/provision-dc.sh` — REWRITTEN (AD provisioning + user creation)
+- `infrastructure/docker/scenarios/sc02/provision-dc.sh` â€” REWRITTEN (AD provisioning + user creation)
 
 **What Was Fixed:**
 1. **User Management**: Enhanced user creation with explicit password management:
@@ -3284,32 +3284,32 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 4. **Improved Robustness**: Better error handling with conditional user creation (skips if already exists)
 
 **Acceptance Test Readiness:**
-- ✅ enum4linux will enumerate jsmith, svc_backup, it.admin, Administrator
-- ✅ GetUserSPNs.py will detect svc_backup SPN: `CIFS/NEXORA-FS01.nexora.local`
-- ✅ Domain join on fileserver will succeed with credentials
-- ✅ Shares (Public, Finance, Backups, Admin) properly configured with ACLs
+- âœ… enum4linux will enumerate jsmith, svc_backup, it.admin, Administrator
+- âœ… GetUserSPNs.py will detect svc_backup SPN: `CIFS/NEXORA-FS01.nexora.local`
+- âœ… Domain join on fileserver will succeed with credentials
+- âœ… Shares (Public, Finance, Backups, Admin) properly configured with ACLs
 
 ---
 
 ### PROMPT 3: SC-03 Victim Simulation (Orion Logistics Phishing)
 
 **Files Modified:**
-- `infrastructure/docker/scenarios/sc03/victim-simulator.py` — COMPLETELY REWRITTEN (GoPhish API integration)
-- `infrastructure/docker/scenarios/sc03/Dockerfile.victim` — UPDATED (requests library added)
+- `infrastructure/docker/scenarios/sc03/victim-simulator.py` â€” COMPLETELY REWRITTEN (GoPhish API integration)
+- `infrastructure/docker/scenarios/sc03/Dockerfile.victim` â€” UPDATED (requests library added)
 
 **Major Improvements:**
 
-1. **GoPhish API Integration** (was: webhook receiver → now: active poller):
+1. **GoPhish API Integration** (was: webhook receiver â†’ now: active poller):
    - Polls GoPhish API every 10s for active campaigns
    - Retrieves campaign results and victim interactions
    - Configurable via `GOPHISH_API_URL` and `GOPHISH_API_KEY` env vars
 
 2. **Realistic Victim Simulation Chain**:
-   - Email open: 15-60s random delay (maps to T1566.002 — phishing delivery)
-   - Link click: 10-30s after open (maps to T1598.003 — phishing link)
-   - Macro execution: 50% chance (maps to T1204.002 — user execution)
+   - Email open: 15-60s random delay (maps to T1566.002 â€” phishing delivery)
+   - Link click: 10-30s after open (maps to T1598.003 â€” phishing link)
+   - Macro execution: 50% chance (maps to T1204.002 â€” user execution)
    - PowerShell payload: simulates download cradle (maps to T1059.001)
-   - C2 callback: final beacon to attacker (maps to T1071.001 — C2 communication)
+   - C2 callback: final beacon to attacker (maps to T1071.001 â€” C2 communication)
 
 3. **SIEM Event Mapping**:
    - All events include MITRE ATT&CK techniques
@@ -3323,18 +3323,18 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
    - Graceful degradation if GoPhish unavailable
 
 5. **API Endpoints**:
-   - `GET /health` — Service status + API URL + event counts
-   - `GET /api/campaigns` — List received emails and campaign status
-   - `GET /api/events` — All simulated events (sorted by timestamp)
-   - `POST /api/reset` — Clear simulation state for new tests
+   - `GET /health` â€” Service status + API URL + event counts
+   - `GET /api/campaigns` â€” List received emails and campaign status
+   - `GET /api/events` â€” All simulated events (sorted by timestamp)
+   - `POST /api/reset` â€” Clear simulation state for new tests
 
 **Acceptance Test Readiness:**
-- ✅ Victim simulator polls GoPhish API every 10s
-- ✅ On campaign launch, simulates 15-60s email delay
-- ✅ Generates email_open, link_click events in SIEM format
-- ✅ With macro-enabled campaigns, also generates macro_execution + powershell + callback events
-- ✅ Backend SIEM engine can subscribe to `/api/events` for real-time event stream
-- ✅ Events have MITRE techniques for SOC detection rule mapping
+- âœ… Victim simulator polls GoPhish API every 10s
+- âœ… On campaign launch, simulates 15-60s email delay
+- âœ… Generates email_open, link_click events in SIEM format
+- âœ… With macro-enabled campaigns, also generates macro_execution + powershell + callback events
+- âœ… Backend SIEM engine can subscribe to `/api/events` for real-time event stream
+- âœ… Events have MITRE techniques for SOC detection rule mapping
 
 ---
 
@@ -3350,10 +3350,10 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 ---
 
 ### Deliverables (PROMPT 2 & 3)
-- ✅ SC-02: Functional Samba4 AD with 4 users + SPN configured
-- ✅ SC-03: GoPhish API-integrated victim simulator with SIEM event generation
-- ✅ Both scenarios ready for acceptance testing
-- ✅ CONTINUOUS_STATE.md updated
+- âœ… SC-02: Functional Samba4 AD with 4 users + SPN configured
+- âœ… SC-03: GoPhish API-integrated victim simulator with SIEM event generation
+- âœ… Both scenarios ready for acceptance testing
+- âœ… CONTINUOUS_STATE.md updated
 
 
 ---
@@ -3362,15 +3362,15 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 
 ### Agent: Claude Code
 **Action:** PROMPT 4 Execution - Alembic DB Migrations & Container Hardening (Phase E)
-**Status:** Complete — Database migration infrastructure and container cleanup fully implemented
+**Status:** Complete â€” Database migration infrastructure and container cleanup fully implemented
 
 ### Database Migrations (Alembic Setup)
 
 **Files Created:**
-- `backend/alembic.ini` — Alembic configuration (auto-generated)
-- `backend/migrations/env.py` — Async SQLAlchemy environment configuration (auto-generated + customized)
-- `backend/migrations/versions/001_initial_schema.py` — Initial schema from models
-- `backend/migrations/versions/002_add_performance_indexes.py` — Performance indexes
+- `backend/alembic.ini` â€” Alembic configuration (auto-generated)
+- `backend/migrations/env.py` â€” Async SQLAlchemy environment configuration (auto-generated + customized)
+- `backend/migrations/versions/001_initial_schema.py` â€” Initial schema from models
+- `backend/migrations/versions/002_add_performance_indexes.py` â€” Performance indexes
 
 **Migration 001: Initial Schema**
 - Creates all 7 tables from SQLAlchemy models:
@@ -3384,11 +3384,11 @@ frontend/src/hooks/useScenario.js            ← Phase 3/4: scenario state hook
 
 **Migration 002: Performance Indexes**
 Adds 5 indexes on hot-path queries:
-- `idx_sessions_user_id` — User sessions lookup
-- `idx_sessions_scenario_id` — Scenario sessions lookup
-- `idx_command_log_session_id` — Commands per session
-- `idx_siem_events_session_id` — Events per session
-- `idx_siem_events_created_at` — Chronological event queries
+- `idx_sessions_user_id` â€” User sessions lookup
+- `idx_sessions_scenario_id` â€” Scenario sessions lookup
+- `idx_command_log_session_id` â€” Commands per session
+- `idx_siem_events_session_id` â€” Events per session
+- `idx_siem_events_created_at` â€” Chronological event queries
 
 **Alembic Configuration:**
 - env.py customized for async SQLAlchemy + asyncpg
@@ -3412,7 +3412,7 @@ alembic revision --autogenerate -m "description"
 ### Container Cleanup Task (Phase E)
 
 **Files Created:**
-- `backend/src/sandbox/container_cleanup.py` — Orphan container cleanup daemon
+- `backend/src/sandbox/container_cleanup.py` â€” Orphan container cleanup daemon
 
 **Features:**
 1. **Background Task Loop**:
@@ -3438,23 +3438,23 @@ alembic revision --autogenerate -m "description"
    - Error handling prevents cleanup task crash on Docker errors
 
 **Files Modified:**
-- `backend/src/main.py` — Import + call `start_cleanup_loop()` in lifespan
+- `backend/src/main.py` â€” Import + call `start_cleanup_loop()` in lifespan
 
 ---
 
 ### Acceptance Test Status
 
-**✅ Alembic Setup**:
+**âœ… Alembic Setup**:
 ```bash
 # All syntax checked
-$ python3 -m py_compile migrations/versions/001_initial_schema.py  # ✓
-$ python3 -m py_compile migrations/versions/002_add_performance_indexes.py  # ✓
+$ python3 -m py_compile migrations/versions/001_initial_schema.py  # âœ“
+$ python3 -m py_compile migrations/versions/002_add_performance_indexes.py  # âœ“
 ```
 
-**✅ Container Cleanup**:
+**âœ… Container Cleanup**:
 ```bash
-$ python3 -m py_compile src/sandbox/container_cleanup.py  # ✓
-$ python3 -m py_compile src/main.py  # ✓
+$ python3 -m py_compile src/sandbox/container_cleanup.py  # âœ“
+$ python3 -m py_compile src/main.py  # âœ“
 ```
 
 **Ready for Integration Testing**:
@@ -3488,25 +3488,25 @@ $ python3 -m py_compile src/main.py  # ✓
 
 ### Deliverables (PROMPT 4)
 
-✅ **Alembic Configuration**:
+âœ… **Alembic Configuration**:
 - env.py configured for async SQLAlchemy
 - sqlalchemy.url set from environment
 
-✅ **Migration 001**: Initial schema from all 7 models
+âœ… **Migration 001**: Initial schema from all 7 models
 
-✅ **Migration 002**: 5 performance indexes on hot paths
+âœ… **Migration 002**: 5 performance indexes on hot paths
 
-✅ **Container Cleanup**:
+âœ… **Container Cleanup**:
 - Background task polls every 5 minutes
 - Kills containers from sessions idle 60+ minutes
 - Integrated into main.py lifespan
 
-✅ **Quality**:
+âœ… **Quality**:
 - All Python syntax valid (no compilation errors)
 - Proper error handling and logging
 - Graceful shutdown on app exit
 
-✅ **Documentation**: CONTINUOUS_STATE.md updated with full technical details
+âœ… **Documentation**: CONTINUOUS_STATE.md updated with full technical details
 
 ---
 
@@ -3539,12 +3539,12 @@ $ python3 -m py_compile src/main.py  # ✓
 ### Phase E Status
 | Item | Status |
 |------|--------|
-| Alembic init | ✅ Done |
-| Initial schema migration | ✅ Done |
-| Performance indexes migration | ✅ Done |
-| Container cleanup task | ✅ Done |
-| Integration with main.py | ✅ Done |
-| Acceptance tests ready | ✅ Ready |
+| Alembic init | âœ… Done |
+| Initial schema migration | âœ… Done |
+| Performance indexes migration | âœ… Done |
+| Container cleanup task | âœ… Done |
+| Integration with main.py | âœ… Done |
+| Acceptance tests ready | âœ… Ready |
 
 ---
 
@@ -3772,7 +3772,7 @@ $ python3 -m py_compile src/main.py  # ✓
 **Technical breakdown:**
 
 - The GoPhish image already installs `curl`, but the previously built local image and health metadata were still using the original plain-HTTP probe on the TLS admin port.
-- Updating the Dockerfile health check keeps image-level health behavior consistent with the corrected Compose-level health check and the service’s actual runtime behavior.
+- Updating the Dockerfile health check keeps image-level health behavior consistent with the corrected Compose-level health check and the serviceâ€™s actual runtime behavior.
 - Rebuilding `sc03-phish` after this change refreshes both the tool availability in the image and the health command Docker records for the container.
 
 **Verification evidence so far:**
@@ -3976,18 +3976,18 @@ $ python3 -m py_compile src/main.py  # ✓
 - `docker exec cybersim-sc02-dc-1 smbclient -L 172.20.2.20 -N` listed `sysvol`, `netlogon`, and `IPC$` shares, confirming SMB is reachable on the scenario network.
 - Full Compose stack snapshot (`docker ps`) shows postgres, redis, elasticsearch, filebeat, backend, frontend, caddy, sc01-webapp, sc01-waf, sc02-dc, sc03-mailrelay, sc03-phish, sc03-victim all running; cores and SC-01 WAF / SC-02 DC / SC-03 services report `(healthy)`.
 - Caddy HTTPS verification: `curl -sk https://localhost/health` returned `{"status":"ok","version":"0.1.0"}` and `curl -sk -o /dev/null -w "%{http_code}\n" https://localhost/` returned `200`, so the public deployment path the demo uses is live end-to-end.
-- Phase 24 triage runtime verification on the live backend: registered a fresh user via `POST /api/auth/register`, started an SC-01 blue session via `POST /api/sessions/start`, called `GET /api/sessions/{id}/triage` and `GET /api/sessions/{id}/events` — both returned HTTP 200 with empty arrays (no SIEM events yet for a brand-new session); cross-user `PUT /api/sessions/{id}/triage` correctly returned HTTP 404 enforcing session ownership.
-- Backend pytest suite: `python -m pytest -p no:cacheprovider backend/tests` → `81 passed, 1 warning in 13.13s`.
-- Frontend production build: `cd frontend && npm run build` → `541 modules transformed`, `built in 6.22s`. New `Settings-*.js` lazy chunk is emitted (5.31 kB / 1.87 kB gzipped).
+- Phase 24 triage runtime verification on the live backend: registered a fresh user via `POST /api/auth/register`, started an SC-01 blue session via `POST /api/sessions/start`, called `GET /api/sessions/{id}/triage` and `GET /api/sessions/{id}/events` â€” both returned HTTP 200 with empty arrays (no SIEM events yet for a brand-new session); cross-user `PUT /api/sessions/{id}/triage` correctly returned HTTP 404 enforcing session ownership.
+- Backend pytest suite: `python -m pytest -p no:cacheprovider backend/tests` â†’ `81 passed, 1 warning in 13.13s`.
+- Frontend production build: `cd frontend && npm run build` â†’ `541 modules transformed`, `built in 6.22s`. New `Settings-*.js` lazy chunk is emitted (5.31 kB / 1.87 kB gzipped).
 - Phase v4 frontend deployment: rebuilt the `cybersim-frontend` image so the running container serves the new Settings page, expanded Command Palette (mission/terminal/copy actions), Terminal enhancements (Ctrl+Shift+C/V, find, context menu, touch pinch-zoom, auto-copy toggle), and Debrief polish that were already in the working tree.
 
 **Phase v4 status snapshot (post-deploy):**
 
 - WS-A Terminal usability: implemented (clipboard shortcuts, context menu, touch handlers, auto-copy preference). Still open: xterm-addon-search-driven find UI (Ctrl+F currently dispatches a focus event but the search input itself is not yet wired through the addon).
-- WS-B Resizable workspace: not started — Red/Blue workspaces still use the fixed CSS grid.
+- WS-B Resizable workspace: not started â€” Red/Blue workspaces still use the fixed CSS grid.
 - WS-C/D/E Scenario realism: SC-02 DC and SC-03 phishing artifacts already in place from the prior realism commits; SC-01 still uses the original PHP/Apache image without the dedicated `httpd:2.4.49` sidecar.
 - WS-F Output insight overlays: backend pattern engine not yet implemented; the frontend `terminal:insight` listener is in place and ready for a backend producer.
-- WS-G Branch-aware hints: not started — hint JSONs remain linear per phase.
+- WS-G Branch-aware hints: not started â€” hint JSONs remain linear per phase.
 - WS-H Design v3 close-out: Settings page shipped; Debrief uses three.js Kill Chain timeline; SIEM triage controls live; command palette has Mission/Terminal/Copy actions.
 
 **Next step:** Commit the SC-02 DC fix and the deployed Phase v4 working-tree changes as one cohesive batch (`fix(sc02): patch samba.ntacls so docker overlay xattr rejection no longer breaks DC provisioning`), then continue WS-B/F/G work or focus on hardening the demo-day rehearsal scripts depending on user direction.
@@ -4100,24 +4100,24 @@ $ python3 -m py_compile src/main.py  # ✓
   - Frontend build remains blocked in the default sandbox by the known esbuild/Vite `spawn EPERM` issue: `npm run build` failed while loading `frontend/vite.config.js` with `Error: spawn EPERM`. It needs an approved rerun outside the sandbox, as in prior project state entries.
   - Remaining required checks not yet run because the next Docker escalation was rejected by the desktop app quota: WAF audit-log tail after the wrapper, SC-01 and SC-02 fresh backend-provisioned Kali session smokes, banner Redis-history capture, output-insight smoke through a live terminal session, ES poller Redis-channel synthetic-doc smoke, final full `docker compose --profile sc01 --profile sc02 up -d --build`, `docker compose ps`, frontend build outside sandbox, and the requested commit.
 
-### [2026-05-19 17:17:00 +03:00] - Antigravity (Batch 1.5 P0 — Commit & Closure)
+### [2026-05-19 17:17:00 +03:00] - Antigravity (Batch 1.5 P0 â€” Commit & Closure)
 * **Status**: Complete. All Batch 1.5 changes committed (9d07322) and pushed to GitHub master.
 * **Why**: The previous Codex session completed all 9 P0 fixes but was terminated before it could commit. This session resumed, ran acceptance gates in the real shell environment, then committed and pushed the full changeset.
 * **Where**:
-  - Git commit `9d07322` — 26 files changed, 490 insertions, 278 deletions. New files: `test_output_patterns.py`, `db.env`, `waf-entrypoint.sh`, `waf-nginx.conf`, `fileserver-supervisor.conf`, `samba-supervisor.conf`.
-  - `docs/architecture/CONTINUOUS_STATE.md` — this record appended.
+  - Git commit `9d07322` â€” 26 files changed, 490 insertions, 278 deletions. New files: `test_output_patterns.py`, `db.env`, `waf-entrypoint.sh`, `waf-nginx.conf`, `fileserver-supervisor.conf`, `samba-supervisor.conf`.
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” this record appended.
 * **What & How**:
   - **Acceptance gates run in this session**:
-    - `docker compose config --quiet` → exit 0 (COMPOSE_OK). All 26 changed compose/infra files validated without error.
-    - `python -m py_compile` on all 5 modified backend Python files → SYNTAX_OK.
-    - `python -m pytest -q backend/tests/test_output_patterns.py backend/tests/unit_test_scenarios.py` → **34 passed** in 2.76s. Banner suppression, domain-admin regex tightening, and AI fallback tests all green.
+    - `docker compose config --quiet` â†’ exit 0 (COMPOSE_OK). All 26 changed compose/infra files validated without error.
+    - `python -m py_compile` on all 5 modified backend Python files â†’ SYNTAX_OK.
+    - `python -m pytest -q backend/tests/test_output_patterns.py backend/tests/unit_test_scenarios.py` â†’ **34 passed** in 2.76s. Banner suppression, domain-admin regex tightening, and AI fallback tests all green.
     - Full suite (`backend/tests`): 70 passed, 4 failed, 15 errors. Failures are pre-existing integration/WebSocket tests requiring a live Docker stack (identical failure set to prior sessions).
   - **Batch 1.5 P0 fix inventory** (all verified by prior Codex session):
     - SC-01: `sc01-db` MariaDB added; `sc01-webapp` waits on DB health; `sc01-waf` ModSecurity reverse-proxies traffic; WAF audit logs flow to Filebeat named volume.
     - SC-02: Kali `krb5.conf` injected with full `[realms]` block + `/etc/hosts` entries; fileserver `setup-shares.sh` retries `net ads join` with correct password; `smb.conf` identity corrected to File Server role.
     - SIEM engine: ES poller reads `cybersim:active_sessions` Redis hash (replaces dead in-memory dict); baseline advances on empty hits to prevent replay.
     - Output scanner: `_BANNER_GUARD` suppresses banner/objective lines before regex matching; `sc02-domain-admin` pattern requires AD-context fingerprints.
-  - **Next**: Batch 2 — replace remaining command-regex SIEM triggers with a proper Sigma-style rule engine polling Elasticsearch per-scenario index.
+  - **Next**: Batch 2 â€” replace remaining command-regex SIEM triggers with a proper Sigma-style rule engine polling Elasticsearch per-scenario index.
 ### [2026-05-20 12:00:00 +03:00] - Gemini (Kill Chain Timeline Enhancements)
 * **Status**: Complete - Enhanced interactivity, backend-driven linking, and 'Detection Links' integrated.
 * **Why**: The user requested improvements and enhancements to the Dual-Axis Kill Chain Timeline, specifically mentioning "Red team commands vs Blue team detections with detection links".
@@ -4145,7 +4145,7 @@ $ python3 -m py_compile src/main.py  # ✓
 * **Hygiene**: Removed trailing whitespace from the affected frontend files after `git diff --check` flagged existing whitespace in the local settings/timeline changes.
 * **Verification**:
   - `npm run lint` in `frontend/` exited 0 with no ESLint warnings.
-  - `npm run build` in `frontend/` exited 0 with `✓ built in 6.67s`.
+  - `npm run build` in `frontend/` exited 0 with `âœ“ built in 6.67s`.
   - `python -m pytest -q -p no:cacheprovider backend/tests --ignore=backend/tests/e2e --ignore=backend/tests/integration_test.py --ignore=backend/tests/test_ws_integration.py --ignore=backend/tests/load_test.py` returned `78 passed in 2.70s`.
   - `docker compose config --quiet` exited 0 with empty output.
   - `docker compose up -d --build frontend` rebuilt `cybersim-frontend:latest` and restarted `cybersim-frontend-1`.
@@ -4312,7 +4312,7 @@ $ python3 -m py_compile src/main.py  # ✓
 * **Verification**:
   - `python -m pytest -q -p no:cacheprovider backend/tests` -> `140 passed in 10.93s`.
   - `python scripts/demo_check.py` -> `ALL 12 CHECKS PASSED`.
-  - `npm run build` in `frontend/` -> `✓ built in 6.77s`.
+  - `npm run build` in `frontend/` -> `âœ“ built in 6.77s`.
 
 ### [2026-05-21 19:03:08 +03:00] - Codex (Batch F - Verification and Integration Sweep)
 * **Status**: Complete - final regression, Docker, demo readiness, and browser smoke checks passed after one additional Blue workspace crash fix.
@@ -4336,15 +4336,15 @@ $ python3 -m py_compile src/main.py  # ✓
   - Debrief data API smoke passed for browser-created SC-02 session `d33bc78d-25bf-4bee-8352-addfbd49839e`, returning session, score, timeline, and report shape; the in-app browser reload path did not retain local auth state long enough for a full visual Debrief route smoke.
   - Instructor API smoke with `admin/CyberSimAdmin!` returned 50 activity rows and 82 sessions. AI budget usage remains zero in this environment because `OPENROUTER_API_KEY` is not set; readiness explicitly reports static fallback hints enabled, so live LLM-token usage can only be verified after a valid key is configured.
 
-### [2026-05-21 22:51:00 +03:00] - Antigravity (Enhanced Planning for Phases 25–28)
+### [2026-05-21 22:51:00 +03:00] - Antigravity (Enhanced Planning for Phases 25â€“28)
 * **Status**: Complete
 * **Why**: The user requested a review of the existing project state and a replanning of a better, more enhanced improvement/fix plan.
 * **Where**:
   - `C:\Users\Mahmo\.gemini\antigravity\brain\6be15959-1839-40e0-85e0-6c488bbea334\implementation_plan.md` (updated artifact)
   - `C:\Users\Mahmo\.gemini\antigravity\brain\6be15959-1839-40e0-85e0-6c488bbea334\next_phase_prompt.md` (updated artifact)
 * **What & How**:
-  - Reviewed existing project state, git logs, and test results. Determined all prior phases (0–24) and fixes are healthy, tested, and verified.
-  - Refined the roadmap for the final sprint (Phases 25–28) to incorporate professional-grade features: struggle/recon-paralysis tracking, SVG score distributions, interactive SVG topology maps inside a mission readiness overlay, custom competency mapping (radar charts), Socratic interactive post-mission chat, and seed-driven scenario/network randomizations.
+  - Reviewed existing project state, git logs, and test results. Determined all prior phases (0â€“24) and fixes are healthy, tested, and verified.
+  - Refined the roadmap for the final sprint (Phases 25â€“28) to incorporate professional-grade features: struggle/recon-paralysis tracking, SVG score distributions, interactive SVG topology maps inside a mission readiness overlay, custom competency mapping (radar charts), Socratic interactive post-mission chat, and seed-driven scenario/network randomizations.
   - Updated implementation plan and next-phase prompts to provide detailed design directions for the next execution agent.
 
 ---
@@ -4390,18 +4390,18 @@ $ python3 -m py_compile src/main.py  # ✓
 
 ---
 
-### [2026-05-22 12:11:00 +03:00] - Antigravity (Phase 28 — Scenario Depth, Randomization & Dynamic Security)
-* **Status**: Complete — All Phase 28 components implemented and verified. 22/22 new randomizer tests pass, 128/128 unit regression tests pass, frontend build succeeds (547 modules, 5.87s).
+### [2026-05-22 12:11:00 +03:00] - Antigravity (Phase 28 â€” Scenario Depth, Randomization & Dynamic Security)
+* **Status**: Complete â€” All Phase 28 components implemented and verified. 22/22 new randomizer tests pass, 128/128 unit regression tests pass, frontend build succeeds (547 modules, 5.87s).
 * **Why**: Phase 28 elevates each student session into a unique, deterministically-seeded training experience. Rather than every student facing identical flags, credentials, and network topologies, each session now receives a randomized variant that prevents answer-sharing and builds real adaptive thinking. Demo and test sessions are protected from randomization to preserve testing pipelines.
 * **Where**:
-  - `backend/src/scenarios/randomizer.py` — **[NEW]** Core randomization module: `get_seed(session_id)` using MD5, `generate_randomized_session_metadata(session_id, scenario_id)`, `build_iptables_rules(session_id, scenario_id, metadata)`, `build_flag_tarball(flag_path, flag_value)`, and `apply_randomization(session_id, scenario_id, metadata, kali_container_id)`.
-  - `backend/src/scenarios/engine.py` — Updated `validate_flag` to support session-level dynamic flag overrides from `session_metadata["flags"]` including exact `value` and regex `value_pattern` matching, falling back to static YAML flags.
-  - `backend/src/sessions/routes.py` — `start_session` now pre-generates the session UUID, calls `generate_randomized_session_metadata`, stores metadata in `Session.session_metadata`, and exposes `scenario_variant` and `target_ip` in `_session_dict`.
-  - `backend/src/ws/routes.py` — After container provisioning, asynchronously calls `apply_randomization` in a background `asyncio.create_task` to inject iptables NAT rules and flag files without blocking the WS handshake.
-  - `backend/src/sandbox/daemon_noise.py` — Refactored `_run_noise_loop` to read per-session randomization seed from Redis and use it to deterministically jitter noise intervals and select SIEM events, producing unique per-session background traffic signatures.
-  - `frontend/src/pages/RedWorkspace.jsx` — Added Difficulty Variant badge (amber) and randomized Target IP badge (green) to the Kali Terminal panel header from `session.scenario_variant` and `session.target_ip`.
-  - `frontend/src/pages/Dashboard.jsx` — Added "Randomized Variant" badge (with refresh icon SVG) to the Mission Briefing modal header, informing students that each launch will use unique parameters.
-  - `backend/tests/test_scenario_randomizer.py` — **[NEW]** 22 tests covering bypass logic, deterministic seeding, per-scenario metadata field presence, iptables rule generation, tar archive construction, and `validate_flag` with metadata overrides and regex patterns.
+  - `backend/src/scenarios/randomizer.py` â€” **[NEW]** Core randomization module: `get_seed(session_id)` using MD5, `generate_randomized_session_metadata(session_id, scenario_id)`, `build_iptables_rules(session_id, scenario_id, metadata)`, `build_flag_tarball(flag_path, flag_value)`, and `apply_randomization(session_id, scenario_id, metadata, kali_container_id)`.
+  - `backend/src/scenarios/engine.py` â€” Updated `validate_flag` to support session-level dynamic flag overrides from `session_metadata["flags"]` including exact `value` and regex `value_pattern` matching, falling back to static YAML flags.
+  - `backend/src/sessions/routes.py` â€” `start_session` now pre-generates the session UUID, calls `generate_randomized_session_metadata`, stores metadata in `Session.session_metadata`, and exposes `scenario_variant` and `target_ip` in `_session_dict`.
+  - `backend/src/ws/routes.py` â€” After container provisioning, asynchronously calls `apply_randomization` in a background `asyncio.create_task` to inject iptables NAT rules and flag files without blocking the WS handshake.
+  - `backend/src/sandbox/daemon_noise.py` â€” Refactored `_run_noise_loop` to read per-session randomization seed from Redis and use it to deterministically jitter noise intervals and select SIEM events, producing unique per-session background traffic signatures.
+  - `frontend/src/pages/RedWorkspace.jsx` â€” Added Difficulty Variant badge (amber) and randomized Target IP badge (green) to the Kali Terminal panel header from `session.scenario_variant` and `session.target_ip`.
+  - `frontend/src/pages/Dashboard.jsx` â€” Added "Randomized Variant" badge (with refresh icon SVG) to the Mission Briefing modal header, informing students that each launch will use unique parameters.
+  - `backend/tests/test_scenario_randomizer.py` â€” **[NEW]** 22 tests covering bypass logic, deterministic seeding, per-scenario metadata field presence, iptables rule generation, tar archive construction, and `validate_flag` with metadata overrides and regex patterns.
 * **What & How**:
   - **Seed Generation**: `get_seed(session_id)` computes MD5(session_id), takes first 8 hex chars as int. Ensures every session has a fully deterministic seed reproducible across all service restarts.
   - **Bypass Guard**: `_is_bypass` gates the bypass on exact `"demo"` or `startswith("test")`, so the testing infrastructure is immune. Any UUID-shaped session_id proceeds to full randomization.
@@ -4410,13 +4410,13 @@ $ python3 -m py_compile src/main.py  # ✓
   - **SC-03 Randomization**: Picks from 4 phishing subjects, 4 victim pretexts, 3 mail relay routes, 3 target IPs; derives `FLAG{Orion_<8-hex>}`.
   - **validate_flag Enhancement**: Builds effective flag list from `session_metadata["flags"]` first (keyed by flag_id), then appends YAML static flags for any flag_id not overridden. For each flag, tries exact `value` match then `re.fullmatch(value_pattern, input)`.
   - **iptables NAT Virtualization**: Adds loopback alias `ip addr add <virtual_ip>/32 dev lo` then inserts DNAT rules in OUTPUT and PREROUTING chains, so any scan/exploit towards the virtual IP transparently hits the real static container IP.
-  - **Flag File Injection**: `_inject_flag_file` uses `container.exec_run` to mkdir parent dir and `container.put_archive` with an in-memory tarball to write the flag at the randomized path — no build-time secrets, zero static payloads.
-  - **Noise Jitter**: For each active session, retrieves seed from `session:{session_id}:rand_seed` Redis key, uses `random.Random(seed ^ int(now/60))` to produce a per-session jitter window between 120–200s. Event selection also uses `random.Random(seed ^ int(now/30))` so different sessions rotate through different SIEM message sequences.
+  - **Flag File Injection**: `_inject_flag_file` uses `container.exec_run` to mkdir parent dir and `container.put_archive` with an in-memory tarball to write the flag at the randomized path â€” no build-time secrets, zero static payloads.
+  - **Noise Jitter**: For each active session, retrieves seed from `session:{session_id}:rand_seed` Redis key, uses `random.Random(seed ^ int(now/60))` to produce a per-session jitter window between 120â€“200s. Event selection also uses `random.Random(seed ^ int(now/30))` so different sessions rotate through different SIEM message sequences.
 * **Verification**:
-  - `python -m py_compile src/scenarios/randomizer.py src/scenarios/engine.py src/sessions/routes.py src/sandbox/daemon_noise.py src/ws/routes.py` → exit 0.
-  - `python -m pytest tests/test_scenario_randomizer.py -v` → 22 passed.
-  - `python -m pytest -q -p no:cacheprovider tests --ignore=tests/e2e --ignore=tests/integration_test.py --ignore=tests/test_ws_integration.py --ignore=tests/load_test.py` → 128 passed in 1.34s.
-  - `npm run build` → ✓ 547 modules transformed, built in 5.87s, 0 errors.
+  - `python -m py_compile src/scenarios/randomizer.py src/scenarios/engine.py src/sessions/routes.py src/sandbox/daemon_noise.py src/ws/routes.py` â†’ exit 0.
+  - `python -m pytest tests/test_scenario_randomizer.py -v` â†’ 22 passed.
+  - `python -m pytest -q -p no:cacheprovider tests --ignore=tests/e2e --ignore=tests/integration_test.py --ignore=tests/test_ws_integration.py --ignore=tests/load_test.py` â†’ 128 passed in 1.34s.
+  - `npm run build` â†’ âœ“ 547 modules transformed, built in 5.87s, 0 errors.
 
 ### [2026-05-22 12:11:53 +03:00] - Codex (Canva Visual Report Candidates)
 * **Status**: Complete - generated three Canva visual-report candidates for the CyberSim graduation documentation companion package.
@@ -5167,7 +5167,7 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
 
 ### [2026-05-24 10:16:00 +03:00] - Antigravity (HUD E2E Verification & Core Bugfixes)
 * **Status**: Complete - resolved critical bugs preventing natural overlay dismissal, and executed screenshot verification suite.
-* **Why**: The senior graduation examiner review required verifying Tasks 1–6 from HUD redesign, producing updated visual evidence, and addressing technical drifts (SQL mutations, missing WebSocket payload IDs).
+* **Why**: The senior graduation examiner review required verifying Tasks 1â€“6 from HUD redesign, producing updated visual evidence, and addressing technical drifts (SQL mutations, missing WebSocket payload IDs).
 * **Where**:
   - `backend/src/ws/routes.py` (lines 410-425) - added `session_id` to the WebSocket readiness updates.
   - `backend/src/sessions/routes.py` (lines 414-419) - replaced in-place JSON modification of session metadata with a fresh dict assignment to ensure database commits dirty the attribute.
@@ -5254,3 +5254,88 @@ pm run build in the rontend directory; built cleanly in 14.93s without errors.
   - 401 API responses comprehensively wipe all Zustand/localStorage state to fix ghost sessions.
   - Signed-in users landing on / or /auth are immediately forwarded to their dashboard or previous route.
   - Navigation bar queries /sessions/active to display an accessible return button across all portal pages.
+
+### [2026-05-27 21:37:00 +03:00] - Antigravity (Phase 9A — Report Quality, Format & Theme Redesign)
+* **Status**: Complete — Premium DOCX and PDF generated. 521,452 B DOCX / 960,684 B PDF. All 16 figures embedded. All 7 chapters styled with CyberSim theme. MANIFEST.sha256 updated. next-phase-proposal.md updated with Phase 10.
+* **Why**: User requested improved quality, format, layout, readability, and theme redesign of the formal report. The v1 compiler used plain python-docx defaults with no color or brand application.
+* **Where**:
+  - `scripts/compile_report_v2.py` — created. 1000-line premium compiler with Markdown parser, brand palette, styled tables, code blocks, chapter title blocks, figure embedder, and Word COM PDF export.
+  - `docs/final-report/formal-report/cybersim-graduation-report.docx` — regenerated (521,452 B).
+  - `docs/final-report/formal-report/cybersim-graduation-report.pdf` — regenerated (960,684 B).
+  - `docs/final-report/formal-report/render-verification.md` — recreated for v2 with full theme/compliance audit table.
+  - `docs/final-report/next-phase-proposal.md` — Phase 9A completion block + Phase 10 Defense Preparation proposal appended.
+  - `MANIFEST.sha256` — regenerated (32 entries, Phase 9A hashes locked).
+  - `docs/architecture/CONTINUOUS_STATE.md` — this entry.
+* **What & How**:
+  - CyberSim Brand Palette: BRAND_DARK #0D1B2A (navy), BRAND_ACCENT #00B4D8 (cyan), BRAND_MID #17324E, BRAND_LIGHT #E8F4F8.
+  - Cover page: navy + cyan title block, university/school/department text, year block.
+  - Chapter title blocks: navy label strip + light-blue heading band + bottom accent border.
+  - H2: left 18pt cyan border rule + 0.4cm indent. H3: left 10pt mid-navy border + 0.3cm indent.
+  - Tables: navy header fill (white bold text) + alternating alice-blue rows + first-column bold + caption above.
+  - Figures: centered 13.5cm wide PNGs + italic caption below. Caption lines in MD skipped if image rendered above.
+  - Code blocks: Courier New 9pt + grey (#F5F5F5) fill + cyan left border.
+  - Per-chapter table numbering (Ch.N) for KASIT compliance.
+  - Markdown parser handles H1/H2/H3/para/bullet/numbered/code/table/figure blocks.
+  - Word COM called for Fields.Update() and PDF export.
+  - Fixed python-docx 1.2.0 RGBColor tuple indexing (no .red/.green/.blue attributes).
+
+### [2026-05-27 21:43:00 +03:00] - Antigravity (Prompts D, E, F, Phase Logic, Layer 2 Regex Refinement)
+* **Status**: Complete - Fixed phase advancement logic, added LEARN mode tool/IP regex prevention, added "Missions" button to TopBar, hid active mission pill on session page, and added /restart endpoint with "Restart sandbox" button.
+* **Why**: The user requested a series of UI and backend fixes (Prompts D, E, F) and conditionally fixing phase advancement and regex refinement based on previous session summaries.
+* **Where**:
+  - rontend/src/components/workspace/WorkspaceTopBar.jsx - Updated back button text to "Missions" and added "Restart sandbox" button.
+  - rontend/src/components/nav/CyberSimNav.jsx - Hid active mission pill when currently in a session.
+  - ackend/src/sessions/routes.py - Added POST /{session_id}/restart endpoint.
+  - ackend/src/ai/security.py - Added LEARN_MODE_PATTERNS to block tool and IP leakage in LEARN mode. 
+  - ackend/src/ai/monitor.py - Passed mode to sanitize_tutor_response.
+  - ackend/src/scenarios/engine.py - Fixed the 	ools_used intersection check so phase advancement correctly queries and evaluates alternative tools.
+* **What & How**:
+  - Updated WorkspaceTopBar and CyberSimNav to improve dashboard navigation and Active Mission pill behavior.
+  - Built the /restart session endpoint which invokes stop_scenario_container and clears the terminal history from Redis, allowing users to safely bounce their sandbox environments.
+  - Patched the phase advancement logic bug in engine.py where a truthy intersection of equired & used_tools erroneously passed the requirement when alternative tools were present. Explicitly expanded the DB query and enforced a logical AND/OR evaluation.
+  - Refined Layer 2 Regex in security.py by adding LEARN_MODE_PATTERNS to catch IPv4 leakage and flagless tool disclosure specifically when the AI is in learn mode.
+
+### [2026-05-27 21:52:00 +03:00] - Antigravity (Run fully on docker start)
+* **Status**: Complete - Added restart policies and brought up the full project stack.
+* **Why**: The user requested that the project run fully when the docker daemon starts.
+* **Where**:
+  - docker-compose.yml - Appended estart: unless-stopped to postgres, edis, elasticsearch, ilebeat, and sc01-db.
+* **What & How**:
+  - Modified the Compose file so the core infrastructure services automatically start with the Docker host.
+  - Rebuilt and started the full suite of containers including SC01, SC02, and SC03 using docker compose --profile sc01 --profile sc02 --profile sc03 up -d. All containers resolved as healthy.
+
+### [2026-05-27 22:03:00 +03:00] - Antigravity (Prompts A, B, C, D, E, F - Session & Navigation Upgrades)
+* **Status**: Complete - Implemented session inactivity hooks, return URL login redirects, stale token app-load checks, workspace back/Missions buttons, role-switching Active Mission pills, and dynamic scenario restart capabilities.
+* **Why**: The user provided a structured prompt set to resolve six discrete session and routing bugs to prepare for graduation project defense.
+* **Where**:
+  - rontend/src/components/ui/SessionManager.jsx - Created SessionActivityContext and useSessionActivity hook.
+  - rontend/src/components/terminal/Terminal.jsx - Wrapped xterm onData to trigger esetActivity (throttled).
+  - rontend/src/pages/Auth.jsx - Read and validated whitelisted eturnUrl (starts with /) on successful login.
+  - rontend/src/store/authStore.js - Updated logout() to call clearSession() on Zustand useSessionStore and updated checkAuth to logout on API failure.
+  - rontend/src/components/workspace/WorkspaceTopBar.jsx - Converted the back button style to tn-v3 btn-v3-subtle, added in-progress badge info, and renamed endpoint triggers.
+  - rontend/src/pages/RedWorkspace.jsx & rontend/src/pages/BlueWorkspace.jsx - Mount-registered setLastVisitedRole('red' | 'blue') to the store and forwarded completed_at to the top-bar.
+  - rontend/src/components/nav/CyberSimNav.jsx - Handled routing for Active Mission pill to support lastVisitedRole navigation and fixed the logo to point to /dashboard when authenticated.
+  - ackend/src/sessions/routes.py - Renamed container endpoint to /restart-sandbox and implemented a logical /restart endpoint that snapshots current runs to metadata.runs[] and resets progress variables.
+  - rontend/src/pages/Dashboard.jsx - Implemented confirm-modal-gated estartScenario action and updated card controls/text to "Terminate Mission".
+  - rontend/src/pages/Debrief.jsx - Appended a "Retry this scenario" button that triggers a logical session reset.
+* **What & How**:
+  - Hooked up xterm typing events directly to React Context to reset the inactivity timer.
+  - Hardened JWT auth checks: if user enters the page with an expired token, the app immediately intercepts, logs out, and redirects to /auth with a valid eturnUrl query parameter.
+  - Implemented the snapshotting scenario restart logic in DB and Redis, clearing commands from the current run while maintaining historical debrief reports.
+  - Verified compilation via 
+pm run build and ran unit tests successfully.
+
+### [2026-05-27 22:15:00 +03:00] - Antigravity (Remove CRT, boot sequence, HUD controls, and audio effects)
+* **Status**: Complete - Stripped HudEnvironment, removed hudSound entirely, updated App and Landing routing, and cleaned up v3-design styles.
+* **Why**: The user requested cleanup of the heavy "immersive HUD" components and audio utilities that were restored by a previous agent from an older branch.
+* **Where**:
+  - frontend/src/components/layout/HudEnvironment.jsx - Stripped to a minimal React component wrapping children.
+  - frontend/src/App.jsx - Removed HudEnvironment import and wrapper tag.
+  - frontend/src/lib/hudSound.js - Deleted the audio controller library entirely.
+  - frontend/src/pages/Landing.jsx - Removed references and imports to hudSound.
+  - frontend/src/styles/v3-design.css - Deleted CRT scanlines, flicker animations, coordinates ticker, boot consoles, and radar sweep keyframes.
+* **What & How**:
+  - Simplified HudEnvironment to act as a direct transparent wrapper (passthrough) without state, three.js canvas, clock loops, or sound events.
+  - Removed hudSound usage inside Landing.jsx buttons to prevent browser runtime reference errors.
+  - Deleted obsolete CSS selectors and keyframe blocks from the v3 design system stylesheet to ensure no styles bleed.
+  - Verified clean compilation with npm run build and verified formatting/linter rules.
