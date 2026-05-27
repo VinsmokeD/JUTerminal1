@@ -35,9 +35,9 @@ os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("JWT_SECRET", "test-secret-for-ci-only-do-not-use-in-prod")
 os.environ["POSTGRES_URL"] = os.environ.get(
     "TEST_POSTGRES_URL",
-    "postgresql+asyncpg://cybersim:change_this_password@localhost:5432/cybersim",
+    "postgresql+asyncpg://cybersim:change_this_password@127.0.0.1:5432/cybersim",
 )
-os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://localhost:6379/1")
+os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:6379/1")
 
 from httpx import AsyncClient, ASGITransport
 from httpx_ws import aconnect_ws

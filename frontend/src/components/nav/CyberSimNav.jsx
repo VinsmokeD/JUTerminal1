@@ -13,7 +13,7 @@ import { useSessionStore } from '../../store/sessionStore'
  */
 export default function CyberSimNav({ showUser = true, rightContent }) {
   const { username, logout, skillLevel } = useAuthStore()
-  const { activeSession, fetchActiveSession } = useSessionStore()
+  const { activeSession, fetchActiveSession, lastVisitedRole } = useSessionStore()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
   return (
     <nav className="nav-bar">
       {/* Logo */}
-      <button onClick={() => navigate('/')} className="flex items-center gap-3 group">
+      <button onClick={() => navigate(username ? '/dashboard' : '/')} className="flex items-center gap-3 group">
         <div className="nav-logo-icon" />
         <div className="font-mono text-lg font-bold text-txt-primary tracking-tight">
           CyberSim<span className="text-txt-dim font-normal">.io</span>
@@ -36,9 +36,9 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
       <div className="flex items-center gap-6">
         {rightContent}
 
-        {activeSession && activeSession.id && window.location.pathname !== `/session/${activeSession.id}/${activeSession.role}` && (
+        {activeSession && activeSession.id && !window.location.pathname.startsWith(`/session/${activeSession.id}`) && (
           <button
-            onClick={() => navigate(`/session/${activeSession.id}/${activeSession.role}`)}
+            onClick={() => navigate(`/session/${activeSession.id}/${lastVisitedRole || activeSession.role}`)}
             className="hidden sm:flex items-center gap-2 btn-v3 btn-v3-sm border-cs-blue/30 text-cs-blue bg-cs-blue/10 hover:bg-cs-blue/20"
           >
             <span className="w-2 h-2 rounded-full bg-cs-blue animate-pulse-soft" />

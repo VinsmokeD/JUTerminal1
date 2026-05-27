@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import api from '../../lib/api'
 import ConnectionPill from './ConnectionPill'
 import PhaseTrail from '../methodology/PhaseTrail'
 import { useSessionStore } from '../../store/sessionStore'
@@ -41,6 +42,7 @@ export default function WorkspaceTopBar({
   aiMode,
   elapsed,
   connection,
+  completedAt,
   children,
 }) {
   const navigate = useNavigate()
@@ -57,19 +59,20 @@ export default function WorkspaceTopBar({
       style={{ minHeight: 52 }}
     >
       {/* Back button */}
-      <button
-        onClick={() => navigate('/dashboard')}
-        aria-label="Back to dashboard"
-        className="
-          flex items-center justify-center w-7 h-7 rounded-cs-sm
-          text-txt-dim hover:text-txt-primary
-          hover:bg-surface-3 transition-colors duration-enter
-        "
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="btn-v3 btn-v3-subtle flex items-center gap-1.5 text-sm"
+        >
+          <span aria-hidden>←</span>
+          <span className="hidden sm:inline">Missions</span>
+        </button>
+        {phase && !completedAt && (
+          <span className="hidden md:inline font-mono text-[11px] text-txt-dim bg-surface-2 border border-cs-border px-2 py-0.5 rounded-cs-sm">
+            {scenarioId} · Phase {phase} · In progress
+          </span>
+        )}
+      </div>
 
       {/* Role badge */}
       <div className="flex items-center gap-2 flex-shrink-0">
@@ -125,6 +128,19 @@ export default function WorkspaceTopBar({
           <span className="text-txt-dim uppercase tracking-wider text-[9.5px]">Score</span>
           <span className={`font-bold tabular-nums ${scoreTone(score)}`}>{score}</span>
         </div>
+
+        <button
+          onClick={async () => {
+            if (window.confirm('Restart the sandbox container? This will wipe the current terminal state and bounce the target network.')) {
+              await api.post(`/sessions/${sessionId}/restart-sandbox`)
+              window.location.reload()
+            }
+          }}
+          className="btn-v3 btn-v3-sm text-txt-dim hover:text-txt-primary hover:bg-surface-3 transition-colors border-transparent hover:border-cs-border"
+          style={{ background: 'transparent' }}
+        >
+          Restart sandbox
+        </button>
 
         <button
           onClick={() => navigate(`/session/${sessionId}/debrief`)}

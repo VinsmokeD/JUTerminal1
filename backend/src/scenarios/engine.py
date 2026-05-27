@@ -350,18 +350,31 @@ async def _check_completion_signals(
     required_tools: list[str] = signals.get("tools_used", [])
     if required_tools:
         required = {t.lower() for t in required_tools}
+        alternatives = {"gobuster", "ffuf", "dirb"}
+        
+        expanded_required = set(required)
+        if required & alternatives:
+            expanded_required.update(alternatives)
+            
         result = await db.execute(
             select(CommandLog.tool).where(
                 CommandLog.session_id == session_id,
-                CommandLog.tool.in_(required),
+                CommandLog.tool.in_(expanded_required),
             ).distinct()
         )
         used_tools = {row[0] for row in result.fetchall()}
-        alternatives = {"gobuster", "ffuf", "dirb"}
-        if required & alternatives:
-            tools_satisfied = bool(required & used_tools)
-        else:
-            tools_satisfied = required.issubset(used_tools)
+        
+        tools_satisfied = True
+        for req_tool in required:
+            if req_tool in alternatives:
+                if not (alternatives & used_tools):
+                    tools_satisfied = False
+                    break
+            else:
+                if req_tool not in used_tools:
+                    tools_satisfied = False
+                    break
+                    
         if not tools_satisfied:
             return False
 

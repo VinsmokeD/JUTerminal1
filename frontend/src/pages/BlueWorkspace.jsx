@@ -33,7 +33,7 @@ const isNoiseEvent = (event) =>
 export default function BlueWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { currentSession, phase, score, siemEvents, aiMode, setSiemEvents, setCurrentSession } = useSessionStore()
+  const { currentSession, phase, score, siemEvents, aiMode, setSiemEvents, setCurrentSession, setLastVisitedRole } = useSessionStore()
   const { skillLevel } = useAuthStore()
   const cachedSession = currentSession?.id === sessionId ? currentSession : null
   const [session, setSession] = useState(cachedSession)
@@ -68,6 +68,7 @@ export default function BlueWorkspace() {
   useEffect(() => {
     let cancelled = false
     const cached = useSessionStore.getState().currentSession
+    setLastVisitedRole('blue')
 
     if (cached?.id === sessionId) {
       setSession(cached)
@@ -184,6 +185,7 @@ export default function BlueWorkspace() {
         aiMode={aiMode}
         elapsed={elapsed}
         connection={connectionState}
+        completedAt={session?.completed_at}
       >
         <button
           onClick={() => setShowKillChain(true)}

@@ -200,6 +200,78 @@ async def end_session(
     return {"completed_at": session.completed_at.isoformat()}
 
 
+@router.post("/{session_id}/restart-sandbox")
+async def restart_session_container(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if session.container_id:
+        await stop_scenario_container(session.container_id, session.scenario_id)
+        session.container_id = None
+        await db.commit()
+
+    await cache_delete(f"terminal:{session_id}:history")
+    return {"status": "restarted"}
+
+
+@router.post("/{session_id}/restart")
+async def restart_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    result = await db.execute(
+        select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Snapshot current run
+    meta = session.session_metadata or {}
+    runs = meta.get("runs", [])
+    runs.append({
+        "phase": session.phase,
+        "score": session.score,
+        "ended_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Reset metadata overrides for flags if any
+    if "flags" in meta:
+        meta["flags"] = {}
+
+    session.session_metadata = {**meta, "runs": runs}
+    session.phase = 1
+    session.score = 100
+    session.completed_at = None
+
+    # Clear command_log for this session
+    from sqlalchemy import delete
+    await db.execute(
+        delete(CommandLog).where(CommandLog.session_id == session_id)
+    )
+    await db.commit()
+
+    # Reset cache
+    cached = await cache_get(f"session:{session_id}:state") or {}
+    cached["phase"] = 1
+    cached["score"] = 100
+    cached["flags_captured"] = []
+    if "completed_at" in cached:
+        cached["completed_at"] = None
+    await cache_set(f"session:{session_id}:state", cached, ttl=28800)
+
+    return _session_dict(session)
+
+
 @router.get("/{session_id}/commands")
 async def get_session_commands(
     session_id: str,

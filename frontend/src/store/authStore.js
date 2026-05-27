@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import api from '../lib/api'
+import { useSessionStore } from './sessionStore'
 
 export const useAuthStore = create((set) => ({
   token: localStorage.getItem('token') || null,
@@ -55,12 +56,31 @@ export const useAuthStore = create((set) => ({
     set({ onboardingCompleted: true })
   },
 
-  logout: () => {
+  logout: (returnUrl = null) => {
     localStorage.removeItem('token')
     localStorage.removeItem('username')
     localStorage.removeItem('skillLevel')
     localStorage.removeItem('onboardingCompleted')
+    useSessionStore.getState().clearSession()
     set({ token: null, username: null, skillLevel: null, onboardingCompleted: false })
-    window.location.href = '/auth'
+    if (returnUrl) {
+      window.location.href = `/auth?returnUrl=${encodeURIComponent(returnUrl)}`
+    } else {
+      window.location.href = '/auth'
+    }
+  },
+
+  checkAuth: async () => {
+    if (!localStorage.getItem('token')) return false
+    try {
+      const profile = await api.get('/auth/me')
+      localStorage.setItem('skillLevel', profile.data.skill_level || 'beginner')
+      localStorage.setItem('onboardingCompleted', profile.data.onboarding_completed ? 'true' : 'false')
+      set({ skillLevel: profile.data.skill_level, onboardingCompleted: profile.data.onboarding_completed })
+      return true
+    } catch {
+      useAuthStore.getState().logout()
+      return false
+    }
   },
 }))

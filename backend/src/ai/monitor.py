@@ -340,7 +340,7 @@ async def get_ai_hint(
         is_valid, safe_text = validate_ai_output(
             hint_text, scenario_secrets=scenario_secrets
         )
-        sanitization = sanitize_tutor_response(safe_text if is_valid else hint_text)
+        sanitization = sanitize_tutor_response(safe_text if is_valid else hint_text, mode=mode)
 
         # 3. Log interaction to DB
         from src.db.database import AIInteraction

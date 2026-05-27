@@ -36,6 +36,21 @@ export default function Debrief() {
   const [qaLoading, setQaLoading] = useState(false)
   const [questionInput, setQuestionInput] = useState('')
   const [hoveredMetric, setHoveredMetric] = useState(null)
+  const [retrying, setRetrying] = useState(false)
+
+  const retryScenario = async () => {
+    if (!window.confirm('This will reset your progress to Phase 1. Your previous debrief report will be saved. Continue?')) return
+    setRetrying(true)
+    try {
+      await api.post(`/sessions/${sessionId}/restart`)
+      navigate(`/session/${sessionId}/${session.role}`)
+    } catch (e) {
+      console.error(e)
+      window.alert('Failed to restart scenario')
+    } finally {
+      setRetrying(false)
+    }
+  }
 
   useEffect(() => {
     api.get(`/reports/${sessionId}/report`)
@@ -335,6 +350,9 @@ export default function Debrief() {
           <div className="relative z-10 flex gap-3 mt-6 pt-6 border-t border-cs-border/30">
             <Button onClick={downloadReport} variant="blue" size="sm">Export report (.md)</Button>
             <Button onClick={downloadPdf} variant="ghost" size="sm">Export PDF</Button>
+            <Button onClick={retryScenario} disabled={retrying} variant="ghost" size="sm">
+              {retrying ? 'Retrying...' : 'Retry this scenario'}
+            </Button>
             <Button onClick={() => navigate('/dashboard')} variant="ghost" size="sm">New scenario</Button>
           </div>
         </div>

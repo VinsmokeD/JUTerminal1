@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, createContext, useContext } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import Modal from './Modal'
@@ -7,6 +7,9 @@ import Modal from './Modal'
 const INACTIVITY_LIMIT_MS = 30 * 60 * 1000
 // Show warning 2 minutes before logging out
 const WARNING_BEFORE_MS = 2 * 60 * 1000
+
+export const SessionActivityContext = createContext({ resetActivity: () => {} })
+export const useSessionActivity = () => useContext(SessionActivityContext)
 
 export function SessionManager({ children }) {
   const token = useAuthStore((s) => s.token)
@@ -55,6 +58,7 @@ export function SessionManager({ children }) {
     window.addEventListener('keydown', handleActivity)
     window.addEventListener('click', handleActivity)
     window.addEventListener('scroll', handleActivity)
+    window.addEventListener('session:activity', handleActivity)
 
     resetTimers()
 
@@ -63,13 +67,14 @@ export function SessionManager({ children }) {
       window.removeEventListener('keydown', handleActivity)
       window.removeEventListener('click', handleActivity)
       window.removeEventListener('scroll', handleActivity)
+      window.removeEventListener('session:activity', handleActivity)
       if (warningTimerRef.current) clearTimeout(warningTimerRef.current)
       if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current)
     }
   }, [token, location.pathname, resetTimers]) // Reset timers on navigation too
 
   return (
-    <>
+    <SessionActivityContext.Provider value={{ resetActivity: resetTimers }}>
       {children}
       {showWarning && (
         <Modal title="Session Expiring Soon" onClose={resetTimers}>
@@ -90,6 +95,6 @@ export function SessionManager({ children }) {
           </div>
         </Modal>
       )}
-    </>
+    </SessionActivityContext.Provider>
   )
 }

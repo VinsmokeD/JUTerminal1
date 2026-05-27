@@ -5339,3 +5339,15 @@ pm run build and ran unit tests successfully.
   - Removed hudSound usage inside Landing.jsx buttons to prevent browser runtime reference errors.
   - Deleted obsolete CSS selectors and keyframe blocks from the v3 design system stylesheet to ensure no styles bleed.
   - Verified clean compilation with npm run build and verified formatting/linter rules.
+
+### [2026-05-27 22:25:00 +03:00] - Antigravity (Fix Windows IPv6 localhost resolution and Commit working tree upgrades)
+* **Status**: Complete - Changed backend test URL targets to 127.0.0.1 to avoid Windows IPv6 resolution latency, and committed all remaining session management and navigation upgrades.
+* **Why**: The integration and performance tests exhibited a 2.1-second latency check failure on Windows due to `localhost` dns mapping attempting IPv6 prior to falling back to IPv4. Saving the remaining uncommitted session logic prevents any loss of progress in future sessions.
+* **Where**:
+  - backend/tests/integration_test.py - Replaced `localhost` with `127.0.0.1` in database and Redis target URLs.
+  - backend/src/ai/monitor.py, backend/src/ai/security.py, backend/src/scenarios/engine.py, backend/src/sessions/routes.py, docker-compose.yml - Committed backend changes.
+  - frontend/src/components/nav/CyberSimNav.jsx, frontend/src/components/terminal/Terminal.jsx, frontend/src/components/ui/SessionManager.jsx, frontend/src/components/workspace/WorkspaceTopBar.jsx, frontend/src/hooks/useTerminal.js, frontend/src/lib/api.js, frontend/src/pages/Auth.jsx, frontend/src/pages/BlueWorkspace.jsx, frontend/src/pages/Dashboard.jsx, frontend/src/pages/Debrief.jsx, frontend/src/pages/RedWorkspace.jsx, frontend/src/store/authStore.js, frontend/src/store/sessionStore.js - Committed frontend changes.
+* **What & How**:
+  - Rewrote test runner environment variables to query the raw loopback address `127.0.0.1`, which avoids the Windows DNS helper 2-second timeout.
+  - Verified that all 41 integration tests and all 190+ unit tests across the backend now execute and pass successfully in under 7 seconds total.
+  - Re-built and verified the frontend compiles with zero warnings or errors.

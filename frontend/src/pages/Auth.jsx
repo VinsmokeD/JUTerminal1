@@ -27,20 +27,13 @@ export default function Auth() {
   const location = useLocation()
 
   useEffect(() => {
-    // If a returnUrl exists in query params (from api interceptor 401), we can capture it here
-    // But RequireAuth uses location.state, which is preferred for React Router
-    const params = new URLSearchParams(location.search)
-    if (params.get('returnUrl') && !location.state?.from) {
-      location.state = { from: { pathname: params.get('returnUrl') } }
-    }
-
     const timers = TAGLINE.map((word, index) => (
       setTimeout(() => {
         setTypedWords((current) => (current.includes(index) ? current : [...current, index]))
       }, word.delay)
     ))
     return () => timers.forEach(clearTimeout)
-  }, [location])
+  }, [])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -51,7 +44,12 @@ export default function Auth() {
         ? await login(username, password)
         : await register(username, password)
       
-      const from = location.state?.from?.pathname || (authResult?.role === 'instructor' ? '/instructor' : '/dashboard')
+      const params = new URLSearchParams(location.search || window.location.search)
+      let returnUrl = params.get('returnUrl')
+      if (returnUrl && !returnUrl.startsWith('/')) {
+        returnUrl = null
+      }
+      const from = location.state?.from?.pathname || returnUrl || (authResult?.role === 'instructor' ? '/instructor' : '/dashboard')
       navigate(from, { replace: true })
     } catch (err) {
       setError(err.response?.data?.detail || 'Authentication failed')

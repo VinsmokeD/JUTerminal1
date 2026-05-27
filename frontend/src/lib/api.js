@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useAuthStore } from '../store/authStore'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -17,15 +18,11 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('username')
-      localStorage.removeItem('skillLevel')
-      localStorage.removeItem('onboardingCompleted')
       const currentPath = window.location.pathname
       if (currentPath !== '/auth' && currentPath !== '/') {
-        window.location.href = `/auth?returnUrl=${encodeURIComponent(currentPath)}`
+        useAuthStore.getState().logout(currentPath)
       } else {
-        window.location.href = '/auth'
+        useAuthStore.getState().logout()
       }
     }
     return Promise.reject(err)

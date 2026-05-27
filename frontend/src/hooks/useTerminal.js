@@ -225,10 +225,12 @@ export function useTerminal({
     searchRef.current = searchAddon
 
     term.onData((data) => {
+      window.dispatchEvent(new CustomEvent('session:activity'))
       sendInput(data)
     })
 
     term.onSelectionChange(() => {
+      window.dispatchEvent(new CustomEvent('session:activity'))
       const text = term.getSelection() || ''
       setSelection(text)
       if (!autoCopyRef.current || !text) return

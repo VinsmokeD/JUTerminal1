@@ -21,7 +21,7 @@ import ErrorBoundary from '../components/ErrorBoundary'
 export default function RedWorkspace() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { currentSession, phase, score, aiMode, siemEvents, setSiemEvents, setCurrentSession } = useSessionStore()
+  const { currentSession, phase, score, aiMode, siemEvents, setSiemEvents, setCurrentSession, setLastVisitedRole } = useSessionStore()
   const { skillLevel } = useAuthStore()
   const cachedSession = currentSession?.id === sessionId ? currentSession : null
   const [session, setSession] = useState(cachedSession)
@@ -58,6 +58,7 @@ export default function RedWorkspace() {
   useEffect(() => {
     let cancelled = false
     const cached = useSessionStore.getState().currentSession
+    setLastVisitedRole('red')
 
     if (cached?.id === sessionId) {
       setSession(cached)
@@ -209,6 +210,7 @@ export default function RedWorkspace() {
         aiMode={aiMode}
         elapsed={elapsed}
         connection={connectionState}
+        completedAt={session?.completed_at}
       >
         <button
           onClick={() => setShowKillChain(true)}

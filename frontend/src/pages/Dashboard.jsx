@@ -89,6 +89,7 @@ export default function Dashboard() {
   const [scenariosLoading, setScenariosLoading] = useState(true)
   const [launching, setLaunching] = useState(null)
   const [cancelling, setCancelling] = useState(null)
+  const [restarting, setRestarting] = useState(null)
   const [launchError, setLaunchError] = useState(null)
   const [briefing, setBriefing] = useState(null)
   const [role, setRole] = useState('red')
@@ -137,7 +138,7 @@ export default function Dashboard() {
     } catch (e) {
       const detail = e.response?.data?.detail
       if (detail?.error === 'active_session_exists') {
-        setLaunchError(`You have an active mission (${detail.scenario_id}). Please complete or cancel it before starting a new one.`)
+        setLaunchError(`You have an active mission (${detail.scenario_id}). Please complete or terminate it before starting a new one.`)
       } else {
         setLaunchError(typeof detail === 'string' ? detail : e.message || 'Failed to start session')
       }
@@ -147,16 +148,31 @@ export default function Dashboard() {
   }
 
   const cancelMission = async (id) => {
-    if (!window.confirm('Are you sure you want to cancel this mission? All progress will be lost.')) return
+    if (!window.confirm('Are you sure you want to terminate this mission? All progress will be lost.')) return
     setCancelling(id)
     try {
       await api.post(`/sessions/${id}/end`)
       await refreshData()
       setLaunchError(null)
     } catch (e) {
-      window.alert('Failed to cancel mission')
+      window.alert('Failed to terminate mission')
     } finally {
       setCancelling(null)
+    }
+  }
+
+  const restartScenario = async (id, role) => {
+    if (!window.confirm('This will reset your progress to Phase 1. Your previous debrief report will be saved. Continue?')) return
+    setRestarting(id)
+    try {
+      const res = await api.post(`/sessions/${id}/restart`)
+      setActiveMission(res.data)
+      navigate(`/session/${id}/${role}`)
+    } catch (e) {
+      console.error(e)
+      window.alert('Failed to restart scenario')
+    } finally {
+      setRestarting(null)
     }
   }
 
@@ -254,15 +270,25 @@ export default function Dashboard() {
                   size="sm"
                   className="text-cs-red hover:bg-cs-red/10 border-cs-red/20"
                   onClick={() => cancelMission(activeMission.id)}
-                  disabled={!!cancelling}
+                  disabled={!!cancelling || !!restarting}
                 >
                   {cancelling === activeMission.id ? 'Terminating...' : 'Terminate Mission'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-txt-dim hover:text-txt-primary hover:bg-surface-3 border-cs-border"
+                  onClick={() => restartScenario(activeMission.id, activeMission.role)}
+                  disabled={!!cancelling || !!restarting}
+                >
+                  {restarting === activeMission.id ? 'Restarting...' : 'Restart Scenario'}
                 </Button>
                 <Button
                   variant="blue"
                   size="md"
                   className="bg-cs-blue hover:bg-cs-blue/80 shadow-lg shadow-cs-blue/20"
                   onClick={() => navigate(`/session/${activeMission.id}/${activeMission.role}`)}
+                  disabled={!!cancelling || !!restarting}
                 >
                   Resume Engagement
                 </Button>
@@ -499,7 +525,7 @@ export default function Dashboard() {
                       variant="danger"
                       className="flex-1 justify-center text-sm"
                     >
-                      {cancelling === activeMission.id ? 'Terminating...' : `Cancel ${activeMission.scenario_id} first`}
+                      {cancelling === activeMission.id ? 'Terminating...' : 'Terminate Mission'}
                     </Button>
                   ) : (
                     <Button onClick={launch} disabled={!!launching} variant="red" className="flex-1 justify-center text-sm">

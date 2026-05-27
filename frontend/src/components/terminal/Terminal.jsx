@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTerminal } from '../../hooks/useTerminal'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useSessionStore } from '../../store/sessionStore'
+import { useSessionActivity } from '../ui/SessionManager'
 import TerminalContextMenu from './TerminalContextMenu'
 import TerminalToolbar from './TerminalToolbar'
 import OutputAnnotator from './OutputAnnotator'
@@ -13,6 +14,7 @@ import OutputAnnotator from './OutputAnnotator'
  * onCommand — extracted command string sent on Enter (for AI/discovery)
  */
 export default function Terminal({ onData, onCommand, pendingOutput, connectionState = 'connected', sessionId }) {
+  const { resetActivity } = useSessionActivity()
   const containerRef = useRef(null)
   const touchTimerRef = useRef(null)
   const pinchDistanceRef = useRef(null)
@@ -48,6 +50,20 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
   useEffect(() => {
     terminal.setTheme(terminalTheme)
   }, [terminalTheme, terminal])
+
+  // Reset inactivity timer on terminal activity
+  useEffect(() => {
+    const term = terminal.termRef.current
+    if (!term) return
+    const lastActivity = { current: Date.now() }
+    const disposable = term.onData(() => {
+      if (Date.now() - lastActivity.current > 1000) {
+        resetActivity()
+        lastActivity.current = Date.now()
+      }
+    })
+    return () => disposable.dispose()
+  }, [terminal.termRef, resetActivity])
 
   // Expose writeOutput via ref so parent can push output
   if (pendingOutput) {

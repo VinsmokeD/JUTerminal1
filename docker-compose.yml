@@ -36,6 +36,7 @@ services:
       retries: 5
     networks:
       - internal
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -56,6 +57,7 @@ services:
       retries: 5
     networks:
       - internal
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -80,6 +82,7 @@ services:
       retries: 5
     networks:
       - internal
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -106,6 +109,7 @@ services:
         condition: service_healthy
     networks:
       - internal
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -220,6 +224,7 @@ services:
       sc01-net:
         ipv4_address: 172.20.1.21
     profiles: ["sc01"]
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1", "-uroot", "-pNovaMedRoot2024!"]
       interval: 5s

@@ -15,6 +15,8 @@ export const useSessionStore = create((set, get) => ({
   activeBranch: null,
   discoveries: { services: [], paths: [], vulns: [], credentials: [] },
   pendingEvidence: null, // auto-evidence waiting for user confirmation
+  lastVisitedRole: null,
+  setLastVisitedRole: (role) => set({ lastVisitedRole: role }),
 
   fetchScenarios: async () => {
     const res = await api.get('/scenarios/')
@@ -91,6 +93,6 @@ export const useSessionStore = create((set, get) => ({
   clearSession: () => set({
     currentSession: null, activeSession: null, phase: 1, score: 100, siemEvents: [],
     aiMode: 'learn', activeBranch: null, discoveries: { services: [], paths: [], vulns: [], credentials: [] },
-    pendingEvidence: null,
+    pendingEvidence: null, lastVisitedRole: null,
   }),
 }))

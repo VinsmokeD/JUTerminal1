@@ -58,6 +58,12 @@ FORBIDDEN_PATTERNS: list[tuple[re.Pattern, str, str]] = [
 ]
 
 
+LEARN_MODE_PATTERNS: list[tuple[re.Pattern, str, str]] = [
+    (re.compile(r"\b(172\.20\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b"), "ip_leakage", "recon"),
+    (re.compile(r"\b(sqlmap|hydra|hashcat|john|metasploit|msfconsole|gobuster|ffuf|nikto|wpscan|wfuzz|enum4linux|crackmapexec|impacket-\w+)\b(?!\s*-\w)", re.IGNORECASE), "tool_leakage", "tool_choice"),
+]
+
+
 SOCRATIC_FALLBACKS: dict[str, str] = {
     "tool_choice": "What category of tool fits this phase? Before picking flags, what do you need to learn about the target?",
     "recon": "What information do you need first? How would you discover what services are exposed without testing each port by hand?",
@@ -70,7 +76,7 @@ SOCRATIC_FALLBACKS: dict[str, str] = {
 }
 
 
-def sanitize_tutor_response(text: str) -> SanitizationResult:
+def sanitize_tutor_response(text: str, mode: str = "challenge") -> SanitizationResult:
     """
     Critical: do NOT match on /etc/passwd, /etc/shadow, or topic-name-only patterns.
     Mentioning a sensitive file name in a conceptual context is permitted education.
@@ -82,7 +88,11 @@ def sanitize_tutor_response(text: str) -> SanitizationResult:
     violations: list[str] = []
     triggered_category: str | None = None
 
-    for pattern, label, category in FORBIDDEN_PATTERNS:
+    patterns = FORBIDDEN_PATTERNS.copy()
+    if mode == "learn":
+        patterns.extend(LEARN_MODE_PATTERNS)
+
+    for pattern, label, category in patterns:
         if pattern.search(text):
             violations.append(label)
             if triggered_category is None:
