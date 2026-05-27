@@ -242,7 +242,11 @@ export function useWebSocket(sessionId) {
     sendFrame({ type: 'toggle_mode', mode })
   }, [sendFrame])
 
-  return { sendRawInput, sendCommand, requestHint, toggleMode, connectionState }
+  const sendTutorQuestion = useCallback((text) => {
+    sendFrame({ type: 'tutor_question', data: text })
+  }, [sendFrame])
+
+  return { sendRawInput, sendCommand, requestHint, toggleMode, sendTutorQuestion, connectionState }
 }
 
 export function getTerminalBacklog(sessionId) {

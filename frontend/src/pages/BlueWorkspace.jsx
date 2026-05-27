@@ -15,7 +15,6 @@ import KillChainView from '../components/killchain/KillChainView'
 import Badge from '../components/ui/Badge'
 import Modal from '../components/ui/Modal'
 import api from '../lib/api'
-import MissionReadinessOverlay from '../components/workspace/MissionReadinessOverlay'
 
 
 const NIST_PHASES = {
@@ -54,7 +53,7 @@ export default function BlueWorkspace() {
   const writeOutputRef = useRef(null)
 
   const wsSessionId = session && roeAcked ? sessionId : null
-  const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(wsSessionId)
+  const { sendRawInput, sendCommand, requestHint, toggleMode, sendTutorQuestion, connectionState } = useWebSocket(wsSessionId)
 
   const handleRawInput = useCallback((data) => {
     if (connectionState === 'failed') return
@@ -174,7 +173,6 @@ export default function BlueWorkspace() {
 
   return (
     <div className="workspace-shell font-display">
-      <MissionReadinessOverlay sessionId={sessionId} scenarioId={session.scenario_id} />
       <WorkspaceTopBar
         role="blue"
         sessionId={sessionId}
@@ -353,7 +351,7 @@ export default function BlueWorkspace() {
                   </span>
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
+                  <AiHintPanel onSubmitQuestion={sendTutorQuestion} connectionState={connectionState} />
                 </div>
               </div>
             ),

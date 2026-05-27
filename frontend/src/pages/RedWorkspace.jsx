@@ -15,7 +15,6 @@ import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 import ScoreToast from '../components/ui/ScoreToast'
 import api from '../lib/api'
-import MissionReadinessOverlay from '../components/workspace/MissionReadinessOverlay'
 import ErrorBoundary from '../components/ErrorBoundary'
 
 export default function RedWorkspace() {
@@ -53,7 +52,18 @@ export default function RedWorkspace() {
   }, [scenarioId])
 
   const wsSessionId = session && roeAcked ? sessionId : null
-  const { sendRawInput, sendCommand, requestHint, toggleMode, connectionState } = useWebSocket(wsSessionId)
+  const { sendRawInput, sendCommand, requestHint, toggleMode, sendTutorQuestion, connectionState } = useWebSocket(wsSessionId)
+
+  const handleFlagSubmit = useCallback(async (flagVal) => {
+    const res = await api.post(`/sessions/${sessionId}/flag`, { flag_value: flagVal })
+    if (res.data.valid) {
+      const sessionRes = await api.get(`/sessions/${sessionId}`)
+      setSession(sessionRes.data)
+      useSessionStore.getState().setScore(sessionRes.data.score)
+      useSessionStore.getState().setPhase(sessionRes.data.phase)
+    }
+    return res.data
+  }, [sessionId])
 
   useEffect(() => {
     let cancelled = false
@@ -162,7 +172,6 @@ export default function RedWorkspace() {
 
   return (
     <div className="workspace-shell font-display">
-      <MissionReadinessOverlay sessionId={sessionId} scenarioId={session.scenario_id} />
       {toast && (
         <ScoreToast
           delta={toast.delta}
@@ -211,6 +220,9 @@ export default function RedWorkspace() {
         elapsed={elapsed}
         connection={connectionState}
         completedAt={session?.completed_at}
+        flagsCaptured={session?.flags_captured || []}
+        totalFlags={session?.total_flags || 0}
+        onSubmitFlag={handleFlagSubmit}
       >
         <button
           onClick={() => setShowKillChain(true)}
@@ -293,7 +305,7 @@ export default function RedWorkspace() {
           <div className="flex-1 flex flex-col min-h-0 mb-3 relative hud-glass-crimson clip-chamfer-sm">
             <PanelHeader color="blue" title="AI Tutor" />
             <div className="flex-1 overflow-hidden flex flex-col">
-              <AiHintPanel onRequestHint={requestHint} onToggleMode={toggleMode} />
+              <AiHintPanel onSubmitQuestion={sendTutorQuestion} connectionState={connectionState} />
             </div>
           </div>
           <div className={`flex-1 flex flex-col min-h-0 mt-3 relative hud-glass-crimson clip-chamfer-sm transition-all duration-300 ${siemFlash ? 'ring-1 ring-green-signal/40' : ''}`}>

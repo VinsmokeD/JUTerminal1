@@ -105,7 +105,7 @@ async def start_session(
     }
     await cache_set(f"session:{session.id}:state", state, ttl=28800)
 
-    return _session_dict(session)
+    return await _session_dict(session)
 
 
 @router.post("/roe-ack")
@@ -144,7 +144,7 @@ async def get_active_session(
     session = result.scalars().first()
     if not session:
         return None
-    return _session_dict(session)
+    return await _session_dict(session)
 
 
 @router.get("/")
@@ -157,7 +157,7 @@ async def list_sessions(
         .order_by(Session.started_at.desc())
         .limit(20)
     )
-    return [_session_dict(s) for s in result.scalars()]
+    return [await _session_dict(s) for s in result.scalars()]
 
 
 @router.get("/{session_id}")
@@ -172,7 +172,7 @@ async def get_session(
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    return _session_dict(session)
+    return await _session_dict(session)
 
 
 @router.post("/{session_id}/end")
@@ -269,7 +269,7 @@ async def restart_session(
         cached["completed_at"] = None
     await cache_set(f"session:{session_id}:state", cached, ttl=28800)
 
-    return _session_dict(session)
+    return await _session_dict(session)
 
 
 @router.get("/{session_id}/commands")
@@ -526,8 +526,16 @@ async def submit_flag(
     return res
 
 
-def _session_dict(s: Session) -> dict:
+async def _session_dict(s: Session) -> dict:
     meta = s.session_metadata or {}
+    from src.cache.redis import cache_get
+    cached = await cache_get(f"session:{s.id}:state") or {}
+    flags_captured = cached.get("flags_captured", [])
+    from src.scenarios.loader import get_flags
+    try:
+        total_flags = len(get_flags(s.scenario_id))
+    except Exception:
+        total_flags = 0
     return {
         "id": s.id,
         "session_id": s.id,
@@ -543,6 +551,8 @@ def _session_dict(s: Session) -> dict:
         "container_id": s.container_id,
         "scenario_variant": meta.get("scenario_variant"),
         "target_ip": meta.get("target_ip"),
+        "flags_captured": flags_captured,
+        "total_flags": total_flags,
     }
 
 

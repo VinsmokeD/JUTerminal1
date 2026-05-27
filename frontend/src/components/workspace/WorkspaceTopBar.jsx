@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import ConnectionPill from './ConnectionPill'
 import PhaseTrail from '../methodology/PhaseTrail'
 import { useSessionStore } from '../../store/sessionStore'
+import Modal from '../ui/Modal'
+import Button from '../ui/Button'
 
 /**
  * WorkspaceTopBar — refined session header used by both Red and Blue workspaces.
@@ -43,6 +46,9 @@ export default function WorkspaceTopBar({
   elapsed,
   connection,
   completedAt,
+  flagsCaptured = [],
+  totalFlags = 0,
+  onSubmitFlag,
   children,
 }) {
   const navigate = useNavigate()
@@ -102,18 +108,34 @@ export default function WorkspaceTopBar({
       {/* Right cluster */}
       <div className="flex items-center gap-2 ml-auto flex-shrink-0">
         {children}
+
+        {role === 'red' && (
+          <SubmitFlagWidget
+            flagsCaptured={flagsCaptured}
+            totalFlags={totalFlags}
+            onSubmitFlag={onSubmitFlag}
+          />
+        )}
+
         <ConnectionPill state={connection} />
 
         {aiMode && (
-          <span
-            className={`hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-mono text-[10.5px] uppercase tracking-[0.1em] ${
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('mission:toggle-ai-mode', {
+                detail: { mode: aiMode === 'learn' ? 'challenge' : 'learn' }
+              }))
+            }}
+            className={`hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-mono text-[10.5px] uppercase tracking-[0.1em] transition-all hover:brightness-110 active:scale-95 cursor-pointer ${
               aiMode === 'learn'
-                ? 'text-cs-blue bg-cs-blue/8 border-cs-blue/30'
-                : 'text-amber-warn bg-amber-warn/8 border-amber-warn/30'
+                ? 'text-cs-blue bg-cs-blue/8 border-cs-blue/30 hover:border-cs-blue/50'
+                : 'text-amber-warn bg-amber-warn/8 border-amber-warn/30 hover:border-amber-warn/50'
             }`}
+            title="Click to toggle Tutor mode"
           >
             {aiMode === 'learn' ? 'Learn' : 'Challenge'}
-          </span>
+          </button>
         )}
 
         <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-cs-border bg-surface-2 font-mono text-[11px] text-txt-secondary tabular-nums">
@@ -150,5 +172,119 @@ export default function WorkspaceTopBar({
         </button>
       </div>
     </div>
+  )
+}
+
+function SubmitFlagWidget({ flagsCaptured, totalFlags, onSubmitFlag }) {
+  const [showModal, setShowModal] = useState(false)
+  const [flagValue, setFlagValue] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const val = flagValue.trim()
+    if (!val) return
+
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const res = await onSubmitFlag(val)
+      if (res.valid) {
+        if (res.already_captured) {
+          setError('This flag was already captured!')
+        } else {
+          setSuccess(`Flag captured successfully! +${res.points_awarded || 0} points.`)
+          setFlagValue('')
+          setTimeout(() => {
+            setShowModal(false)
+            setSuccess(null)
+          }, 2000)
+        }
+      } else {
+        setError(res.hint || 'Incorrect flag value. Try again!')
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to validate flag')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          setShowModal(true)
+          setError(null)
+          setSuccess(null)
+          setFlagValue('')
+        }}
+        className="btn-v3 btn-v3-sm font-mono text-[11px] bg-surface-3 border border-cs-border hover:bg-surface-4 text-txt-secondary hover:text-txt-primary flex items-center gap-2"
+      >
+        <span>SUBMIT FLAG</span>
+        <span className="text-[10px] text-txt-dim bg-surface-2 px-1.5 py-0.5 rounded-cs-sm border border-cs-border">
+          {flagsCaptured.length}/{totalFlags} captured
+        </span>
+      </button>
+
+      <Modal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        title="Submit Mission Flag"
+        size="sm"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4 font-display">
+          <div>
+            <label className="block text-[11px] font-mono uppercase tracking-wider text-txt-dim mb-1.5">
+              Flag Value
+            </label>
+            <input
+              type="text"
+              value={flagValue}
+              onChange={(e) => setFlagValue(e.target.value)}
+              disabled={loading || success}
+              placeholder="e.g. FLAG-SC01-1"
+              className="w-full bg-surface-3 border border-cs-border rounded-cs px-3 py-2 text-xs text-txt-primary placeholder:text-txt-dim focus:outline-none focus:border-cs-blue transition-colors disabled:opacity-40"
+              autoFocus
+            />
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-cs border border-critical/30 bg-critical/5 text-xs text-critical leading-relaxed font-mono">
+              <span className="font-bold">❌ Error:</span> {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="p-3 rounded-cs border border-green-signal/30 bg-green-signal/5 text-xs text-green-signal leading-relaxed font-mono">
+              <span className="font-bold">✓ Success:</span> {success}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-cs-border">
+            <Button
+              variant="ghost"
+              onClick={() => setShowModal(false)}
+              disabled={loading}
+              type="button"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="blue"
+              type="submit"
+              loading={loading}
+              disabled={!flagValue.trim() || success}
+            >
+              Submit
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    </>
   )
 }

@@ -5351,3 +5351,19 @@ pm run build and ran unit tests successfully.
   - Rewrote test runner environment variables to query the raw loopback address `127.0.0.1`, which avoids the Windows DNS helper 2-second timeout.
   - Verified that all 41 integration tests and all 190+ unit tests across the backend now execute and pass successfully in under 7 seconds total.
   - Re-built and verified the frontend compiles with zero warnings or errors.
+
+### [2026-05-27 22:40:00 +03:00] - Antigravity (AI Tutor Panel Chat & Flag Submission Rework)
+* **Status**: Complete - Replaced the MissionReadinessOverlay, added inline chat input to the AI Tutor panel, enabled interactive Tutor mode toggling via top bar, and implemented flag submission inside the top bar.
+* **Why**: The user requested that the AI tutor panel match the second screenshot (a chat input instead of the static guidance levels), that the flag submission panel be moved to the top bar (SUBMIT FLAG inline pill), and that the "readiness report boot sequence" (MissionReadinessOverlay) be removed entirely.
+* **Where**:
+  - `backend/src/sessions/routes.py` - Made `_session_dict` async to fetch dynamic flags captured status and total spec flags count, and updated all callers to await it.
+  - `frontend/src/hooks/useWebSocket.js` - Exposed `sendTutorQuestion` helper inside the websocket hook to send raw `tutor_question` frames.
+  - `frontend/src/components/hints/AiHintPanel.jsx` - Replaced the old segmented toggles and request-hint buttons with a chat input and Socratic tutor info drawer.
+  - `frontend/src/components/workspace/WorkspaceTopBar.jsx` - Enabled interactive toggling of Tutor mode and appended `SubmitFlagWidget` with validation form modal.
+  - `frontend/src/pages/RedWorkspace.jsx` - Removed `MissionReadinessOverlay` imports, registered the `handleFlagSubmit` callbacks, and forwarded props to `WorkspaceTopBar` and `AiHintPanel`.
+  - `frontend/src/pages/BlueWorkspace.jsx` - Removed `MissionReadinessOverlay` references and connected the `AiHintPanel` chat stream.
+* **What & How**:
+  - Enabled direct workspace rendering upon page load by removing the overlay diagnostic blocker on both offensive and defensive panels.
+  - Streamlined `AiHintPanel` down to a scrolling tutor chat list, welcome initialization message, and input form dispatching backend socket queries.
+  - Placed the inline flag counter and submission modal button within the workspace header. When submitted, the client queries for score validation, triggers database phase advancement, and pulls updated session counts.
+  - Verified backend pytests are green, and verified build output compiles without warnings.
