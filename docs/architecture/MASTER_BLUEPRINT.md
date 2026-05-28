@@ -1,6 +1,6 @@
 # CyberSim: Master Project Blueprint & Agent Directive (v2.0)
 
-> **Authority**: This document is the operational North Star for all agents (Antigravity, Claude Code, Gemini).  
+> **Authority**: This document is the operational North Star for all agents (Antigravity, Claude Code, OpenRouter).  
 > It supersedes all prior scope definitions. Any feature, file, or container NOT described here requires explicit approval before implementation.  
 > **First action for any agent starting a new session**: Read this file, then `CLAUDE_HANDOFF.md`, then `CONTINUOUS_STATE.md`.
 
@@ -86,7 +86,7 @@ Browser (xterm.js) ◄───────────────► React Fro
 - Terminal output history: Redis capped list `terminal:{session_id}:history` — last 500 lines, replayed on re-attach
 
 ### AI Monitor
-- **Model**: `gemini-1.5-flash-latest`
+- **Model**: `deepseek/deepseek-v4-pro` (via OpenRouter)
 - **Trigger**: Every command submission (not keystrokes)
 - **Rate limit**: 1 call per 10s per session (`ai:{session_id}:last_call` Redis TTL)
 - **Response**: ≤150 tokens, always a question or conceptual nudge, never a direct exploit command
@@ -162,10 +162,10 @@ All agents enforce these on every change. No STATE_SAVE is valid if any guardrai
 | Background noise scripts | `infrastructure/docker/scenarios/*/daemon-noise.py` | Claude Code |
 | Instructor module | `backend/src/instructor/`, `frontend/src/pages/InstructorDashboard.jsx` | Claude Code |
 | DB migrations | `backend/migrations/` (Alembic) | Claude Code |
-| Scenario YAML specs | `docs/scenarios/SC-{01-03}-*.yaml` | Gemini |
-| SIEM event maps | `backend/src/siem/events/sc{01-03}_events.json` | Gemini |
-| Hint trees | `backend/src/scenarios/hints/sc{01-03}_hints.json` | Gemini |
-| AI system prompt | `ai-monitor/system_prompt.md` | Gemini |
+| Scenario YAML specs | `docs/scenarios/SC-{01-03}-*.yaml` | OpenRouter |
+| SIEM event maps | `backend/src/siem/events/sc{01-03}_events.json` | OpenRouter |
+| Hint trees | `backend/src/scenarios/hints/sc{01-03}_hints.json` | OpenRouter |
+| AI system prompt | `ai-monitor/system_prompt.md` | OpenRouter |
 
 ---
 
@@ -188,7 +188,7 @@ All agents enforce these on every change. No STATE_SAVE is valid if any guardrai
 | 19-22 | Unified Memory & Telemetry | ✅ Done |
 
 **Immediate blockers / risks**:
-1. `GEMINI_API_KEY` in `.env` may be a placeholder — replace with a real Google AI Studio key for Socratic hints during live demos.
+1. `OPENROUTER_API_KEY` in `.env` may be a placeholder — replace with a real OpenRouter API key for Socratic hints during live demos.
 2. Kali Dockerfile apt-get dependencies require pinning.
 3. Keep regression verification current with `python -m pytest`, `docker compose config --quiet`, frontend build, and browser E2E before defense demos.
 

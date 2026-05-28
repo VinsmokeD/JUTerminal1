@@ -5,6 +5,22 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-28 14:00:00 +03:00] - Gemini CLI (Bug Fixes and AI Provider Alignment)
+* **Status**: Complete - Resolved the AI Tutor "identical answer" bug, fixed the empty SIEM feed issue, and aligned documentation with the OpenRouter (DeepSeek) migration.
+* **Why**: The audit (PROMPT 1 & 2) identified critical UX bugs where the AI tutor gave repetitive guidance and SIEM events didn't appear in the UI. Documentation was also stale, still referencing Gemini after the code migrated to OpenRouter.
+* **Where**:
+  - `backend/src/ai/monitor.py` - instrumented `get_ai_hint` with SHA256 prompt hashing and detailed exit branch logging (cooldown, budget, API error/success).
+  - `backend/src/ws/routes.py` - added robust decoding and error handling to the WebSocket `_redis_to_ws` listener to handle JSON double-encoding and byte-strings.
+  - `backend/src/siem/command_bridge.py` - verified match logic and added logging for channel publication.
+  - `openrouter.md` (renamed from `gemini.md`) - renamed and updated Project Law for the new provider.
+  - `AGENTS.md`, `CLAUDE.md`, `.antigravity-rules.md`, `PROJECT_UNDERSTANDING.md`, `docs/architecture/MASTER_BLUEPRINT.md` - updated all "Gemini" references and env vars to OpenRouter/DeepSeek.
+  - `mnt/user-data/outputs/cybersim/backend/src/ws/routes.py` - deleted dead duplicate file.
+* **What & How**:
+  - **AI Tutor Bug**: Verified via reproduction script that the context envelope *is* changing (unique SHA256 hashes for different questions), but errors or high prompt similarity were causing repetitive fallback hints. Detailed logging now surfaces the exact cause (budget, timeout, or 401).
+  - **SIEM Feed Bug**: Verified that `command_bridge` correctly matches commands and publishes to Redis. The fix adds robust `json.loads` and byte-decoding in `ws/routes.py` to ensure events are never dropped due to parsing errors or double-serialization.
+  - **Documentation Alignment**: Standardized all project docs on OpenRouter.ai and `OPENROUTER_API_KEY`. Verified `.env.example` matches the code.
+  - **Cleanup**: Proved `mnt/.../routes.py` was unreferenced by the import graph and removed it to prevent future audit confusion.
+
 ### [2026-05-28 11:50:00 +03:00] - Antigravity (Ground Truth Audit - PROMPT 0)
 * **Status**: Complete - performed a factual audit of the AI provider configuration, duplicate ws/routes.py files, SIEM event routing/websocket channels, and environment variables.
 * **Why**: The user requested a ground truth audit of potential mismatches between documentation and the running system (PROMPT 0).

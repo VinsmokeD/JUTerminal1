@@ -28,7 +28,7 @@ This project leverages an advanced, fully automated multi-agent architecture to 
 - **Capabilities**: Focuses exclusively on building the Python backend, React frontend components, and Docker containers. 
 - **Rule Constraints**: Claude is not allowed to pass arbitrary logic to the next phase without verifying it physically (`pytest` / `docker-compose config`). It receives tasks via `CLAUDE_HANDOFF.md` and signals completion via a `STATE_SAVE` command.
 
-### C. Gemini (The Project Architect & Monitor)
+### C. OpenRouter (The Project Architect & Monitor)
 - **Role**: Behavioral rule maker and scenario logic designer.
 - **Capabilities**: Constructs the core Data Schemas and scenario logic (the A.N.T. system). It ensures there is **No Conceptual Drift** by adhering violently to the sandbox boundaries established in `docker-compose.yml`.
 
@@ -60,7 +60,7 @@ cybersim/
 │   ├── src/sandbox/               # The Docker SDK manager converting WebSocket to Python `docker exec` streams
 │   ├── src/siem/                  # Event Engine mapping specific attacker actions to Redis-published IT alerts
 │   ├── src/scenarios/             # Scenario State Machine validating milestones
-│   └── src/ai/                    # Gemini Flash integration examining the terminal buffer
+│   └── src/ai/                    # OpenRouter (DeepSeek) integration examining the terminal buffer
 │
 ├── infrastructure/ (The Sandbox Physics)
 │   ├── docker/scenarios/          # Extremely isolated internal bridge networks. Subnets (172.20.X.X) per level
@@ -87,4 +87,4 @@ cybersim/
 Because the platform deals with active pentesting commands, it enforces the following:
 - **Sandbox Airgap**: All scenario environments operate on internal Docker networks (`internal: true`). They have zero outbound access to the real internet (0.0.0.0/0 is locked).
 - **No Malicious Source Files**: The backend orchestrates known exploit techniques conceptually. Real ransomware payloads or functional botnets do not exist in the source code.
-- **Socratic Monitoring**: The Gemini engine reading user keystrokes is gated. It cannot hallucinate full attack chains for the user, but rather guides them via Level 1 to Level 3 conceptual hints.
+- **Socratic Monitoring**: The OpenRouter engine reading user keystrokes is gated. It cannot hallucinate full attack chains for the user, but rather guides them via Level 1 to Level 3 conceptual hints.

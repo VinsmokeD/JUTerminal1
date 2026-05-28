@@ -10,7 +10,7 @@
 
 ### 1. Environment Configuration
 - [ ] Create `.env` file from `.env.example`
-- [ ] Set `GEMINI_API_KEY` (obtain from Google AI Studio free tier)
+- [ ] Set `OPENROUTER_API_KEY` (obtain from OpenRouter)
 - [ ] Generate `JWT_SECRET`: `openssl rand -hex 32`
 - [ ] Verify `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
 - [ ] Confirm `REDIS_URL=redis://redis:6379/0`
@@ -46,7 +46,7 @@
   - [ ] asyncpg (for PostgreSQL async)
   - [ ] aioredis (for Redis async)
   - [ ] docker (Python SDK)
-  - [ ] google-genai (Gemini)
+  - [ ] httpx (for OpenRouter API)
 
 ---
 
@@ -204,7 +204,7 @@ docker-compose logs frontend
 # Common issues:
 # - POSTGRES_URL missing +asyncpg driver
 # - JWT_SECRET missing or invalid
-# - GEMINI_API_KEY missing (AI hints will fail but app runs)
+# - OPENROUTER_API_KEY missing (AI hints will fail but app runs)
 # - Docker socket permission issue (add user to docker group on Linux)
 ```
 

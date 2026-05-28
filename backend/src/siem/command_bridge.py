@@ -177,5 +177,7 @@ async def create_command_siem_events(
 async def publish_command_siem_events(
     session_id: str, events: list[dict[str, Any]]
 ) -> None:
+    channel = f"siem:{session_id}:feed"
+    logger.info(f"[SIEM Bridge] Publishing {len(events)} events to channel: {channel}")
     for event in events:
-        await publish(f"siem:{session_id}:feed", event)
+        await publish(channel, event)

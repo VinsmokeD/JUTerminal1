@@ -259,14 +259,14 @@ async def get_ai_hint(
 
         import hashlib
         msg_hash = hashlib.sha256(user_msg.encode("utf-8")).hexdigest()
-        logger.info(f"[AI Monitor] session_id={session_id[:8]} sha256={msg_hash} user_msg_len={len(user_msg)}")
+        logger.info(f"[AI Monitor] session_id={session_id[:8]} sha256={msg_hash} user_msg_len={len(user_msg)} question={question[:50] if question else 'None'}")
 
         # Estimate prompt tokens
         estimated_tokens = len(user_msg) // 4
 
         # Hard cap: max envelope size: 12,000 tokens
         if estimated_tokens > 12000:
-            logger.warning(f"AI context envelope too large ({estimated_tokens} tokens). Pruning history.")
+            logger.warning(f"[AI Monitor] session_id={session_id[:8]} envelope too large ({estimated_tokens} tokens). Pruning history.")
             if "last_command_output_summary" in context:
                 context["last_command_output_summary"]["first_lines"] = context["last_command_output_summary"]["first_lines"][:5]
                 context["last_command_output_summary"]["last_lines"] = context["last_command_output_summary"]["last_lines"][:5]
@@ -284,9 +284,7 @@ async def get_ai_hint(
             user_id = result.scalar_one_or_none() or "unknown"
 
         if not await check_ai_budget(user_id, prompt_tokens_estimate=estimated_tokens):
-            if settings.ENVIRONMENT == "development":
-                print(f"[AI Monitor] User {user_id} exceeded AI budget.")
-            logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=budget_exceeded")
+            logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=budget_exceeded user_id={user_id}")
             return _get_fallback_hint(session_state, command, hint_level)
 
         # Learn mode gets more tokens for detailed explanations
@@ -332,13 +330,13 @@ async def get_ai_hint(
                 resp.raise_for_status()
                 data = resp.json()
         except httpx.HTTPStatusError as e:
-            logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=api_http_error({e.response.status_code}) error={str(e)}")
+            logger.error(f"[AI Monitor] session_id={session_id[:8]} exit=api_http_error({e.response.status_code}) error={e.response.text}")
             return _get_fallback_hint(session_state, command, hint_level)
         except httpx.TimeoutException as e:
-            logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=api_timeout error={str(e)}")
+            logger.error(f"[AI Monitor] session_id={session_id[:8]} exit=api_timeout error={str(e)}")
             return _get_fallback_hint(session_state, command, hint_level)
         except Exception as e:
-            logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=api_exception error={str(e)}")
+            logger.error(f"[AI Monitor] session_id={session_id[:8]} exit=api_exception error={type(e).__name__}: {str(e)}")
             return _get_fallback_hint(session_state, command, hint_level)
 
         hint_text = (
@@ -348,6 +346,7 @@ async def get_ai_hint(
             .strip()
         )
         logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=api_success model={settings.OPENROUTER_MODEL}")
+
 
         # Track usage
         usage = data.get("usage", {})

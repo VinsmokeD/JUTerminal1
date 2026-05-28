@@ -17,7 +17,7 @@ All attack capabilities operate ONLY against isolated Docker containers. No real
 - Omit commentary between steps. Output the result, not the process narrative.
 
 ## Mandatory State Tracking (CRITICAL)
-- **Mandatory Pre-Flight Read:** Before making ANY edits, you MUST read the following alignment files to fully absorb their constraints: `PROJECT_UNDERSTANDING.md`, `.antigravity-rules.md`, `gemini.md`, `docs/architecture/MASTER_BLUEPRINT.md`, and `docs/architecture/CONTINUOUS_STATE.md`.
+- **Mandatory Pre-Flight Read:** Before making ANY edits, you MUST read the following alignment files to fully absorb their constraints: `PROJECT_UNDERSTANDING.md`, `.antigravity-rules.md`, `openrouter.md`, `docs/architecture/MASTER_BLUEPRINT.md`, and `docs/architecture/CONTINUOUS_STATE.md`.
 - **Log all actions:** After ANY edit, creation, or update, you must synchronously update `docs/architecture/CONTINUOUS_STATE.md`.
 - **Format:** Detail your status, why you made the change, the exact files modified (where), and a technical breakdown of what/how the change operates.
 - Do not conclude your turn without appending your update to `CONTINUOUS_STATE.md`.
@@ -62,7 +62,7 @@ cybersim/
 │   │   ├── main.py              ← app entrypoint
 │   │   ├── scenarios/           ← scenario definitions (YAML + Python)
 │   │   ├── sandbox/             ← Docker container lifecycle
-│   │   ├── ai/                  ← Gemini Flash integration
+│   │   ├── ai/                  ← OpenRouter (DeepSeek) integration
 │   │   ├── siem/                ← event engine
 │   │   ├── auth/                ← JWT auth
 │   │   └── reports/             ← auto report generation
@@ -74,7 +74,7 @@ cybersim/
 │   │   └── kali/                ← Kali base image config
 │   └── nginx/                   ← reverse proxy config
 ├── ai-monitor/
-│   └── system_prompt.md         ← Gemini system prompt (source of truth)
+│   └── system_prompt.md         ← OpenRouter system prompt (source of truth)
 ├── docs/
 │   ├── architecture/
 │   ├── scenarios/               ← full scenario specs
@@ -93,7 +93,7 @@ cybersim/
 - **Sandbox reset**: docker-compose down && up on scenario end; takes ~8s
 
 ## Environment variables (see .env.example)
-- GEMINI_API_KEY — Google AI Studio key (free tier sufficient for dev + demo)
+- OPENROUTER_API_KEY — OpenRouter key (DeepSeek V4-Pro)
 - POSTGRES_URL — local postgres for dev
 - REDIS_URL — local redis for dev
 - JWT_SECRET — generate with: openssl rand -hex 32
@@ -118,7 +118,7 @@ cybersim/
 - Never write real exploit payloads in docs — scenario engine references them internally
 - Never let sandbox containers reach the internet — isolated networks only
 - Never store full terminal output in Postgres — only command + metadata
-- Never call Gemini on every keystroke — only on command submission
+- Never call OpenRouter on every keystroke — only on command submission
 
 ## Current phase
 Phase 0 — Project setup and documentation complete.

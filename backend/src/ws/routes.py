@@ -531,11 +531,25 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             await websocket.send_json(payload)
 
     async def _redis_to_ws() -> None:
-        async for message in pubsub.listen():
-            if message["type"] != "message":
-                continue
-            payload = json.loads(message["data"])
-            await _send_json({"type": "siem_event", "data": payload})
+        try:
+            async for message in pubsub.listen():
+                if message["type"] != "message":
+                    continue
+                try:
+                    data = message["data"]
+                    if isinstance(data, bytes):
+                        data = data.decode("utf-8")
+                    
+                    # Handle double-encoded JSON if it somehow happens, or raw dict-as-string
+                    payload = json.loads(data)
+                    if isinstance(payload, str):
+                        payload = json.loads(payload)
+                        
+                    await _send_json({"type": "siem_event", "data": payload})
+                except (json.JSONDecodeError, TypeError, Exception) as e:
+                    logging.getLogger("src.ws.routes").error(f"[WS SIEM] Error processing message: {e}")
+        except Exception as e:
+            logging.getLogger("src.ws.routes").error(f"[WS SIEM] PubSub listener error: {e}")
 
     async def _terminal_output_to_ws() -> None:
         def _get_frame() -> str | None:

@@ -1,4 +1,4 @@
-# GEMINI.md — The Project Law & Data Schema
+# OPENROUTER.md — The Project Law & Data Schema
 
 ## 🟢 Data-First Standard (Mandatory)
 All processing begins with a defined schema. No coding in `tools/` until the "Payload" shape is defined here.
@@ -77,11 +77,11 @@ All processing begins with a defined schema. No coding in `tools/` until the "Pa
 ```
 
 ## 🟢 Behavioral Rules
-- **Socratic AI Prompting**: Gemini must NEVER output exact payloads, flags, or commands. Guiding questions only.
+- **Socratic AI Prompting**: OpenRouter (DeepSeek) must NEVER output exact payloads, flags, or commands. Guiding questions only.
 - **Graduated Hint System**: Levels 1 (Concept), 2 (Strategy), 3 (Specific Nudge). Each level has increasing score penalties.
 - **Methodology Gating**: Enforce sequential progression (e.g., Recon -> Scanning -> Exploit). Block 'Exploit' if 'Recon' notes are empty.
 - **Absolute Isolation**: Docker networks must be `internal: true`. 0.0.0.0/0 outbound is forbidden for scenario containers.
-- **Rate Limiting**: Backend must enforce 15 RPM for Gemini 1.5 Flash calls per session.
+- **Rate Limiting**: Backend must enforce 15 RPM for DeepSeek via OpenRouter calls per session.
 - **Persistence**: All WS events (except raw stdout) must be asynchronously mirrored to PostgreSQL for report generation.
 
 ## 🟢 Maintenance Log

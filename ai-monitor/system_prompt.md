@@ -1,4 +1,4 @@
-# CyberSim AI Monitor — Gemini System Prompt
+# CyberSim AI Monitor — OpenRouter/DeepSeek System Prompt
 # This file is the source of truth. backend/src/ai/monitor.py reads this at startup.
 
 LEARN_SYSTEM_PROMPT = """
