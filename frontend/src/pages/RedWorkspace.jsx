@@ -272,7 +272,7 @@ export default function RedWorkspace() {
       <div ref={containerRef} className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden p-3 gap-3 bg-transparent relative z-10">
         {/* LEFT PANE */}
         <div
-          className="flex flex-col h-[50vh] md:h-full min-w-0 md:min-w-[520px]"
+          className="flex flex-col h-[50vh] md:h-full min-w-0"
           style={{
             flex: typeof window !== 'undefined' && window.innerWidth < 768 ? undefined : `0 1 ${terminalPaneWidth}%`,
             maxWidth: typeof window !== 'undefined' && window.innerWidth < 768 ? undefined : 'calc(100% - 360px)',
@@ -317,7 +317,8 @@ export default function RedWorkspace() {
         />
 
         {/* RIGHT PANE */}
-        <div className="flex-1 flex flex-col min-w-0 md:min-w-[360px] h-[50vh] md:h-full">
+        <div className="flex-1 flex flex-col min-w-0 h-[50vh] md:h-full">
+
           <div className="flex-1 flex flex-col min-h-0 mb-3 relative hud-glass-crimson clip-chamfer-sm">
             <PanelHeader color="blue" title="AI Tutor" />
             <div className="flex-1 overflow-hidden flex flex-col">

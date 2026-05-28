@@ -71,12 +71,12 @@ Final freeze smoke:
 - That command generated and persisted a SC-01 SIEM event.
 - Blue Team UI showed the event with expected metadata.
 - Red/Blue hydration reloaded the event correctly.
-- AI hint path was verified through the running backend with `google-genai==1.73.1` and `gemini-2.5-flash`.
+- AI hint path was verified through the running backend with OpenRouter and deepseek/deepseek-v4-pro.
 - Host frontend dependency audit previously reported 0 vulnerabilities with `npm audit --json`.
 
 ## Demo Fallbacks
 
-Gemini unavailable:
+OpenRouter unavailable:
 
 - State that the AI Tutor is an optional Socratic guidance layer.
 - Continue the demo through login -> SC-01 -> terminal proof -> Blue SIEM event -> notes/debrief.
@@ -92,5 +92,5 @@ Xterm input misbehaves in the room:
 
 - MVP live scope is SC-01 through SC-03 only. SC-04/SC-05 are intentionally out of active defense scope.
 - The supported defense runtime is Docker/Python 3.11. Host Python 3.14 remains useful for tests here but is not the deployment runtime.
-- Gemini availability depends on a valid `GEMINI_API_KEY`; if unavailable, the core Red-to-Blue demo still works without AI hints.
+- OpenRouter availability depends on a valid `OPENROUTER_API_KEY`; if unavailable, the core Red-to-Blue demo still works without AI hints.
 - The final keyboard proof was performed through the in-app browser keyboard path; the presenter should still rehearse once on the exact defense laptop/keyboard before entering the room.

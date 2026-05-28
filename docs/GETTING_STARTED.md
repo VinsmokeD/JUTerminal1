@@ -9,7 +9,7 @@ Welcome to CyberSim! This guide will help you set up the platform quickly.
 - Python 3.11+
 - Git
 - 4GB+ available RAM
-- Google AI Studio API key (free tier) for Gemini integration
+- OpenRouter API key for Socratic hints (DeepSeek)
 
 ## Quick Start (5 minutes)
 
@@ -28,7 +28,7 @@ cp .env.example .env
 openssl rand -hex 32
 # Copy output to .env JWT_SECRET field
 
-# Update GEMINI_API_KEY in .env from Google AI Studio
+# Update OPENROUTER_API_KEY in .env from OpenRouter
 ```
 
 ### 3. Build Kali Image
@@ -61,6 +61,24 @@ docker-compose ps
 3. Use any email for first login (JWT accepts all emails in MVP)
 4. Select your skill level (Beginner/Intermediate/Experienced)
 5. Choose a scenario from the dashboard
+
+## Verify Installation
+
+```bash
+# Check services are running
+docker-compose ps
+# Test backend API
+curl http://localhost:8000/health
+
+# Test WebSocket
+wscat -c ws://localhost:8000/ws
+
+# View backend logs
+docker-compose logs -f backend
+
+# View frontend logs
+docker-compose logs -f frontend
+```
 
 ## Verify Installation
 
@@ -100,9 +118,9 @@ docker-compose down -v
 docker-compose up -d
 ```
 
-### Gemini API errors
-- Verify `GEMINI_API_KEY` is set correctly in `.env`
-- Check quota at https://aistudio.google.com/app/apikey
+### OpenRouter API errors
+- Verify `OPENROUTER_API_KEY` is set correctly in `.env`
+- Check quota/balance at https://openrouter.ai/
 - Hints will fall back to static JSON if API unavailable
 
 ## Next Steps
@@ -117,7 +135,7 @@ docker-compose up -d
 For detailed .env configuration, see [docs/.env.md](.env.md)
 
 Key variables:
-- `GEMINI_API_KEY` - Google AI Studio key (free tier OK)
+- `OPENROUTER_API_KEY` - OpenRouter API key
 - `JWT_SECRET` - 64-char hex string (generate with `openssl rand -hex 32`)
 - `POSTGRES_PASSWORD` - Database password
 - `ENVIRONMENT` - Set to `development` for dev, `production` for deployment

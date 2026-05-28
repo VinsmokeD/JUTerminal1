@@ -31,7 +31,7 @@ Install these on every machine:
 - Docker Desktop or Docker Engine with `docker compose`
 - Node.js 18 or newer, preferably the current LTS
 - Python 3.11 for host-side tests and backend development
-- A Google AI Studio API key if the teammate needs live Gemini hints
+- An OpenRouter API key if the teammate needs live OpenRouter hints
 
 Check the tools:
 
@@ -123,8 +123,8 @@ openssl rand -hex 32
 Edit `.env` and set at least:
 
 ```env
-GEMINI_API_KEY=your_google_ai_studio_key_here
-GEMINI_MODEL=gemini-2.5-flash
+OPENROUTER_API_KEY=your_openrouter_key_here
+OPENROUTER_MODEL=deepseek/deepseek-v4-pro
 POSTGRES_USER=cybersim
 POSTGRES_PASSWORD=change_this_password
 POSTGRES_DB=cybersim
@@ -132,7 +132,7 @@ JWT_SECRET=replace_with_generated_64_character_hex_secret
 ENVIRONMENT=development
 ```
 
-If `GEMINI_API_KEY` is empty, the app still runs and explicit hints fall back to local deterministic guidance. Use a real key for the final demo path.
+If `OPENROUTER_API_KEY` is empty, the app still runs and explicit hints fall back to local Socratic guidance. Use a real key for the final demo path.
 
 ## 5. Build The Full Stack
 
@@ -434,7 +434,7 @@ Confirm the correct scenario profile is running before debugging the terminal.
 
 AI hints are generic:
 
-- Confirm `GEMINI_API_KEY` is set in `.env`.
+- Confirm `OPENROUTER_API_KEY` is set in `.env`.
 - Restart the backend after changing `.env`.
 
 ```powershell

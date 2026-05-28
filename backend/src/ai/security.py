@@ -42,7 +42,7 @@ CREDENTIAL_REGEX = re.compile(r"\b(password|passwd|pass|key|hash|secret|token|cr
 
 FORBIDDEN_PATTERNS: list[tuple[re.Pattern, str, str]] = [
     (re.compile(r"\b(sqlmap|hydra|hashcat|john|metasploit|msfconsole|gobuster|ffuf|nikto|wpscan|wfuzz|enum4linux|crackmapexec|impacket-\w+)\s+-\w", re.IGNORECASE), "tool_with_flag", "tool_choice"),
-    (re.compile(r"\bnmap\s+-[a-zA-Z]"), "nmap_flag", "recon"),
+    (re.compile(r"\bnmap\s+-(s[STUVAWVMi]|O|A|T[0-5]|p-|D|f|Pn)\b.*?\d{1,3}\.\d{1,3}", re.IGNORECASE), "nmap_flag", "recon"),
     (re.compile(r"['\"]\s*OR\s+['\"]?\s*1\s*['\"]?\s*=\s*['\"]?\s*1", re.IGNORECASE), "sqli_tautology", "sqli"),
     (re.compile(r"\badmin['\"]?\s*--"), "sqli_admin_bypass", "sqli"),
     (re.compile(r"UNION\s+SELECT", re.IGNORECASE), "sqli_union", "sqli"),
@@ -59,7 +59,6 @@ FORBIDDEN_PATTERNS: list[tuple[re.Pattern, str, str]] = [
 
 
 LEARN_MODE_PATTERNS: list[tuple[re.Pattern, str, str]] = [
-    (re.compile(r"\b(172\.20\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})\b"), "ip_leakage", "recon"),
     (re.compile(r"\b(sqlmap|hydra|hashcat|john|metasploit|msfconsole|gobuster|ffuf|nikto|wpscan|wfuzz|enum4linux|crackmapexec|impacket-\w+)\b(?!\s*-\w)", re.IGNORECASE), "tool_leakage", "tool_choice"),
 ]
 

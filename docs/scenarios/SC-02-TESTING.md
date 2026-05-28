@@ -24,7 +24,7 @@ This document provides step-by-step verification procedures for the SC-02 Nexora
 1. Docker & Docker Compose installed
 2. `.env` file created from `.env.example` with required variables:
    ```bash
-   GEMINI_API_KEY=your_key_here
+   OPENROUTER_API_KEY=your_key_here
    JWT_SECRET=your_64_hex_chars_here
    SC02_ADMIN_PASS=NexoraAdmin2024!  # Optional, overrides dockerfile default
    ```

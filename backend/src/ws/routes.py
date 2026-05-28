@@ -438,9 +438,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         session_id, session_state["scenario_id"], _meta, container_id
                     )
             except Exception as _exc:
-                import logging as _log
 
-                _log.getLogger(__name__).warning(
+                logging.getLogger(__name__).warning(
                     "[WS] Randomization apply failed: %s", _exc
                 )
 
@@ -521,7 +520,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         }
                     )
             except Exception as e:
-                import logging
+    
 
                 logging.getLogger(__name__).warning("[WS] Readiness check error: %s", e)
             await asyncio.sleep(5)
@@ -667,7 +666,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 )
                 await db.commit()
         except Exception as _he:
-            import logging
+
 
             logging.getLogger(__name__).warning(
                 "[WS] Hint logging failed for %s: %s", session_id[:8], _he
@@ -887,7 +886,6 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     except WebSocketDisconnect:
         pass
     except Exception as exc:
-        import logging
 
         logging.getLogger(__name__).warning(
             "[WS] Unhandled error for session %s: %s", session_id[:8], exc

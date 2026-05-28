@@ -8,7 +8,7 @@ For repeatable onboarding across Windows, macOS, and Linux team machines, use th
 - Node.js 18 or newer
 - Python 3.11 for local backend development
 - 8 GB RAM minimum, 16 GB recommended
-- Google AI Studio API key for AI hints
+- OpenRouter API key for AI hints
 
 ## Environment
 
@@ -21,7 +21,7 @@ Copy-Item .env.example .env
 Set:
 
 ```env
-GEMINI_API_KEY=your_google_ai_studio_key_here
+OPENROUTER_API_KEY=your_openrouter_key_here
 JWT_SECRET=replace_with_64_character_hex_secret
 POSTGRES_PASSWORD=change_this_password
 ```

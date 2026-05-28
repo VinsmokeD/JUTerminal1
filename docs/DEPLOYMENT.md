@@ -7,7 +7,7 @@ See [DEPLOYMENT_CHECKLIST.md](../DEPLOYMENT_CHECKLIST.md) for full requirements.
 ```bash
 [ ] Environment variables configured
 [ ] JWT_SECRET is 64-char hex (openssl rand -hex 32)
-[ ] GEMINI_API_KEY set and quota available
+[ ] OPENROUTER_API_KEY set and quota available
 [ ] Database password changed from default
 [ ] TLS certificates obtained (Let's Encrypt)
 [ ] Nginx config reviewed
@@ -48,7 +48,7 @@ ENVIRONMENT=production
 CORS_ORIGINS=https://cybersim.example.com
 JWT_SECRET=$(openssl rand -hex 32)
 POSTGRES_PASSWORD=$(openssl rand -hex 16)
-GEMINI_API_KEY=your_production_key  # From Google AI Studio
+OPENROUTER_API_KEY=your_production_key  # From OpenRouter
 JWT_EXPIRY_HOURS=8
 MAX_CONCURRENT_SESSIONS=50
 
@@ -145,7 +145,7 @@ services:
     restart: always
     environment:
       - ENVIRONMENT=production
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - POSTGRES_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - JWT_SECRET=${JWT_SECRET}

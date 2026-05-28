@@ -35,7 +35,7 @@ cp ../.env .env.local
 # Or set variables directly
 export POSTGRES_URL=postgresql://user:password@localhost:5432/cybersim
 export REDIS_URL=redis://localhost:6379/0
-export GEMINI_API_KEY=your_key_here
+export OPENROUTER_API_KEY=your_key_here
 export JWT_SECRET=your_secret_here
 ```
 
@@ -173,7 +173,7 @@ cybersim/
 │   ├── src/
 │   │   ├── main.py              # FastAPI app
 │   │   ├── config.py            # Configuration
-│   │   ├── ai/                  # Gemini integration
+│   │   ├── ai/                  # OpenRouter (DeepSeek) integration
 │   │   ├── auth/                # Authentication
 │   │   ├── db/                  # Database models
 │   │   ├── sandbox/             # Docker management

@@ -18,7 +18,7 @@ This document provides step-by-step verification procedures for the SC-03 Orion 
 1. Docker & Docker Compose installed
 2. `.env` file with required variables:
    ```bash
-   GEMINI_API_KEY=your_key_here
+   OPENROUTER_API_KEY=your_key_here
    JWT_SECRET=your_64_hex_chars_here
    ```
 3. Network isolation enforced (`internal: true` in compose)

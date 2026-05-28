@@ -101,7 +101,8 @@ export default function WorkspaceTopBar({
       </div>
 
       {/* Right cluster */}
-      <div className="flex items-center gap-1.5 md:gap-2 ml-auto flex-shrink-0">
+      <div className="flex flex-wrap items-center gap-1.5 md:gap-2 ml-auto">
+
         {children}
 
         {role === 'red' && (

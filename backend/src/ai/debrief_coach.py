@@ -159,7 +159,6 @@ Do not wrap your response in markdown code blocks. Just return the JSON object."
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": f"Here is the student session context:\n{scrubbed_context}"},
         ],
-        "reasoning_effort": "xhigh",
     }
     headers = {
         "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
@@ -267,7 +266,6 @@ Constraints:
             {"role": "system", "content": sys_prompt},
             {"role": "user", "content": f"Student question: {scrubbed_question}"},
         ],
-        "reasoning_effort": "xhigh",
     }
     headers = {
         "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",

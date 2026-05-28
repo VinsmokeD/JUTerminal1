@@ -14,7 +14,7 @@ from src.ai.security import sanitize_tutor_response
     ("text", "category"),
     [
         ("Try sqlmap -u http://target/login --batch", "tool_choice"),
-        ("Use nmap -sV against the web service", "recon"),
+        ("Use nmap -sV 172.20.1.20 to scan the target", "recon"),
         ("Try a value like ' OR '1'='1", "sqli"),
         ("The admin'-- shortcut bypasses the password check", "sqli"),
         ("Use UNION SELECT to pull additional columns", "sqli"),
@@ -35,8 +35,13 @@ def test_sanitize_tutor_response_blocks_payload_shapes(text: str, category: str)
 
 def test_sanitize_tutor_response_allows_sensitive_topic_names_without_payload_shape() -> None:
     text = "LFI can expose files such as /etc/passwd when path handling is broken."
-
     result = sanitize_tutor_response(text)
+    assert result.was_flagged is False
+    assert result.text == text
 
+
+def test_sanitize_tutor_response_allows_conceptual_nmap_flags() -> None:
+    text = "Use nmap -sV against the web service to find out what versions are running."
+    result = sanitize_tutor_response(text)
     assert result.was_flagged is False
     assert result.text == text

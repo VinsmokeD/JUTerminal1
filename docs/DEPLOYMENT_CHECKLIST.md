@@ -254,16 +254,16 @@ docker exec cybersim-redis-1 \
 # Run command in terminal, should see events in this subscription
 ```
 
-### Gemini AI hints not working
+### OpenRouter AI hints not working
 ```bash
-# Check GEMINI_API_KEY is set
-echo $GEMINI_API_KEY
+# Check OPENROUTER_API_KEY is set
+echo $OPENROUTER_API_KEY
 
 # If empty, AI hints will silently fail (app still works)
 # This is non-critical for MVP
 
 # To enable: set valid key and restart backend
-export GEMINI_API_KEY="your_key_here"
+export OPENROUTER_API_KEY="your_key_here"
 docker-compose restart backend
 ```
 
@@ -298,7 +298,7 @@ The system is ready to handle:
 - 10 concurrent student sessions (per config.py)
 - 30+ realistic SIEM events per scenario
 - Real-time WebSocket streaming (sub-second latency)
-- Gemini Flash AI monitoring (rate-limited to 1/10s per session)
+- OpenRouter AI monitoring (rate-limited to 1/10s per session)
 - Full kill chain timeline generation
 
 **Estimated first deployment time: 5-10 minutes** (including Docker image pulls)
@@ -312,7 +312,7 @@ The system is ready to handle:
 git clone https://github.com/VinsmokeD/JUTerminal1.git && \
 cd cybersim && \
 cp .env.example .env && \
-# Edit .env to set GEMINI_API_KEY and JWT_SECRET \
+# Edit .env to set OPENROUTER_API_KEY and JWT_SECRET \
 docker build -t cybersim-kali:latest ./infrastructure/docker/kali/ && \
 docker-compose up -d && \
 echo "Visit http://localhost in 30 seconds"

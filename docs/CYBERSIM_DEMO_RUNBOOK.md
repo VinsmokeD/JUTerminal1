@@ -94,7 +94,7 @@ Show the dashboard and point out the three MVP scenarios:
 
 - If Docker is not responding, restart Docker Desktop and run the core `docker compose up` command again.
 - If the terminal looks idle, click inside it and press `Enter`; refresh the page if needed. The backend reattaches to the existing Kali container and replays terminal history.
-- If Gemini hints fail because of a missing or limited API key, use the built-in static hint trees and continue the demo.
+- If OpenRouter hints fail because of a missing or limited API key, use the built-in static hint trees and continue the demo.
 - If a browser build was created before recent frontend changes, rebuild with `npm run build` or restart the frontend container.
 
 ## Final Human Smoke
