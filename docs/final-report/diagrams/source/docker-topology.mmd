@@ -1,44 +1,60 @@
-flowchart TB
-    subgraph internal["internal network 172.30.0.0/24"]
-        nginx["nginx"]
-        frontend["frontend"]
-        backend["backend"]
-        postgres["postgres\nvolume: postgres_data"]
-        redis["redis\nvolume: redis_data"]
-        elastic["elasticsearch\nvolume: elastic_data"]
-        filebeat["filebeat"]
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart LR
+    classDef core fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef sc01 fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef sc02 fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+    classDef sc03 fill:#784212,stroke:#F39C12,stroke-width:2px,color:#FFFFFF
+    classDef outside fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+    classDef host fill:#17324E,stroke:#00B4D8,stroke-width:1px,color:#FFFFFF
+
+    HOST(["Docker Host"])
+
+    subgraph BRIDGE_CORE["  cybersim-net  (bridge)  "]
+        NGX["nginx :80/:443"]
+        FE_C["frontend :3000"]
+        BE_C["backend :8001"]
+        PG_C[("postgres :5432")]
+        RD_C[("redis :6379")]
+        ES_C[("elasticsearch :9200")]
+        FB_C["filebeat"]
     end
 
-    subgraph sc01["sc01-net 172.20.1.0/24 internal"]
-        sc01db["sc01-db"]
-        sc01php["sc01-php"]
-        sc01web["sc01-webapp"]
-        sc01waf["sc01-waf\nvolume: sc01_waf_logs"]
+    subgraph SC01_NET["  sc01-net  (internal: true)  "]
+        S01A["apache-php :8080"]
+        S01B[("mysql :3306")]
+        S01C["nginx-waf :80"]
     end
 
-    subgraph sc02["sc02-net 172.20.2.0/24 internal"]
-        sc02dc["sc02-dc\nvolumes: samba lib/cache/logs"]
-        sc02fs["sc02-fileserver"]
+    subgraph SC02_NET["  sc02-net  (internal: true)  "]
+        S02A["samba-ad :389/:88/:445"]
     end
 
-    subgraph sc03["sc03-net 172.20.3.0/24 internal"]
-        sc03mail["sc03-mailrelay"]
-        sc03phish["sc03-phish"]
-        sc03victim["sc03-victim"]
+    subgraph SC03_NET["  sc03-net  (internal: true)  "]
+        S03A["postfix :25/:587"]
+        S03B["gophish :80/:3333"]
     end
 
-    frontend --> nginx
-    nginx --> backend
-    backend --> postgres
-    backend --> redis
-    backend --> elastic
-    filebeat --> elastic
-    filebeat -. "reads selected logs" .-> sc01waf
-    filebeat -. "reads selected logs" .-> sc02dc
-    sc01waf --> sc01web
-    sc01web --> sc01php
-    sc01php --> sc01db
-    sc02fs --> sc02dc
-    sc03phish --> sc03mail
-    sc03victim --> sc03mail
+    INTERNET(["Internet"])
+    AI_EXT(["AI Provider"])
 
+    HOST -->|":80 exposed"| NGX
+    NGX --> FE_C & BE_C
+    BE_C <--> PG_C & RD_C & ES_C
+    FB_C --> ES_C
+    BE_C <-->|"Docker socket\n/var/run/docker.sock"| S01A & S02A & S03A
+    S01A <--> S01B
+    S01C --> S01A
+    S01A -->|"logs"| FB_C
+    S02A -->|"logs"| FB_C
+    S03A & S03B -->|"logs"| FB_C
+    BE_C -->|"HTTPS API"| AI_EXT
+    INTERNET <-->|"Student browser"| HOST
+    AI_EXT -.->|"(no outbound\nfrom containers)"| SC01_NET
+
+    class NGX,FE_C,BE_C core
+    class PG_C,RD_C,ES_C,FB_C core
+    class S01A,S01B,S01C sc01
+    class S02A sc02
+    class S03A,S03B sc03
+    class HOST host
+    class INTERNET,AI_EXT outside

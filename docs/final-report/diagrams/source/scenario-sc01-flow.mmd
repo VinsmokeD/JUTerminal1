@@ -1,0 +1,50 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart LR
+    classDef red fill:#78281F,stroke:#E74C3C,stroke-width:2px,color:#FFFFFF
+    classDef blue fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+    classDef target fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef siem fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+
+    subgraph RED["Red Team: NovaMed Web App Attack"]
+        R1["nmap -sV 172.20.1.10"]
+        R2["nikto -h http://target"]
+        R3["dirb target /wordlist"]
+        R4["sqlmap -u target/login.php"]
+        R5["Bypass auth SQLi"]
+        R6["LFI /etc/passwd"]
+        R7["Upload webshell"]
+        R8["Capture /flag.txt"]
+    end
+
+    subgraph TARGET["SC-01 NovaMed (sc01-net)"]
+        WEB["Apache 2.4\nPHP 7.4"]
+        WAF["ModSecurity WAF"]
+        DB[("MySQL 5.7\nnovamedDB")]
+        VULN1["SQLi: login bypass"]
+        VULN2["LFI: path traversal"]
+        VULN3["Upload: webshell"]
+    end
+
+    subgraph BLUE["Blue Team: SOC Response"]
+        B1["WAF alert: SQLi pattern"]
+        B2["WAF alert: LFI pattern"]
+        B3["Auth log: multiple failures"]
+        B4["Triage: True Positive"]
+        B5["Contain: Block source IP"]
+        B6["IR Note: Document findings"]
+    end
+
+    R1 -->|"Scans port 80"| WEB
+    R2 & R3 -->|"Enumerates paths"| WAF
+    R4 -->|"SQL injection"| WAF --> VULN1 --> DB
+    R5 --> VULN2 --> R6
+    R6 --> R7 --> VULN3 --> R8
+
+    WAF -->|"ModSec alert log"| B1
+    WAF -->|"LFI attempt"| B2
+    WEB -->|"Auth failure log"| B3
+    B1 & B2 & B3 --> B4 --> B5 & B6
+
+    class R1,R2,R3,R4,R5,R6,R7,R8 red
+    class B1,B2,B3,B4,B5,B6 blue
+    class WEB,WAF,DB,VULN1,VULN2,VULN3 target

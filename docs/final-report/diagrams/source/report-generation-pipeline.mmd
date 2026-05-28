@@ -1,16 +1,45 @@
-graph LR
-    Sess[Session Data] --> Collector[Data Collector]
-    Notes[Student Notes] --> Collector
-    Cmds[Command History] --> Collector
-    SIEM[Alert Triage] --> Collector
-    
-    Collector --> Agg[Aggregator & Kill-Chain Linker]
-    Agg --> Formatter[Report Formatter: MD/JSON]
-    Formatter --> Debrief[Debrief UI]
-    Formatter --> PDF[Instructor PDF Export]
-    
-    subgraph "Report Engine"
-    Collector
-    Agg
-    Formatter
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TD
+    classDef source fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef process fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef output fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef store fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+
+    subgraph SOURCES["Data Sources"]
+        S1["Command Log\n(all terminal commands)"]
+        S2["SIEM Events\n(alerts + triage)"]
+        S3["Notes\n(RECON|SCAN|IR|TRIAGE)"]
+        S4["AI Interactions\n(hints used + levels)"]
+        S5["Containment Actions"]
+        S6["Phase gates\n+ flag captures"]
     end
+
+    RE["Report Engine\n(Python - FastAPI background)"]
+
+    subgraph PROCESSING["Processing"]
+        P1["Aggregate session\nmetrics + timeline"]
+        P2["Build kill-chain\ncorrelation (Red vs Blue)"]
+        P3["Score calculation\n(per rubric)"]
+        P4["Generate MITRE\nATT&CK coverage map"]
+        P5["Competency radar\n(NIST CSF dimensions)"]
+    end
+
+    subgraph OUTPUTS["Report Outputs"]
+        O1["Debrief JSON API\n/api/sessions/{id}/debrief"]
+        O2["HTML Debrief Page\n(browser rendered)"]
+        O3["Markdown Report\n(instructor export)"]
+        O4["Grade CSV\n(LMS import)"]
+    end
+
+    PG[("PostgreSQL")]
+
+    S1 & S2 & S3 & S4 & S5 & S6 --> RE
+    RE --> P1 & P2 & P3 & P4 & P5
+    P1 & P2 & P3 & P4 & P5 --> O1
+    O1 --> O2 & O3 & O4
+    RE <--> PG
+
+    class S1,S2,S3,S4,S5,S6 source
+    class RE,P1,P2,P3,P4,P5 process
+    class O1,O2,O3,O4 output
+    class PG store

@@ -1,18 +1,39 @@
-graph TD
-    Sess[Student Session] --> Metrics[Metrics Aggregator]
-    Metrics --> Progress[Completion Rate]
-    Metrics --> Scoring[Average Score]
-    Metrics --> Hints[Hint Usage Patterns]
-    
-    Progress --> Dash[Instructor Dashboard]
-    Scoring --> Dash
-    Hints --> Dash
-    
-    Dash --> Export[Grade Export: CSV/XLSX]
-    
-    subgraph "Learning Analytics"
-    Metrics
-    Progress
-    Scoring
-    Hints
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart LR
+    classDef source fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+    classDef api fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef ui fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef export fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+
+    subgraph DATA_LAYER["Data Layer"]
+        PG_D[("PostgreSQL\nSessions, Commands, Notes")]
+        ES_D[("Elasticsearch\nSIEM Events")]
+        RD_D[("Redis\nActive Sessions")]
     end
+
+    subgraph ANALYTICS_API["/instructor/* API"]
+        A1["/instructor/sessions/active\nLive session list + phase"]
+        A2["/instructor/students/{id}/inspect\nFull session replay"]
+        A3["/instructor/analytics/class\nAggregate class metrics"]
+        A4["/instructor/export/grades\nCSV grade export"]
+    end
+
+    subgraph DASHBOARD_UI["Instructor Dashboard (React)"]
+        U1["Class Overview Panel\n(active sessions, phases)"]
+        U2["Session Inspector\n(command history, SIEM, notes)"]
+        U3["Analytics Charts\n(score distribution, phase progress)"]
+        U4["Export Controls"]
+    end
+
+    PG_D & ES_D & RD_D --> A1 & A2 & A3 & A4
+    A1 --> U1
+    A2 --> U2
+    A3 --> U3
+    A4 --> U4
+
+    U4 -->|"Download CSV"| EXPORT["Grade Export\n(CSV/XLSX)"]
+
+    class PG_D,ES_D,RD_D source
+    class A1,A2,A3,A4 api
+    class U1,U2,U3,U4 ui
+    class EXPORT export

@@ -1,129 +1,142 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'entityBkg': '#0D1B2A', 'entityBorder': '#00B4D8', 'attributeBackgroundColorOdd': '#FFFFFF', 'attributeBackgroundColorEven': '#E8F4F8', 'fontFamily': 'Segoe UI, Arial'}}}%%
 erDiagram
-    USERS ||--o{ SESSIONS : owns
-    SESSIONS ||--o{ NOTES : contains
-    SESSIONS ||--o{ COMMAND_LOG : records
-    SESSIONS ||--o{ SIEM_EVENTS : produces
-    SESSIONS ||--o{ AUTO_EVIDENCE : summarizes
-    SESSIONS ||--o{ SIEM_TRIAGE : classifies
-    USERS ||--o{ AI_INTERACTIONS : receives
-    SESSIONS ||--o{ AI_INTERACTIONS : contextualizes
-    USERS ||--o{ USER_ACTIVITY : performs
-    SESSIONS ||--o{ USER_ACTIVITY : includes
-    USERS ||--o{ CONTAINMENT_ACTIONS : initiates
-    SESSIONS ||--o{ CONTAINMENT_ACTIONS : includes
-
     USERS {
-        string id PK
-        string username UK
-        string password_hash
-        string role
-        string skill_level
-        boolean onboarding_completed
-        datetime created_at
+        uuid   id              PK
+        string username        UK "unique login name"
+        string password_hash      "bcrypt hash"
+        string role               "student | instructor | admin"
+        string skill_level        "beginner | intermediate | advanced"
+        bool   onboarding_done
+        ts     created_at
     }
 
     SESSIONS {
-        string id PK
-        string user_id FK
-        string scenario_id
-        string role
-        string methodology
-        string ai_mode
-        int phase
-        int score
-        json hints_used
-        boolean roe_acknowledged
-        datetime started_at
-        datetime completed_at
-        string container_id
-        string network_name
-        json metadata
+        uuid   id              PK
+        uuid   user_id         FK
+        string scenario_id        "sc-01 | sc-02 | sc-03"
+        string role               "red | blue"
+        string methodology        "PTES | OWASP | custom"
+        string ai_mode            "socratic | passive | disabled"
+        int    phase              "0=recon 1=scan 2=exploit 3=post"
+        int    score
+        json   hints_used         "levels and counts"
+        bool   roe_acknowledged
+        ts     started_at
+        ts     completed_at
+        string container_id       "Docker container id"
+        string network_name       "sc01-net etc"
+        json   metadata
     }
 
     NOTES {
-        string id PK
-        string session_id FK
-        string tag
-        string content
-        int phase
-        datetime created_at
+        uuid   id              PK
+        uuid   session_id      FK
+        string tag                "RECON|SCAN|EXPLOIT|POST|IR|TRIAGE"
+        text   content
+        int    phase
+        ts     created_at
     }
 
     COMMAND_LOG {
-        string id PK
-        string session_id FK
-        string command
-        string tool
-        int phase
-        json triggered_siem_events
-        boolean ai_hint_given
-        datetime created_at
+        uuid   id              PK
+        uuid   session_id      FK
+        text   command
+        string tool               "nmap|sqlmap|msfconsole..."
+        int    phase
+        json   siem_events_triggered
+        bool   ai_hint_given
+        ts     created_at
     }
 
     SIEM_EVENTS {
-        string id PK
-        string session_id FK
-        string severity
-        string message
-        string raw_log
-        string mitre_technique
+        uuid   id              PK
+        uuid   session_id      FK
+        string severity           "low|medium|high|critical"
+        text   message
+        text   raw_log
+        string mitre_technique    "T1190|T1059..."
         string source_ip
-        string source
-        boolean acknowledged
-        datetime created_at
+        string source             "suricata|zeek|modsec|auditd"
+        bool   acknowledged
+        ts     created_at
     }
 
     SIEM_TRIAGE {
-        string id PK
-        string session_id FK
-        string event_id
-        string classification
-        string notes
-        datetime created_at
+        uuid   id              PK
+        uuid   session_id      FK
+        uuid   event_id
+        string classification     "true_positive|false_positive"
+        text   notes
+        ts     created_at
     }
 
     AI_INTERACTIONS {
-        string id PK
-        string session_id FK
-        string user_id FK
-        string kind
-        int hint_level
-        string command_context
-        int prompt_tokens
-        int completion_tokens
+        uuid   id              PK
+        uuid   session_id      FK
+        uuid   user_id         FK
+        string kind               "hint|feedback|summary"
+        int    hint_level         "1|2|3"
+        text   command_context
+        int    prompt_tokens
+        int    completion_tokens
         string model
-        string response_text
-        int latency_ms
-        boolean was_fallback
-        boolean flagged
+        text   response_text
+        int    latency_ms
+        bool   was_fallback
+        bool   flagged
+        ts     created_at
     }
 
     USER_ACTIVITY {
-        string id PK
-        string user_id FK
-        string session_id FK
-        string event_type
-        json metadata_json
-        datetime created_at
+        uuid   id              PK
+        uuid   user_id         FK
+        uuid   session_id      FK
+        string event_type         "login|start|phase_advance|flag|debrief"
+        json   metadata_json
+        ts     created_at
     }
 
     CONTAINMENT_ACTIONS {
-        string id PK
-        string session_id FK
-        string user_id FK
-        string action_type
+        uuid   id              PK
+        uuid   session_id      FK
+        uuid   user_id         FK
+        string action_type        "block_ip|kill_proc|isolate_net"
         string target_value
-        string status
-        datetime created_at
+        string status             "pending|applied|failed"
+        ts     created_at
     }
 
     AUTO_EVIDENCE {
-        string id PK
-        string session_id FK
-        string command
-        string output_summary
+        uuid   id              PK
+        uuid   session_id      FK
+        text   command
+        text   output_summary
         string tool_name
-        string tag
-        datetime created_at
+        string tag                "RECON|SCAN|EXPLOIT|POST"
+        ts     created_at
     }
 
+    SCENARIO_CONFIGS {
+        string id              PK  "sc-01|sc-02|sc-03"
+        string name
+        string difficulty         "beginner|intermediate|advanced"
+        int    flag_count
+        json   phase_gates        "note requirements per phase"
+        json   siem_rules         "detection rule configs"
+        json   hint_tree_ref      "path to hint JSON"
+        bool   enabled
+    }
+
+    USERS          ||--o{ SESSIONS           : "owns"
+    SESSIONS       ||--o{ NOTES             : "contains"
+    SESSIONS       ||--o{ COMMAND_LOG       : "records"
+    SESSIONS       ||--o{ SIEM_EVENTS       : "produces"
+    SESSIONS       ||--o{ AUTO_EVIDENCE     : "summarizes"
+    SESSIONS       ||--o{ SIEM_TRIAGE       : "classifies"
+    SESSIONS       ||--o{ CONTAINMENT_ACTIONS : "includes"
+    USERS          ||--o{ AI_INTERACTIONS   : "receives"
+    SESSIONS       ||--o{ AI_INTERACTIONS   : "contextualizes"
+    USERS          ||--o{ USER_ACTIVITY     : "performs"
+    SESSIONS       ||--o{ USER_ACTIVITY     : "includes"
+    SIEM_EVENTS    ||--o{ SIEM_TRIAGE       : "is triaged by"
+    SCENARIO_CONFIGS ||--o{ SESSIONS        : "defines"

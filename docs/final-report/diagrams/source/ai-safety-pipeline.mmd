@@ -1,14 +1,42 @@
-graph TD
-    Input[User Request / Context] --> Redact[PII & Secret Redaction]
-    Redact --> Context[Context Builder: Phase/Goal/History]
-    Context --> Policy[Safety Policy Filter]
-    Policy --> Provider[AI Provider: LLM]
-    Provider --> Sanitize[Output Sanitization & Redaction]
-    Sanitize --> Outcome[Socratic Hint / Guidance]
-    
-    subgraph "Safety Boundary"
-    Redact
-    Context
-    Policy
-    Sanitize
-    end
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TD
+    classDef input fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef check fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+    classDef pass fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef fail fill:#78281F,stroke:#E74C3C,stroke-width:2px,color:#FFFFFF
+    classDef output fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef ai fill:#784212,stroke:#F39C12,stroke-width:2px,color:#FFFFFF
+
+    CMD(["Terminal Command Submitted"])
+    CTX["1. Build Context\ncommand + phase + notes_length\n+ hint_level + scenario_id"]
+    S1{"2. Safety Gate 1\nCredential / secret\npattern check"}
+    S2{"3. Safety Gate 2\nExploit payload\nfull-chain detection"}
+    S3{"4. Rate Limiter\n<=15 RPM per session"}
+    REDACT["5. Redact sensitive fields\n(IPs, hostnames, flags)"]
+    PROMPT["6. Build Socratic Prompt\nSystem prompt + context\n(<= 800 tokens)"]
+    AI_CALL["7. Call AI Provider\n(Gemini Flash / OpenRouter)"]
+    RESP_VAL{"8. Validate Response\nNo direct exploits,\nno flag values"}
+    FALLBACK["Use Static\nFallback Hint"]
+    DELIVER["9. Deliver Hint\nWebSocket push\nto student"]
+    LOG["10. Log Interaction\nPostgreSQL AI_INTERACTIONS"]
+
+    CMD --> CTX --> S1
+    S1 -->|"Contains secret"| FALLBACK
+    S1 -->|"Clean"| S2
+    S2 -->|"Full exploit chain"| FALLBACK
+    S2 -->|"Clean"| S3
+    S3 -->|"Rate exceeded"| FALLBACK
+    S3 -->|"Within limit"| REDACT
+    REDACT --> PROMPT --> AI_CALL
+    AI_CALL --> RESP_VAL
+    RESP_VAL -->|"Contains exploit/flag"| FALLBACK
+    RESP_VAL -->|"Safe Socratic content"| DELIVER
+    FALLBACK --> DELIVER
+    DELIVER --> LOG
+
+    class CMD input
+    class CTX,REDACT,PROMPT input
+    class S1,S2,S3,RESP_VAL check
+    class DELIVER,LOG pass
+    class FALLBACK fail
+    class AI_CALL ai

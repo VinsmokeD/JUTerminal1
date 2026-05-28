@@ -83,9 +83,11 @@ async def generate_debrief_coaching(session_id: str, report_data: dict, db: Asyn
     # Check cache first
     cached_result = await cache_get(f"ai:debrief:{session_id}:result")
     if cached_result:
+        if isinstance(cached_result, dict):
+            return cached_result
         try:
             return json.loads(cached_result)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, TypeError):
             pass
 
     # Fetch session metadata for dynamic scrubbing
@@ -126,7 +128,7 @@ SIEM Events Triggered:
         enriched = dict(fallback)
         if final_score_val < 70:
             enriched["summary"] += " Your final score reflects some difficulties, likely due to excessive hint usage or gate locks. Focus on thorough recon next time."
-        await cache_set(f"ai:debrief:{session_id}:result", json.dumps(enriched), ttl=86400)
+        await cache_set(f"ai:debrief:{session_id}:result", enriched, ttl=86400)
         return enriched
 
     # Call OpenRouter
@@ -197,14 +199,14 @@ Do not wrap your response in markdown code blocks. Just return the JSON object."
             parsed_json["missed_detections"] = [redact_text(m, metadata) for m in parsed_json["missed_detections"]]
             parsed_json["next_practice"] = [redact_text(n, metadata) for n in parsed_json["next_practice"]]
             
-            await cache_set(f"ai:debrief:{session_id}:result", json.dumps(parsed_json), ttl=86400)
+            await cache_set(f"ai:debrief:{session_id}:result", parsed_json, ttl=86400)
             return parsed_json
             
     except Exception as e:
         logger.warning("Debrief coach OpenRouter API call failed or returned invalid JSON. Using fallback. Error: %s", e)
 
     # Cache and return fallback
-    await cache_set(f"ai:debrief:{session_id}:result", json.dumps(fallback), ttl=86400)
+    await cache_set(f"ai:debrief:{session_id}:result", fallback, ttl=86400)
     return fallback
 
 async def handle_debrief_qa(session_id: str, question: str, report_data: dict, db: AsyncSession) -> dict:

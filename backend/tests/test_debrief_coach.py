@@ -104,7 +104,9 @@ async def test_generate_debrief_coaching_fallback():
             "commands": [{"command": "nmap -F 172.20.1.20"}],
             "siem_events": []
         }
-        res = await generate_debrief_coaching("test-session-id", report_data, db)
+        import uuid
+        session_id = f"test-session-{uuid.uuid4()}"
+        res = await generate_debrief_coaching(session_id, report_data, db)
         assert "summary" in res
         assert "strengths" in res
         assert "improvement_areas" in res
@@ -120,7 +122,8 @@ async def test_debrief_qa_limit():
         "session": {"scenario_id": "sc-01"},
     }
     
-    session_id = "test-session-qa-limit"
+    import uuid
+    session_id = f"test-session-qa-limit-{uuid.uuid4()}"
     
     # Call 1
     res1 = await handle_debrief_qa(session_id, "How to do recon?", report_data, db)

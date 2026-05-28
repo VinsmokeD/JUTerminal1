@@ -1,9 +1,29 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
 stateDiagram-v2
-    [*] --> STANDBY: App Loaded
-    STANDBY --> STARTING: POST /sessions/start
-    STARTING --> ROE_PENDING: Container Ready
-    ROE_PENDING --> ACTIVE: ROE Acknowledged
-    ACTIVE --> ACTIVE: Command/Note/Hint/Alert
-    ACTIVE --> ENDING: POST /sessions/end
-    ENDING --> COMPLETED: Cleanup Finished
-    COMPLETED --> [*]
+    direction TB
+    [*] --> Unauthenticated : App Load
+    Unauthenticated --> Authenticated : POST /auth/login (JWT issued)
+    Authenticated --> Dashboard : Route to /dashboard
+    Dashboard --> ROE_Pending : Select scenario
+    ROE_Pending --> Provisioning : Acknowledge ROE
+    Provisioning --> Readiness_Check : docker compose up profile
+    Readiness_Check --> Active_Session : All health checks pass
+    Readiness_Check --> Provisioning : Retry (timeout)
+    Active_Session --> Red_Workspace : Student role = red
+    Active_Session --> Blue_Workspace : Student role = blue
+    Red_Workspace --> Active_Session : Switch role
+    Blue_Workspace --> Active_Session : Switch role
+    Red_Workspace --> Phase_Recon : Begin Recon
+    Phase_Recon --> Phase_Scanning : Notes documented
+    Phase_Scanning --> Phase_Exploit : Scan findings noted
+    Phase_Exploit --> Phase_PostExploit : Flag captured
+    Phase_PostExploit --> Debrief_Pending : Session complete
+    Blue_Workspace --> Debrief_Pending : Session complete
+    Debrief_Pending --> Debrief_View : Report generated
+    Debrief_View --> Dashboard : Start new session
+    Active_Session --> Session_Error : Container failure
+    Session_Error --> Provisioning : Auto-recovery
+    Authenticated --> Unauthenticated : Logout / Token expiry
+    note right of Provisioning: docker compose --profile scXX up -d
+    note right of Readiness_Check: /api/health/readiness polls\nPostgres + Redis + Elasticsearch
+    note right of Phase_Exploit: Gatekeeper blocks exploitation\nif recon notes are empty

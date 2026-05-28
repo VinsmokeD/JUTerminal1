@@ -1,0 +1,43 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TD
+    classDef input fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef calc fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef output fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef penalty fill:#78281F,stroke:#E74C3C,stroke-width:1.5px,color:#FFFFFF
+    classDef viz fill:#784212,stroke:#F39C12,stroke-width:2px,color:#FFFFFF
+
+    subgraph INPUTS["Score Inputs"]
+        I1["Flag Captures (+25 each)"]
+        I2["Phase Completions (+15 each)"]
+        I3["IR Notes Quality (+10 max)"]
+        I4["Containment Actions (+10)"]
+        I5["Triage Accuracy (+5 per TP)"]
+    end
+
+    subgraph PENALTIES["Score Penalties"]
+        P1["Hint Level 1 Used (-5)"]
+        P2["Hint Level 2 Used (-10)"]
+        P3["Hint Level 3 Used (-20)"]
+        P4["Gate Violations (-5 each)"]
+        P5["False Positives (-3 each)"]
+    end
+
+    CALC["Score Engine\nReal-time accumulation\nPostgreSQL persistence"]
+
+    subgraph DEBRIEF_OUT["Debrief Report"]
+        D1["Kill-Chain Timeline\n(SVG dual-axis)"]
+        D2["Competency Radar Chart\n(NIST CSF dimensions)"]
+        D3["Score Breakdown Table"]
+        D4["Red-Blue Correlation Map"]
+        D5["Recommended Learning Paths"]
+        D6["Markdown Export\nfor Instructor"]
+    end
+
+    I1 & I2 & I3 & I4 & I5 --> CALC
+    P1 & P2 & P3 & P4 & P5 --> CALC
+    CALC --> D1 & D2 & D3 & D4 & D5 & D6
+
+    class I1,I2,I3,I4,I5 input
+    class CALC calc
+    class D1,D2,D3,D4,D5,D6 output
+    class P1,P2,P3,P4,P5 penalty

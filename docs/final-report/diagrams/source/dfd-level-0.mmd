@@ -1,22 +1,73 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
 flowchart LR
-    user["Student or Instructor"]
-    ui["React Frontend"]
-    api["FastAPI Backend"]
-    db[("PostgreSQL")]
-    cache[("Redis")]
-    siem[("Elasticsearch")]
-    docker["Docker Sandbox"]
-    ai["AI Provider"]
+    classDef ext fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef proc fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef store fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+    classDef flow fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
 
-    user -->|"credentials, commands, notes, triage"| ui
-    ui -->|"REST requests"| api
-    ui <-->|"WebSocket frames"| api
-    api -->|"users, sessions, notes, commands, reports"| db
-    api -->|"active sessions, terminal history, AI rate state"| cache
-    api -->|"telemetry queries"| siem
-    api -->|"container lifecycle and PTY proxy"| docker
-    docker -->|"target logs via Filebeat"| siem
-    api -->|"redacted bounded prompt"| ai
-    ai -->|"safe hint or fallback unavailable"| api
-    api -->|"scores, events, readiness, reports"| ui
+    RED_S(["Red Team Student"])
+    BLUE_S(["Blue Team Student"])
+    INST_U(["Instructor"])
+    AI_P(["AI Provider"])
 
+    subgraph CYBERSIM["  CyberSim Platform (DFD Level 0)  "]
+        P1["1.0\nAuthentication &\nAuthorization"]
+        P2["2.0\nSession &\nScenario Engine"]
+        P3["3.0\nTerminal Proxy &\nSandbox Manager"]
+        P4["4.0\nSIEM Event\nEngine"]
+        P5["5.0\nAI Monitor &\nHint Engine"]
+        P6["6.0\nScoring &\nReport Engine"]
+        P7["7.0\nInstructor\nAnalytics"]
+
+        DS1[("D1: Users\nPostgreSQL")]
+        DS2[("D2: Sessions\nPostgreSQL")]
+        DS3[("D3: SIEM Events\nElasticsearch")]
+        DS4[("D4: Notes & Commands\nPostgreSQL")]
+        DS5[("D5: Active State\nRedis")]
+    end
+
+    SCENARIO(["Scenario Containers\n(Docker Networks)"])
+
+    RED_S -->|"Login credentials"| P1
+    BLUE_S -->|"Login credentials"| P1
+    INST_U -->|"Login credentials"| P1
+    P1 -->|"JWT token"| RED_S
+    P1 -->|"JWT token"| BLUE_S
+    P1 -->|"JWT token"| INST_U
+    P1 <-->|"User records"| DS1
+
+    RED_S -->|"Start session,\nROE acknowledgement"| P2
+    BLUE_S -->|"Start session"| P2
+    P2 <-->|"Session state"| DS2
+    P2 <-->|"Real-time state"| DS5
+    P2 <-->|"Provision containers"| SCENARIO
+
+    RED_S -->|"Terminal keystrokes\n(WebSocket stdin)"| P3
+    P3 -->|"PTY output\n(WebSocket stdout)"| RED_S
+    P3 <-->|"Docker exec API"| SCENARIO
+    P3 -->|"Command metadata"| DS4
+
+    SCENARIO -->|"Container logs\n(via Filebeat)"| P4
+    P4 <-->|"Event index"| DS3
+    P4 -->|"Live SIEM events\n(WebSocket)"| BLUE_S
+    P4 -->|"Alert notifications"| RED_S
+
+    P3 -->|"Command context"| P5
+    AI_P -->|"Socratic response"| P5
+    P5 -->|"Bounded hint requests"| AI_P
+    P5 -->|"Hint message"| RED_S
+    P5 -->|"Hint message"| BLUE_S
+
+    P2 & P3 & P4 & P5 -->|"Learning events"| P6
+    P6 -->|"Debrief & score"| RED_S
+    P6 -->|"Debrief & score"| BLUE_S
+    P6 <-->|"Report data"| DS2
+
+    DS1 & DS2 & DS3 & DS4 -->|"Aggregated metrics"| P7
+    P7 -->|"Analytics dashboard"| INST_U
+    P7 -->|"Grade export"| INST_U
+
+    class RED_S,BLUE_S,INST_U,AI_P ext
+    class SCENARIO flow
+    class P1,P2,P3,P4,P5,P6,P7 proc
+    class DS1,DS2,DS3,DS4,DS5 store

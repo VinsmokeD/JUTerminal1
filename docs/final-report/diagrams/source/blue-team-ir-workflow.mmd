@@ -1,0 +1,51 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TD
+    classDef alert fill:#78281F,stroke:#E74C3C,stroke-width:2px,color:#FFFFFF
+    classDef action fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef decision fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+    classDef contain fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef report fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+
+    SIEM_FEED(["SIEM Event Feed\n(Elasticsearch + WebSocket)"])
+
+    subgraph TRIAGE["Step 1: Triage"]
+        T1["Review alert severity\n(Critical / High / Med / Low)"]
+        T2["Check MITRE ATT&CK tag"]
+        T3["Correlate with Red Team timeline"]
+        CLASSIFY{"Classify\nTrue Positive or\nFalse Positive?"}
+    end
+
+    subgraph INVESTIGATION["Step 2: Forensic Investigation"]
+        I1["Query raw log source"]
+        I2["Extract IOCs (IPs, hashes, commands)"]
+        I3["Timeline reconstruction"]
+        I4["Identify affected scope"]
+    end
+
+    subgraph RESPONSE["Step 3: Containment & Response"]
+        C1["Isolate affected container\n(network block action)"]
+        C2["Block source IP"]
+        C3["Kill process / session"]
+        C4["Document evidence in IR notes"]
+    end
+
+    subgraph REPORTING["Step 4: IR Report"]
+        RP1["Write IR note with\ntag: TRIAGE / CONTAINMENT"]
+        RP2["View Kill-Chain timeline\nin Debrief"]
+        RP3["Score updated"]
+    end
+
+    FP["Mark False Positive\n+ Document reasoning"]
+    DEBRIEF(["Debrief & Score"])
+
+    SIEM_FEED --> T1 --> T2 --> T3 --> CLASSIFY
+    CLASSIFY -->|"True Positive"| I1 & I2 & I3 & I4
+    CLASSIFY -->|"False Positive"| FP --> RP1
+    I1 & I2 & I3 & I4 --> C1 & C2 & C3 & C4
+    C1 & C2 & C3 & C4 --> RP1 --> RP2 --> RP3 --> DEBRIEF
+
+    class SIEM_FEED alert
+    class T1,T2,T3,I1,I2,I3,I4 action
+    class CLASSIFY decision
+    class C1,C2,C3,C4 contain
+    class RP1,RP2,RP3 report

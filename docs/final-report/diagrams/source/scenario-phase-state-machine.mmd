@@ -1,10 +1,37 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
 stateDiagram-v2
-    [*] --> RECONNAISSANCE
-    RECONNAISSANCE --> SCANNING: Milestone Met
-    SCANNING --> ENUMERATION: Target Identified
-    ENUMERATION --> EXPLOITATION: Vulnerability Found
-    EXPLOITATION --> POST_EXPLOITATION: Shell Obtained
-    POST_EXPLOITATION --> [*]: Flags Captured
+    direction LR
+    [*] --> RECON : Session starts
 
-    note right of RECONNAISSANCE: Gatekeeper checks notes & commands
-    note right of SCANNING: Prevents skipping to exploits
+    state RECON {
+        [*] --> recon_active
+        recon_active --> recon_noted : nmap / whois / OSINT run\n+ note saved with tag RECON
+        recon_noted --> [*]
+    }
+
+    state SCANNING {
+        [*] --> scan_active
+        scan_active --> scan_noted : Nmap service scan\n+ Nikto / dirb run\n+ note saved with tag SCAN
+        scan_noted --> [*]
+    }
+
+    state EXPLOITATION {
+        [*] --> exploit_gated
+        exploit_gated --> exploit_active : Gatekeeper allows\n(recon+scan notes present)
+        exploit_active --> flag_captured : SQLi / LFI / RCE\nexecuted, flag retrieved
+        flag_captured --> [*]
+    }
+
+    state POST_EXPLOITATION {
+        [*] --> post_active
+        post_active --> post_noted : Pivot / escalate\nLaternal movement\n+ evidence noted
+        post_noted --> [*]
+    }
+
+    RECON --> SCANNING : Recon notes exist\n(gate: phase_gate check)
+    SCANNING --> EXPLOITATION : Scan notes exist\n(gate: phase_gate check)
+    EXPLOITATION --> POST_EXPLOITATION : Flag captured\n(gate: flag_captured=true)
+    POST_EXPLOITATION --> [*] : Session complete
+
+    note right of EXPLOITATION: Scope enforcer blocks\nsqlmap / msfconsole / burp\nif notes gate not passed
+    note right of SCANNING: AI hint level auto-increments\nafter 3 failed attempts

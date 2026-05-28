@@ -5382,3 +5382,51 @@ pm run build and ran unit tests successfully.
   - Patched `handleFlagSubmit` in `RedWorkspace.jsx` to reload session state when called with an empty string, allowing the popover child component to trigger state updates upon successful flag captures.
   - Reworked `AiHintPanel` header styles to match the middot notation `·` and render without a distinct bg/border banner separation. Added a centered empty state for welcome messages to mirror the clean approved layout.
   - Resolved all React hooks missing dependency and unused variable warnings, ensuring `npm run lint` and `npm run build` finish with exactly 0 warnings/errors. Verified all 295 backend pytests run and pass successfully.
+
+### [2026-05-28 11:13:00 +03:00] - Antigravity (Phase 9B -- Comprehensive Diagram Redesign)
+* **Status**: In Progress -- 22 Mermaid sources redesigned, render running (16/22 confirmed at high-DPI)
+* **Why**: User requested rework of all diagrams with improved quality, design, color, layout; add all use cases, everything.
+* **What was done**:
+  1. Installed @mermaid-js/mermaid-cli globally (355 packages, mmdc v11+)
+  2. Rewrote mermaid-theme.json with full CyberSim brand palette (#0D1B2A navy, #00B4D8 cyan)
+  3. Redesigned ALL 16 existing diagrams with inline %%{init}%% brand overrides
+  4. Added 6 NEW diagrams: deployment-architecture, red-team-methodology-flow, blue-team-ir-workflow, scoring-and-debrief-flow, scenario-sc01-flow (red+blue correlation), system-component-interaction
+  5. Expanded ERD to 11 tables (added SCENARIO_CONFIGS, enriched all fields with types and PK/FK notes)
+  6. Expanded UML use case from 10 to 28 use cases across 7 groups (Auth, Session, RedOps, BlueOps, AI, Debrief, Instructor)
+  7. Created PowerShell render script scripts/render-diagrams.ps1 (2400x1600px, scale 2.5)
+  8. Updated FIGURE_CAPTIONS map in compile_report_v2.py to include all 22 figures
+  9. Updated diagram catalog to register all 22 diagrams with new naming
+* **Files modified**:
+  - docs/final-report/diagrams/source/ -- all 16 .mmd files redesigned, 6 new .mmd files created (22 total)
+  - docs/final-report/diagrams/mermaid-theme.json -- complete brand redesign
+  - docs/final-report/diagrams/catalog.md -- updated to 22 entries
+  - scripts/render-diagrams.ps1 -- NEW: batch render script
+  - scripts/compile_report_v2.py -- FIGURE_CAPTIONS expanded to 22 entries
+
+### [2026-05-28 11:24:00 +03:00] - Antigravity (Frontend Rebuild and Test Runner Stability)
+* **Status**: Complete - Rebuilt the frontend Docker container to compile the new UI features (removed readiness overlay, inline Socratic tutor chat, top bar flag submission), and added `backend/tests/conftest.py` to stabilize host test runs.
+* **Why**: The user pointed out that they were still seeing the old boot readiness report page. Since the frontend container serves a static build compiled at build-time, updates were not active until the container was built again. Additionally, the local test runner failed to resolve the database and Redis hosts on local execution, requiring a global test context initialization.
+* **Where**:
+  - `backend/tests/conftest.py` - [NEW] Sets default test env variables and registers a session-scoped autouse fixture to initialize the databases.
+  - Frontend Docker container - Recompiled and restarted the service to serve the latest Vite build.
+* **What & How**:
+  - Ran `docker compose build frontend` and `docker compose up -d frontend` to compile the React code changes into the container's static nginx bundle.
+  - Created `conftest.py` to override `POSTGRES_URL` and `REDIS_URL` to local loopback addresses (`127.0.0.1`) before any test imports happen, and automatically boot/cleanup test connections.
+  - Verified that all 295 unit/integration tests pass cleanly in 8.06s.
+
+### [2026-05-28 11:30:00 +03:00] - Antigravity (Test Stability and Debrief Coach Cache Fix)
+* **Status**: Complete - Fixed debrief coach caching TypeError and resolved Redis key contamination across output pattern tests.
+* **Why**: The test suite encountered failures under real Redis connection testing because hardcoded session IDs in test assertions collided with leftover Redis keys from previous runs. Additionally, the debrief coaching logic encountered a TypeError because `cache_get` automatically parses JSON strings to dictionaries, causing a redundant `json.loads` to fail.
+* **Where**:
+  - `backend/src/ai/debrief_coach.py` - Updated `generate_debrief_coaching` to store dictionaries directly in cache and bypass redundant `json.loads` if the retrieved object is already parsed.
+  - `backend/tests/test_debrief_coach.py` - Randomized session IDs to prevent cross-test key pollution.
+  - `backend/tests/test_output_patterns.py` - Replaced static test session IDs with unique UUIDs.
+  - `backend/tests/test_coverage_gaps.py` - Randomized output pattern test session IDs.
+  - `docs/architecture/CONTINUOUS_STATE.md` - Appended this entry.
+* **What & How**:
+  - Modified `generate_debrief_coaching` to bypass redundant deserialization if `cached_result` is already a dictionary. Removed `json.dumps` from its `cache_set` invocations to allow Redis helper serialization.
+  - Added `import uuid` to test files and replaced hardcoded session IDs (e.g. `"test-sess-2"`, `"sess-sqli"`, etc.) with unique UUID hashes.
+* **Verification**:
+  - Executed `python -m pytest` inside the backend directory. All 295 tests passed successfully with 1 skipped.
+
+

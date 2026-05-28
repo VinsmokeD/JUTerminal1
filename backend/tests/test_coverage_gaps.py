@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
@@ -273,8 +274,9 @@ async def test_output_patterns_sc01_sqli_output_triggers_insight():
     redis_cache._memory_cache.clear()
     redis_cache._memory_expiries.clear()
 
+    sess_sqli = f"sess-sqli-{uuid.uuid4().hex}"
     insights = await output_patterns.scan_output_chunk(
-        "sess-sqli",
+        sess_sqli,
         "SC-01",
         "Parameter 'id' is vulnerable. Type: UNION query\n",
         3,
@@ -294,8 +296,9 @@ async def test_output_patterns_sc02_failed_auth_triggers_insight():
     redis_cache._memory_cache.clear()
     redis_cache._memory_expiries.clear()
 
+    sess_auth = f"sess-auth-{uuid.uuid4().hex}"
     insights = await output_patterns.scan_output_chunk(
-        "sess-auth",
+        sess_auth,
         "SC-02",
         "STATUS_LOGON_FAILURE for user jsmith during password spray\n",
         3,
@@ -321,8 +324,9 @@ async def test_output_patterns_partial_line_is_buffered_not_emitted():
     redis_cache._memory_cache.clear()
     redis_cache._memory_expiries.clear()
 
-    first = await output_patterns.scan_output_chunk("sess-partial", "SC-01", "available databases", 4)
-    second = await output_patterns.scan_output_chunk("sess-partial", "SC-01", " [2]: novamed\n", 4)
+    sess_partial = f"sess-partial-{uuid.uuid4().hex}"
+    first = await output_patterns.scan_output_chunk(sess_partial, "SC-01", "available databases", 4)
+    second = await output_patterns.scan_output_chunk(sess_partial, "SC-01", " [2]: novamed\n", 4)
 
     assert first == []
     assert second[0]["id"] == "sc01-sqlmap-dbs"

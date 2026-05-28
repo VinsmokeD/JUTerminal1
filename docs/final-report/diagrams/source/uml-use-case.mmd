@@ -1,34 +1,99 @@
-graph LR
-    subgraph Actors
-    Student((Student))
-    Instructor((Instructor))
-    Admin((Admin))
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart LR
+    classDef actor fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF,rx:50
+    classDef uc fill:#17324E,stroke:#00B4D8,stroke-width:1.5px,color:#FFFFFF,rx:8
+    classDef ucblue fill:#1A5276,stroke:#2E86C1,stroke-width:1.5px,color:#FFFFFF,rx:8
+    classDef ucgreen fill:#145A32,stroke:#27AE60,stroke-width:1.5px,color:#FFFFFF,rx:8
+    classDef ucpurple fill:#4A235A,stroke:#8E44AD,stroke-width:1.5px,color:#FFFFFF,rx:8
+    classDef ucgold fill:#784212,stroke:#F39C12,stroke-width:1.5px,color:#FFFFFF,rx:8
+
+    SRED(["🎯 Red Team\nStudent"])
+    SBLUE(["🛡️ Blue Team\nStudent"])
+    INST(["📊 Instructor"])
+    ADMIN(["⚙️ Admin"])
+
+    subgraph AUTH["  Authentication  "]
+        UC_REG["Register Account"]
+        UC_LOGIN["Login / Logout"]
+        UC_PROFILE["View Profile"]
     end
 
-    subgraph "CyberSim Platform"
-    UC1(Register/Login)
-    UC2(Start Session)
-    UC3(Execute Red Commands)
-    UC4(Analyze Blue SIEM)
-    UC5(Request Socratic Hint)
-    UC6(Save Notes)
-    UC7(View Debrief)
-    UC8(Monitor Class)
-    UC9(Export Grades)
-    UC10(Manage System)
+    subgraph SESSION["  Session Management  "]
+        UC_ROE["Acknowledge Rules\nof Engagement"]
+        UC_START["Start Scenario Session"]
+        UC_RESUME["Resume Session"]
+        UC_READY["Check Readiness"]
+        UC_END["End Session"]
     end
 
-    Student --> UC1
-    Student --> UC2
-    Student --> UC3
-    Student --> UC4
-    Student --> UC5
-    Student --> UC6
-    Student --> UC7
+    subgraph REDOPS["  Red Team Operations  "]
+        UC_TERM["Use Kali Terminal"]
+        UC_RECON["Execute Recon Commands"]
+        UC_SCAN["Run Network Scans"]
+        UC_EXPLOIT["Perform Exploitation"]
+        UC_POST["Post-Exploitation"]
+        UC_FLAG["Capture Flags"]
+        UC_NOTE["Write Pentest Notes"]
+    end
 
-    Instructor --> UC1
-    Instructor --> UC8
-    Instructor --> UC9
-    Instructor --> UC10
+    subgraph BLUEOPS["  Blue Team Operations  "]
+        UC_SIEM["Monitor SIEM Feed"]
+        UC_TRIAGE["Triage Alerts"]
+        UC_FORENSIC["Forensic Investigation"]
+        UC_CONTAIN["Containment Actions"]
+        UC_IRNOTE["Write IR Notes"]
+    end
 
-    Admin --> UC10
+    subgraph AI["  AI Guidance  "]
+        UC_HINT1["Request Level-1 Hint\n(Concept)"]
+        UC_HINT2["Request Level-2 Hint\n(Strategy)"]
+        UC_HINT3["Request Level-3 Hint\n(Specific Nudge)"]
+    end
+
+    subgraph DEBRIEF["  Debrief  "]
+        UC_DEBRIEF["View Debrief Report"]
+        UC_TIMELINE["Explore Kill-Chain Timeline"]
+        UC_RADAR["View Competency Radar"]
+        UC_SCORE["Review Score Breakdown"]
+    end
+
+    subgraph INSTRUCTOR["  Instructor Functions  "]
+        UC_MONITOR["Monitor Active Sessions"]
+        UC_ANALYTICS["View Class Analytics"]
+        UC_INSPECT["Inspect Student Session"]
+        UC_EXPORT["Export Grade Report"]
+        UC_MANAGE["Manage Users"]
+    end
+
+    SRED --> UC_REG & UC_LOGIN & UC_PROFILE
+    SBLUE --> UC_REG & UC_LOGIN & UC_PROFILE
+    INST --> UC_LOGIN
+    ADMIN --> UC_LOGIN
+
+    SRED --> UC_ROE --> UC_START --> UC_READY
+    SBLUE --> UC_ROE --> UC_START
+    SRED --> UC_RESUME & UC_END
+    SBLUE --> UC_RESUME & UC_END
+
+    SRED --> UC_TERM --> UC_RECON --> UC_SCAN --> UC_EXPLOIT --> UC_POST
+    SRED --> UC_FLAG & UC_NOTE
+
+    SBLUE --> UC_SIEM & UC_TRIAGE & UC_FORENSIC & UC_CONTAIN & UC_IRNOTE
+
+    SRED --> UC_HINT1 & UC_HINT2 & UC_HINT3
+    SBLUE --> UC_HINT1 & UC_HINT2 & UC_HINT3
+
+    SRED --> UC_DEBRIEF & UC_TIMELINE & UC_RADAR & UC_SCORE
+    SBLUE --> UC_DEBRIEF & UC_TIMELINE & UC_RADAR & UC_SCORE
+
+    INST --> UC_MONITOR & UC_ANALYTICS & UC_INSPECT & UC_EXPORT & UC_MANAGE
+    ADMIN --> UC_MANAGE & UC_READY
+
+    class SRED,SBLUE,INST,ADMIN actor
+    class UC_REG,UC_LOGIN,UC_PROFILE uc
+    class UC_ROE,UC_START,UC_RESUME,UC_READY,UC_END ucblue
+    class UC_TERM,UC_RECON,UC_SCAN,UC_EXPLOIT,UC_POST,UC_FLAG,UC_NOTE ucgreen
+    class UC_SIEM,UC_TRIAGE,UC_FORENSIC,UC_CONTAIN,UC_IRNOTE ucpurple
+    class UC_HINT1,UC_HINT2,UC_HINT3 ucgold
+    class UC_DEBRIEF,UC_TIMELINE,UC_RADAR,UC_SCORE uc
+    class UC_MONITOR,UC_ANALYTICS,UC_INSPECT,UC_EXPORT,UC_MANAGE ucblue

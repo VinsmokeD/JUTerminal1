@@ -1,28 +1,45 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'actorBkg': '#0D1B2A', 'actorBorder': '#00B4D8', 'actorTextColor': '#FFFFFF', 'signalColor': '#00B4D8', 'labelBoxBkgColor': '#E8F4F8', 'noteBkgColor': '#FFF9C4', 'fontFamily': 'Segoe UI, Arial'}}}%%
 sequenceDiagram
-    participant Student as Student Red Workspace
-    participant Frontend as React Frontend
-    participant Backend as FastAPI WebSocket
-    participant Kali as Kali Session Container
-    participant Target as Scenario Target
-    participant Filebeat as Filebeat
+    autonumber
+    participant RT as Red Team Student
+    participant WS as WebSocket Server
+    participant SB as Sandbox Manager
+    participant SC as Scenario Container
+    participant FB as Filebeat
     participant ES as Elasticsearch
-    participant Blue as Blue Team Workspace
-    participant DB as PostgreSQL
-    participant AI as AI Provider or Fallback
+    participant SE as SIEM Engine
+    participant BT as Blue Team Student
+    participant AI as AI Monitor
 
-    Student->>Frontend: Submit terminal command
-    Frontend->>Backend: WebSocket stdin frame
-    Backend->>DB: Store command metadata
-    Backend->>AI: Send bounded/redacted context when allowed
-    AI-->>Backend: Socratic hint or fallback hint
-    Backend->>Kali: Proxy PTY input through Docker exec
-    Kali->>Target: Interact inside isolated scenario network
-    Target-->>Filebeat: Emit service/security logs
-    Filebeat->>ES: Forward logs
-    Backend->>ES: Poll/query matching telemetry
-    Backend->>DB: Persist SIEM event and evidence metadata
-    Backend-->>Frontend: WebSocket stdout, hint, output insight, event
-    Frontend-->>Student: Render terminal output and guidance
-    Backend-->>Blue: SIEM event stream
-    Blue->>DB: Save triage notes and classifications
+    Note over RT,AI: Phase: Exploitation — sqlmap execution
 
+    RT->>WS: stdin frame: {type:stdin, data:base64(sqlmap -u ...)}
+    WS->>SB: Route to container PTY
+    SB->>SC: docker exec PTY write
+    SC->>SC: Execute sqlmap against target DB
+    SC-->>SB: stdout frames (base64 encoded)
+    SB-->>WS: stdout stream
+    WS-->>RT: {type:stdout, data:base64(output)}
+
+    Note over SC,ES: Defensive Telemetry Pipeline
+    SC->>SC: ModSecurity WAF logs SQLi pattern
+    SC->>FB: Append to /var/log/modsec_audit.log
+    FB->>ES: Ship log document (index: cybersim-*)
+
+    Note over ES,BT: Real-Time Blue Team Alert
+    SE->>ES: Poll /cybersim-*/_search (5s interval)
+    ES-->>SE: New WAF alert document
+    SE->>SE: Map to SIEM_EVENT schema + MITRE tag
+    SE->>WS: Publish to Redis channel siem:{session_id}
+    WS-->>BT: {type:siem_alert, severity:high, msg:SQLi detected}
+
+    Note over RT,AI: AI Context Evaluation
+    WS->>AI: command_context{command, phase, notes_present}
+    AI->>AI: Safety check: no exploit disclosure
+    AI-->>WS: Socratic hint (<=150 tokens)
+    WS-->>RT: {type:ai_hint, level:2, content:...}
+
+    Note over RT,BT: Scoring Update
+    WS->>WS: Record command metadata + score delta
+    WS-->>RT: Phase progress update
+    WS-->>BT: Score notification

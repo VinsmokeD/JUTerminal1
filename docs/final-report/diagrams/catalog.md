@@ -1,88 +1,111 @@
-# Diagram Catalog
+# Diagram Catalog — CyberSim Final Report (Phase 9A — Premium Redesign)
 
-This catalog registers the architecture diagrams for the CyberSim final report. SVG exports are for the formal report and PNG exports are for Canva, screenshots, and quick review.
+This catalog registers all architecture diagrams for the CyberSim graduation report.
+All diagrams use the CyberSim brand palette (Navy #0D1B2A + Cyan #00B4D8) for visual consistency.
 
 ## Rendering Setup
 
 | Item | Value |
 | --- | --- |
-| Mermaid CLI | `npx --yes @mermaid-js/mermaid-cli` |
-| Verified version | `11.15.0` |
-| Theme config | `mermaid-theme.json` |
+| Mermaid CLI | `@mermaid-js/mermaid-cli` (npm global) |
+| Render Script | `scripts/render-diagrams.ps1` |
+| Theme config | `docs/final-report/diagrams/mermaid-theme.json` |
+| CLI Theme Flag | `default` (inline `%%{init}%%` handles brand overrides) |
+| PNG Resolution | 2400 × 1600 px, scale 2.5 (high-DPI print quality) |
 | SVG export path | `docs/final-report/diagrams/export/svg/` |
 | PNG export path | `docs/final-report/diagrams/export/png/` |
-| Background | White for print and Canva readability |
+| Background | White (KASIT print compliance) |
 
-## Figure Register
+## Design Principles (Phase 9A Redesign)
 
-| Figure | Title | Source | SVG export | PNG export | Target |
-| --- | --- | --- | --- | --- | --- |
-| Figure 4.1 | CyberSim System Context | `source/c4-context.mmd` | `export/svg/c4-context.svg` | `export/png/c4-context.png` | Chapter 4, Canva page 3 |
-| Figure 4.2 | CyberSim Container Architecture | `source/c4-container.mmd` | `export/svg/c4-container.svg` | `export/png/c4-container.png` | Chapter 4, Canva page 4 |
-| Figure 4.3 | CyberSim DFD Level 0 | `source/dfd-level-0.mmd` | `export/svg/dfd-level-0.svg` | `export/png/dfd-level-0.png` | Chapter 4 |
-| Figure 4.4 | CyberSim Core ERD | `source/erd-core-schema.mmd` | `export/svg/erd-core-schema.svg` | `export/png/erd-core-schema.png` | Chapter 4, Appendix D, Canva page 11 |
-| Figure 4.5 | Docker Network and Service Topology | `source/docker-topology.mmd` | `export/svg/docker-topology.svg` | `export/png/docker-topology.png` | Chapter 4, Chapter 5, Canva page 12 |
-| Figure 4.6 | Red-to-Blue Event Sequence | `source/red-blue-event-sequence.mmd` | `export/svg/red-blue-event-sequence.svg` | `export/png/red-blue-event-sequence.png` | Chapter 4, Chapter 6 |
-| Figure 4.7 | UML Use Case Diagram | `source/uml-use-case.mmd` | `export/svg/uml-use-case.svg` | `export/png/uml-use-case.png` | Chapter 4 |
-| Figure 4.8 | Authentication Sequence | `source/auth-sequence.mmd` | `export/svg/auth-sequence.svg` | `export/png/auth-sequence.png` | Chapter 4, Chapter 5 |
-| Figure 4.9 | Session Lifecycle State Machine | `source/session-lifecycle-state.mmd` | `export/svg/session-lifecycle-state.svg` | `export/png/session-lifecycle-state.png` | Chapter 4 |
-| Figure 4.10 | Scenario Phase State Machine | `source/scenario-phase-state-machine.mmd` | `export/svg/scenario-phase-state-machine.svg` | `export/png/scenario-phase-state-machine.png` | Chapter 4, Chapter 6 |
-| Figure 5.1 | AI Safety Pipeline | `source/ai-safety-pipeline.mmd` | `export/svg/ai-safety-pipeline.svg` | `export/png/ai-safety-pipeline.png` | Chapter 5 |
-| Figure 5.2 | Report Generation Pipeline | `source/report-generation-pipeline.mmd` | `export/svg/report-generation-pipeline.svg` | `export/png/report-generation-pipeline.png` | Chapter 5 |
-| Figure 5.3 | Instructor Analytics Data Flow | `source/instructor-analytics-flow.mmd` | `export/svg/instructor-analytics-flow.svg` | `export/png/instructor-analytics-flow.png` | Chapter 5, Canva page 13 |
-| Figure 5.4 | SC-01 Scenario Topology | `source/sc01-topology.mmd` | `export/svg/sc01-topology.svg` | `export/png/sc01-topology.png` | Appendix E |
-| Figure 5.5 | SC-02 Scenario Topology | `source/sc02-topology.mmd` | `export/svg/sc02-topology.svg` | `export/png/sc02-topology.png` | Appendix E |
-| Figure 5.6 | SC-03 Scenario Topology | `source/sc03-topology.mmd` | `export/svg/sc03-topology.svg` | `export/png/sc03-topology.png` | Appendix E |
+- **All diagrams** use `%%{init: {...}}%%` inline theme blocks with CyberSim brand colors
+- **Primary fill**: `#0D1B2A` (deep navy) with `#FFFFFF` text
+- **Accent borders**: `#00B4D8` (cyan) throughout
+- **Secondary fill**: `#17324E` (mid-navy)
+- **Data stores**: `#1A5276` (steel blue)
+- **Alerts/danger**: `#78281F` (deep red)
+- **Success/targets**: `#145A32` (forest green)
+- **AI/hints**: `#784212` (amber-brown)
+- **Font**: Segoe UI / Arial
 
-## Render Verification
+---
 
-| Export | Count | Verification |
-| --- | --- | --- |
-| SVG | 16 | Files exist under `export/svg/` and contain rendered `<svg>` output. |
-| PNG | 16 | Files exist under `export/png/` and load as valid PNG images. |
+## Original Diagrams (Redesigned)
 
-PNG dimensions after themed export:
+| # | Figure | Title | Source MMD | PNG | Chapter |
+|---|--------|-------|-----------|-----|---------|
+| 1 | Fig 4.1 | CyberSim System Context (C4 L1) | `c4-context.mmd` | `c4-context.png` | Ch 4 |
+| 2 | Fig 4.2 | CyberSim Container Architecture (C4 L2) | `c4-container.mmd` | `c4-container.png` | Ch 4 |
+| 3 | Fig 4.3 | Data Flow Diagram Level 0 | `dfd-level-0.mmd` | `dfd-level-0.png` | Ch 4 |
+| 4 | Fig 4.4 | Core Entity-Relationship Diagram | `erd-core-schema.mmd` | `erd-core-schema.png` | Ch 4, Appendix |
+| 5 | Fig 4.5 | Docker Network & Service Topology | `docker-topology.mmd` | `docker-topology.png` | Ch 4 |
+| 6 | Fig 4.6 | Red-to-Blue Event Sequence | `red-blue-event-sequence.mmd` | `red-blue-event-sequence.png` | Ch 4 |
+| 7 | Fig 4.7 | UML Use Case Diagram (Full) | `uml-use-case.mmd` | `uml-use-case.png` | Ch 3 |
+| 8 | Fig 4.8 | Authentication Sequence | `auth-sequence.mmd` | `auth-sequence.png` | Ch 5 |
+| 9 | Fig 4.9 | Session Lifecycle State Machine | `session-lifecycle-state.mmd` | `session-lifecycle-state.png` | Ch 4 |
+| 10 | Fig 4.10 | Scenario Phase State Machine | `scenario-phase-state-machine.mmd` | `scenario-phase-state-machine.png` | Ch 4 |
+| 11 | Fig 5.1 | AI Safety Pipeline | `ai-safety-pipeline.mmd` | `ai-safety-pipeline.png` | Ch 5 |
+| 12 | Fig 5.2 | Report Generation Pipeline | `report-generation-pipeline.mmd` | `report-generation-pipeline.png` | Ch 5 |
+| 13 | Fig 5.3 | Instructor Analytics Flow | `instructor-analytics-flow.mmd` | `instructor-analytics-flow.png` | Ch 5 |
+| 14 | Fig 5.4 | SC-01 NovaMed Scenario Topology | `sc01-topology.mmd` | `sc01-topology.png` | Ch 5 |
+| 15 | Fig 5.5 | SC-02 Nexora Scenario Topology | `sc02-topology.mmd` | `sc02-topology.png` | Ch 5 |
+| 16 | Fig 5.6 | SC-03 Orion Scenario Topology | `sc03-topology.mmd` | `sc03-topology.png` | Ch 5 |
 
-| File | Width | Height |
-| --- | ---: | ---: |
-| `ai-safety-pipeline.png` | 1156 | 1808 |
-| `auth-sequence.png` | 1568 | 1042 |
-| `c4-container.png` | 1568 | 1076 |
-| `c4-context.png` | 1568 | 774 |
-| `dfd-level-0.png` | 1568 | 404 |
-| `docker-topology.png` | 1568 | 1112 |
-| `erd-core-schema.png` | 1568 | 920 |
-| `instructor-analytics-flow.png` | 1528 | 1232 |
-| `red-blue-event-sequence.png` | 1568 | 400 |
-| `report-generation-pipeline.png` | 1568 | 458 |
-| `sc01-topology.png` | 1276 | 1040 |
-| `sc02-topology.png` | 984 | 1040 |
-| `sc03-topology.png` | 1058 | 1088 |
-| `scenario-phase-state-machine.png` | 1456 | 1912 |
-| `session-lifecycle-state.png` | 748 | 1752 |
-| `uml-use-case.png` | 1002 | 2312 |
+---
 
+## New Diagrams Added (Phase 9A)
 
-## Export Command
+| # | Figure | Title | Source MMD | PNG | Chapter |
+|---|--------|-------|-----------|-----|---------|
+| 17 | Fig 4.11 | Deployment Architecture | `deployment-architecture.mmd` | `deployment-architecture.png` | Ch 4 |
+| 18 | Fig 5.7 | Red Team Methodology Flow | `red-team-methodology-flow.mmd` | `red-team-methodology-flow.png` | Ch 5 |
+| 19 | Fig 5.8 | Blue Team IR Workflow | `blue-team-ir-workflow.mmd` | `blue-team-ir-workflow.png` | Ch 5 |
+| 20 | Fig 5.9 | Scoring and Debrief Flow | `scoring-and-debrief-flow.mmd` | `scoring-and-debrief-flow.png` | Ch 5 |
+| 21 | Fig 5.10 | SC-01 NovaMed Attack+Defense Flow | `scenario-sc01-flow.mmd` | `scenario-sc01-flow.png` | Ch 6 |
+| 22 | Fig 5.11 | System Component Interaction | `system-component-interaction.mmd` | `system-component-interaction.png` | Ch 4 |
+
+---
+
+## Total: 22 Diagrams (6 New + 16 Redesigned)
+
+| Diagram Type | Count |
+|---|---|
+| Architecture / C4 | 3 (context, container, deployment) |
+| Data Flow | 2 (DFD level 0, instructor analytics) |
+| Entity-Relationship | 1 (ERD with 11 tables) |
+| Sequence | 3 (auth, red-blue event, report pipeline) |
+| State Machine | 2 (session lifecycle, scenario phases) |
+| Use Case | 1 (full use case: 4 actors, 28 use cases) |
+| Network Topology | 4 (Docker, SC-01, SC-02, SC-03) |
+| Process Flow | 6 (DFD, AI pipeline, red methodology, blue IR, scoring, SC-01 attack+defense) |
+
+---
+
+## Render Command
 
 ```powershell
-$sources = Get-ChildItem -LiteralPath 'docs/final-report/diagrams/source' -Filter '*.mmd'
-foreach ($src in $sources) {
-  $name = [System.IO.Path]::GetFileNameWithoutExtension($src.Name)
-  npx --yes @mermaid-js/mermaid-cli -c 'docs/final-report/diagrams/mermaid-theme.json' -i $src.FullName -o (Join-Path 'docs/final-report/diagrams/export/svg' ($name + '.svg')) -b white
-  npx --yes @mermaid-js/mermaid-cli -c 'docs/final-report/diagrams/mermaid-theme.json' -i $src.FullName -o (Join-Path 'docs/final-report/diagrams/export/png' ($name + '.png')) -b white -s 2
-}
+# Render all diagrams
+.\scripts\render-diagrams.ps1
+
+# Render single diagram
+.\scripts\render-diagrams.ps1 -Only "c4-context"
+
+# PNG only (skip SVG for speed)
+.\scripts\render-diagrams.ps1 -SkipSvg
+
+# Higher resolution
+.\scripts\render-diagrams.ps1 -Width 3200 -Height 2000 -Scale 3.0
 ```
 
-## Next Diagram Batch
+---
 
-The next formal diagram batch should add:
+## Quality Specifications
 
-- UML use case diagram.
-- Authentication sequence diagram.
-- Session lifecycle state machine.
-- Scenario phase state machine.
-- AI safety pipeline.
-- Report generation pipeline.
-- Instructor analytics data flow.
-- SC-01, SC-02, and SC-03 scenario topology diagrams.
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| PNG Width | 2400 px | Sufficient for A4 print at 200 DPI |
+| PNG Height | 1600 px | Landscape-aspect headroom |
+| Scale factor | 2.5 | 2x Retina-quality rendering |
+| Font | Segoe UI / Arial | Fallback sans-serif for all OS |
+| Background | White (#FFFFFF) | KASIT print compliance |
+| Primary theme | CyberSim brand (inline init) | Consistent with report brand |

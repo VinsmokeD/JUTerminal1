@@ -1,19 +1,45 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'actorBkg': '#0D1B2A', 'actorBorder': '#00B4D8', 'actorTextColor': '#FFFFFF', 'signalColor': '#00B4D8', 'labelBoxBkgColor': '#E8F4F8', 'noteBkgColor': '#FFF9C4', 'fontFamily': 'Segoe UI, Arial'}}}%%
 sequenceDiagram
-    participant U as User (Browser)
-    participant F as Frontend (React)
-    participant A as API (FastAPI)
-    participant D as DB (PostgreSQL)
+    autonumber
+    participant B as Browser
+    participant NG as Nginx
+    participant FA as FastAPI
+    participant DB as PostgreSQL
+    participant RD as Redis
 
-    U->>F: Enter Credentials
-    F->>A: POST /api/auth/login
-    Note over A: Hash Validation (Bcrypt)
-    A->>D: Query User Record
-    D-->>A: User Record / Hash
-    alt Valid Credentials
-        Note over A: Generate JWT (RS256)
-        A-->>F: 200 OK + Bearer Token
-        F->>U: Redirect to Dashboard
-    else Invalid
-        A-->>F: 401 Unauthorized
-        F->>U: Show Error
+    Note over B,RD: Registration Flow
+    B->>NG: POST /api/auth/register {username, password, role}
+    NG->>FA: Proxy request
+    FA->>FA: Validate input, hash password (bcrypt)
+    FA->>DB: INSERT user record
+    DB-->>FA: User ID
+    FA-->>NG: 201 Created {user_id, username, role}
+    NG-->>B: Registration success
+
+    Note over B,RD: Login Flow
+    B->>NG: POST /api/auth/login {username, password}
+    NG->>FA: Proxy request
+    FA->>DB: SELECT user by username
+    DB-->>FA: User record (hashed pw, role)
+    FA->>FA: bcrypt.verify(password, hash)
+    alt Invalid credentials
+        FA-->>B: 401 Unauthorized
+    else Valid
+        FA->>FA: generate_jwt(user_id, role, exp=8h)
+        FA->>RD: SET session:{user_id} role TTL=8h
+        FA-->>NG: 200 OK {access_token, token_type}
+        NG-->>B: JWT access token
+    end
+
+    Note over B,RD: Protected Request Flow
+    B->>NG: GET /api/sessions/active (Bearer JWT)
+    NG->>FA: Proxy with Authorization header
+    FA->>FA: decode_jwt() -> user_id, role, exp
+    alt Token expired
+        FA-->>B: 401 Token expired
+    else Token valid
+        FA->>DB: SELECT active sessions for user_id
+        DB-->>FA: Session list
+        FA-->>NG: 200 OK {sessions}
+        NG-->>B: Protected resource
     end

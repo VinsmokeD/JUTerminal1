@@ -1,9 +1,40 @@
-graph TD
-    subgraph "SC-02 Network (172.20.2.0/24)"
-    Attacker[Kali Container] --- DC[Windows/Samba AD DC]
-    DC --- FileServer[Nexora File Server]
-    Attacker --- FileServer
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#27AE60', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TB
+    classDef kali fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef ad fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef ldap fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+    classDef vuln fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+    classDef siem fill:#78281F,stroke:#E74C3C,stroke-width:2px,color:#FFFFFF
+
+    KALI(["Kali Terminal\n(Student - Red Team)"])
+    BE_PROXY["FastAPI\nSandbox Proxy"]
+
+    subgraph SC02["  SC-02: Nexora Financial AD Environment  "]
+        subgraph NET02["  sc02-net  172.20.2.0/24  (internal: true)  "]
+            DC["Samba 4 AD DC\n:389 (LDAP)\n:88 (Kerberos)\n:445 (SMB)\nhostname: nexora-dc"]
+            LDAP["LDAP Directory\nOU=Users,DC=nexora,DC=local"]
+            KERB["Kerberos KDC\nAS-REP Roasting vulnerable\nKerberoastable SPNs"]
+            SMB["SMB Shares\n\\\\nexora-dc\\SYSVOL\n\\\\nexora-dc\\NETLOGON\nWeak password policy"]
+            FLAG02["Flag: Domain Admin hash\nkerberoast -> crack -> pass-the-hash"]
+        end
     end
-    
-    DC -- Kerberos/Auth Logs --> SIEM[Blue Team SIEM]
-    FileServer -- Access Logs --> SIEM
+
+    FB2["Filebeat"]
+    ES2[("Elasticsearch\ncybersim-sc02-*")]
+    SIEM2["SIEM Engine"]
+    BLUE2["Blue Team SIEM"]
+
+    KALI -->|"WebSocket stdin"| BE_PROXY
+    BE_PROXY <-->|"docker exec PTY"| DC
+    DC <--> LDAP & KERB & SMB
+    KERB -->|"TGS-REP (encrypted)"| FLAG02
+    DC -->|"auth.log, samba.log, kerberos.log"| FB2
+    FB2 -->|"Ship logs"| ES2
+    SIEM2 --> ES2
+    SIEM2 -->|"Kerberoast alert"| BLUE2
+
+    class KALI,BE_PROXY kali
+    class DC,SMB ad
+    class LDAP,KERB ldap
+    class FLAG02 vuln
+    class FB2,ES2,SIEM2,BLUE2 siem

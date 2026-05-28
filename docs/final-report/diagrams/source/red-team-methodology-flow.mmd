@@ -1,0 +1,67 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TD
+    classDef phase fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef tool fill:#17324E,stroke:#00B4D8,stroke-width:1.5px,color:#FFFFFF
+    classDef gate fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+    classDef note fill:#784212,stroke:#F39C12,stroke-width:1.5px,color:#FFFFFF
+    classDef flag fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef block fill:#78281F,stroke:#E74C3C,stroke-width:2px,color:#FFFFFF
+
+    START(["Session Start\nROE Acknowledged"])
+
+    subgraph P1["Phase 1: Reconnaissance"]
+        R1["nmap -sn (host discovery)"]
+        R2["whois / DNS enumeration"]
+        R3["OSINT: headers, robots.txt"]
+        R_NOTE["Save RECON note (required)"]
+    end
+
+    GATE1{"Gate 1\nRECON notes\npresent?"}
+
+    subgraph P2["Phase 2: Scanning"]
+        S1["nmap -sV -sC (service scan)"]
+        S2["nikto -h target"]
+        S3["dirb / gobuster (dir enum)"]
+        S4["enum4linux (SMB/AD)"]
+        S_NOTE["Save SCAN note (required)"]
+    end
+
+    GATE2{"Gate 2\nSCAN notes\npresent?"}
+
+    subgraph P3["Phase 3: Exploitation"]
+        E1["sqlmap (SQLi)"]
+        E2["burpsuite / repeater"]
+        E3["hydra (brute-force)"]
+        E4["msfconsole (Metasploit)"]
+        E_FLAG["Capture Flag"]
+    end
+
+    subgraph P4["Phase 4: Post-Exploitation"]
+        PE1["Privilege escalation"]
+        PE2["Lateral movement"]
+        PE3["Persistence check"]
+        PE4["Evidence collection"]
+    end
+
+    BLOCKED["Blocked: Missing Notes\nAI Tutor guidance given"]
+    DEBRIEF(["Debrief & Score"])
+
+    START --> R1 & R2 & R3
+    R1 & R2 & R3 --> R_NOTE
+    R_NOTE --> GATE1
+    GATE1 -->|"Yes"| S1 & S2 & S3 & S4
+    GATE1 -->|"No"| BLOCKED --> R_NOTE
+    S1 & S2 & S3 & S4 --> S_NOTE
+    S_NOTE --> GATE2
+    GATE2 -->|"Yes"| E1 & E2 & E3 & E4
+    GATE2 -->|"No"| BLOCKED
+    E1 & E2 & E3 & E4 --> E_FLAG
+    E_FLAG --> PE1 & PE2 & PE3 & PE4
+    PE1 & PE2 & PE3 & PE4 --> DEBRIEF
+
+    class P1,P2,P3,P4 phase
+    class R1,R2,R3,S1,S2,S3,S4,E1,E2,E3,E4,PE1,PE2,PE3,PE4 tool
+    class GATE1,GATE2 gate
+    class R_NOTE,S_NOTE note
+    class E_FLAG flag
+    class BLOCKED block

@@ -1,11 +1,42 @@
-graph TD
-    subgraph "SC-03 Network (172.20.3.0/24)"
-    Phish[GoPhish Server] --- Victim[Victim Client]
-    Attacker[Kali Container] --- Phish
-    Attacker --- Victim
-    Relay[Mail Relay] --- Phish
-    Relay --- Victim
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#27AE60', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TB
+    classDef kali fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef smtp fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef phish fill:#784212,stroke:#F39C12,stroke-width:2px,color:#FFFFFF
+    classDef target fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+    classDef siem fill:#78281F,stroke:#E74C3C,stroke-width:2px,color:#FFFFFF
+
+    KALI(["Kali Terminal\n(Student - Red Team)"])
+    BE_PROXY["FastAPI\nSandbox Proxy"]
+
+    subgraph SC03["  SC-03: Orion Tech Phishing Campaign  "]
+        subgraph NET03["  sc03-net  172.20.3.0/24  (internal: true)  "]
+            SMTP["Postfix SMTP\n:25 (open relay)\n:587 (submission)\nVulnerable: open relay, no SPF"]
+            GOFISH["GoPhish Server\n:3333 (admin)\n:80 (phish site)\nCampaign management"]
+            VICTIM["Simulated victim mailboxes\nDovecot IMAP\n3x employee personas"]
+            FLAG03["Flag: Employee credential\nphishing -> click -> cred capture"]
+        end
     end
-    
-    Victim -- EDR/Sysmon Logs --> SIEM[Blue Team SIEM]
-    Relay -- SMTP Logs --> SIEM
+
+    FB3["Filebeat"]
+    ES3[("Elasticsearch\ncybersim-sc03-*")]
+    SIEM3["SIEM Engine"]
+    BLUE3["Blue Team SIEM"]
+
+    KALI -->|"WebSocket stdin"| BE_PROXY
+    BE_PROXY <-->|"docker exec PTY"| SMTP
+    SMTP <-->|"Deliver phish"| VICTIM
+    GOFISH <-->|"Campaign setup"| BE_PROXY
+    VICTIM -->|"Credential submitted"| GOFISH
+    GOFISH --> FLAG03
+    SMTP -->|"mail.log"| FB3
+    GOFISH -->|"campaign.log"| FB3
+    FB3 --> ES3
+    SIEM3 --> ES3
+    SIEM3 -->|"Phishing alert"| BLUE3
+
+    class KALI,BE_PROXY kali
+    class SMTP smtp
+    class GOFISH phish
+    class VICTIM,FLAG03 target
+    class FB3,ES3,SIEM3,BLUE3 siem

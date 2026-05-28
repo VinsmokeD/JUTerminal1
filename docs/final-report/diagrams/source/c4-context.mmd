@@ -1,18 +1,35 @@
-flowchart LR
-    studentRed["Student\nRed Team Operator"]
-    studentBlue["Student\nBlue Team Analyst"]
-    instructor["Instructor"]
-    admin["Administrator\nDemo Operator"]
-    ai["OpenRouter-Compatible\nAI Provider"]
-    docker["Local Docker Engine"]
-    cybersim["CyberSim Platform\nBrowser-Based Training System"]
-    uj["University of Jordan\nKASIT Environment"]
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#F0F8FF', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'textColor': '#0D1B2A', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TB
+    classDef actor fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef platform fill:#17324E,stroke:#00B4D8,stroke-width:3px,color:#FFFFFF,font-weight:bold,font-size:16px
+    classDef external fill:#E8F4F8,stroke:#00B4D8,stroke-width:2px,color:#0D1B2A
+    classDef university fill:#FFF9C4,stroke:#FFC107,stroke-width:2px,color:#0D1B2A
 
-    studentRed -->|"Runs sandboxed methodology"| cybersim
-    studentBlue -->|"Triages SIEM events and notes"| cybersim
-    instructor -->|"Monitors progress and exports grades"| cybersim
-    admin -->|"Deploys, verifies, and recovers"| cybersim
-    cybersim -->|"Bounded hint requests"| ai
-    cybersim -->|"Provisions isolated containers"| docker
-    uj -->|"Course and graduation context"| cybersim
+    subgraph ACTORS[" Actors "]
+        SA(["🎯 Student\nRed Team Operator"])
+        SB(["🛡️ Student\nBlue Team Analyst"])
+        IN(["📊 Instructor"])
+        AD(["⚙️ Administrator\nDemo Operator"])
+    end
 
+    CS(["🖥️ CyberSim Platform\nBrowser-Based Cybersecurity Training System"])
+
+    subgraph EXTERNAL[" External Systems "]
+        AI(["🤖 AI Provider\nGemini Flash / OpenRouter"])
+        DK(["🐳 Docker Engine\nLocal Container Runtime"])
+        UJ(["🏛️ University of Jordan\nKASIT Environment"])
+    end
+
+    SA -->|"Executes Red Team methodology\nin isolated sandboxes"| CS
+    SB -->|"Triages SIEM events,\nwrites IR notes, responds"| CS
+    IN -->|"Monitors progress,\nreviews sessions, exports grades"| CS
+    AD -->|"Deploys, verifies,\nand recovers the stack"| CS
+
+    CS -->|"Bounded Socratic hints\n(≤150 tokens, 15 RPM limit)"| AI
+    CS -->|"Provisions isolated scenario\ncontainers and networks"| DK
+    UJ -->|"Graduation project context,\ncourse grading environment"| CS
+
+    class SA,SB,IN,AD actor
+    class CS platform
+    class AI,DK external
+    class UJ university

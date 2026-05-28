@@ -1,0 +1,55 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TB
+    classDef host fill:#0D1B2A,stroke:#00B4D8,stroke-width:3px,color:#FFFFFF
+    classDef core fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef scenario fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef net fill:#4A235A,stroke:#8E44AD,stroke-width:1.5px,color:#FFFFFF
+    classDef storage fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+
+    subgraph HOST["  Local Docker Host (16 GB RAM)  "]
+        subgraph CORE_NET["  bridge: cybersim-net  "]
+            NGX["Nginx\n:80/:443"]
+            FE["React Vite SPA\n:3000"]
+            BE["FastAPI\n:8001"]
+            PG[("PostgreSQL\n:5432")]
+            RD[("Redis\n:6379")]
+            ES[("Elasticsearch\n:9200")]
+            KB["Filebeat\nagent"]
+        end
+
+        subgraph SC01_NET["  bridge: sc01-net (internal:true)  "]
+            SC01_WEB["Apache+PHP\n(NovaMed App)"]
+            SC01_DB[("MySQL\n:3306")]
+            SC01_WAF["ModSecurity WAF"]
+        end
+
+        subgraph SC02_NET["  bridge: sc02-net (internal:true)  "]
+            SC02_DC["Samba AD\n(Nexora DC)"]
+            SC02_LDAP["LDAP / Kerberos"]
+        end
+
+        subgraph SC03_NET["  bridge: sc03-net (internal:true)  "]
+            SC03_SMTP["Postfix SMTP"]
+            SC03_PHISH["GoPhish\n:3333"]
+        end
+    end
+
+    BROWSER["Student Browser"]
+    AI_EXT["AI Provider\n(External)"]
+
+    BROWSER -->|"HTTP/WS :80"| NGX
+    NGX --> FE & BE
+    BE <--> PG & RD & ES
+    BE <-->|"Docker API"| SC01_WEB & SC02_DC & SC03_SMTP
+    SC01_WAF --> KB
+    SC02_DC --> KB
+    SC03_SMTP --> KB
+    KB --> ES
+    BE -->|"HTTPS"| AI_EXT
+    SC01_WEB <--> SC01_DB
+
+    class NGX,FE,BE core
+    class PG,RD,ES,KB storage
+    class SC01_WEB,SC01_DB,SC01_WAF,SC02_DC,SC02_LDAP,SC03_SMTP,SC03_PHISH scenario
+    class BROWSER host
+    class AI_EXT net

@@ -1,34 +1,65 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#F0F8FF', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
 flowchart TB
-    browser["Browser\nReact/Vite UI"]
-    nginx["Nginx or Caddy\nRouting Layer"]
-    backend["FastAPI Backend\nAPI, WS, Orchestration"]
-    postgres["PostgreSQL\nDurable Data"]
-    redis["Redis\nRealtime and Cache"]
-    es["Elasticsearch\nTelemetry Store"]
-    filebeat["Filebeat\nLog Forwarder"]
-    docker["Docker Engine\nKali and Scenario Lifecycle"]
-    ai["OpenRouter-Compatible\nAI Provider"]
+    classDef frontend fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef backend fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef db fill:#1B4F72,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+    classDef siem fill:#1A5276,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef scenario fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef proxy fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+    classDef user fill:#784212,stroke:#F39C12,stroke-width:2px,color:#FFFFFF
 
-    subgraph scenarios["Internal Scenario Networks"]
-        sc01["SC-01 NovaMed\nWeb/WAF/DB"]
-        sc02["SC-02 Nexora\nAD DC/File Server"]
-        sc03["SC-03 Orion\nMail/GoPhish/Victim"]
-        kali["Kali Session Containers"]
+    BROWSER(["🌐 Browser\nStudent / Instructor"])
+
+    subgraph PLATFORM["  CyberSim Docker Compose Stack  "]
+        NGX["🔀 Nginx\nReverse Proxy / Router"]
+
+        subgraph FRONTEND_BOX["  Frontend  "]
+            FE["⚛️ React + Vite\nSPA Application\n─────────────────\nRedWorkspace.jsx\nBlueWorkspace.jsx\nDebrief.jsx\nInstructorDashboard.jsx\nAuth.jsx · Dashboard.jsx"]
+        end
+
+        subgraph BACKEND_BOX["  Backend  "]
+            BE["🐍 FastAPI (Python 3.11)\nAPI + WebSocket Server\n─────────────────\n/auth · /sessions · /ws\n/siem · /scenarios\n/reports · /instructor"]
+        end
+
+        subgraph DATASTORES["  Data Stores  "]
+            PG[("🗄️ PostgreSQL\nSessions · Notes\nCommands · Events")]
+            RD[("⚡ Redis\nActive Sessions\nPub/Sub · Cooldowns")]
+        end
+
+        subgraph TELEMETRY["  Telemetry  "]
+            ES[("🔍 Elasticsearch\nSIEM Index\nEvent Storage")]
+            FB["📦 Filebeat\nLog Shipper"]
+        end
+
+        subgraph SCENARIOS["  Scenario Containers (isolated networks)  "]
+            SC01["🌐 SC-01 NovaMed\nPHP+Apache+ModSec WAF\nMySQL · sc01-net"]
+            SC02["🏦 SC-02 Nexora\nSamba AD + LDAP\nKerberos · sc02-net"]
+            SC03["📧 SC-03 Orion\nPostfix SMTP\nGoPhish · sc03-net"]
+        end
     end
 
-    browser -->|"HTTP and WebSocket"| nginx
-    nginx -->|"API and WS proxy"| backend
-    backend -->|"SQLAlchemy async"| postgres
-    backend -->|"session/cache/history"| redis
-    backend -->|"poll/query detections"| es
-    backend -->|"Docker SDK"| docker
-    backend -->|"bounded hints"| ai
-    docker --> kali
-    docker --> sc01
-    docker --> sc02
-    docker --> sc03
-    sc01 -->|"logs"| filebeat
-    sc02 -->|"logs"| filebeat
-    sc03 -->|"logs"| filebeat
-    filebeat --> es
+    AI_P["🤖 AI Provider\n(External)"]
 
+    BROWSER -->|"HTTPS / WSS"| NGX
+    NGX -->|"Static SPA"| FE
+    NGX -->|"API Proxy\n/api · /ws"| BE
+    FE <-->|"WebSocket: stdin/stdout\nSIEM events · hints"| BE
+    BE <-->|"ORM queries"| PG
+    BE <-->|"State · Pub/Sub"| RD
+    BE <-->|"SIEM event polling"| ES
+    BE -->|"Bounded hint requests"| AI_P
+    FB -->|"Ship container logs"| ES
+    SC01 -.->|"Audit logs → Filebeat"| FB
+    SC02 -.->|"Audit logs → Filebeat"| FB
+    SC03 -.->|"Audit logs → Filebeat"| FB
+    BE <-->|"Docker API\nExec/PTY"| SC01
+    BE <-->|"Docker API\nExec/PTY"| SC02
+    BE <-->|"Docker API\nExec/PTY"| SC03
+
+    class FE frontend
+    class BE backend
+    class PG,RD db
+    class ES,FB siem
+    class SC01,SC02,SC03 scenario
+    class NGX proxy
+    class BROWSER user

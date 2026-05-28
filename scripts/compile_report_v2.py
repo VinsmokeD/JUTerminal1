@@ -612,23 +612,31 @@ def _clean_inline(text: str) -> str:
 # ===========================================================================
 
 FIGURE_CAPTIONS: dict[str, str] = {
+    # Original 16 diagrams (redesigned)
     "c4-context.png": "Figure 4.1: CyberSim System Context (C4 Level 1)",
     "c4-container.png": "Figure 4.2: CyberSim Container Architecture (C4 Level 2)",
     "dfd-level-0.png": "Figure 4.3: CyberSim Data Flow Diagram (Level 0)",
     "erd-core-schema.png": "Figure 4.4: CyberSim Core Entity-Relationship Diagram",
     "docker-topology.png": "Figure 4.5: Docker Network and Service Topology",
-    "red-blue-event-sequence.png": "Figure 4.6: Red-to-Blue Event Sequence",
-    "uml-use-case.png": "Figure 4.7: UML Use Case Diagram",
-    "auth-sequence.png": "Figure 4.8: Authentication Sequence",
+    "red-blue-event-sequence.png": "Figure 4.6: Red-to-Blue Event Sequence (WebSocket + SIEM Pipeline)",
+    "uml-use-case.png": "Figure 4.7: UML Use Case Diagram (All Actors and Use Cases)",
+    "auth-sequence.png": "Figure 4.8: Authentication Sequence (Registration, Login, JWT Flow)",
     "session-lifecycle-state.png": "Figure 4.9: Session Lifecycle State Machine",
-    "scenario-phase-state-machine.png": "Figure 4.10: Scenario Phase State Machine",
-    "ai-safety-pipeline.png": "Figure 5.1: AI Safety Pipeline",
+    "scenario-phase-state-machine.png": "Figure 4.10: Scenario Phase State Machine (Gated Methodology)",
+    "deployment-architecture.png": "Figure 4.11: CyberSim Deployment Architecture (Docker Networks)",
+    "system-component-interaction.png": "Figure 4.12: System Component Interaction Map",
+    "ai-safety-pipeline.png": "Figure 5.1: AI Safety Pipeline (10-Stage Socratic Guard)",
     "report-generation-pipeline.png": "Figure 5.2: Report Generation Pipeline",
     "instructor-analytics-flow.png": "Figure 5.3: Instructor Analytics Data Flow",
-    "sc01-topology.png": "Figure 5.4: SC-01 (NovaMed) Scenario Topology",
-    "sc02-topology.png": "Figure 5.5: SC-02 (Nexora) Scenario Topology",
-    "sc03-topology.png": "Figure 5.6: SC-03 (Orion) Scenario Topology",
+    "red-team-methodology-flow.png": "Figure 5.4: Red Team Methodology Flow (PTES Phases + Gates)",
+    "blue-team-ir-workflow.png": "Figure 5.5: Blue Team Incident Response Workflow",
+    "scoring-and-debrief-flow.png": "Figure 5.6: Scoring and Debrief Generation Flow",
+    "sc01-topology.png": "Figure 6.1: SC-01 (NovaMed) Scenario Topology and Attack Chain",
+    "sc02-topology.png": "Figure 6.2: SC-02 (Nexora) Scenario Topology",
+    "sc03-topology.png": "Figure 6.3: SC-03 (Orion) Scenario Topology",
+    "scenario-sc01-flow.png": "Figure 6.4: SC-01 NovaMed Attack and Defense Correlation",
 }
+
 
 
 def _resolve_png(md_path: str) -> Optional[Path]:

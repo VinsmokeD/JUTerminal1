@@ -1,0 +1,59 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#00B4D8', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TB
+    classDef fe fill:#17324E,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef be fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef data fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+    classDef ext fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+
+    subgraph FE["Frontend (React + Vite)"]
+        TERM["TerminalPanel\n(xterm.js)"]
+        SIEM_UI["SiemFeed\n(EventTable)"]
+        NOTES_UI["NotesPanel"]
+        HINTS_UI["HintPanel\n(AI Tutor)"]
+        DEBRIEF_UI["DebriefPage"]
+        DASH_UI["Dashboard"]
+        INSTR_UI["InstructorDashboard"]
+        WS_HOOK["useWebSocket()\nhook"]
+        STORE["Zustand Store\n(session, siem, notes)"]
+    end
+
+    subgraph BE["Backend (FastAPI)"]
+        WS_ROUTE["/ws/session\nWebSocket router"]
+        AUTH_ROUTE["/auth/* routes"]
+        SESSION_ROUTE["/sessions/* routes"]
+        SCENARIO_ENG["Scenario Engine\n+ Gatekeeper"]
+        SANDBOX_MGR["Sandbox Manager\n(Docker SDK)"]
+        SIEM_ENG["SIEM Engine\n(command bridge)"]
+        AI_MON["AI Monitor\n(context builder)"]
+        REPORT_ENG["Report Engine"]
+        INSTR_API["/instructor/* routes"]
+    end
+
+    subgraph DATA["Data Layer"]
+        PG[("PostgreSQL")]
+        RD[("Redis")]
+        ES[("Elasticsearch")]
+    end
+
+    DOCKER["Docker Daemon"]
+    AI_P["AI Provider"]
+
+    TERM <-->|"stdin/stdout frames"| WS_HOOK
+    SIEM_UI <-->|"siem events"| WS_HOOK
+    HINTS_UI <-->|"hint messages"| WS_HOOK
+    NOTES_UI --> STORE
+    DEBRIEF_UI & DASH_UI & INSTR_UI -->|"REST API"| AUTH_ROUTE & SESSION_ROUTE & INSTR_API
+    WS_HOOK <-->|"WSS /ws/session"| WS_ROUTE
+
+    WS_ROUTE --> SCENARIO_ENG & SANDBOX_MGR & SIEM_ENG & AI_MON
+    SCENARIO_ENG <--> PG & RD
+    SANDBOX_MGR <--> DOCKER
+    SIEM_ENG <--> ES & RD
+    AI_MON --> AI_P
+    REPORT_ENG <--> PG
+    AUTH_ROUTE & SESSION_ROUTE & INSTR_API <--> PG
+
+    class TERM,SIEM_UI,NOTES_UI,HINTS_UI,DEBRIEF_UI,DASH_UI,INSTR_UI,WS_HOOK,STORE fe
+    class WS_ROUTE,AUTH_ROUTE,SESSION_ROUTE,SCENARIO_ENG,SANDBOX_MGR,SIEM_ENG,AI_MON,REPORT_ENG,INSTR_API be
+    class PG,RD,ES data
+    class DOCKER,AI_P ext

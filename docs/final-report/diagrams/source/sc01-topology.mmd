@@ -1,9 +1,45 @@
-graph TD
-    subgraph "SC-01 Network (172.20.1.0/24)"
-    Attacker[Kali Container] --- WAF[ModSecurity WAF]
-    WAF --- WebApp[NovaMed Web App]
-    WebApp --- DB[MySQL/SQLite]
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#0D1B2A', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#00B4D8', 'lineColor': '#00B4D8', 'secondaryColor': '#17324E', 'tertiaryColor': '#E8F4F8', 'clusterBkg': '#EBF5FB', 'clusterBorder': '#27AE60', 'edgeLabelBackground': '#FFFFFF', 'fontFamily': 'Segoe UI, Arial'}}}%%
+flowchart TB
+    classDef kali fill:#0D1B2A,stroke:#00B4D8,stroke-width:2px,color:#FFFFFF
+    classDef web fill:#145A32,stroke:#27AE60,stroke-width:2px,color:#FFFFFF
+    classDef db fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
+    classDef waf fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
+    classDef alert fill:#78281F,stroke:#E74C3C,stroke-width:2px,color:#FFFFFF
+    classDef net fill:#17324E,stroke:#00B4D8,stroke-width:1px,color:#00B4D8,stroke-dasharray:5
+
+    KALI(["🎯 Kali Terminal\n(Student - Red Team)"])
+    BE_PROXY["⚙️ FastAPI\nSandbox Proxy\n(Docker exec API)"]
+
+    subgraph SC01["  SC-01: NovaMed Healthcare Web App  "]
+        subgraph NET01["  sc01-net  172.20.1.0/24  (internal: true)  "]
+            NGINX01["Nginx :80"]
+            WEB01["Apache 2.4 + PHP 7.4\n:8080\nVulnerabilities:\n  · SQLi (login.php)\n  · LFI (file param)\n  · Unrestricted upload"]
+            WAF01["ModSecurity WAF\n(OWASP CRS v3.3)\nDetects: SQLi, LFI, XSS"]
+            MYSQL01[("MySQL 5.7\n:3306\nDB: novamedDB\nTables: users, records")]
+            FLAG01["🚩 /flag.txt\n(Admin panel access)"]
+        end
     end
-    
-    WebApp -- Telemetry --> SIEM[Blue Team SIEM]
-    WAF -- Logs --> SIEM
+
+    FB["📦 Filebeat\nLog agent"]
+    ES[("🔍 Elasticsearch\ncybersim-sc01-*")]
+    SIEM_ENGINE["⚡ SIEM Engine\n5s poll interval"]
+    BLUE_UI["🛡️ Blue Team SIEM\nEvent Feed"]
+
+    KALI -->|"WebSocket stdin"| BE_PROXY
+    BE_PROXY <-->|"docker exec PTY"| WEB01
+    NGINX01 --> WEB01
+    WEB01 <-->|"SQL queries"| MYSQL01
+    WEB01 --> WAF01
+    WAF01 <-->|"ModSec audit log"| FB
+    WEB01 -->|"access.log, error.log"| FB
+    FB -->|"Index documents"| ES
+    SIEM_ENGINE -->|"Poll"| ES
+    SIEM_ENGINE -->|"Redis pub/sub"| BLUE_UI
+    FLAG01 -.->|"Captured by exploit"| BE_PROXY
+
+    class KALI kali
+    class WEB01,NGINX01,FLAG01 web
+    class MYSQL01 db
+    class WAF01 waf
+    class FB,ES,SIEM_ENGINE,BLUE_UI alert
+    class BE_PROXY kali
