@@ -101,7 +101,7 @@ export default function BlueWorkspace() {
       .catch(() => {})
 
     return () => { cancelled = true }
-  }, [sessionId, navigate, setSiemEvents, setCurrentSession])
+  }, [sessionId, navigate, setSiemEvents, setCurrentSession, setLastVisitedRole])
 
   useEffect(() => {
     const onHint = (event) => requestHint(event.detail?.level || 1)

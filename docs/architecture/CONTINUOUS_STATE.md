@@ -5367,3 +5367,18 @@ pm run build and ran unit tests successfully.
   - Streamlined `AiHintPanel` down to a scrolling tutor chat list, welcome initialization message, and input form dispatching backend socket queries.
   - Placed the inline flag counter and submission modal button within the workspace header. When submitted, the client queries for score validation, triggers database phase advancement, and pulls updated session counts.
   - Verified backend pytests are green, and verified build output compiles without warnings.
+
+### [2026-05-28 11:05:00 +03:00] - Antigravity (AI Tutor Layout & Flag Submission Popover Cleanup)
+* **Status**: Complete - Bypassed the readiness overlay, cleaned up the AI Tutor panel subheader and welcome state to match the approved layout, and refactored the flag submission widget into a clean, popover-based component with zero linter warnings.
+* **Why**: The user requested that the AI panel layout match the approved screenshots (removing avatars/bubbles for welcome text and using dot separators), that the flag submission widget use a clean panel design, and that the boot page report is entirely bypassed.
+* **Where**:
+  - `frontend/src/components/workspace/FlagSubmitWidget.jsx` - Created a new clean popover-based flag submit widget.
+  - `frontend/src/components/workspace/WorkspaceTopBar.jsx` - Replaced `SubmitFlagWidget` modal with the new `FlagSubmitWidget` and cleaned up unused React imports.
+  - `frontend/src/pages/RedWorkspace.jsx` & `frontend/src/pages/BlueWorkspace.jsx` - Added missing `setLastVisitedRole` dependencies to session load `useEffect` hooks.
+  - `frontend/src/components/hints/AiHintPanel.jsx` - Reworked header formatting to use middots and simplified empty message states to be cleanly centered.
+  - `docs/architecture/CONTINUOUS_STATE.md` - This entry.
+* **What & How**:
+  - Refactored `SubmitFlagWidget` into a separate, clean, and functional `FlagSubmitWidget` component that displays as a popover instead of a modal. The input field is cleared only on successful flag capture, and failure handles guidance messages from backend hints.
+  - Patched `handleFlagSubmit` in `RedWorkspace.jsx` to reload session state when called with an empty string, allowing the popover child component to trigger state updates upon successful flag captures.
+  - Reworked `AiHintPanel` header styles to match the middot notation `·` and render without a distinct bg/border banner separation. Added a centered empty state for welcome messages to mirror the clean approved layout.
+  - Resolved all React hooks missing dependency and unused variable warnings, ensuring `npm run lint` and `npm run build` finish with exactly 0 warnings/errors. Verified all 295 backend pytests run and pass successfully.

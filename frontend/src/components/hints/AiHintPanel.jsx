@@ -177,13 +177,13 @@ export default function AiHintPanel({ onSubmitQuestion, connectionState }) {
   return (
     <div className="flex flex-col h-full bg-void animate-fade-in">
       {/* HEADER INFO BANNER */}
-      <div className="px-4 py-2 border-b border-cs-border bg-surface-2/40 text-[11px] font-mono text-txt-secondary flex items-center gap-1.5 select-none shrink-0">
+      <div className="px-4 py-2.5 border-b border-cs-border/30 text-[11px] font-mono text-txt-secondary flex items-center gap-1.5 select-none shrink-0">
         <span>AI Tutor</span>
-        <span className="text-txt-dim">•</span>
+        <span className="text-txt-dim">·</span>
         <span>Phase {phase}</span>
-        <span className="text-txt-dim">•</span>
+        <span className="text-txt-dim">·</span>
         <span>{ctx?.title}</span>
-        <span className="text-txt-dim">•</span>
+        <span className="text-txt-dim">·</span>
         <span>Branch: {activeBranch?.label || '—'}</span>
       </div>
 
@@ -204,18 +204,16 @@ export default function AiHintPanel({ onSubmitQuestion, connectionState }) {
       )}
 
       {/* DIALOGUE STREAM */}
-      <div className="flex-1 overflow-y-auto px-4 py-3.5 space-y-4">
-        {hints.length === 0 && (
-          <HintBubble hint={{
-            text: "AI Tutor initialized. Awaiting queries or scenario insights.",
-            ts: "Ready",
-            sender: "system_welcome"
-          }} />
+      <div className="flex-1 overflow-y-auto px-4 py-3.5 space-y-4 flex flex-col">
+        {hints.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center text-center p-6 text-txt-dim font-mono text-xs select-none">
+            AI Tutor initialized. Awaiting queries or scenario insights.
+          </div>
+        ) : (
+          [...hints].reverse().map((h, i) => (
+            <HintBubble key={i} hint={h} />
+          ))
         )}
-
-        {[...hints].reverse().map((h, i) => (
-          <HintBubble key={i} hint={h} />
-        ))}
 
         {loading && (
           <div className="flex items-center gap-2.5 text-xs text-txt-secondary border border-cs-blue/20 rounded-cs p-3.5 bg-cs-blue/5 backdrop-blur-sm shadow-sm animate-pulse">

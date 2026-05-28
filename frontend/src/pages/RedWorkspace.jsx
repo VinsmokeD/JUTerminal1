@@ -55,6 +55,13 @@ export default function RedWorkspace() {
   const { sendRawInput, sendCommand, requestHint, toggleMode, sendTutorQuestion, connectionState } = useWebSocket(wsSessionId)
 
   const handleFlagSubmit = useCallback(async (flagVal) => {
+    if (!flagVal) {
+      const sessionRes = await api.get(`/sessions/${sessionId}`)
+      setSession(sessionRes.data)
+      useSessionStore.getState().setScore(sessionRes.data.score)
+      useSessionStore.getState().setPhase(sessionRes.data.phase)
+      return { valid: true }
+    }
     const res = await api.post(`/sessions/${sessionId}/flag`, { flag_value: flagVal })
     if (res.data.valid) {
       const sessionRes = await api.get(`/sessions/${sessionId}`)
@@ -102,7 +109,7 @@ export default function RedWorkspace() {
       .catch(() => {})
 
     return () => { cancelled = true }
-  }, [sessionId, navigate, setSiemEvents, setCurrentSession])
+  }, [sessionId, navigate, setSiemEvents, setCurrentSession, setLastVisitedRole])
 
   useEffect(() => {
     const onHint = (event) => requestHint(event.detail?.level || 1)
