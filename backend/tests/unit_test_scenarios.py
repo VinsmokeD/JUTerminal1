@@ -197,12 +197,14 @@ def test_explicit_hint_bypasses_offline_guard(monkeypatch):
     import asyncio
     from src.ai import monitor
     monkeypatch.setattr(monitor, "_probe_target", lambda h, p, **kw: False)
+    monkeypatch.setattr(monitor.settings, "OPENROUTER_API_KEY", "")
     state = {"scenario_id": "SC-02", "phase": 1, "role": "red", "discoveries": {}}
     result = asyncio.get_event_loop().run_until_complete(
         monitor.get_ai_hint("sess-probe2", state, "nmap -sV 172.20.2.20", 1)
     )
-    # explicit hint request — must return some guidance, not the offline stub
-    assert result is None or "offline" not in (result or "").lower()
+    # explicit hint request — must return the offline tutor fallback when no key is set
+    assert result is not None
+    assert "[Offline tutor]" in result
 
 
 @pytest.mark.asyncio

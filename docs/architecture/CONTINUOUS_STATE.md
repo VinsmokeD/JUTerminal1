@@ -5,6 +5,21 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-28 11:50:00 +03:00] - Antigravity (Ground Truth Audit - PROMPT 0)
+* **Status**: Complete - performed a factual audit of the AI provider configuration, duplicate ws/routes.py files, SIEM event routing/websocket channels, and environment variables.
+* **Why**: The user requested a ground truth audit of potential mismatches between documentation and the running system (PROMPT 0).
+* **Where**:
+  - `backend/src/ai/monitor.py` - audited AI provider call patterns, imports, client initialization, and settings configuration.
+  - `backend/src/ws/routes.py` and `mnt/user-data/outputs/cybersim/backend/src/ws/routes.py` - audited duplicate files, compared code, traced imports from `main.py`, and verified message-type handling.
+  - `backend/src/siem/command_bridge.py` - audited SIEM alert publish mechanisms and Redis channel configurations.
+  - `frontend/src/hooks/useWebSocket.js` and `frontend/src/store/sessionStore.js` - audited frontend WebSocket payload parsing and store update dispatching.
+  - `.env` - audited local API key setup.
+* **What & How**:
+  - Verified that OpenRouter API client and key are actually utilized in `monitor.py`, despite references to Gemini in blueprint docs.
+  - Confirmed the duplicate file `mnt/user-data/outputs/cybersim/backend/src/ws/routes.py` is not imported, and that the live copy correctly handles `terminal_command`.
+  - Confirmed channel symmetry for `siem:{session_id}:feed` Redis channel and `siem_event` dispatch.
+  - Verified `.env` settings (OPENROUTER_API_KEY set, GEMINI_API_KEY unset).
+
 ### [2026-05-26 12:11:10 +03:00] - Codex (Dirty Worktree Recovery and Backend Verification)
 * **Status**: Complete - recovered the working tree from a mixed Codex/Gemini partial state, removed broken frontend/Playwright/report churn, preserved the backend/SC-01/AI hardening work, fixed the remaining backend test regressions, and reverified the project gates available locally.
 * **Why**: The worktree contained a valid stash safety copy plus uncommitted backend changes mixed with partial frontend E2E edits and broad documentation churn. The frontend diff included unstable edits, while backend tests exposed a few real integration edges after restoring the intended scenario metadata.
@@ -5429,4 +5444,19 @@ pm run build and ran unit tests successfully.
 * **Verification**:
   - Executed `python -m pytest` inside the backend directory. All 295 tests passed successfully with 1 skipped.
 
-
+### [2026-05-28 11:34:00 +03:00] - Antigravity (UI Layout, AI Tutor, and Welcome Modal Fixes)
+* **Status**: Complete - Fixed top bar overflow and submit flag overlapping layout issues, resolved the repeating AI tutor responses, and persisted welcome modal dismissal across browser refreshes.
+* **Why**: The user reported that the "Submit Flag" button overlapped, the workspace top-bar overflowed the screen, the AI tutor kept giving the exact same responses, and browser refreshes restarted the training welcome modal.
+* **Where**:
+  - `backend/src/ai/monitor.py` - Removed the unsupported `reasoning_effort` parameter from OpenRouter payload that was causing API request 400 failures, preventing fallback responses.
+  - `frontend/src/pages/RedWorkspace.jsx` - Updated welcome modal to check/persist `welcome_acked_${sessionId}` state in `sessionStorage` so refreshing does not trigger it repeatedly.
+  - `frontend/src/components/workspace/LayoutPicker.jsx` - Refactored layout presets from 4 distinct buttons into a single select dropdown to save substantial screen width.
+  - `frontend/src/components/workspace/WorkspaceTopBar.jsx` - Reworked responsive layout: merged duplicate scenario chip into scenario/phase badge, shortened actions ("Restart sandbox" -> "Restart", "End & debrief" -> "End Mission"), hid `PhaseTrail` under `xl` screen width, and optimized responsive classes.
+* **What & How**:
+  - Removed `"reasoning_effort": "high"` from the httpx post payload to OpenRouter, restoring successful DeepSeek model responses (avoiding 400 Bad Request error).
+  - Modified standard state initializer for `showWelcome` to check `sessionStorage` and modified modal dismiss actions to save acknowledgment.
+  - Rewrote `LayoutPicker.jsx` to render a styled `<select>` element.
+  - Adjusted Tailwind layout structure in `WorkspaceTopBar.jsx` to support flex wrapping and responsive element hiding.
+* **Verification**:
+  - Rebuilt and restarted backend and frontend containers with `docker compose build` and `docker compose up -d`.
+  - Executed `python -m pytest` inside the backend directory. All 295 tests passed successfully.

@@ -26,7 +26,10 @@ export default function RedWorkspace() {
   const [session, setSession] = useState(cachedSession)
   const [loadingSession, setLoadingSession] = useState(!cachedSession)
   const [roeAcked, setRoeAcked] = useState(cachedSession?.roe_acknowledged ?? false)
-  const [showWelcome, setShowWelcome] = useState(skillLevel === 'beginner')
+  const [showWelcome, setShowWelcome] = useState(() => {
+    if (skillLevel !== 'beginner') return false
+    return !sessionStorage.getItem(`welcome_acked_${sessionId}`)
+  })
   const [showKillChain, setShowKillChain] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [siemFlash, setSiemFlash] = useState(false)
@@ -188,12 +191,18 @@ export default function RedWorkspace() {
       )}
       <Modal
         open={showWelcome}
-        onClose={() => setShowWelcome(false)}
+        onClose={() => {
+          setShowWelcome(false)
+          sessionStorage.setItem(`welcome_acked_${sessionId}`, 'true')
+        }}
         title="Welcome to your Red Team workspace"
         size="md"
         footer={
           <div className="flex justify-end">
-            <Button variant="red" onClick={() => setShowWelcome(false)}>Start training</Button>
+            <Button variant="red" onClick={() => {
+              setShowWelcome(false)
+              sessionStorage.setItem(`welcome_acked_${sessionId}`, 'true')
+            }}>Start training</Button>
           </div>
         }
       >

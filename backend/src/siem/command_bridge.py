@@ -15,11 +15,14 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.cache.redis import publish
 from src.db.database import SiemEvent
 from src.sandbox.manager import get_kali_ip_for_session
+
+logger = logging.getLogger(__name__)
 
 _EVENTS_DIR = Path(__file__).resolve().parent / "events"
 _TRAILING_CONTINUATION = re.compile(r"\\\s*$")
@@ -73,12 +76,19 @@ def _load_command_events(scenario_id: str) -> list[dict[str, Any]]:
 
 def _is_incomplete_shell_fragment(command: str) -> bool:
     stripped = command.strip()
-    return bool(
-        not stripped
-        or _TRAILING_CONTINUATION.search(stripped)
-        or _OPTION_ONLY.search(stripped)
-        or _SCRIPT_ONLY.search(stripped)
-    )
+    if not stripped:
+        logger.info("[SIEM Bridge] Command is empty after stripping.")
+        return True
+    if _TRAILING_CONTINUATION.search(stripped):
+        logger.info(f"[SIEM Bridge] Command '{command}' filtered: ends with trailing continuation backslash.")
+        return True
+    if _OPTION_ONLY.search(stripped):
+        logger.info(f"[SIEM Bridge] Command '{command}' filtered: option/flag only command.")
+        return True
+    if _SCRIPT_ONLY.search(stripped):
+        logger.info(f"[SIEM Bridge] Command '{command}' filtered: script only invocation without target options.")
+        return True
+    return False
 
 
 def match_command_events(command: str, scenario_id: str) -> list[dict[str, Any]]:
@@ -91,6 +101,12 @@ def match_command_events(command: str, scenario_id: str) -> list[dict[str, Any]]
         compiled = event.get("_compiled")
         if compiled and compiled.search(command):
             matches.append(event)
+
+    if not matches:
+        logger.info(f"[SIEM Bridge] Command '{command}' matched 0 rules in scenario {scenario_id}")
+    else:
+        logger.info(f"[SIEM Bridge] Command '{command}' matched {len(matches)} rules in scenario {scenario_id}: {[m.get('id') for m in matches]}")
+
     return matches[:4]
 
 

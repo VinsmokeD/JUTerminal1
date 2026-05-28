@@ -278,6 +278,9 @@ async def _handle_terminal_command(
             )
         await db.commit()
     if generated_siem_events:
+        logging.getLogger("src.ws.routes").info(
+            f"[WS Command] Publishing {len(generated_siem_events)} SIEM events to channel: siem:{session_id}:feed"
+        )
         await publish_command_siem_events(session_id, generated_siem_events)
 
     await lpush_capped(f"session:{session_id}:commands", command, max_len=50)
@@ -469,6 +472,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     # Subscribe to SIEM channels via Redis pub/sub. Terminal output is delivered
     # through the direct listener queue and still persisted to Redis for refresh.
     pubsub = redis.pubsub()
+    logging.getLogger("src.ws.routes").info(f"[WS Connect] Subscribing to SIEM channel: siem:{session_id}:feed")
     await pubsub.subscribe(f"siem:{session_id}:feed")
     send_lock = asyncio.Lock()
     command_queue: asyncio.Queue[str] = asyncio.Queue(maxsize=50)

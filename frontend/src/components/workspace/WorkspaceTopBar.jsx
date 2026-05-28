@@ -56,14 +56,14 @@ export default function WorkspaceTopBar({
   return (
     <div
       className="
-        relative flex items-center gap-3 px-4 py-2.5
+        relative flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-2 w-full
         bg-surface-1/70 border-b border-cs-border
-        backdrop-blur-md
+        backdrop-blur-md select-none
       "
       style={{ minHeight: 52 }}
     >
       {/* Back button */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         <button
           onClick={() => navigate('/dashboard')}
           className="btn-v3 btn-v3-subtle flex items-center gap-1.5 text-sm"
@@ -71,11 +71,6 @@ export default function WorkspaceTopBar({
           <span aria-hidden>←</span>
           <span className="hidden sm:inline">Missions</span>
         </button>
-        {phase && !completedAt && (
-          <span className="hidden md:inline font-mono text-[11px] text-txt-dim bg-surface-2 border border-cs-border px-2 py-0.5 rounded-cs-sm">
-            {scenarioId} · Phase {phase} · In progress
-          </span>
-        )}
       </div>
 
       {/* Role badge */}
@@ -91,20 +86,22 @@ export default function WorkspaceTopBar({
 
       <div className="h-4 w-px bg-cs-border" />
 
-      {/* Scenario chip */}
-      <span className="font-mono text-[11px] text-txt-secondary px-2 py-0.5 rounded-cs-sm bg-surface-2 border border-cs-border">
-        {scenarioId}
-      </span>
+      {/* Scenario / Phase badge */}
+      {scenarioId && (
+        <span className="font-mono text-[11px] text-txt-secondary px-2 py-0.5 rounded-cs-sm bg-surface-2 border border-cs-border flex-shrink-0">
+          {scenarioId}{phase && !completedAt ? ` · Phase ${phase}` : ''}
+        </span>
+      )}
 
-      <div className="h-4 w-px bg-cs-border hidden md:block" />
+      <div className="h-4 w-px bg-cs-border hidden xl:block" />
 
-      {/* Phase trail (flex grows to fill) */}
-      <div className="hidden md:flex flex-1 min-w-0 overflow-x-auto">
+      {/* Phase trail (flex grows to fill, hidden on smaller viewports) */}
+      <div className="hidden xl:flex flex-1 min-w-0 overflow-x-auto">
         <PhaseTrail methodology={methodology} role={role} currentPhase={phase} activeBranch={activeBranch} />
       </div>
 
       {/* Right cluster */}
-      <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+      <div className="flex items-center gap-1.5 md:gap-2 ml-auto flex-shrink-0">
         {children}
 
         {role === 'red' && (
@@ -121,7 +118,9 @@ export default function WorkspaceTopBar({
           />
         )}
 
-        <ConnectionPill state={connection} />
+        <div className="hidden lg:block">
+          <ConnectionPill state={connection} />
+        </div>
 
         {aiMode && (
           <button
@@ -131,7 +130,7 @@ export default function WorkspaceTopBar({
                 detail: { mode: aiMode === 'learn' ? 'challenge' : 'learn' }
               }))
             }}
-            className={`hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-mono text-[10.5px] uppercase tracking-[0.1em] transition-all hover:brightness-110 active:scale-95 cursor-pointer ${
+            className={`hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-mono text-[10.5px] uppercase tracking-[0.1em] transition-all hover:brightness-110 active:scale-95 cursor-pointer ${
               aiMode === 'learn'
                 ? 'text-cs-blue bg-cs-blue/8 border-cs-blue/30 hover:border-cs-blue/50'
                 : 'text-amber-warn bg-amber-warn/8 border-amber-warn/30 hover:border-amber-warn/50'
@@ -151,7 +150,7 @@ export default function WorkspaceTopBar({
         </div>
 
         <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-cs-border bg-surface-2 font-mono text-[11px]">
-          <span className="text-txt-dim uppercase tracking-wider text-[9.5px]">Score</span>
+          <span className="text-txt-dim uppercase tracking-wider text-[9.5px] hidden sm:inline">Score</span>
           <span className={`font-bold tabular-nums ${scoreTone(score)}`}>{score}</span>
         </div>
 
@@ -162,17 +161,19 @@ export default function WorkspaceTopBar({
               window.location.reload()
             }
           }}
-          className="btn-v3 btn-v3-sm text-txt-dim hover:text-txt-primary hover:bg-surface-3 transition-colors border-transparent hover:border-cs-border"
+          className="btn-v3 btn-v3-sm text-txt-dim hover:text-txt-primary hover:bg-surface-3 transition-colors border-transparent hover:border-cs-border hidden lg:inline-flex"
           style={{ background: 'transparent' }}
+          title="Restart Sandbox Container"
         >
-          Restart sandbox
+          Restart
         </button>
 
         <button
           onClick={() => navigate(`/session/${sessionId}/debrief`)}
           className="btn-v3 btn-v3-subtle btn-v3-sm"
+          title="End Mission & View Debrief"
         >
-          End & debrief
+          End Mission
         </button>
       </div>
     </div>
