@@ -123,7 +123,7 @@ test.describe('CyberSim SC-01 Full Kill Chain Integration Test', () => {
     await expect(siemFeed).toBeVisible({ timeout: 10_000 });
 
     // Check target IP scenario display matches real IP
-    const topBarChip = page.locator('.font-mono.text-\\[11px\\].text-txt-secondary.px-2.py-0.5.rounded-cs-sm.bg-surface-2').first();
+    const topBarChip = page.locator('span:has-text("SC-01")').first();
     await expect(topBarChip).toContainText(/SC-01/);
   });
 });
