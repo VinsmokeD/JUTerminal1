@@ -328,3 +328,13 @@ pm run build and ran unit tests successfully.
   - SECRET SCAN: no live keys in tracked files; .env untracked+ignored. Benign hits: CI test secret, intentional sc01/.env_leak training artifact. Drift hit: scripts/demo-bootstrap.sh still uses GEMINI_API_KEY (-> Phase 4/11).
   - TESTS: host venv py3.12. conftest default DB password (change_this_password) != real (cybersim) -> first run 296 errors (asyncpg InvalidPasswordError). With TEST_POSTGRES_URL corrected: 286 passed / 10 failed / 1 error in 9.93s. All 10 failures+1 error are asyncio event-loop-scope errors (pytest-asyncio 0.23.7 on py3.12 vs session-scoped fixture), NOT product bugs; pass on the documented py3.11. Logged as Phase 10 work.
 * **Verification**: docker compose config --quiet exit 0; live curl evidence captured above; pytest executed (286 pass) and failure class diagnosed from tracebacks (base_events.py/streams.py); git ls-files shows 0 tracked junk; state log now reads in one tool call.
+
+### [2026-05-29] - Claude Code (Phase 1 start: test harness made reliable -> 296/296 green)
+* **Status**: Complete - Fixed the test runner so pytest is a trustworthy gate for all later phases. Suite now 296 passed / 0 failed in 8.48s (py3.12 host venv).
+* **Why**: Baseline run showed 10 failures + 1 error, all asyncio loop-scope errors. Root cause: pyproject.toml sets asyncio_default_test_loop_scope="session" but pinned pytest-asyncio==0.23.7 does NOT support that key (added in newer versions), so it was silently ignored -> tests ran on function-scoped loops while the session-scoped init_services fixture held DB/Redis connections on the session loop -> "Future attached to a different loop" / "Event loop is closed". Also conftest default DB password mismatched the stack (C4).
+* **Where**:
+  - backend/requirements.txt - pytest-asyncio 0.23.7 -> 1.4.0 (version that honors the loop-scope config already in pyproject.toml).
+  - backend/tests/conftest.py - default POSTGRES_URL password change_this_password -> cybersim (matches docker-compose default); TEST_POSTGRES_URL override preserved + documented.
+  - docs/architecture/BASELINE_2026-05-29.md - recorded root cause + resolution.
+* **What & How**: Empirically upgraded pytest-asyncio in the venv (resolved to 1.4.0), re-ran suite -> all 296 pass. Pinned 1.4.0 in requirements.txt so the container build picks it up. No product code changed - this was purely test-infra. Surfaced a minor follow-up: python-jose uses datetime.utcnow() (deprecation warning) -> timezone-aware JWT fix queued for Phase 3.
+* **Verification**: `pytest --ignore=tests/e2e -q` => "296 passed, 28 warnings in 8.48s". Confirmed failures were CPython asyncio internals (base_events.py/streams.py), not CyberSim modules.
