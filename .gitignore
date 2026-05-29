@@ -39,3 +39,12 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# --- Phase 0 hygiene (2026-05-29): dev artifacts that must not be tracked ---
+.gemini_backup/
+graphify-out/
+backend/src/graphify-out/
+screenshot-temp-env/
+stash.patch
+*.patch
+.superpowers/
