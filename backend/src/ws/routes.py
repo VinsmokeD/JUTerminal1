@@ -545,7 +545,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         payload = json.loads(payload)
                         
                     await _send_json({"type": "siem_event", "data": payload})
-                except (json.JSONDecodeError, TypeError, Exception) as e:
+                except Exception as e:
                     logging.getLogger("src.ws.routes").error(f"[WS SIEM] Error processing message: {e}")
         except Exception as e:
             logging.getLogger("src.ws.routes").error(f"[WS SIEM] PubSub listener error: {e}")

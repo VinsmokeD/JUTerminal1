@@ -31,7 +31,7 @@ A real audit on 2026-05-29 (code + docs read, not just doc claims) surfaced thes
 
 | # | Finding | Severity | Evidence |
 |---|---------|----------|----------|
-| F1 | **Terminal WebSocket reconnect/reattach is absent.** A browser refresh kills the session. | HIGH | `CURRENT_STATUS_REPORT.md` Phase 16 "NOT IMPLEMENTED"; no reattach in `ws/routes.py` / `useWebSocket.js`. |
+| F1 | ~~Terminal WebSocket reconnect/reattach is absent.~~ **CORRECTED 2026-05-29 (code read):** reconnect IS implemented. Backend `_send_reconnect_history()` replays terminal+command history on reattach (`ws/routes.py:79,456`), the PTY stream is idempotent (`:452-453`), and `alive`/`active_sessions` grace keys exist. Frontend `useWebSocket.js` auto-reconnects with exponential backoff (`:154-178`), has a connection-state machine, replays pending frames, answers heartbeat pongs (`:137`), and rehydrates history (`:92`). The "Phase 16 NOT IMPLEMENTED" claim came from the **stale 2026-04-08** report; the code evolved since. Phase 7 is therefore **verify/harden + add e2e**, not build. A characterization test now covers the replay path (`test_ws_integration.py::test_send_reconnect_history_replays_terminal_and_commands`). | ~~HIGH~~ → LOW | code read 2026-05-29 |
 | F2 | **Gemini → OpenRouter documentation drift.** Code/README use OpenRouter (`deepseek-chat-v3`); many docs still say "Gemini Flash". | HIGH (credibility) | `docs/ARCHITECTURE.md`, `FEATURES.md`, `ROADMAP.md`, `findings.md`, `progress.md`, `task_plan.md`, `CURRENT_STATUS_REPORT.md` all reference Gemini. |
 | F3 | **Inconsistent self-assessment.** README "95/100", ROADMAP "78/100". `.env.example` lists `GEMINI_API_KEY` while README says `OPENROUTER_API_KEY`. | MEDIUM | Direct file diff. |
 | F4 | **SC-04 / SC-05 are half-built.** Hint trees + SIEM maps exist; no YAML spec, no Docker infra → cannot launch. | MEDIUM | `loader.py` loads only SC-01..03; `infrastructure/docker/scenarios/sc04,sc05` empty. |
@@ -284,8 +284,8 @@ Verify: three scenarios complete end-to-end with captured evidence; catalog show
 
 ---
 
-### Phase 7 — Kali Terminal & WebSocket Reliability (closes F1)
-**Objective:** Production-grade terminal: survives refresh, reconnects, no lost sessions, clean PTY.
+### Phase 7 — Kali Terminal & WebSocket Reliability (verify/harden — core reconnect already exists, see F1)
+**Objective:** Production-grade terminal: survives refresh, reconnects, no lost sessions, clean PTY. **Reconnect is already built** (history replay + frontend backoff/state-machine/pong); this phase **proves it with e2e** and hardens the edges (PTY resize, backpressure, grace-window tuning), rather than building from scratch.
 
 **Target files:** `backend/src/ws/routes.py`, `sandbox/terminal.py`, `sandbox/readiness.py`, frontend `hooks/useWebSocket.js`, `hooks/useTerminal.js`, `components/terminal/Terminal.jsx`, `ConnectionPill.jsx`.
 

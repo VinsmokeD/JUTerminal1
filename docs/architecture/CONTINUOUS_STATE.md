@@ -355,3 +355,13 @@ pm run build and ran unit tests successfully.
 * **Where**: backend/requirements.txt - pytest 8.2.0 -> 8.4.2 (satisfies pytest-asyncio 1.4.0 floor; pytest-cov 5.0.0 remains compatible).
 * **What & How**: Resolved the proven-good set in the venv (pytest 8.4.2 + pytest-asyncio 1.4.0 + pytest-cov 5.0.0 -> 297 passed), pinned pytest==8.4.2, rebuilt the backend image (build exit 0), force-recreated the container.
 * **Verification**: `docker compose build backend` exit 0; container healthy after ~2s; LIVE: GET /api/scenarios (no trailing slash) -> 200 (was 307), GET /api/scenarios/ -> 200, count=3. Host suite still 297 passed.
+
+### [2026-05-29] - Claude Code (Phase 1/7: reconnect ground-truth correction + characterization test)
+* **Status**: Complete - Read ws/routes.py (915L) + useWebSocket.js fully. KEY FINDING: F1 (terminal reconnect) is NOT an open gap - it is already implemented end-to-end. Corrected the plan, added the missing characterization test, made one safe clarity fix. Suite 298 passed.
+* **Why**: I was about to refactor/build reconnect per the MASTER_ENHANCEMENT_PLAN's HIGH-severity F1. Reading the actual code showed the April 2026 audit (CURRENT_STATUS_REPORT) was stale - reconnect was built since then. Acting on stale findings wastes effort; ground truth wins.
+* **Where**:
+  - backend/src/ws/routes.py - line 548: `except (json.JSONDecodeError, TypeError, Exception)` -> `except Exception` (redundant tuple; Exception already supersets the others; behavior identical).
+  - backend/tests/test_ws_integration.py - NEW test_send_reconnect_history_replays_terminal_and_commands (seeds Redis history, mocks the socket, asserts the `history` frame replays commands+terminal in chronological order). Also fixed the 3rd stale password default (line 41 change_this_password -> cybersim).
+  - docs/architecture/MASTER_ENHANCEMENT_PLAN.md - F1 reclassified HIGH->LOW with code-line evidence; Phase 7 retitled "verify/harden" not "build".
+* **What & How**: Evidence that reconnect exists: backend _send_reconnect_history (ws/routes.py:79,456) replays terminal:{sid}:history + session:{sid}:commands; idempotent PTY stream (:452-453); alive/active_sessions grace keys (:469,727). Frontend useWebSocket.js: exponential-backoff auto-reconnect (:154-178), connection-state machine, pending-frame replay, ws_ping->ws_pong (:137), history rehydration (:92). The replay logic previously had ZERO test coverage; now characterized.
+* **Verification**: pytest --ignore=tests/e2e => 298 passed in 8.55s (after flushing test redis db/1). New test passes in isolation. Backend image rebuilt to sync the clarity fix.

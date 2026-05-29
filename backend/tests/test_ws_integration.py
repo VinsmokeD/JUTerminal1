@@ -38,7 +38,8 @@ os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("JWT_SECRET", "test-secret-for-ci-only-do-not-use-in-prod")
 os.environ["POSTGRES_URL"] = os.environ.get(
     "TEST_POSTGRES_URL",
-    "postgresql+asyncpg://cybersim:change_this_password@localhost:5432/cybersim",
+    # Matches the docker-compose dev stack default (POSTGRES_PASSWORD=cybersim).
+    "postgresql+asyncpg://cybersim:cybersim@localhost:5432/cybersim",
 )
 os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://localhost:6379/1")
 
@@ -315,3 +316,36 @@ async def test_noise_events_are_marked_as_background(monkeypatch):
     assert event["source"] == "background"
     assert event["source_type"] == "background"
     assert event["sensor"]
+
+
+@pytest.mark.asyncio
+async def test_send_reconnect_history_replays_terminal_and_commands():
+    """F1 / terminal reconnect: _send_reconnect_history must replay persisted
+    terminal output and command history in chronological order (None-filtered)
+    so a browser refresh resumes the same shell. This characterizes the
+    reconnect-replay path and guards it against future ws/routes refactors.
+
+    Backend reconnect support already exists (history replay + idempotent PTY
+    stream + alive grace keys); the frontend already auto-reconnects with
+    backoff. This test locks the contract that previously had no coverage.
+    """
+    from unittest.mock import AsyncMock
+    from src.ws.routes import _send_reconnect_history
+    from src.cache.redis import lpush_capped
+
+    sid = f"recon-{uuid.uuid4().hex[:8]}"
+    # Seed chronologically; lpush prepends, so the newest entry ends up at head.
+    await lpush_capped(f"session:{sid}:commands", "whoami", max_len=50)
+    await lpush_capped(f"session:{sid}:commands", "id", max_len=50)
+    await lpush_capped(f"terminal:{sid}:history", "boot-frame", max_len=500)
+    await lpush_capped(f"terminal:{sid}:history", "nmap-output", max_len=500)
+
+    ws = AsyncMock()
+    await _send_reconnect_history(ws, sid)
+
+    ws.send_json.assert_awaited_once()
+    payload = ws.send_json.await_args.args[0]
+    assert payload["type"] == "history"
+    # Reversed back to the order the user actually issued / saw them.
+    assert payload["data"]["commands"] == ["whoami", "id"]
+    assert payload["data"]["terminal"] == ["boot-frame", "nmap-output"]
