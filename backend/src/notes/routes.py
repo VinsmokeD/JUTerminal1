@@ -19,6 +19,7 @@ class NoteCreate(BaseModel):
     phase: int = 1
 
 
+@router.post("", include_in_schema=False)
 @router.post("/")
 async def create_note(
     body: NoteCreate,

@@ -147,6 +147,7 @@ async def get_active_session(
     return await _session_dict(session)
 
 
+@router.get("", include_in_schema=False)
 @router.get("/")
 async def list_sessions(
     current_user: User = Depends(get_current_user),

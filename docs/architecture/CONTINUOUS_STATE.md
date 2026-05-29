@@ -338,3 +338,13 @@ pm run build and ran unit tests successfully.
   - docs/architecture/BASELINE_2026-05-29.md - recorded root cause + resolution.
 * **What & How**: Empirically upgraded pytest-asyncio in the venv (resolved to 1.4.0), re-ran suite -> all 296 pass. Pinned 1.4.0 in requirements.txt so the container build picks it up. No product code changed - this was purely test-infra. Surfaced a minor follow-up: python-jose uses datetime.utcnow() (deprecation warning) -> timezone-aware JWT fix queued for Phase 3.
 * **Verification**: `pytest --ignore=tests/e2e -q` => "296 passed, 28 warnings in 8.48s". Confirmed failures were CPython asyncio internals (base_events.py/streams.py), not CyberSim modules.
+
+### [2026-05-29] - Claude Code (Phase 1 Pass A: API contract + async-safety fixes)
+* **Status**: Complete - Fixed concrete backend correctness items found via targeted audit; suite 297 passed (296 + new contract test). NOTE: backend is otherwise clean - most broad excepts are intentional resilience (health probes, cleanup loops, AI best-effort telemetry), so NO churn was manufactured.
+* **Why**: Baseline finding C2 (/api/scenarios 307 redirect), blocking file I/O in async handlers, and a duplicate stale DB-password default in integration_test.py.
+* **Where**:
+  - backend/src/scenarios/routes.py, sessions/routes.py, notes/routes.py - added `@router.<verb>("", include_in_schema=False)` aliases alongside the existing `"/"` routes so collection endpoints answer on BOTH /path and /path/ with no 307 (C2). Non-breaking.
+  - backend/src/api/playbooks.py - replaced 2 blocking `open().read()` calls in async handlers with `await anyio.to_thread.run_sync(... read_text)`; stopped leaking raw exception text in 500 responses (generic messages).
+  - backend/tests/integration_test.py - fixed line 38 stale default password (change_this_password -> cybersim, matching conftest/compose); added test_api_scenarios_no_trailing_slash_redirect asserting both forms return 200 (no redirect) and agree.
+* **What & How**: Stacked router decorators register both paths to one handler. anyio (Starlette dep) moves sync file reads off the event loop. Verified the route fix in-process via httpx ASGITransport (AsyncClient does not follow redirects, so a 307 would fail the assertion).
+* **Verification**: `pytest --ignore=tests/e2e` => 297 passed in 8.12s (after flushing TEST redis db/1 to clear rate-limit contamination from repeated runs). Discovered 2 more Phase-10 test-hermeticity findings: (1) tests share the live Redis and trip the real auth rate limiter (429) across repeated runs; (2) integration fixtures don't clean sessions. Backend container rebuilt to serve the route fix at runtime.

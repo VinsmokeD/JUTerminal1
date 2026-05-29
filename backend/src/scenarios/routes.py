@@ -4,6 +4,7 @@ from src.scenarios.loader import list_scenarios, load_scenario
 router = APIRouter()
 
 
+@router.get("", include_in_schema=False)
 @router.get("/")
 async def list_all_scenarios() -> list[dict]:
     """Return metadata for all 3 MVP scenarios."""

@@ -6,6 +6,7 @@ Serves comprehensive IR playbooks for SC-01, SC-02, SC-03
 from fastapi import APIRouter, HTTPException
 from pathlib import Path
 import json
+import anyio
 
 router = APIRouter(prefix="/api/playbooks", tags=["playbooks"])
 
@@ -96,8 +97,9 @@ async def get_playbook(scenario_id: str):
         raise HTTPException(status_code=404, detail=f"Playbook not found for {scenario_id}")
 
     try:
-        with open(playbook_file, "r") as f:
-            content = f.read()
+        content = await anyio.to_thread.run_sync(
+            lambda: playbook_file.read_text(encoding="utf-8")
+        )
 
         return {
             "scenario_id": scenario_id,
@@ -105,8 +107,8 @@ async def get_playbook(scenario_id: str):
             "content": content,
             "format": "markdown"
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading playbook: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to read playbook")
 
 
 @router.get("/{scenario_id}/sections")
@@ -123,8 +125,9 @@ async def get_playbook_sections(scenario_id: str):
         raise HTTPException(status_code=404, detail=f"Playbook not found for {scenario_id}")
 
     try:
-        with open(playbook_file, "r") as f:
-            content = f.read()
+        content = await anyio.to_thread.run_sync(
+            lambda: playbook_file.read_text(encoding="utf-8")
+        )
 
         # Parse markdown sections
         sections = parse_playbook_sections(content)
@@ -134,8 +137,8 @@ async def get_playbook_sections(scenario_id: str):
             "title": get_playbook_title(scenario_id),
             "sections": sections
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error parsing playbook: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to parse playbook")
 
 
 def get_playbook_title(scenario_id: str) -> str:

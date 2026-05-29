@@ -35,7 +35,8 @@ os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("JWT_SECRET", "test-secret-for-ci-only-do-not-use-in-prod")
 os.environ["POSTGRES_URL"] = os.environ.get(
     "TEST_POSTGRES_URL",
-    "postgresql+asyncpg://cybersim:change_this_password@127.0.0.1:5432/cybersim",
+    # Matches the docker-compose dev stack default (POSTGRES_PASSWORD=cybersim).
+    "postgresql+asyncpg://cybersim:cybersim@127.0.0.1:5432/cybersim",
 )
 os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:6379/1")
 
@@ -119,6 +120,19 @@ async def test_01_health_endpoint_returns_ok(client: AsyncClient):
     assert body["status"] == "ok"
     assert "version" in body
     assert body["version"] == "0.1.0"
+
+
+@pytest.mark.asyncio
+async def test_api_scenarios_no_trailing_slash_redirect(client: AsyncClient):
+    """API contract (C2): the scenarios collection must answer directly on both
+    /api/scenarios and /api/scenarios/ — no 307 trailing-slash redirect.
+    The AsyncClient does not follow redirects, so a 307 would fail this test."""
+    r_noslash = await client.get("/api/scenarios")
+    assert r_noslash.status_code == 200, f"expected 200, got {r_noslash.status_code}"
+    r_slash = await client.get("/api/scenarios/")
+    assert r_slash.status_code == 200
+    assert r_noslash.json() == r_slash.json()
+    assert len(r_noslash.json()) == 3
 
 
 @pytest.mark.asyncio
