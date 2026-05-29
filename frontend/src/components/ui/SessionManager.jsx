@@ -11,6 +11,19 @@ const WARNING_BEFORE_MS = 2 * 60 * 1000
 export const SessionActivityContext = createContext({ resetActivity: () => {} })
 export const useSessionActivity = () => useContext(SessionActivityContext)
 
+function getTokenExpiration(token) {
+  if (!token) return null
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return payload.exp ? payload.exp * 1000 : null
+  } catch (e) {
+    console.error('Failed to parse JWT exp claim', e)
+    return null
+  }
+}
+
 export function SessionManager({ children }) {
   const token = useAuthStore((s) => s.token)
   const logout = useAuthStore((s) => s.logout)
@@ -19,6 +32,25 @@ export function SessionManager({ children }) {
   const warningTimerRef = useRef(null)
   const logoutTimerRef = useRef(null)
   const location = useLocation()
+
+  useEffect(() => {
+    if (!token) return
+
+    const expTime = getTokenExpiration(token)
+    if (!expTime) return
+
+    const delay = expTime - Date.now()
+    if (delay <= 0) {
+      logout()
+      return
+    }
+
+    const timer = setTimeout(() => {
+      logout()
+    }, delay)
+
+    return () => clearTimeout(timer)
+  }, [token, logout])
 
   const resetTimers = useCallback(() => {
     if (!token) return

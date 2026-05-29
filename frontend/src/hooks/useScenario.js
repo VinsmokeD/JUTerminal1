@@ -18,8 +18,8 @@ export function useScenario(sessionId) {
       try {
         setLoading(true);
         const [sessionRes, scenarioRes] = await Promise.all([
-          api.get(`/api/sessions/${sessionId}`),
-          api.get(`/api/scenarios/${currentScenarioId}`).catch(() => null),
+          api.get(`/sessions/${sessionId}`),
+          api.get(`/scenarios/${currentScenarioId}`).catch(() => null),
         ]);
 
         setSession(sessionRes.data);
@@ -36,14 +36,14 @@ export function useScenario(sessionId) {
 
   // Acknowledge ROE
   const acknowledgeRoe = useCallback(async () => {
-    await api.post("/api/sessions/roe-ack", { session_id: sessionId });
+    await api.post("/sessions/roe-ack", { session_id: sessionId });
     setSession((prev) => ({ ...prev, roe_acknowledged: true }));
   }, [sessionId, setSession]);
 
   // Submit flag
   const submitFlag = useCallback(
     async (flagValue) => {
-      const res = await api.post(`/api/sessions/${sessionId}/flag`, {
+      const res = await api.post(`/sessions/${sessionId}/flag`, {
         flag_value: flagValue,
       });
       if (res.data.valid && !res.data.already_captured) {
@@ -56,7 +56,7 @@ export function useScenario(sessionId) {
 
   // End session
   const endSession = useCallback(async () => {
-    await api.post(`/api/sessions/${sessionId}/end`);
+    await api.post(`/sessions/${sessionId}/end`);
   }, [sessionId]);
 
   return {

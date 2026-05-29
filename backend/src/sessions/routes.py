@@ -4,8 +4,8 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from src.auth.routes import get_current_user
-from src.db.database import get_db, Session, User, CommandLog, SiemEvent, SiemTriage
+from src.auth.routes import get_current_user, enforce_rate_limit
+from src.db.database import get_db, Session, User, CommandLog, SiemEvent, SiemTriage, ContainmentAction
 from src.sandbox.manager import stop_scenario_container
 from src.cache.redis import cache_set, cache_get, cache_delete
 from src.activity.service import record_activity
@@ -499,6 +499,9 @@ async def submit_flag(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
+    # Rate limit: 10 attempts per minute per session
+    await enforce_rate_limit(f"rate_limit:flag:{session_id}", limit=10, window=60)
+
     result = await db.execute(
         select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
     )

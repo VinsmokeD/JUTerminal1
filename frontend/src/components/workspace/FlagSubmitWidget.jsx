@@ -25,19 +25,28 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
   const handleSubmit = async (e) => {
     e.preventDefault()
     const val = flagValue.trim()
-    if (!val) return
+    console.log('[FlagSubmitWidget] handleSubmit called with value:', val, 'sessionId:', sessionId)
+    if (!val) {
+      console.warn('[FlagSubmitWidget] empty flag value, skipping')
+      return
+    }
 
     setLoading(true)
     setMessage(null)
 
     try {
       // Calls POST /api/sessions/{sessionId}/flag with { flag_value: value }
-      const res = await api.post(`/sessions/${sessionId}/flag`, { flag_value: val })
+      const url = `/sessions/${sessionId}/flag`
+      console.log('[FlagSubmitWidget] making post request to:', url, 'with:', { flag_value: val })
+      const res = await api.post(url, { flag_value: val })
+      console.log('[FlagSubmitWidget] API response received:', res.data)
       
       if (res.data?.valid) {
         if (res.data?.already_captured) {
+          console.log('[FlagSubmitWidget] flag already captured')
           setMessage({ type: 'error', text: 'This flag was already captured!' })
         } else {
+          console.log('[FlagSubmitWidget] flag captured successfully!')
           setMessage({ 
             type: 'success', 
             text: `FLAG CAPTURED +${res.data?.points_awarded || 0} pts` 
@@ -47,10 +56,12 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
         }
       } else {
         const guidance = res.data?.detail || res.data?.guidance || res.data?.hint || 'Incorrect flag value. Try again!'
+        console.log('[FlagSubmitWidget] flag invalid:', guidance)
         setMessage({ type: 'error', text: guidance })
       }
     } catch (err) {
       const errMsg = err.response?.data?.detail || err.response?.data?.guidance || 'Submission failed, try again'
+      console.error('[FlagSubmitWidget] API error:', err, 'message:', errMsg)
       setMessage({ type: 'error', text: errMsg })
     } finally {
       setLoading(false)

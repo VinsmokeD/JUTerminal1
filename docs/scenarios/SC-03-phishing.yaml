@@ -33,6 +33,9 @@ briefing: |
 flags:
   - id: FLAG-SC03-1
     description: "Reverse shell callback received from simulated endpoint"
+    value: "SC03 callback: 172.20.3.30 -> 172.20.3.10:4444"
+    value_pattern: "SC03 callback: 172.20.3.30 -> 172.20.3.10:4444"
+    on_wrong_attempt_hint: "This flag represents the reverse shell callback mapping. Submit the callback telemetry string containing the source and target sockets."
 
 methodologies:
   branch_sso:

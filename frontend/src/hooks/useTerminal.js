@@ -126,6 +126,17 @@ export function useTerminal({
           onCommandRef.current(cleaned)
         }
       })
+      // Clear line buffer since paste happened
+      lineBufferRef.current = ''
+      return
+    }
+
+    if (!hasEnter) {
+      if (data === '\x7f' || data === '\x08') {
+        lineBufferRef.current = lineBufferRef.current.slice(0, -1)
+      } else if (data.length === 1 && data.charCodeAt(0) >= 32 && data.charCodeAt(0) <= 126) {
+        lineBufferRef.current += data
+      }
       return
     }
 
@@ -133,46 +144,63 @@ export function useTerminal({
     if (hasEnter) {
       const term = termRef.current
       const buffer = term?.buffer?.active
-      if (!buffer) return
+      let cleaned = ''
 
-      const currentRowIdx = buffer.baseRow + buffer.cursorY
-      let startRowIdx = currentRowIdx
+      if (buffer) {
+        const currentRowIdx = buffer.baseRow + buffer.cursorY
+        let startRowIdx = currentRowIdx
 
-      // Trace back to the start of the command if it wrapped
-      while (startRowIdx > 0) {
-        const line = buffer.getLine(startRowIdx)
-        if (line && line.isWrapped) {
-          startRowIdx -= 1
-        } else {
-          break
+        // Trace back to the start of the command if it wrapped
+        while (startRowIdx > 0) {
+          const line = buffer.getLine(startRowIdx)
+          if (line && line.isWrapped) {
+            startRowIdx -= 1
+          } else {
+            break
+          }
         }
-      }
 
-      let fullLine = ''
-      for (let i = startRowIdx; i <= currentRowIdx; i++) {
-        const line = buffer.getLine(i)
-        if (line) {
-          fullLine += line.translateToString(true)
+        let fullLine = ''
+        for (let i = startRowIdx; i <= currentRowIdx; i++) {
+          const line = buffer.getLine(i)
+          if (line) {
+            fullLine += line.translateToString(true)
+          }
         }
+
+        console.log(`[useTerminal] Raw fullLine from buffer: "${fullLine}"`);
+
+        // Clean prompt
+        let promptCleaned = fullLine
+        const linuxPrompt = /^.*?@[a-zA-Z0-9_.-]+:.*?[#$]\s*/
+        const windowsPrompt = /^[a-zA-Z]:\\[^>]*>\s*/
+        const simplePrompt = /^[$#>] \s*/
+
+        if (linuxPrompt.test(promptCleaned)) {
+          promptCleaned = promptCleaned.replace(linuxPrompt, '')
+        } else if (windowsPrompt.test(promptCleaned)) {
+          promptCleaned = promptCleaned.replace(windowsPrompt, '')
+        } else if (simplePrompt.test(promptCleaned)) {
+          promptCleaned = promptCleaned.replace(simplePrompt, '')
+        }
+        cleaned = promptCleaned.trim()
       }
 
-      // Clean prompt
-      let cleaned = fullLine
-      const linuxPrompt = /^.*?@[a-zA-Z0-9_.-]+:.*?[#$]\s*/
-      const windowsPrompt = /^[a-zA-Z]:\\[^>]*>\s*/
-      const simplePrompt = /^[$#>] \s*/
-
-      if (linuxPrompt.test(cleaned)) {
-        cleaned = cleaned.replace(linuxPrompt, '')
-      } else if (windowsPrompt.test(cleaned)) {
-        cleaned = cleaned.replace(windowsPrompt, '')
-      } else if (simplePrompt.test(cleaned)) {
-        cleaned = cleaned.replace(simplePrompt, '')
+      // Fallback if screen buffer extraction returned empty (due to fast automated testing)
+      if (!cleaned && lineBufferRef.current) {
+        cleaned = lineBufferRef.current.trim()
+        console.log(`[useTerminal] Buffer empty, fell back to lineBuffer: "${cleaned}"`);
       }
 
-      cleaned = cleaned.trim()
+      // Reset local line buffer for next command
+      lineBufferRef.current = ''
+
+      console.log(`[useTerminal] Cleaned command: "${cleaned}"`);
       if (cleaned && onCommandRef.current) {
+        console.log(`[useTerminal] Calling onCommandRef.current with: "${cleaned}"`);
         onCommandRef.current(cleaned)
+      } else {
+        console.log(`[useTerminal] Skipping onCommand: cleaned="${cleaned}", hasCallback=${!!onCommandRef.current}`);
       }
     }
   }, [])

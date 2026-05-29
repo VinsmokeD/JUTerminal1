@@ -98,15 +98,18 @@ async def process_command_for_siem(
     if not rules:
         return []
 
+    from src.siem.schemas import SiemEventOut
+
     events = []
     for rule in rules:
         template = rule.get("event_template", "Attacker command detected")
         message = _fill_template(template, source_ip=source_ip, command=command)
 
+        raw_severity = rule.get("severity", "medium")
         event = SiemEvent(
             id=str(uuid.uuid4()),
             session_id=session_id,
-            severity=rule.get("severity", "medium"),
+            severity=raw_severity,
             message=message,
             raw_log=command,
             mitre_technique=rule.get("mitre", ""),
@@ -114,15 +117,28 @@ async def process_command_for_siem(
         )
         db.add(event)
 
+        # Validate and coerce severity to uppercase via Pydantic model
+        event_schema = SiemEventOut(
+            id=event.id,
+            session_id=session_id,
+            severity=raw_severity,
+            message=message,
+            mitre_technique=event.mitre_technique,
+            source=event.source,
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            raw_log=command,
+        )
+        event.severity = event_schema.severity
+
         event_dict = {
             "type": "siem_event",
-            "id": event.id,
+            "id": event_schema.id,
             "session_id": session_id,
-            "severity": event.severity,
-            "message": event.message,
-            "mitre_technique": event.mitre_technique,
-            "source": event.source,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "severity": event_schema.severity,
+            "message": event_schema.message,
+            "mitre_technique": event_schema.mitre_technique,
+            "source": event_schema.source,
+            "timestamp": event_schema.timestamp,
         }
         events.append(event_dict)
 

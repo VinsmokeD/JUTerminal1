@@ -294,6 +294,7 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
             network=network_name,
             hostname="kali",
             environment=env_vars,
+            user="student",
             # v2.0 guardrail — hardcoded, not from settings
             cpu_period=_CPU_PERIOD,
             cpu_quota=_CPU_QUOTA,

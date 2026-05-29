@@ -1,5 +1,6 @@
 import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import { useSessionStore } from '../../store/sessionStore'
+import api from '../../lib/api'
 
 // ── Severity palette ────────────────────────────────────────────────────────
 const SEV_CFG = {
@@ -60,7 +61,13 @@ function HighlightedJson({ text }) {
   )
 }
 
-export default function SiemFeed() {
+export default function SiemFeed({
+  enableTriage = false,
+  sessionId = null,
+  onTriageSave = null,
+  triageSaving = null,
+  onExtractIoc = null,
+} = {}) {
   const events = useSessionStore((s) => s.siemEvents)
   const listRef = useRef(null)
   const [filter, setFilter] = useState('ALL')
@@ -170,7 +177,17 @@ export default function SiemFeed() {
           ? <EmptyState />
           : filtered.length === 0
             ? <div className="flex items-center justify-center h-32 text-txt-dim text-xs font-mono">No events match your filter</div>
-            : filtered.map((ev, i) => <EventRow key={ev.id || i} event={ev} />)
+            : filtered.map((ev, i) => (
+                <EventRow
+                  key={ev.id || i}
+                  event={ev}
+                  enableTriage={enableTriage}
+                  sessionId={sessionId}
+                  onTriageSave={onTriageSave}
+                  triageSaving={triageSaving === ev.id}
+                  onExtractIoc={onExtractIoc}
+                />
+              ))
         }
       </div>
     </div>
@@ -200,8 +217,20 @@ function EmptyState() {
 }
 
 // ── Individual event row ───────────────────────────────────────────────────
-function EventRow({ event }) {
+function EventRow({
+  event,
+  enableTriage = false,
+  sessionId = null,
+  onTriageSave = null,
+  triageSaving = false,
+  onExtractIoc = null,
+}) {
   const [expanded, setExpanded] = useState(false)
+  const [classification, setClassification] = useState(event.triage?.classification || '')
+  const [notes, setNotes] = useState(event.triage?.notes || '')
+  const [triageError, setTriageError] = useState('')
+  const [containmentStatus, setContainmentStatus] = useState(null)
+
   const sev   = getSev(event.severity)
   const noise = isNoiseEvent(event)
   const triageState = event.triage?.classification || event.triage_state
@@ -211,6 +240,48 @@ function EventRow({ event }) {
     .toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
   const toggle = useCallback(() => setExpanded((v) => !v), [])
+
+  useEffect(() => {
+    setClassification(event.triage?.classification || '')
+    setNotes(event.triage?.notes || '')
+    setTriageError('')
+  }, [event.id, event.triage?.classification, event.triage?.notes])
+
+  const handleContain = async (type, val) => {
+    setContainmentStatus({ status: 'loading', detail: 'Submitting simulated containment...' })
+    try {
+      const res = await api.post(`/siem/${sessionId}/contain`, {
+        action_type: type,
+        target_value: val
+      })
+      setContainmentStatus({
+        status: res.data?.status || 'success',
+        detail: res.data?.detail || 'Simulated containment recorded.',
+      })
+      setTimeout(() => setContainmentStatus(null), 6000)
+    } catch (err) {
+      setContainmentStatus({
+        status: 'failed',
+        detail: err.response?.data?.detail || 'Could not record simulated containment.',
+      })
+      setTimeout(() => setContainmentStatus(null), 6000)
+    }
+  }
+  const containmentState = containmentStatus?.status
+
+  const handleTriageSave = async (e) => {
+    e.stopPropagation()
+    if (!classification) {
+      setTriageError('Choose a disposition before saving.')
+      return
+    }
+    setTriageError('')
+    try {
+      await onTriageSave(event.id, classification, notes.trim())
+    } catch {
+      setTriageError('Could not save triage. Check the session connection and retry.')
+    }
+  }
 
   return (
     <div
@@ -248,10 +319,22 @@ function EventRow({ event }) {
           <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
             <span className="text-[9px] font-mono text-txt-dim/60 flex-shrink-0">{ts}</span>
             {event.source_ip && (
-              <span className="text-[9px] font-mono text-txt-dim/70 bg-surface-3 border border-cs-border/40
-                px-1.5 py-px rounded-cs-sm flex-shrink-0">
-                {event.source_ip}
-              </span>
+              onExtractIoc ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onExtractIoc(event.source_ip)
+                  }}
+                  className="text-[9px] font-mono text-green-signal/60 hover:text-green-signal bg-green-signal/5 hover:bg-green-signal/15 border border-green-signal/20 px-1.5 py-px rounded-cs-sm flex-shrink-0 transition-colors"
+                  title="Extract as IOC"
+                >
+                  {event.source_ip}
+                </button>
+              ) : (
+                <span className="text-[9px] font-mono text-txt-dim/70 bg-surface-3 border border-cs-border/40 px-1.5 py-px rounded-cs-sm flex-shrink-0">
+                  {event.source_ip}
+                </span>
+              )
             )}
             {event.mitre_technique && !noise && (
               <span className="text-[9px] font-mono text-cs-blue/80 bg-cs-blue/10 border border-cs-blue/20
@@ -260,10 +343,22 @@ function EventRow({ event }) {
                 {event.mitre_technique}
               </span>
             )}
-            {triageCfg && (
-              <span className={`text-[9px] font-mono px-1.5 py-px rounded-cs-sm border flex-shrink-0 ${triageCfg.cls}`}>
-                {triageCfg.label}
-              </span>
+            {enableTriage ? (
+              triageCfg ? (
+                <span className={`text-[9px] font-mono px-1.5 py-px rounded-cs-sm border flex-shrink-0 ${triageCfg.cls}`}>
+                  {triageCfg.label}
+                </span>
+              ) : (
+                <span className="text-[9px] font-mono px-1.5 py-px rounded-cs-sm border border-cs-border bg-surface-2 text-txt-dim flex-shrink-0">
+                  untriaged
+                </span>
+              )
+            ) : (
+              triageCfg && (
+                <span className={`text-[9px] font-mono px-1.5 py-px rounded-cs-sm border flex-shrink-0 ${triageCfg.cls}`}>
+                  {triageCfg.label}
+                </span>
+              )
             )}
           </div>
         </div>
@@ -319,6 +414,83 @@ function EventRow({ event }) {
               "{event.triage_notes}"
             </div>
           )}
+
+          {/* Analyst triage form */}
+          {enableTriage && (
+            <div className="mt-2 rounded-cs-sm border border-cs-border bg-surface-1/80 p-3" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-[10.5px] font-mono uppercase tracking-[0.12em] text-cs-blue font-bold">Analyst triage</p>
+                  <p className="mt-1 text-xs text-txt-dim">{_triagePrompt(event)}</p>
+                </div>
+
+                {/* Quick Containment */}
+                <div className="flex gap-2">
+                  {event.source_ip && (
+                    <button
+                      onClick={() => handleContain('block_ip', event.source_ip)}
+                      disabled={containmentState === 'loading'}
+                      className={`px-2 py-1 rounded-cs-sm border text-[10px] font-mono transition-all ${
+                        containmentState === 'success' ? 'bg-green-signal/20 text-green-signal border-green-signal/40' :
+                        containmentState === 'failed' ? 'bg-cs-red/20 text-cs-red border-cs-red/40' :
+                        'bg-cs-red/10 text-cs-red border-cs-red/30 hover:bg-cs-red/20'
+                      }`}
+                    >
+                      {containmentState === 'loading' ? 'Recording...' : `Sim block ${event.source_ip}`}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {containmentStatus?.detail && (
+                <div className={`mb-3 rounded-cs-sm border px-3 py-2 text-[10.5px] font-mono ${
+                  containmentState === 'success'
+                    ? 'border-green-signal/25 bg-green-signal/5 text-green-signal'
+                    : containmentState === 'loading'
+                      ? 'border-cs-blue/25 bg-cs-blue/5 text-cs-blue'
+                      : 'border-cs-red/25 bg-cs-red/5 text-cs-red'
+                }`}>
+                  {containmentStatus.detail}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-1.5 md:grid-cols-4">
+                {TRIAGE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setClassification(option.value); setTriageError('') }}
+                    className={`rounded-cs-sm border px-2 py-1.5 text-[10.5px] font-mono transition-all ${
+                      classification === option.value
+                        ? option.activeClass
+                        : 'border-cs-border bg-surface-2 text-txt-dim hover:border-cs-blue/40 hover:text-txt-secondary'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Evidence, containment action, or escalation context..."
+                className="input mt-2 min-h-[68px] w-full resize-none text-xs font-mono bg-void text-txt-primary border-cs-border focus:border-cs-blue"
+              />
+
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleTriageSave}
+                  disabled={triageSaving}
+                  className="btn btn-blue px-3 py-1.5 text-[10.5px] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {triageSaving ? 'Saving...' : 'Save triage'}
+                </button>
+                {triageError && <span className="text-[10.5px] font-mono text-cs-red">{triageError}</span>}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -332,3 +504,38 @@ function MetaField({ label, value }) {
     </span>
   )
 }
+
+const TRIAGE_OPTIONS = [
+  {
+    value: 'investigating',
+    label: 'Investigating',
+    badgeClass: 'sev-info',
+    activeClass: 'border-cs-blue/70 bg-cs-blue/10 text-cs-blue shadow-blue-glow',
+  },
+  {
+    value: 'true_positive',
+    label: 'True positive',
+    badgeClass: 'sev-crit',
+    activeClass: 'border-cs-red/70 bg-cs-red/10 text-cs-red shadow-red-glow',
+  },
+  {
+    value: 'false_positive',
+    label: 'False positive',
+    badgeClass: 'sev-low',
+    activeClass: 'border-green-signal/70 bg-green-signal/10 text-green-signal',
+  },
+  {
+    value: 'escalated',
+    label: 'Escalated',
+    badgeClass: 'sev-high',
+    activeClass: 'border-amber-warn/70 bg-amber-warn/10 text-amber-warn',
+  },
+]
+
+function _triagePrompt(event) {
+  if (event.severity === 'CRITICAL') return 'Confirm impact quickly, preserve evidence, and decide whether this needs escalation.'
+  if (event.severity === 'HIGH') return 'Correlate with nearby events and decide whether this is actionable or noise.'
+  if (event.mitre_technique) return `Map ${event.mitre_technique} to observed evidence before closing the alert.`
+  return 'Document why this event matters or why it can be safely dismissed.'
+}
+

@@ -134,6 +134,13 @@ export function useWebSocket(sessionId) {
               window.dispatchEvent(new CustomEvent('evidence:discovered', { detail: msg.data }))
             }
             break
+          case 'ws_ping':
+            try {
+              ws.send(JSON.stringify({ type: 'ws_pong', data: { timestamp: Date.now() } }))
+            } catch {
+              // ignore
+            }
+            break
         }
       } catch {
         // ignore malformed
@@ -181,24 +188,7 @@ export function useWebSocket(sessionId) {
     }
   }, [sessionId, reconnectTick, addSiemEvent, setScore, setAiMode, setActiveBranch, addDiscoveries, setPendingEvidence, setPhase])
 
-  useEffect(() => {
-    if (!sessionId) return
-    const timer = window.setInterval(() => {
-      const ws = wsRef.current
-      if (connectionState !== 'connected' || ws?.readyState !== WebSocket.OPEN) return
-      const lastInputAt = lastRawInputAtRef.current
-      if (!lastInputAt || lastTerminalOutputAtRef.current >= lastInputAt) return
-      if (Date.now() - lastInputAt > 8000) {
-        setConnectionState('disconnected')
-        try {
-          ws.close(4000, 'terminal echo stalled')
-        } catch {
-          // reconnect will be handled by onclose
-        }
-      }
-    }, 1000)
-    return () => window.clearInterval(timer)
-  }, [sessionId, connectionState])
+
 
   const sendFrame = useCallback((frame) => {
     if (unauthorizedRef.current || failedRef.current) return

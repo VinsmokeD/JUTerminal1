@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
@@ -81,8 +81,33 @@ async def get_current_user(
     return user
 
 
+async def enforce_rate_limit(key: str, limit: int, window: int):
+    """Enforce a rate limit using Redis. key should uniquely identify the user/ip/session."""
+    try:
+        from src.cache.redis import _get as get_redis
+        redis = get_redis()
+        current = await redis.get(key)
+        if current is not None and int(current) >= limit:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many requests. Please try again later."
+            )
+        async with redis.pipeline(transaction=True) as pipe:
+            await pipe.incr(key)
+            await pipe.expire(key, window)
+            await pipe.execute()
+    except HTTPException:
+        raise
+    except Exception:
+        # Fail-open if Redis encounters connection issues
+        pass
+
+
 @router.post("/register", response_model=Token)
-async def register(body: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(body: UserCreate, request: Request, db: AsyncSession = Depends(get_db)):
+    ip = request.client.host if request.client else "unknown"
+    await enforce_rate_limit(f"rate_limit:register:{ip}", limit=20, window=3600)
+    
     result = await db.execute(select(User).where(User.username == body.username))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Username already taken")
@@ -96,7 +121,10 @@ async def register(body: UserCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    ip = request.client.host if request.client else "unknown"
+    await enforce_rate_limit(f"rate_limit:login:{ip}", limit=30, window=300)
+    
     result = await db.execute(select(User).where(User.username == form.username))
     user = result.scalar_one_or_none()
     if not user or not verify_password(form.password, user.password_hash):

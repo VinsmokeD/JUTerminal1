@@ -306,10 +306,39 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                 from src.cache.redis import _get as get_redis
                 redis = get_redis()
                 active = await redis.hgetall("cybersim:active_sessions")
-                for sid_raw in list(active.keys()):
+                for sid_raw, val_raw in active.items():
                     sid = sid_raw.decode() if isinstance(sid_raw, bytes) else sid_raw
                     alive = await redis.exists(f"cybersim:session:{sid}:alive")
                     if not alive:
+                        container_id = None
+                        try:
+                            val = val_raw.decode() if isinstance(val_raw, bytes) else val_raw
+                            payload = json.loads(val)
+                            container_id = payload.get("container_id")
+                        except Exception:
+                            pass
+
+                        if container_id:
+                            try:
+                                docker_client = _get_docker_client()
+                                container = docker_client.containers.get(container_id)
+                                _remove_container(container, "stale session alive key expired")
+                            except Exception as ce:
+                                logger.warning("[CLEANUP] Failed to remove container %s for stale session %s: %s", container_id, sid[:8], ce)
+
+                        try:
+                            async with AsyncSessionLocal() as db:
+                                result = await db.execute(select(Session).where(Session.id == sid))
+                                db_sess = result.scalar_one_or_none()
+                                if db_sess and db_sess.completed_at is None:
+                                    db_sess.completed_at = datetime.now(timezone.utc)
+                                    db_sess.container_id = None
+                                    db_sess.network_name = None
+                                    await db.commit()
+                                    logger.info("[CLEANUP] Marked stale session %s as completed in DB", sid[:8])
+                        except Exception as dbe:
+                            logger.error("[CLEANUP] DB update for stale session %s failed: %s", sid[:8], dbe)
+
                         await redis.hdel("cybersim:active_sessions", sid)
                         logger.info(
                             "[CLEANUP] Evicted stale session %s from active map", sid[:8]

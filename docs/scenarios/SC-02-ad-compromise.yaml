@@ -20,9 +20,13 @@ objectives:
 tools_expected: [nmap, smbclient, crackmapexec, GetUserSPNs.py, hashcat, secretsdump.py, bloodhound-python, kerbrute]
 flags:
   - id: kerberoast_hash
+    value: "$krb5tgs$23$*svc_backup$NEXORA.LOCAL$MSSQLSvc/nexora-fs01.nexora.local:1433*$deadbeef"
     value_pattern: ".*(\\$23\\$.*svc_backup|svc_backup.*\\$23\\$).*"
+    on_wrong_attempt_hint: "This flag is the Kerberoastable hash for svc_backup. Submit the krb5tgs hash obtained via GetUserSPNs."
   - id: dcsync_krbtgt_nthash
+    value: "krbtgt:502:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::"
     value_pattern: ".*krbtgt:502:.*[a-f0-9]{32}.*"
+    on_wrong_attempt_hint: "This flag is the krbtgt NT hash dumped via DCSync. Submit the hash string in secretsdump format."
 
 methodologies:
   branch_kerberoast:

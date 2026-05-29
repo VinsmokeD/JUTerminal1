@@ -128,43 +128,55 @@ async def create_command_siem_events(
     now = datetime.now(timezone.utc)
     payloads: list[dict[str, Any]] = []
 
+    from src.siem.schemas import SiemEventOut
+
     for matched in match_command_events(command, scenario_id):
         event_id = str(uuid.uuid4())
-        severity = str(matched.get("severity", "LOW")).upper()
+        raw_severity = str(matched.get("severity", "LOW"))
         raw_log = _render_raw_log(
             str(matched.get("raw_log", command)), command, source_ip, now
         )
         category = matched.get("category")
         source = "educational_bridge"
 
+        # Validate and coerce via Pydantic model
+        event_schema = SiemEventOut(
+            id=event_id,
+            session_id=session_id,
+            severity=raw_severity,
+            message=str(matched.get("message", "Training detection matched.")),
+            mitre_technique=matched.get("mitre_technique") or matched.get("mitre_id"),
+            source=source,
+            timestamp=now.isoformat(),
+            raw_log=raw_log,
+        )
+
         db.add(
             SiemEvent(
-                id=event_id,
+                id=event_schema.id,
                 session_id=session_id,
-                severity=severity,
-                message=str(matched.get("message", "Training detection matched.")),
-                raw_log=raw_log,
-                mitre_technique=matched.get("mitre_technique")
-                or matched.get("mitre_id"),
+                severity=event_schema.severity,
+                message=event_schema.message,
+                raw_log=event_schema.raw_log,
+                mitre_technique=event_schema.mitre_technique,
                 source_ip=source_ip,
-                source=source,
+                source=event_schema.source,
                 created_at=now,
             )
         )
         payloads.append(
             {
                 "type": "siem_event",
-                "id": event_id,
+                "id": event_schema.id,
                 "session_id": session_id,
-                "severity": severity,
-                "message": str(matched.get("message", "Training detection matched.")),
-                "raw_log": raw_log,
-                "mitre_technique": matched.get("mitre_technique")
-                or matched.get("mitre_id"),
-                "source": source,
+                "severity": event_schema.severity,
+                "message": event_schema.message,
+                "raw_log": event_schema.raw_log,
+                "mitre_technique": event_schema.mitre_technique,
+                "source": event_schema.source,
                 "source_ip": source_ip,
                 "category": category,
-                "timestamp": now.isoformat(),
+                "timestamp": event_schema.timestamp,
                 "created_at": now.isoformat(),
                 "tool_triggered": "command_map",
                 "rule_id": matched.get("id"),

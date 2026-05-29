@@ -44,32 +44,29 @@ function LoadingSpinner() {
   )
 }
 
-function RequireAuth({ children }) {
+function RouteGuard({ children, requireAuth = true, requireOnboarding = false, allowOnlyUnauth = false }) {
   const token = useAuthStore((s) => s.token)
-  const location = useLocation()
-  
-  if (!token) {
-    // Preserve the location they tried to access
-    return <Navigate to="/auth" state={{ from: location }} replace />
-  }
-  return children
-}
-
-function RequireUnauth({ children }) {
-  const token = useAuthStore((s) => s.token)
-  const location = useLocation()
-  
-  if (token) {
-    // Already logged in, redirect to dashboard or where they came from
-    const from = location.state?.from?.pathname || '/dashboard'
-    return <Navigate to={from} replace />
-  }
-  return children
-}
-
-function RequireOnboarding({ children }) {
   const onboardingCompleted = useAuthStore((s) => s.onboardingCompleted)
-  return onboardingCompleted ? children : <Navigate to="/onboarding" replace />
+  const location = useLocation()
+  
+  if (allowOnlyUnauth) {
+    if (token) {
+      const from = location.state?.from?.pathname || '/dashboard'
+      return <Navigate to={from} replace />
+    }
+    return children
+  }
+
+  if (requireAuth) {
+    if (!token) {
+      return <Navigate to="/auth" state={{ from: location }} replace />
+    }
+    if (requireOnboarding && !onboardingCompleted) {
+      return <Navigate to="/onboarding" replace />
+    }
+  }
+
+  return children
 }
 
 function GlobalPalette() {
@@ -97,80 +94,80 @@ export default function App() {
           <GlobalPalette />
           <Routes>
             {/* Public landing page */}
-            <Route path="/" element={<RequireUnauth><Landing /></RequireUnauth>} />
-            <Route path="/auth" element={<RequireUnauth><Auth /></RequireUnauth>} />
-            <Route path="/onboarding" element={<RequireAuth><ErrorBoundary><Onboarding /></ErrorBoundary></RequireAuth>} />
-            <Route path="/dashboard" element={<RequireAuth><RequireOnboarding><ErrorBoundary><Dashboard /></ErrorBoundary></RequireOnboarding></RequireAuth>} />
+            <Route path="/" element={<RouteGuard allowOnlyUnauth><Landing /></RouteGuard>} />
+            <Route path="/auth" element={<RouteGuard allowOnlyUnauth><Auth /></RouteGuard>} />
+            <Route path="/onboarding" element={<RouteGuard requireAuth><ErrorBoundary><Onboarding /></ErrorBoundary></RouteGuard>} />
+            <Route path="/dashboard" element={<RouteGuard requireAuth requireOnboarding><ErrorBoundary><Dashboard /></ErrorBoundary></RouteGuard>} />
             <Route
               path="/session/:sessionId/red"
               element={
-                <RequireAuth>
+                <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <Suspense fallback={<LoadingSpinner />}>
                       <RedWorkspace />
                     </Suspense>
                   </ErrorBoundary>
-                </RequireAuth>
+                </RouteGuard>
               }
             />
             <Route
               path="/session/:sessionId/blue"
               element={
-                <RequireAuth>
+                <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <Suspense fallback={<LoadingSpinner />}>
                       <BlueWorkspace />
                     </Suspense>
                   </ErrorBoundary>
-                </RequireAuth>
+                </RouteGuard>
               }
             />
             <Route
               path="/session/:sessionId/debrief"
               element={
-                <RequireAuth>
+                <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <Suspense fallback={<LoadingSpinner />}>
                       <Debrief />
                     </Suspense>
                   </ErrorBoundary>
-                </RequireAuth>
+                </RouteGuard>
               }
             />
             <Route
               path="/instructor"
               element={
-                <RequireAuth>
+                <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <Suspense fallback={<LoadingSpinner />}>
                       <InstructorDashboard />
                     </Suspense>
                   </ErrorBoundary>
-                </RequireAuth>
+                </RouteGuard>
               }
             />
             <Route
               path="/settings"
               element={
-                <RequireAuth>
+                <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <Suspense fallback={<LoadingSpinner />}>
                       <Settings />
                     </Suspense>
                   </ErrorBoundary>
-                </RequireAuth>
+                </RouteGuard>
               }
             />
             <Route
               path="/profile"
               element={
-                <RequireAuth>
+                <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <Suspense fallback={<LoadingSpinner />}>
                       <Profile />
                     </Suspense>
                   </ErrorBoundary>
-                </RequireAuth>
+                </RouteGuard>
               }
             />
             <Route path="*" element={<Navigate to="/" replace />} />

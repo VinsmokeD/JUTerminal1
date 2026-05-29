@@ -5,6 +5,49 @@
 ## Update Format
 Every update must follow this strict format. Do not skip any fields.
 
+### [2026-05-29 14:10:00 +03:00] - Antigravity (WS-2 Normalize SIEM Severity & Unify Renderer)
+* **Status**: Complete - Normalized SIEM event severity casing to uppercase at boundaries, validated it using Pydantic schemas, updated frontend event active alert calculations to be case-insensitive, and unified divergent SIEM rendering between workspaces into a singular reusable `SiemFeed` component.
+* **Why**: Ensure matching contracts between SIEM severity casings from backend to frontend to avoid empty SIEM alert badge counts, and eliminate duplicated rendering logic to simplify workspace maintenance.
+* **Where**:
+  - `backend/src/siem/schemas.py` - [NEW] Created schema file defining `SiemEventOut` Pydantic model with automatic severity normalization to uppercase.
+  - `backend/src/scenarios/engine.py` - [MODIFY] Integrated `SiemEventOut` schema inside event generation to validate and normalize severities.
+  - `backend/src/siem/command_bridge.py` - [MODIFY] Applied `SiemEventOut` serialization to incoming SIEM events before publishing.
+  - `backend/tests/test_ws_integration.py` - [MODIFY] Updated test assertions to expect uppercase severity `MEDIUM`.
+  - `frontend/src/components/siem/SiemFeed.jsx` - [MODIFY] Enabled optional triage form, IP containment, disposition buttons, and IOC extraction in expanded drawer rows.
+  - `frontend/src/pages/BlueWorkspace.jsx` - [MODIFY] Replaced inline SIEM mapper, custom sub-headers, and duplicate components with the unified `SiemFeed` component. Updated alert badge counts to check severity case-insensitively.
+* **What & How**:
+  - Created `SiemEventOut` model to coerce all input severities to uppercase (e.g. `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFO`) on serialization.
+  - Used `SiemEventOut` to format Redis pub-sub messages and REST API payloads.
+  - Refactored `SiemFeed` to optionally take `enableTriage`, `sessionId`, `onTriageSave`, `triageSaving`, and `onExtractIoc` props. When `enableTriage` is active, it renders the analyst triage form and quick simulated containment buttons for `source_ip` indicators.
+  - Removed duplicate inline layout definitions in `BlueWorkspace.jsx` and imported `<SiemFeed />` directly, maintaining live socket streams and state sync.
+  - Verified backend pytest suite passes green (296 passed) and frontend Vite production bundle compiles cleanly.
+
+### [2026-05-29 13:52:00 +03:00] - Antigravity (WS-1 API Prefix Fix)
+* **Status**: Complete - Eliminated the doubled `/api/api/...` prefix bugs by updating all frontend axios request calls to use relative paths, and added a development-time interceptor guard to flag any future absolute-style request URL definitions.
+* **Why**: Fix the broken SIEM initial load and scenario sync endpoints that were silently failing with 404 errors.
+* **Where**:
+  - `frontend/src/lib/api.js` - [MODIFY] Added request interceptor console.error guard for absolute URL requests starting with `/api` in development.
+  - `frontend/src/hooks/useScenario.js` - [MODIFY] Changed `get`/`post` calls for sessions, scenarios, roe-ack, flag, and end endpoints to relative paths.
+  - `frontend/src/pages/BlueWorkspace.jsx` - [MODIFY] Converted the playbook fetch path to a relative URL.
+* **What & How**:
+  - The request interceptor in `api.js` now scans outbound axios requests and alerts developers if a request path contains a leading `/api/`, preventing redundant prepending.
+  - Removed explicit `/api` from Axios client calls in `useScenario.js` and `BlueWorkspace.jsx` to let the baseURL property properly resolve relative URLs.
+  - Re-built the frontend application successfully and verified backend test execution remains fully functional (296 passed).
+
+### [2026-05-29 13:47:00 +03:00] - Antigravity (WS-0 Baseline & Reproduction)
+* **Status**: Complete - Verified E2E backend tests (296 passed, 1 skipped) and frontend build success. Traced and reproduced findings F1-F11. Created baseline verification report.
+* **Why**: Establish a reproducible baseline and confirm root causes for all defects before starting remediation.
+* **Where**:
+  - `docs/history/BASELINE_REPORT.md` - [NEW] Created baseline report detailing reproduction steps and confirmed root causes for F1-F11.
+* **What & How**:
+  - Proved that `/api/api/...` double-prefix errors exist in `useScenario.js` and `BlueWorkspace.jsx` because of axios `baseURL` matching absolute path requests.
+  - Confirmed SIEM severity casing mismatches exist in `engine.py` (lowercase) compared against strict uppercase checks in `BlueWorkspace.jsx`.
+  - Identified duplicate SIEM event row rendering in `BlueWorkspace.jsx` that overlaps with `SiemFeed.jsx`.
+  - Verified flag submit widget popover stacking context issues caused by top bar backdrop-filter properties.
+  - Verified layout overflow from lacking global boundaries in `index.css`.
+  - Confirmed WebSocket watchdog kills connection after 8 seconds of silence, causing disconnect loop on slow PTY tasks.
+  - Traced tutor websocket question parameters and established rate-limiting and missing keys fallback behavior.
+
 ### [2026-05-28 16:13:00 +03:00] - Antigravity (E2E Verification & UI/Doc Alignment)
 * **Status**: Complete - Verified full E2E lifecycle (auth, WS PTY proxying, SIEM telemetry, Socratic AI tutor responses, and flag validations), corrected red team workspace responsive minimum widths, resolved header flag submission layout overlap, renamed local debug scripts to exclude them from automated tests, and updated all remaining Gemini documentation to specify OpenRouter.
 * **Why**: Ensure CyberSim is 100% correct and ready for demonstration, with a fully passing test suite (all 296 unit/integration tests and the E2E smoke test pass successfully), clean UI scaling on medium-to-narrow viewports, and synchronized documentation.

@@ -231,7 +231,7 @@ async def test_siem_events_generated_for_gobuster():
         )
 
     assert len(events) >= 1
-    assert events[0]["severity"] == "medium"
+    assert events[0]["severity"] == "MEDIUM"
     assert "siem_event" == events[0]["type"]
 
 

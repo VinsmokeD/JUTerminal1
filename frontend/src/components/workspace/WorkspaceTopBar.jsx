@@ -56,7 +56,7 @@ export default function WorkspaceTopBar({
   return (
     <div
       className="
-        relative flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-2 w-full
+        relative z-50 flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-2 w-full
         bg-surface-1/70 border-b border-cs-border
         backdrop-blur-md select-none
       "
