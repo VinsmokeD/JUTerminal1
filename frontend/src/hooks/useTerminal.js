@@ -308,7 +308,18 @@ export function useTerminal({
     terminalElement.addEventListener('mousedown', focusTerminal)
     terminalElement.addEventListener('touchstart', focusTerminal)
 
-    const ro = new ResizeObserver(() => fitAddon.fit())
+    // Defer fit() to the next animation frame so the observe -> fit -> resize
+    // cascade cannot trip "ResizeObserver loop completed with undelivered
+    // notifications". The try/catch guards a not-yet-measurable element.
+    const ro = new ResizeObserver(() => {
+      window.requestAnimationFrame(() => {
+        try {
+          fitAddon.fit()
+        } catch {
+          /* terminal element not measurable yet */
+        }
+      })
+    })
     ro.observe(terminalElement)
 
     return () => {

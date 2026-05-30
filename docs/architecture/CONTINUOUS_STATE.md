@@ -492,3 +492,11 @@ pm run build and ran unit tests successfully.
   - docs active scope cleaned: scenarios/INDEX.md, FEATURES.md, INDEX.md, DOCUMENTATION_INDEX.md, QUICK_START_CONTINUATION_GUIDE.md, DEFENSE_EVIDENCE_PACK.md, product/PRODUCT_EVOLUTION_PLAN.md, SC-03-IMPLEMENTATION-SUMMARY.md; network-and-environment.md (fixed wrong sc03 subnet 172.20.5->172.20.3, removed sc05-net/frozen-ranges note).
 * **NOT changed (intentional)**: dated historical reports/snapshots (docs/reports/*, CURRENT_STATUS_REPORT, MASTER_BLUEPRINT, PHASE_V4_PLAN, final-report chapters, INTEGRATION_TEST_RESULTS/REPORT) + the rotated state archive - these are immutable historical records; editing them is revisionism and has zero product impact. Offered to purge if the user wants.
 * **Verification**: grep -> product code (backend/src, frontend/src, ai-monitor, infrastructure, active scenario docs) has ZERO SC-04/05. black clean; affected tests 94 passed; full suite 331.
+
+### [2026-05-29] - Claude Code (Frontend fix: ResizeObserver loop global-error popup)
+* **Status**: Complete - Fixed the "Global Error: ResizeObserver loop completed with undelivered notifications" alert the user hit after launching a mission. Verified live in the served bundle.
+* **Why**: main.jsx had a debug window.onerror that window.alert()'d on EVERY error, including the benign browser-generated ResizeObserver loop notice (no real stack -> ":0:0"). Source: useTerminal.js called fitAddon.fit() synchronously inside a ResizeObserver callback -> observe->fit->resize loop.
+* **Where**:
+  - frontend/src/main.jsx - replaced the alert-on-everything handler with: swallow benign ResizeObserver loop errors (both variants) via the capture-phase 'error' listener + 'unhandledrejection' + window.onerror; log real errors to console (non-blocking) instead of alert().
+  - frontend/src/hooks/useTerminal.js - ResizeObserver now defers fitAddon.fit() to requestAnimationFrame (+ try/catch), breaking the synchronous resize loop at the source.
+* **Verification**: `docker compose build frontend` (vite ✓ built in 19.72s, exit 0); recreated container; served bundle: 'Global Error' alert string => 0 occurrences (gone), 'ResizeObserver loop completed...' suppression => present. Frontend serves 200.
