@@ -29,6 +29,7 @@ from src.cache.redis import (
 from src.activity.service import record_activity
 from src.scenarios.gatekeeper import check_command
 from src.scenarios.loader import load_scenario
+from src.scenarios.scope_enforcer import check_scope
 from src.scenarios.hint_engine import _load_hints
 from src.scenarios.engine import try_advance_phase, check_gate, GateBlock
 from src.scenarios.output_patterns import scan_output_chunk
@@ -126,6 +127,48 @@ async def _handle_terminal_command(
         ptes_phase = phase_spec.get("ptes_phase", "")
     except (WebSocketDisconnect, RuntimeError):
         ptes_phase = ""
+
+    # ── ROE scope gate: block explicit out-of-scope targets (fail-open) ───────
+    try:
+        scope_result = check_scope(command, load_scenario(session_state["scenario_id"]))
+    except Exception:
+        scope_result = None  # never let a scope-check error drop a command
+    if scope_result is not None and scope_result.blocked:
+        new_score = None
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                update(Session)
+                .where(Session.id == session_id)
+                .values(score=Session.score - _GATE_PENALTY)
+                .returning(Session.score)
+            )
+            row = result.fetchone()
+            new_score = row[0] if row else None
+            db.add(
+                CommandLog(
+                    session_id=session_id,
+                    command=f"[scope_blocked] {command}",
+                    tool=f"scope_block:{scope_result.target}",
+                    phase=current_phase,
+                    triggered_siem_events=[],
+                )
+            )
+            await record_activity(
+                db,
+                session_state["user_id"],
+                "scope_block",
+                session_id,
+                {"command": command, "phase": current_phase, "target": scope_result.target},
+            )
+            await db.commit()
+        warn = (
+            f"\r\n\x1b[31m[OUT OF SCOPE] {scope_result.message}\x1b[0m"
+            f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — ROE violation]\x1b[0m\r\n"
+        )
+        await send_json({"type": "terminal_output", "data": {"data": warn}})
+        if new_score is not None:
+            await send_json({"type": "score_update", "data": {"score": new_score}})
+        return
 
     if ptes_phase:
         gate_result = check_command(command, ptes_phase)
