@@ -132,7 +132,7 @@ Both files contain identical variable sets. No missing variables. All 24 variabl
 | SC-03/SC-04 SIEM events thin | **LOW** | `sc03_events.json` has 3 trigger keys, `sc04_events.json` has 3 trigger keys. Real sessions may see sparse SIEM activity. Daemon noise partially compensates. |
 | `scope_enforcer.py` absent | **LOW** | Referenced in MASTER_BLUEPRINT as a v2.0 requirement (Phase 17 extended). Not blocking current 3-scenario scope but noted in blueprint as missing. |
 | SC-04 and SC-05 docker infra empty | **LOW** | `infrastructure/docker/scenarios/sc04/` and `sc05/` directories exist but contain no Dockerfiles or provisioning scripts. |
-| `docs/scenarios/` YAML files only for SC-01–03 | **INFO** | SC-04 and SC-05 specs exist as markdown in `SC-02-05-specs.md` but not split into individual YAML files. |
+| `docs/scenarios/` YAML files only for SC-01–03 | **INFO** | SC-04 and SC-05 specs exist as markdown in `SC-02-03-specs.md` but not split into individual YAML files. |
 
 ---
 

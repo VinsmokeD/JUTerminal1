@@ -18,7 +18,7 @@ CyberSim is now in defense-readiness mode, not broad feature-build mode. Continu
 - SC-02 Nexora Financial AD
 - SC-03 Orion Logistics
 
-SC-04 and SC-05 are historical planning artifacts only. Do not present them as active scenarios unless the roadmap is explicitly reopened.
+The product scope is exactly these three scenarios.
 
 ## Next Highest-Priority Checks
 

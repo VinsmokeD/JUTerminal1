@@ -39,8 +39,8 @@ Internet / Browser
                            |
           ┌────────────────┼────────────────┐
           │                │                │
-   [sc01-network]   [sc02-network]   [sc05-network]
-   172.20.1.0/24   172.20.2.0/24   172.20.5.0/24
+   [sc01-network]   [sc02-network]   [sc03-network]
+   172.20.1.0/24   172.20.2.0/24   172.20.3.0/24
           │
     ┌─────┴──────────────────────┐
     │                            │
@@ -105,9 +105,9 @@ Containers:
 Special: GoPhish dashboard exposed at http://localhost:3333 (mapped from container)
 ```
 
-### Frozen scenario ranges
+### Scenario ranges
 
-CyberSim currently exposes and verifies SC-01, SC-02, and SC-03 only. Later scenario ranges are historical design material and must not be treated as active network topology until the roadmap explicitly reopens them.
+CyberSim exposes exactly SC-01, SC-02, and SC-03.
 
 ---
 

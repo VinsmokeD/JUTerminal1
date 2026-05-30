@@ -72,11 +72,11 @@ def test_04_loader_rejects_unknown_scenario():
         load_scenario("SC-99")
 
 
-def test_05_loader_rejects_sc04_sc05():
-    """Loader should reject SC-04 and SC-05 (v2.0 scope violation)."""
+def test_05_loader_rejects_unknown_scenario():
+    """Loader should reject any scenario outside the catalog."""
     from src.scenarios.loader import load_scenario
 
-    for scenario_id in ["SC-04", "SC-05"]:
+    for scenario_id in ["SC-99", "SC-00", "SC-42"]:
         with pytest.raises(ValueError, match="Unknown scenario"):
             load_scenario(scenario_id)
 

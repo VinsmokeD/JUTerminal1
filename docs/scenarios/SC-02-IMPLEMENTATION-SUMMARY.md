@@ -374,7 +374,7 @@ For implementation details:
 → See **docs/architecture/CONTINUOUS_STATE.md** (latest changelog)
 
 For scenario learning objectives:
-→ See **docs/scenarios/SC-02-05-specs.md** (scenario brief)
+→ See **docs/scenarios/SC-02-03-specs.md** (scenario brief)
 
 ---
 

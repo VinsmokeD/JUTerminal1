@@ -222,7 +222,7 @@ sc03-net (internal: true)
 
 No internet access
 No gateway route to host network
-No communication with other scenario networks (sc01-net, sc02-net, sc04-net, sc05-net)
+No communication with other scenario networks (sc01-net, sc02-net)
 ```
 
 ---

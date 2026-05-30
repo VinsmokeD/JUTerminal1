@@ -159,7 +159,7 @@ Target analytics:
 
 ### 7. Scenario Depth Before Scenario Count
 
-SC-01 through SC-03 should become deeper before adding SC-04 or SC-05.
+SC-01 through SC-03 should become deeper. The scope is intentionally limited to these three scenarios.
 
 Target improvements:
 

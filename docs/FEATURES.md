@@ -29,6 +29,6 @@ Samba4 Active Directory scenario with domain controller, file server, Kerberos-f
 
 Phishing and initial access scenario using GoPhish, a mail relay, and a victim simulator that emits endpoint-style events.
 
-## Out of MVP Scope
+## Scope
 
-SC-04 and SC-05 may appear in historical notes, but they are not part of the current MVP defined by `docs/architecture/MASTER_BLUEPRINT.md` and are not represented in the active root Compose profiles.
+The product scope is exactly three scenarios: SC-01, SC-02, and SC-03.

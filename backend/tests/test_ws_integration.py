@@ -131,8 +131,7 @@ async def test_scenarios_returns_three(client: AsyncClient):
     assert "SC-01" in ids
     assert "SC-02" in ids
     assert "SC-03" in ids
-    assert "SC-04" not in ids
-    assert "SC-05" not in ids
+    assert set(ids) == {"SC-01", "SC-02", "SC-03"}
 
 
 # ── Test 5: YAML loader — all specs load cleanly ────────────────────────────
@@ -244,14 +243,14 @@ async def test_siem_events_generated_for_gobuster():
     assert "siem_event" == events[0]["type"]
 
 
-# ── Test 10: Session start rejected for SC-04 (out of v2.0 scope) ─────────
+# ── Test 10: Session start rejected for any scenario outside the catalog ──
 
 
 @pytest.mark.asyncio
-async def test_session_start_rejects_sc04(client: AsyncClient, auth_token: str):
+async def test_session_start_rejects_unknown_scenario(client: AsyncClient, auth_token: str):
     r = await client.post(
         "/api/sessions/start",
-        json={"scenario_id": "SC-04", "role": "red"},
+        json={"scenario_id": "SC-99", "role": "red"},
         headers={"Authorization": f"Bearer {auth_token}"},
     )
     assert r.status_code == 400

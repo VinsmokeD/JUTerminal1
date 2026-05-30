@@ -90,7 +90,7 @@ Xterm input misbehaves in the room:
 
 ## Known Limitations
 
-- MVP live scope is SC-01 through SC-03 only. SC-04/SC-05 are intentionally out of active defense scope.
+- Live scope is exactly SC-01, SC-02, and SC-03.
 - The supported defense runtime is Docker/Python 3.11. Host Python 3.14 remains useful for tests here but is not the deployment runtime.
 - OpenRouter availability depends on a valid `OPENROUTER_API_KEY`; if unavailable, the core Red-to-Blue demo still works without AI hints.
 - The final keyboard proof was performed through the in-app browser keyboard path; the presenter should still rehearse once on the exact defense laptop/keyboard before entering the room.

@@ -441,8 +441,11 @@ async def test_11_get_scenarios_returns_three(client: AsyncClient):
     assert "SC-01" in ids
     assert "SC-02" in ids
     assert "SC-03" in ids
-    assert "SC-04" not in ids, "SC-04 should not exist in v2.0 scope"
-    assert "SC-05" not in ids, "SC-05 should not exist in v2.0 scope"
+    assert set(ids) == {
+        "SC-01",
+        "SC-02",
+        "SC-03",
+    }, f"catalog must be exactly the three scenarios: {ids}"
 
 
 @pytest.mark.asyncio
@@ -534,11 +537,11 @@ async def test_16_methodology_gates_configured():
 
 
 @pytest.mark.asyncio
-async def test_17_sc04_rejected_out_of_scope(client: AsyncClient, auth_token: str):
-    """✓ Session start rejected for SC-04 (out of v2.0 scope)."""
+async def test_17_unknown_scenario_rejected(client: AsyncClient, auth_token: str):
+    """✓ Session start is rejected for any scenario outside the catalog."""
     resp = await client.post(
         "/api/sessions/start",
-        json={"scenario_id": "SC-04", "role": "red"},
+        json={"scenario_id": "SC-99", "role": "red"},
         headers={"Authorization": f"Bearer {auth_token}"},
     )
     assert resp.status_code == 400

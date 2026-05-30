@@ -25,4 +25,4 @@ Use [README.md](README.md) as the documentation home for this folder.
 
 ## Current MVP Scope
 
-The maintained project scope is SC-01, SC-02, and SC-03. SC-04 and SC-05 references in historical documents are not part of the active MVP unless the roadmap explicitly reopens them.
+The project scope is exactly SC-01, SC-02, and SC-03.

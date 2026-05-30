@@ -1,6 +1,6 @@
 # Scenario Index
 
-CyberSim's active defense scope contains exactly three training scenarios. SC-04 and SC-05 are historical planning artifacts only and are not launchable in the current MVP.
+CyberSim's scope is exactly three training scenarios: SC-01, SC-02, and SC-03.
 
 ## Active Scenarios
 

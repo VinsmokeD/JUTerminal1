@@ -25,6 +25,6 @@ CyberSim's active MVP and defense scope is exactly:
 - SC-02 Nexora Financial AD
 - SC-03 Orion Logistics
 
-SC-04 and SC-05 references in archived reports are historical only and are not part of the current launchable product.
+The product scope is exactly these three scenarios.
 
 **Last Updated**: 2026-05-14

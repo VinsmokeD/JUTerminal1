@@ -481,3 +481,14 @@ pm run build and ran unit tests successfully.
 * **Status**: Complete - Added .pre-commit-config.yaml so quality issues are caught locally before CI. Verified all hooks pass.
 * **Where**: .pre-commit-config.yaml [NEW] - hooks: check-added-large-files(512kb, excl docs/history|final-report), detect-private-key, check-merge-conflict, check-json, check-yaml(--unsafe), black(backend src/tests, pinned 24.4.2 matching requirements).
 * **Verification**: `pre-commit validate-config` ok; `pre-commit run --all-files` => all 6 hooks Passed (large-files, private-key, merge-conflict, json, yaml, black). Setup: `pip install pre-commit && pre-commit install`.
+
+### [2026-05-29] - Claude Code (User directive: remove SC-04/SC-05 totally; product is 3 scenarios only)
+* **Status**: Complete (product + active docs) - Removed all SC-04/SC-05 references from the product, AI tutor, tests, and active/reviewer-facing docs. Suite 331.
+* **Why**: User: "remove sc4-5 totally from all i dont want more sc or missions."
+* **Where**:
+  - ai-monitor/system_prompt.md - tutor scope reworded to "exactly SC-01/02/03; any other scenario -> redirect" (no SC-04/05 named).
+  - backend/tests/{integration_test,test_ws_integration,unit_test_scenarios}.py - SC-04/05-specific tests repurposed to "unknown scenario" guards (SC-99) + exact-catalog asserts (set(ids)=={SC-01,02,03}); names test_17_unknown_scenario_rejected, test_session_start_rejects_unknown_scenario, test_05_loader_rejects_unknown_scenario.
+  - docs/scenarios/SC-02-05-specs.md -> renamed SC-02-03-specs.md with SC-04/05 sections stripped; filename refs updated.
+  - docs active scope cleaned: scenarios/INDEX.md, FEATURES.md, INDEX.md, DOCUMENTATION_INDEX.md, QUICK_START_CONTINUATION_GUIDE.md, DEFENSE_EVIDENCE_PACK.md, product/PRODUCT_EVOLUTION_PLAN.md, SC-03-IMPLEMENTATION-SUMMARY.md; network-and-environment.md (fixed wrong sc03 subnet 172.20.5->172.20.3, removed sc05-net/frozen-ranges note).
+* **NOT changed (intentional)**: dated historical reports/snapshots (docs/reports/*, CURRENT_STATUS_REPORT, MASTER_BLUEPRINT, PHASE_V4_PLAN, final-report chapters, INTEGRATION_TEST_RESULTS/REPORT) + the rotated state archive - these are immutable historical records; editing them is revisionism and has zero product impact. Offered to purge if the user wants.
+* **Verification**: grep -> product code (backend/src, frontend/src, ai-monitor, infrastructure, active scenario docs) has ZERO SC-04/05. black clean; affected tests 94 passed; full suite 331.
