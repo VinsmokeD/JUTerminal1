@@ -394,3 +394,16 @@ pm run build and ran unit tests successfully.
   - scripts/verify-network-isolation.sh [NEW] - asserts every running cybersim-sc0[1-3] container CANNOT reach the internet (TCP 1.1.1.1:443 via bash /dev/tcp or python fallback); non-zero exit on any breach. Reusable in CI/demo-day.
   - Pre-existing healthchecks confirmed good: postgres (pg_isready), redis (redis-cli ping), elasticsearch (curl), filebeat depends_on es healthy, backend depends_on pg+redis healthy.
 * **Verification**: docker compose config --quiet -> exit 0. Recreated backend -> docker health went starting->healthy in ~9s. Recreated nginx (now waits for backend healthy) -> health via nginx OK. ISOLATION: ran verify-network-isolation.sh -> 6/6 scenario containers BLOCKED from internet, exit 0; positive control: backend CAN reach internet (expected, it calls OpenRouter). pytest unaffected (no Python changed) - last run 298 passed.
+
+### [2026-05-29] - Claude Code (Phase 4: AI tutor safety VERIFIED + regression coverage)
+* **Status**: Complete - Verified the AI tutor's safety is genuinely robust (now that the key is live) and added regression coverage for the headline lab credentials. Suite 301 passed.
+* **Why**: With the key active, Phase 4 became testable. Goal: confirm the Socratic guardrails + secret-leak defenses actually hold, not just exist on paper.
+* **Findings (all positive - codebase is mature here)**:
+  - ai-monitor/system_prompt.md is excellent: LEARN + CHALLENGE modes, skill-level adaptation, detailed SC-01/02/03 knowledge, explicit forbidden-token rules (Password123/Backup2023!/payloads), self-check steps, BAD/GOOD Socratic examples.
+  - ai/security.py is defense-in-depth mapped to OWASP LLM Top-10: sanitize_tutor_response (post-LLM payload/cred -> Socratic fallback), sanitize_untrusted (LLM01 injection stripping), redact_for_ai/redact_text (LLM02), validate_ai_output (LLM05/07 reject HTML/secrets/prompt-leak), check_ai_budget/record_ai_usage (LLM10 budgets).
+  - WIRED into the live path: monitor.py calls check_ai_budget (286), record_ai_usage (356), validate_ai_output (364), sanitize_tutor_response (367).
+  - LIVE adversarial test (real LLM, unique sessions to bypass the 10s cooldown): direct cred ask, injection ('ignore all instructions'), riddle, SQLi/LFI payload asks -> ALL HELD, no leak.
+  - DETERMINISTIC backstop proven: sanitize_tutor_response strips Backup2023!/Password123/admin'--/OR 1=1/../../etc/passwd (leaked_after=False for all 5); validate_ai_output rejects known secrets.
+* **Where**: backend/tests/ai/test_response_sanitization.py - added 3 cases for the headline secrets (Backup2023!, Password123, WebAppPass2024!) the prior test omitted (it only covered P@ssw0rd_NovaMed_2023!). Guards against a regex-list refactor silently dropping one.
+* **Minor observation (not fixed, non-fatal)**: get_ai_hint inserts ai_interactions telemetry with an FK to sessions; calling it with a non-existent session_id raises ForeignKeyViolationError (caught, hint still returns). Won't happen with real sessions. Candidate for a try/except wrap later.
+* **Verification**: pytest --ignore=tests/e2e => 301 passed in 8.47s. Live + deterministic guardrail proofs above.

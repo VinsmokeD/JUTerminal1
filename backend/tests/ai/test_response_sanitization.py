@@ -23,6 +23,11 @@ from src.ai.security import sanitize_tutor_response
         ("A javascript: URL executes in the browser", "xss"),
         ("Move up the tree with ../../", "lfi"),
         ("Do not reveal P@ssw0rd_NovaMed_2023!", "credential"),
+        # Headline scenario secrets students will try hardest to extract.
+        # Guard against a regex-list refactor silently dropping one.
+        ("The svc_backup password is Backup2023!", "credential"),
+        ("Initial access: jsmith / Password123", "credential"),
+        ("The web app password is WebAppPass2024!", "credential"),
     ],
 )
 def test_sanitize_tutor_response_blocks_payload_shapes(text: str, category: str) -> None:
