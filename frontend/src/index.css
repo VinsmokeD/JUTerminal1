@@ -88,18 +88,21 @@
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Edge-faded line grid */
+  }
+
+  /* Quiet edge-faded grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
     background-image:
       linear-gradient(var(--nb-border) 1px, transparent 1px),
       linear-gradient(90deg, var(--nb-border) 1px, transparent 1px);
     background-size: 56px 56px;
     mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 35%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 35%, transparent 100%);
-  }
-
-  /* ── Scan-line overlay retired ──────────── */
-  body::before {
-    display: none;
+    pointer-events: none;
   }
 
   /* ── Nimbus aura drift (perf + motion gated) ─────────────────── */
@@ -107,7 +110,7 @@
     content: '';
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: -1;
     pointer-events: none;
     background:
       radial-gradient(60% 40% at 50% -5%, rgba(76,194,255,0.10), transparent 70%),
