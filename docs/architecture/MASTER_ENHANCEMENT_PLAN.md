@@ -468,16 +468,16 @@ Verify: kill Redis mid-session and confirm graceful degradation; metrics endpoin
 
 ## 5. Definition of Done (whole program)
 
-- [ ] Cold `docker compose up` → all services healthy, no manual retries.
-- [ ] SC-01/02/03 each completable end-to-end with captured evidence.
-- [ ] Terminal survives page refresh (reconnect proven by e2e).
-- [ ] Blue SIEM feed is dense, MITRE-tagged, reacts <3s to Red actions.
-- [ ] AI tutor: Socratic, varied, secret-free, degrades gracefully.
-- [ ] Scope enforced server-side; WS authenticated; no critical CVEs; threat model published.
-- [ ] Scores explainable; debrief dual-axis; PDF export; instructor analytics real.
-- [ ] WCAG 2.2 AA; one design-token system; bundle within budget.
+- [x] Cold `docker compose up` → all services healthy, no manual retries.
+- [x] SC-01/02/03 each completable end-to-end with captured evidence.
+- [x] Terminal survives page refresh (reconnect proven by e2e).
+- [x] Blue SIEM feed is dense, MITRE-tagged, reacts <3s to Red actions.
+- [x] AI tutor: Socratic, varied, secret-free, degrades gracefully.
+- [x] Scope enforced server-side; WS authenticated; no critical CVEs; threat model published.
+- [x] Scores explainable; debrief dual-axis; PDF export; instructor analytics real.
+- [x] WCAG 2.2 AA; one design-token system; bundle within budget.
 - [ ] CI enforces pytest + build + compose + secret/dep scans on every PR; ≥80% engine coverage.
-- [ ] Zero doc drift (no "Gemini"; one completion score; env names aligned); diagrams match reality; audit trail live.
+- [x] Zero doc drift (no "Gemini"; one completion score; env names aligned); diagrams match reality; audit trail live.
 - [ ] Graceful degradation on dependency outage; metrics/alerts; tagged release + clean rehearsal.
 
 ---

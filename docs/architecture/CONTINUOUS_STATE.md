@@ -779,3 +779,56 @@ pm run build and ran unit tests successfully.
   - `cd frontend && npm run build` → exit 0 (built in 6.07s)
   - `npm test -- --run` → 27 passed (all tests green)
   - `backend pytest` → 334 passed (all tests green)
+
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Aesthetic Modernization & Global Clean Redesign)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user requested a cleaner, more readable, and less cluttered interface globally across the entire platform. This required removing dated geometric clip-paths (chamfers), tactile corner ticks, bracket hover animations, and diagnostic scanlines, replacing them with a premium slate-dark design featuring standard rounded corners, subtle dark borders, and role-based top-border colored highlights on workspace panels.
+* **Files modified**:
+  - `frontend/src/styles/v3-design.css` — Replaced `clip-path` on `.btn-v3` with `border-radius: var(--radius-md)`. Removed brackets (`::before` / `::after` content) on hover. Removed `.card-v3` corner ticks and `.card-v3::after` scanlines. Set `border-radius: var(--radius-lg)` on `.card-v3` and disabled `hud-corner-ticks` globally. Added `text-shadow: none` on `.card-v3-header-glow` classes.
+  - `frontend/src/index.css` — Overhauled `.hud-glass-cyan` and `.hud-glass-crimson` to utilize a unified slate background (`rgba(15, 18, 29, 0.8)`) and subtle borders (`rgba(255, 255, 255, 0.08)`). Updated `.workspace-pane` layouts inside red/blue split workspaces to use standard rounded borders (`border-radius: var(--radius-lg)`) and unified border colors. Added pane top border highlight helper classes (`pane-hl-*`).
+  - `frontend/src/pages/RedWorkspace.jsx` — Updated container wrappers with `workspace-resizable-red` class and converted panes to use standard `workspace-pane` and role-based top highlight helpers (`pane-hl-red`, `pane-hl-amber`, `pane-hl-blue`, `pane-hl-green`). Replaced bright crimson drag-divider colors with subtle gray borders.
+  - `frontend/src/pages/BlueWorkspace.jsx` — Wrapped slots with role-based top border highlights (`pane-hl-blue`, `pane-hl-purple`, `pane-hl-green`).
+  - `frontend/src/components/siem/SiemFeed.jsx` — Improved message line contrast to `text-txt-primary` and timestamp to `text-txt-secondary/80` for better text readability.
+  - `frontend/src/components/hints/AiHintPanel.jsx` — Simplified AI tutor welcome and hint bubble backgrounds to use solid backgrounds (`bg-[#0f121d]` and `bg-[#1c2135]`) instead of glowing gradients, and added `tracking-wide` for wider letter-spacing.
+  - `frontend/src/pages/Dashboard.jsx` — Standardized methodology and role active backgrounds to use `bg-surface-3` with soft glows instead of custom crimson/cyan background templates. Removed redundant `clip-chamfer-sm` from the filter bar.
+  - `frontend/src/pages/Auth.jsx` — Replaced custom backgrounds on feature pills with standard `bg-surface-2`.
+* **What & How**:
+  - Overhauled global primitives (buttons, cards, badges, inputs) by removing geometric clip-paths and setting standard border-radius properties (`var(--radius-md)` / `var(--radius-lg)`).
+  - Cleaned up visual clutter (hovers, bracket transitions, scanlines, and diagnostic text glows) to ensure zero weird movement animations bleed through.
+  - Replaced duplicate panel-specific colorful outlines with clean, uniform dark-gray border wraps (`rgba(255, 255, 255, 0.08)`) and helper classes (`pane-hl-*`) indicating the pane active context.
+  - Tuned reading layouts: widened letter-spacing, set relax line-heights, and maximized font contrasts across SIEM logs and AI tutor chat streams.
+* **Verification**:
+  - Production build compiled successfully (`npm run build` completed in 8.62s).
+  - All 27 Vitest unit tests pass successfully.
+  - Docker Compose frontend rebuild run to mount static updates.
+
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Nimbus Console Retheme & Consolidation Sweep)
+
+* **Status**: COMPLETE ✅
+* **Why**: To fully implement the "Nimbus Console" design specification across the platform, retiring all obsolete scanlines, dot-grids, glitch-text, and raw uppercase lettering styles.
+* **Files modified**:
+  - `frontend/src/styles/v3-design.css` — Updated badge-v3 to full-radius pills in normal casing. Refined input-v3 styles with glass container properties and 2px focus rings. Deleted obsolete visual clutter classes (tilt-target, tiltIn keyframes, crt-container, glitch-text, card-v3-spotlight, and corner ticks).
+  - `frontend/src/index.css` — Removed duplicate `.btn-v3` styles. Re-implemented the global `.glass` class with nimbus colors and hairlines. Updated `.workspace-pane` panel backgrounds to use glass values and contextual Team highlights (`pane-hl-red` and `pane-hl-blue`).
+  - `frontend/src/hooks/useTilt.js` — Disabled 2.5D mouse tilt and spotlight variables when dynamic performance tier is low (`data-perf="low"`).
+  - `frontend/src/components/nav/CyberSimNav.jsx` — Updated logo brand wordmark to Outfit 700 + gradient styling and updated the Active Mission badge to normal casing.
+  - `frontend/src/components/workspace/WorkspaceTopBar.jsx` — Updated role indicators, AI mode toggles, and scoreboard eyebrows to use display fonts, normal casing, and correct tracking.
+  - `frontend/src/components/dashboard/ScenarioCard.jsx` — Replaced card-v3 class with glass class, and simplified title header glows and accent bottom bars.
+  - `frontend/src/pages/Dashboard.jsx` — Removed glitch-text titles, converting headers to standard title casing.
+  - `frontend/src/pages/Landing.jsx` — Replaced all uppercase, monospaced descriptions and headers with normal casing display font. Converted cards and boxes to glass panels.
+  - `frontend/src/pages/Onboarding.jsx` — Removed welcome glitch-text and shouting submit buttons, updating them to title casing.
+  - `frontend/src/pages/Auth.jsx` — Updated logo styling to brand text-gradient, input labels to clean eyebrows, and submit buttons to title casing.
+* **What & How**:
+  - Unified all token mappings and CSS variables (`--nb-bg`, `--nb-text`, etc.) across stylesheets.
+  - Replaced duplicate visual button rules, consolidating everything under the clean `.btn-v3` system.
+  - Converted the shouting UPPERCASE visual system of headings and button tags to clean, readable normal title/sentence casing.
+  - Gated heavy animation/tilt effects behind a single client-side performance check inside the general hook.
+* **Verification**:
+  - Production build compiled successfully (`npm run build` completed in 6.38s).
+  - All 27 Vitest unit tests pass successfully.
+  - All 334 backend python unit/integration tests pass successfully.
+

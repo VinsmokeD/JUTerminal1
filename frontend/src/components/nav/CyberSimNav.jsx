@@ -27,7 +27,7 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
       {/* Logo */}
       <button onClick={() => navigate(username ? '/dashboard' : '/')} className="flex items-center gap-3 group">
         <div className="nav-logo-icon" />
-        <div className="font-mono text-lg font-bold text-txt-primary tracking-tight">
+        <div className="font-display text-lg font-bold text-gradient-nimbus tracking-tight">
           CyberSim<span className="text-txt-dim font-normal">.io</span>
         </div>
       </button>
@@ -42,7 +42,7 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
             className="hidden sm:flex items-center gap-2 btn-v3 btn-v3-sm border-cs-blue/30 text-cs-blue bg-cs-blue/10 hover:bg-cs-blue/20"
           >
             <span className="w-2 h-2 rounded-full bg-cs-blue animate-pulse-soft" />
-            <span className="font-mono uppercase tracking-wider text-[10px]">Active Mission</span>
+            <span className="font-display text-xs font-medium">Active Mission</span>
           </button>
         )}
 

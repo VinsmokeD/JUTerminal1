@@ -195,7 +195,7 @@ export default function Dashboard() {
                 <span className="text-[10px] font-mono text-txt-dim tracking-widest">// SEC_LEVEL: CLASSIFIED //</span>
               </div>
               <h1 className="text-4xl font-extrabold text-txt-primary tracking-tight font-display card-v3-header-glow">
-                <span className="glitch-text" data-text="TACTICAL BRIEFING CENTER">TACTICAL BRIEFING CENTER</span>
+                Tactical Briefing Center
               </h1>
               <p className="text-txt-secondary text-xs font-mono mt-2 max-w-lg">
                 {isBeginner
@@ -278,7 +278,7 @@ export default function Dashboard() {
         )}
 
         {/* Scenario filter bar */}
-        <div className="mb-6 flex flex-col gap-4 rounded-cs border border-cs-border bg-surface-2/30 p-4 md:flex-row md:items-center md:justify-between clip-chamfer-sm">
+        <div className="mb-6 flex flex-col gap-4 rounded-cs border border-cs-border bg-surface-2/30 p-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-2">
             <span className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mr-2 select-none">Filters:</span>
             {FILTER_CHIPS.map((chip) => (
@@ -453,7 +453,7 @@ export default function Dashboard() {
                   ].map(r => (
                     <button key={r.v} onClick={() => setRole(r.v)}
                       className={`min-w-0 p-4 rounded-cs border-2 text-left transition-all ${role === r.v
-                        ? r.color === 'cs-red' ? 'border-cs-red/50 bg-cs-red-surface' : 'border-cs-blue/50 bg-cs-blue-surface'
+                        ? r.color === 'cs-red' ? 'border-cs-red/50 bg-surface-3 shadow-red-glow/20' : 'border-cs-blue/50 bg-surface-3 shadow-blue-glow/20'
                         : 'border-cs-border hover:border-cs-border-glow'}`}>
                       <div className="flex items-center gap-2 mb-1">
                         <svg className={`w-4 h-4 ${r.color === 'cs-red' ? 'text-cs-red' : 'text-cs-blue'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -477,7 +477,7 @@ export default function Dashboard() {
                   {METHODOLOGY_OPTIONS.map(m => (
                     <button key={m.value} onClick={() => setMethodology(m.value)}
                       className={`w-full p-3 rounded-cs border-2 text-left transition-all flex items-center gap-3 ${
-                        methodology === m.value ? 'border-cs-blue/50 bg-cs-blue-surface' : 'border-cs-border hover:border-cs-border-glow'
+                        methodology === m.value ? 'border-cs-blue/50 bg-surface-3 shadow-blue-glow/20' : 'border-cs-border hover:border-cs-border-glow'
                       }`}>
                       <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
                         methodology === m.value ? 'border-cs-blue' : 'border-surface-4'

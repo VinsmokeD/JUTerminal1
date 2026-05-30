@@ -18,6 +18,8 @@ export default function useTilt({ maxTilt = 6, spotlight = true } = {}) {
   const ref = useRef(null)
 
   const onMouseMove = useCallback((e) => {
+    const isLowPerf = typeof document !== 'undefined' && document.documentElement.getAttribute('data-perf') === 'low'
+    if (isLowPerf) return
     const el = ref.current
     if (!el) return
     const rect = el.getBoundingClientRect()

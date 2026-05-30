@@ -220,7 +220,7 @@ export default function BlueWorkspace() {
           mainTop: {
             label: activePanel === 'siem' ? 'SIEM Console' : 'Investigation Terminal',
             element: (
-              <div className="workspace-pane workspace-terminal-pane">
+              <div className="workspace-pane workspace-terminal-pane pane-hl-blue">
                 <div className="workspace-panel-header relative z-10 flex-wrap">
                   <div className="flex gap-1 bg-surface-3 rounded-cs-sm p-0.5">
                     <button onClick={() => setActivePanel('siem')}
@@ -276,7 +276,7 @@ export default function BlueWorkspace() {
           sideTop: {
             label: 'IR Playbook',
             element: (
-              <div className="workspace-pane workspace-side-pane">
+              <div className="workspace-pane workspace-side-pane pane-hl-purple">
                 <div className="workspace-panel-header">
                   <span className="panel-header-dot purple" />
                   <span className="text-xs font-mono font-semibold uppercase tracking-wider" style={{ color: '#a855f7' }}>IR Playbook</span>
@@ -304,7 +304,7 @@ export default function BlueWorkspace() {
           sideBottom: {
             label: 'AI Tutor',
             element: (
-              <div className="workspace-pane workspace-side-pane">
+              <div className="workspace-pane workspace-side-pane pane-hl-blue">
                 <div className="workspace-panel-header">
                   <span className="panel-header-dot blue" />
                   <span className="text-xs font-mono font-semibold uppercase tracking-wider text-cs-blue">AI Tutor</span>
@@ -321,7 +321,7 @@ export default function BlueWorkspace() {
           mainBottom: {
             label: activeBottomTab === 'notebook' ? 'IR Notebook' : 'Forensics Workbench',
             element: (
-              <div className="workspace-bottom-split h-full flex flex-col">
+              <div className="workspace-bottom-split h-full flex flex-col pane-hl-blue">
                 <div className="flex bg-surface-2 border-b border-cs-border px-4 py-1 gap-1">
                   <button onClick={() => setActiveBottomTab('notebook')}
                     className={`text-[10px] px-3 py-1 rounded-cs-sm transition-all font-mono uppercase tracking-wider ${

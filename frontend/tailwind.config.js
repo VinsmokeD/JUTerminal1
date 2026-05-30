@@ -14,44 +14,44 @@ export default {
 
         /* Tier 1 — Duality (semantic/legible) */
         'cs-red': {
-          DEFAULT: '#ff3b3b',
-          glow: '#ff3b3b40',
-          dim: '#ff3b3b15',
-          surface: '#1a0808',
+          DEFAULT: '#FF6B7A',      /* coral red */
+          glow: 'rgba(255, 107, 122, 0.4)',
+          dim: 'rgba(255, 107, 122, 0.15)',
+          surface: '#1c1214',
         },
         'cs-blue': {
-          DEFAULT: '#3b8bff',
-          glow: '#3b8bff40',
-          dim: '#3b8bff15',
-          surface: '#080d1a',
+          DEFAULT: '#4CC2FF',      /* electric cyan-blue */
+          glow: 'rgba(76, 194, 255, 0.4)',
+          dim: 'rgba(76, 194, 255, 0.15)',
+          surface: '#0d1320',
         },
 
-        /* Tier 2 — HUD Neon (glow/accent — box-shadows and halos only) */
-        'hud-void': '#030508',
-        'hud-cyan': '#00f3ff',
-        'hud-crimson': '#ff0055',
+        /* Tier 2 — HUD Neon (glow/accent) */
+        'hud-void': '#0A0E17',
+        'hud-cyan': '#4CC2FF',
+        'hud-crimson': '#FF6B7A',
 
         /* Neutrals */
-        void: '#08090c',
-        'surface-1': '#0d0f14',
-        'surface-2': '#13161d',
-        'surface-3': '#1a1d26',
-        'surface-4': '#22262f',
-        'surface-hover': '#1d212c',
-        'cs-border': '#1e2230',
-        'cs-border-glow': '#2a2f40',
+        void: '#0A0E17',
+        'surface-1': '#111726',
+        'surface-2': '#151C2E',
+        'surface-3': '#1B2438',
+        'surface-4': '#222941',
+        'surface-hover': '#242e47',
+        'cs-border': 'rgba(148, 163, 184, 0.10)',
+        'cs-border-glow': 'rgba(148, 163, 184, 0.20)',
 
         /* Text (AA-contrast tuned) */
-        'txt-primary': '#e8eaf0',
-        'txt-secondary': '#9ba3b8',
-        'txt-dim': '#5a6178',
-        'txt-ghost': '#3a4054',
+        'txt-primary': '#E9EDF6',
+        'txt-secondary': '#AAB4C8',
+        'txt-dim': '#6E798E',
+        'txt-ghost': '#3f495a',
 
         /* Semantic accents */
-        'green-signal': '#00ff88',
-        'amber-warn': '#ffaa00',
-        critical: '#ff2244',
-        magenta: '#a855f7',      /* AI / Pro-Tip / hint accent */
+        'green-signal': '#3DD68C',
+        'amber-warn': '#F4B740',
+        critical: '#FF5C6C',
+        magenta: '#9B7DFF',      /* AI / Pro-Tip violet accent */
       },
       fontFamily: {
         /* hud     — Orbitron: hero wordmark + large HUD numerals ONLY */

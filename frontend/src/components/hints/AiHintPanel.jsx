@@ -373,7 +373,7 @@ function HintBubble({ hint }) {
         avatar: 'AI',
         name: 'AI Tutor',
         avatarBg: 'bg-cs-blue/10 text-cs-blue border-cs-blue/30',
-        bubbleBg: 'bg-cs-blue/5 border-cs-blue/15 shadow-[0_0_8px_rgba(59,139,255,0.05)]'
+        bubbleBg: 'bg-[#0f121d] border-cs-border'
       }
     : hint.sender === 'user'
       ? {
@@ -406,16 +406,16 @@ function HintBubble({ hint }) {
                     ? 'bg-orange-400/10 text-orange-400 border-orange-400/30'
                     : 'bg-cs-red/10 text-cs-red border-cs-red/30',
                 bubbleBg: hint.level === 1
-                  ? 'bg-amber-warn/5 border-amber-warn/15 shadow-[0_0_8px_rgba(255,170,0,0.05)]'
+                  ? 'bg-[#1c2135] border-amber-warn/25'
                   : hint.level === 2
-                    ? 'bg-orange-400/5 border-orange-400/15 shadow-[0_0_8px_rgba(251,146,60,0.05)]'
-                    : 'bg-cs-red/5 border-cs-red/15 shadow-[0_0_8px_rgba(255,59,59,0.05)]'
+                    ? 'bg-[#1c2135] border-orange-400/25'
+                    : 'bg-[#1c2135] border-cs-red/25'
               }
             : {
                 avatar: 'AI',
                 name: 'AI Tutor',
                 avatarBg: 'bg-cs-blue/10 text-cs-blue border-cs-blue/30',
-                bubbleBg: 'bg-cs-blue/5 border-cs-blue/15 shadow-[0_0_8px_rgba(59,139,255,0.05)]'
+                bubbleBg: 'bg-[#0f121d] border-cs-border'
               }
 
   return (
@@ -432,7 +432,7 @@ function HintBubble({ hint }) {
           <span className="text-[10px] text-txt-dim font-mono">{hint.ts}</span>
         </div>
         {/* Bubble Body */}
-        <div className={`border rounded-cs px-3.5 py-3 text-xs leading-relaxed backdrop-blur-sm shadow-sm ${config.bubbleBg} group/bubble`}>
+        <div className={`border rounded-cs px-4 py-3 text-xs leading-relaxed tracking-wide ${config.bubbleBg} group/bubble`}>
           {parsed?.format === 'tagged' && (
             <div className="space-y-3">
               {parsed.sections.map((section, idx) => {

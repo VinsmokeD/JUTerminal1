@@ -64,14 +64,14 @@ export default function Landing() {
 
           {/* Title */}
           <h1 className="text-[1.75rem] sm:text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[1.08] tracking-tighter mb-6 font-display">
-            <span className="glitch-text text-cs-red" data-text="ATTACK.">ATTACK.</span>{' '}
-            <span className="glitch-text text-cs-blue" data-text="DEFEND.">DEFEND.</span>
+            <span className="text-cs-red">Attack.</span>{' '}
+            <span className="text-cs-blue">Defend.</span>
             <br />
-            <span className="text-txt-dim tracking-tight">SIMULTANEOUSLY.</span>
+            <span className="text-txt-dim tracking-tight">Simultaneously.</span>
           </h1>
 
           {/* Sub */}
-          <p className="text-sm md:text-base text-txt-secondary leading-relaxed max-w-[580px] mx-auto mb-10 font-mono uppercase tracking-wide opacity-80">
+          <p className="text-sm md:text-base text-txt-secondary leading-relaxed max-w-[580px] mx-auto mb-10 font-display">
             The first training platform where every attacker command triggers real-time
             SIEM alerts on the defender's screen. Learn both sides of cybersecurity
             in one environment.
@@ -94,7 +94,7 @@ export default function Landing() {
 
       {/* LIVE DEMO */}
       <section className="relative px-6 md:px-12 pb-24 z-10">
-        <div className="max-w-[1200px] mx-auto card-v3 card-v3-spotlight p-0 border border-cs-border overflow-hidden bg-[#040609]">
+        <div className="max-w-[1200px] mx-auto glass p-0 overflow-hidden">
           {/* Window bar */}
           <div className="flex items-center justify-between px-5 py-3 bg-surface-2/80 border-b border-cs-border font-mono text-[10px]">
             <div className="flex gap-1.5">
@@ -185,7 +185,7 @@ export default function Landing() {
             { value: '100%', label: 'Real Tools - No Simulation', color: 'text-green-signal' },
             { value: '$0', label: 'Free Tier Stack', color: 'text-amber-warn' },
           ].map((s, i) => (
-            <div key={i} className="card-v3 card-v3-spotlight text-center p-6 border border-cs-border/60 bg-[#0d0f14]/80">
+            <div key={i} className="glass text-center p-6 bg-[#0d0f14]/80">
               <div className={`text-4xl font-extrabold font-mono tracking-tighter mb-2 ${s.color}`}>{s.value}</div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-txt-secondary">{s.label}</div>
             </div>
@@ -197,8 +197,8 @@ export default function Landing() {
       <section className="relative px-6 md:px-12 py-24 z-10" id="how">
         <div className="text-center mb-16">
           <div className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4">// EXECUTION CHECKLIST //</div>
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 card-v3-header-glow font-display">ONE PLATFORM. BOTH PERSPECTIVES.</h2>
-          <p className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-mono uppercase opacity-75">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary">One Platform. Both Perspectives.</h2>
+          <p className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-display">
             CyberSim bridges the gap between isolated tool training and
             real-world security operations by connecting both sides of every engagement.
           </p>
@@ -209,12 +209,12 @@ export default function Landing() {
             { step: '2', title: 'Follow methodology', desc: 'CyberSim enforces PTES phases. Skip reconnaissance and jump to exploitation? Blocked. Document your findings before advancing. Methodology gating teaches professional discipline.', color: 'text-amber-warn border-amber-warn/20 bg-amber-warn/5' },
             { step: '3', title: 'Detect in real time', desc: 'Every attacker command triggers corresponding SIEM alerts within 2 seconds. Blue team sees the same attack from the defender\'s perspective - WAF alerts, event logs, network anomalies.', color: 'text-cs-blue border-cs-blue/20 bg-cs-blue/5' },
           ].map((c, i) => (
-            <div key={i} className="card-v3 card-v3-interactive card-v3-spotlight p-8 group transition-all relative overflow-hidden bg-[#0d0f14]/80">
+            <div key={i} className="glass p-8 group transition-all relative overflow-hidden bg-[#0d0f14]/80">
               <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-mono text-xs font-bold mb-5 border ${c.color}`}>
                 {c.step}
               </div>
-              <h3 className="text-lg font-bold tracking-tight mb-3 font-display uppercase tracking-wide">{c.title}</h3>
-              <p className="text-xs text-txt-secondary leading-relaxed font-mono opacity-80">{c.desc}</p>
+              <h3 className="text-lg font-bold tracking-tight mb-3 font-display text-txt-primary">{c.title}</h3>
+              <p className="text-xs text-txt-secondary leading-relaxed font-display">{c.desc}</p>
             </div>
           ))}
         </div>
@@ -224,8 +224,8 @@ export default function Landing() {
       <section className="relative px-6 md:px-12 py-24 z-10" id="scenarios">
         <div className="text-center mb-16">
           <div className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4">// SCENARIO NODES ACTIVE //</div>
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 card-v3-header-glow font-display">REAL TARGETS. REAL VULNERABILITIES.</h2>
-          <p className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-mono uppercase opacity-75">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary">Real Targets. Real Vulnerabilities.</h2>
+          <p className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-display">
             Each scenario is a fully containerized environment running actual
             services with intentional security weaknesses.
           </p>
@@ -236,11 +236,11 @@ export default function Landing() {
             { id: 'SC-02', cls: 'sc-02', title: 'Nexora Financial AD', desc: 'A Samba4 Active Directory environment with a domain controller and file server. Perform Kerberoasting, crack service account hashes, move laterally, and attempt DCSync.', diff: 'Advanced', diffCls: 'border-critical/20 text-critical bg-critical/5', tags: ['Active Directory', 'Kerberos / SMB'] },
             { id: 'SC-03', cls: 'sc-03', title: 'Orion Logistics Phishing', desc: 'Conduct OSINT, craft a phishing campaign with GoPhish, deliver a payload through social engineering, and achieve initial access on a simulated corporate endpoint.', diff: 'Intermediate', diffCls: 'border-amber-warn/20 text-amber-warn bg-amber-warn/5', tags: ['Social Engineering', 'OSINT / Email'] },
           ].map((sc) => (
-            <div key={sc.id} className="card-v3 card-v3-interactive card-v3-spotlight p-6 bg-[#0d0f14]/80 flex flex-col justify-between" onClick={goToPlatform}>
+            <div key={sc.id} className="glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hover:border-nb-border-strong transition-all duration-200" onClick={goToPlatform}>
               <div>
                 <div className="font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-cs-sm w-fit mb-4">{sc.id}</div>
-                <h3 className="text-lg font-bold tracking-tight mb-2 font-display uppercase tracking-wide">{sc.title}</h3>
-                <p className="text-xs text-txt-secondary leading-relaxed mb-6 font-mono opacity-80">{sc.desc}</p>
+                <h3 className="text-lg font-bold tracking-tight mb-2 font-display text-txt-primary">{sc.title}</h3>
+                <p className="text-xs text-txt-secondary leading-relaxed mb-6 font-display">{sc.desc}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <span className={`px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border ${sc.diffCls}`}>{sc.diff}</span>
@@ -257,8 +257,8 @@ export default function Landing() {
       <section className="relative px-6 md:px-12 py-24 z-10" id="frameworks">
         <div className="text-center mb-12">
           <div className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4">// COMPLIANCE MATRICES //</div>
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 card-v3-header-glow font-display">INDUSTRY-STANDARD METHODOLOGY</h2>
-          <p className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-mono uppercase opacity-75">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary">Industry-Standard Methodology</h2>
+          <p className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-display">
             Every action, hint, and score maps to recognized professional frameworks.
           </p>
         </div>
@@ -270,7 +270,7 @@ export default function Landing() {
             { name: 'OWASP Testing Guide v4.2', color: 'bg-green-signal' },
             { name: 'CVSS v3.1', color: 'bg-critical' },
           ].map(f => (
-            <div key={f.name} className="flex items-center gap-2 px-3 py-1.5 rounded-cs border border-cs-border bg-[#0d0f14] font-mono text-[10px] text-txt-secondary uppercase tracking-wider">
+            <div key={f.name} className="flex items-center gap-2 px-3 py-1.5 rounded-cs border border-cs-border bg-[#0d0f14] font-display text-xs text-txt-secondary">
               <span className={`w-2 h-2 rounded-sm ${f.color}`} />
               {f.name}
             </div>
@@ -283,14 +283,13 @@ export default function Landing() {
         <div className="absolute inset-0 z-0 opacity-40" style={{
           background: 'radial-gradient(ellipse 60% 40% at 30% 50%, rgba(255,59,59,0.04), transparent), radial-gradient(ellipse 60% 40% at 70% 50%, rgba(59,139,255,0.04), transparent)'
         }} />
-        <div className="relative z-10 card-v3 card-v3-spotlight p-12 bg-void/70 hud-corner-ticks">
-          <div className="absolute top-4 right-4 flex items-center gap-2"><span className="radar-scanner inline-block" /><span className="font-mono text-[9px] text-[#00f3ff]">TACTICAL RADAR</span></div>
+        <div className="relative z-10 glass p-12 bg-void/70">
           <div className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4">// RET-5 SYSTEMS READY //</div>
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 card-v3-header-glow font-display">
-            STOP LEARNING TOOLS IN ISOLATION.<br />
-            START SEEING THE FULL PICTURE.
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary">
+            Stop learning tools in isolation.<br />
+            Start seeing the full picture.
           </h2>
-          <p className="text-sm text-txt-secondary max-w-[500px] mx-auto mb-10 leading-relaxed font-mono uppercase opacity-75">
+          <p className="text-sm text-txt-secondary max-w-[500px] mx-auto mb-10 leading-relaxed font-display">
             Every attacker action has a defensive consequence.
             CyberSim makes that connection visible.
           </p>

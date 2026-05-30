@@ -102,7 +102,7 @@ export default function WorkspaceTopBar({
           className="w-2 h-2 rounded-full animate-pulse-soft"
           style={{ background: tokens.dot, boxShadow: `0 0 8px ${tokens.dot}80` }}
         />
-        <span className={`font-mono text-[11px] font-bold uppercase tracking-[0.14em] ${tokens.tone}`}>
+        <span className={`font-display text-xs font-semibold ${tokens.tone}`}>
           {tokens.label}
         </span>
       </div>
@@ -165,7 +165,7 @@ export default function WorkspaceTopBar({
                 detail: { mode: aiMode === 'learn' ? 'challenge' : 'learn' }
               }))
             }}
-            className={`hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full border font-mono text-[10.5px] uppercase tracking-[0.1em] transition-all hover:brightness-110 active:scale-95 cursor-pointer ${
+            className={`hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border font-display text-xs transition-all hover:brightness-110 active:scale-95 cursor-pointer ${
               aiMode === 'learn'
                 ? 'text-cs-blue bg-cs-blue/8 border-cs-blue/30 hover:border-cs-blue/50'
                 : 'text-amber-warn bg-amber-warn/8 border-amber-warn/30 hover:border-amber-warn/50'
@@ -185,7 +185,7 @@ export default function WorkspaceTopBar({
         </div>
 
         <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-surface-2 font-mono text-[11px] transition-colors duration-500 ${scoreBorder(score)}`}>
-          <span className="text-txt-dim uppercase tracking-wider text-[9.5px] hidden sm:inline">Score</span>
+          <span className="text-[10px] font-mono uppercase tracking-[0.08em] text-txt-dim hidden sm:inline">Score</span>
           <span className={`font-bold tabular-nums ${scoreTone(score)}`}>{displayScore}</span>
         </div>
 

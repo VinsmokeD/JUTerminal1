@@ -11,50 +11,66 @@
    ═══════════════════════════════════════════════════════ */
 
 :root {
-  /* The Duality Palette */
-  --red-primary: #ff3b3b;
-  --red-glow: #ff3b3b40;
-  --red-dim: #ff3b3b15;
-  --red-surface: #1a0808;
+  /* Base — deep navy "nimbus" storm, lifted off pure black */
+  --void:        #0A0E17;   /* page base (was #080a10 pure-black) */
+  --nb-bg:        #0A0E17;   
+  --nb-bg-foot:   #0D1320;   /* bottom of page gradient */
+  --surface-1: #111726;   /* solid panel fallback */
+  --surface-2: #151C2E;
+  --surface-3: #1B2438;   /* hover / elevated */
+  --surface-4: #222941;
+  --nb-glass:     rgba(20, 27, 44, 0.55);  /* glass fill, used with blur(16px) */
 
-  --blue-primary: #3b8bff;
-  --blue-glow: #3b8bff40;
-  --blue-dim: #3b8bff15;
-  --blue-surface: #080d1a;
+  /* Hairlines */
+  --border:        rgba(148,163,184,0.10);
+  --border-glow:   rgba(148,163,184,0.20);
+  --nb-border:        rgba(148,163,184,0.10);
+  --nb-border-strong: rgba(148,163,184,0.20);
+  --nb-hairline:      rgba(255,255,255,0.06);  /* inset top highlight on glass */
 
-  /* Neutrals */
-  --void: #08090c;
-  --surface-1: #0d0f14;
-  --surface-2: #13161d;
-  --surface-3: #1a1d26;
-  --surface-4: #22262f;
-  --border: #1e2230;
-  --border-glow: #2a2f40;
+  /* Text — all AA on --nb-bg */
+  --text-primary:   #E9EDF6;  /* primary   ~14:1 */
+  --text-secondary: #AAB4C8;  /* secondary  ~8:1 */
+  --text-dim: #6E798E;        /* meta only  ~4.6:1 — never for body copy */
+  --text-ghost: #3f495a;
 
-  --text-primary: #e8eaf0;
-  --text-secondary: #9ba3b8;   /* canonical — matches txt-secondary in tailwind.config.js */
-  --text-dim: #5a6178;         /* canonical — matches txt-dim */
-  --text-ghost: #3a4054;       /* canonical — matches txt-ghost */
+  /* Accent — the Nimbus signature: cyan → violet */
+  --nb-accent:       #4CC2FF;  /* electric cyan-blue, primary interactive */
+  --nb-accent-hover: #6FD0FF;
+  --nb-accent-2:     #9B7DFF;  /* violet highlight, used sparingly */
+  --nb-accent-grad:  linear-gradient(135deg, #4CC2FF 0%, #9B7DFF 100%);
+  --nb-accent-glow:  rgba(76,194,255,0.35);
 
-  /* Accents */
-  --green-signal: #00ff88;
-  --amber-warn: #ffaa00;
-  --critical: #ff2244;
-  --magenta: #a855f7;
+  /* Team-contextual — ONLY inside their own workspace */
+  --red-primary:  #FF6B7A;  /* red team, warm coral (was harsh #ff3b3b) */
+  --red-glow: rgba(255,107,122,0.4);
+  --red-dim: rgba(255,107,122,0.15);
+  --red-surface: #1c1214;
+
+  --blue-primary: #4CC2FF;  /* blue team = accent */
+  --blue-glow: rgba(76,194,255,0.4);
+  --blue-dim: rgba(76,194,255,0.15);
+  --blue-surface: #0d1320;
+
+  /* Semantic */
+  --green-signal:  #3DD68C;
+  --amber-warn:  #F4B740;
+  --critical: #FF5C6C;
+  --magenta: #9B7DFF;
 
   /* Typography
-   * font-hud     = Orbitron  → hero wordmark + large HUD numerals ONLY
+   * font-hud     = Outfit  → retired Orbitron
    * font-display = Outfit    → headings, labels, all UI text
    * font-mono    = JetBrains Mono → terminal, SIEM, scores, IPs, code
    */
-  --font-hud: 'Orbitron', sans-serif;
+  --font-hud: 'Outfit', sans-serif;
   --font-display: 'Outfit', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Spatial */
   --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
 }
 
 @layer base {
@@ -67,44 +83,35 @@
   }
 
   body {
-    background: var(--void);
+    background-color: var(--nb-bg);
     color: var(--text-primary);
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Blueprint grid background */
-    background-image: 
-      radial-gradient(circle at 1px 1px, rgba(59,139,255,0.03) 1px, transparent 0);
-    background-size: 32px 32px;
+    /* Edge-faded line grid */
+    background-image:
+      linear-gradient(var(--nb-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--nb-border) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 35%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 35%, transparent 100%);
   }
 
-  /* ── Scan-line overlay — the SOC texture ──────────── */
+  /* ── Scan-line overlay retired ──────────── */
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(255,255,255,0.008) 2px,
-        rgba(255,255,255,0.008) 4px
-      );
-    pointer-events: none;
-    z-index: 9999;
+    display: none;
   }
 
-  /* ── Ambient red/blue radial glow ─────────────────── */
+  /* ── Nimbus aura drift (perf + motion gated) ─────────────────── */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(59,139,255,0.04), transparent),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255,59,59,0.03), transparent);
-    pointer-events: none;
     z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(60% 40% at 50% -5%, rgba(76,194,255,0.10), transparent 70%),
+      radial-gradient(50% 35% at 80% 110%, rgba(155,125,255,0.07), transparent 70%);
   }
 
   /* ── Scrollbar — fits the void theme ──────────────── */
@@ -277,27 +284,7 @@
      BUTTONS — v3 system (sole button entry point)
      ═══════════════════════════════════════════════════ */
 
-  /* ── v3 button system ── */
-  .btn-v3 {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-cs font-display text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-  .btn-v3-red {
-    @apply bg-cs-red text-white shadow-red-glow hover:shadow-red-hover hover:-translate-y-0.5;
-  }
-  .btn-v3-blue {
-    @apply bg-cs-blue text-white shadow-blue-glow hover:shadow-blue-hover hover:-translate-y-0.5;
-  }
-  .btn-v3-subtle {
-    @apply bg-surface-3 text-txt-secondary border border-cs-border hover:border-cs-border-glow hover:text-txt-primary hover:bg-surface-4;
-  }
-  .btn-v3-ghost {
-    @apply bg-transparent text-txt-secondary border border-transparent hover:border-cs-border hover:bg-surface-2;
-  }
-  .btn-v3-danger {
-    @apply bg-critical/10 text-critical border border-critical/20 hover:bg-critical/20;
-  }
-  .btn-v3-sm { @apply px-3 py-1.5 text-xs; }
-  .btn-v3-lg { @apply px-6 py-3 text-base; }
+  /* btn-v3 styles moved to v3-design.css */
 
   /* ═══════════════════════════════════════════════════
      INPUTS
@@ -616,10 +603,14 @@
 
   /* ── Frosted glass ────────────────────────────────── */
   .glass {
-    background: rgba(13,15,20,0.7);
-    backdrop-filter: blur(20px) saturate(1.5);
-    border: 1px solid var(--border);
+    background: var(--nb-glass);
+    backdrop-filter: blur(16px) saturate(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    border: 1px solid var(--nb-border);
+    box-shadow: inset 0 1px 0 var(--nb-hairline), 0 8px 32px rgba(0,0,0,0.35);
+    border-radius: 16px;
   }
+  :root[data-perf="low"] .glass { backdrop-filter: none; background: var(--nb-surface-2); }
 
   /* ── Text gradients ───────────────────────────────── */
   .text-gradient-red {
@@ -627,6 +618,12 @@
   }
   .text-gradient-blue {
     @apply bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent;
+  }
+  .text-gradient-nimbus {
+    background: var(--nb-accent-grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   /* ── Severity left border indicators ──────────────── */
@@ -641,46 +638,49 @@
   .truncate-md  { @apply truncate max-w-sm; }
   .truncate-lg  { @apply truncate max-w-md; }
 
-  /* ── HUD Immersive Chamfers (clip-path corners) ──── */
+  /* ── HUD Immersive Chamfers (clip-path replaced with clean rounded corners) ──── */
   .clip-chamfer {
-    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    border-radius: var(--radius-lg);
+    overflow: hidden;
   }
   .clip-chamfer-sm {
-    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+    border-radius: var(--radius-md);
+    overflow: hidden;
   }
   .clip-chamfer-top {
-    clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%, 0 12px);
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+    overflow: hidden;
   }
   .clip-chamfer-bottom {
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px));
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+    overflow: hidden;
   }
 
   /* ── HUD Immersive Glassmorphism Surfaces ─────────── */
-  .hud-glass-cyan {
-    background: rgba(3, 5, 8, 0.65);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(0, 243, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 243, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  }
+  .hud-glass-cyan,
   .hud-glass-crimson {
-    background: rgba(3, 5, 8, 0.65);
+    background: rgba(15, 18, 29, 0.8);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 0, 85, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 85, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-lg);
   }
   .hud-glass-void {
-    background: rgba(3, 5, 8, 0.8);
+    background: rgba(8, 10, 16, 0.85);
     backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-lg);
   }
   
   /* ── Neon Glow & Laser Line Effects ──────────────── */
   .hud-glow-cyan {
-    box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
+    box-shadow: 0 0 15px rgba(59, 139, 255, 0.1);
   }
   .hud-glow-crimson {
-    box-shadow: 0 0 15px rgba(255, 0, 85, 0.35);
+    box-shadow: 0 0 15px rgba(255, 59, 59, 0.1);
   }
   .hud-laser-cyan {
     background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.8), transparent);
@@ -955,25 +955,32 @@
   padding: 6px;
 }
 .workspace-resizable-red .workspace-pane,
-.workspace-resizable-red .workspace-bottom-split {
-  background: rgba(3, 5, 8, 0.65);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 0, 85, 0.18) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 85, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10% 100%, 0 calc(100% - 10px));
-}
-
-.workspace-resizable-blue .workspace-slot-frame {
-  padding: 6px;
-}
+.workspace-resizable-red .workspace-bottom-split,
+.workspace-resizable-blue .workspace-slot-frame,
 .workspace-resizable-blue .workspace-pane,
 .workspace-resizable-blue .workspace-bottom-split {
-  background: rgba(3, 5, 8, 0.65);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 243, 255, 0.18) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 243, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10% 100%, 0 calc(100% - 10px));
+  background: var(--nb-glass);
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+  border: 1px solid var(--nb-border) !important;
+  box-shadow: inset 0 1px 0 var(--nb-hairline), 0 8px 32px rgba(0,0,0,0.35);
+  border-radius: var(--radius-lg);
 }
+
+:root[data-perf="low"] .workspace-resizable-red .workspace-pane,
+:root[data-perf="low"] .workspace-resizable-red .workspace-bottom-split,
+:root[data-perf="low"] .workspace-resizable-blue .workspace-pane,
+:root[data-perf="low"] .workspace-resizable-blue .workspace-bottom-split {
+  backdrop-filter: none !important;
+  background: var(--nb-surface-2) !important;
+}
+
+/* Helper highlights for panel roles */
+.pane-hl-red { border-top: 2.5px solid var(--nb-red) !important; }
+.pane-hl-blue { border-top: 2.5px solid var(--nb-blue) !important; }
+.pane-hl-green { border-top: 2.5px solid var(--nb-success) !important; }
+.pane-hl-amber { border-top: 2.5px solid var(--nb-warning) !important; }
+.pane-hl-purple { border-top: 2.5px solid var(--nb-accent-2) !important; }
 
 .workspace-terminal-pane {
   grid-row: span 2 / span 2;

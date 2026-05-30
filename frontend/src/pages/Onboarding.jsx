@@ -106,9 +106,9 @@ export default function Onboarding() {
             <div className="absolute bottom-0 right-0 h-5 w-5 rounded bg-cs-blue shadow-blue-glow" />
           </div>
           <h1 className="text-2xl font-extrabold font-display text-txt-primary">
-            <span className="glitch-text" data-text="WELCOME TO CYBERSIM">WELCOME TO CYBERSIM</span>
+            Welcome to CyberSim
           </h1>
-          <p className="mt-2 text-txt-dim text-sm font-mono">// SELECT OPERATOR COGNITIVE PROFILE //</p>
+          <p className="mt-2 text-[11px] font-mono uppercase tracking-[0.08em] text-txt-dim">// SELECT OPERATOR COGNITIVE PROFILE //</p>
           <div className="mt-4">
             <Badge tone="neutral">Step 1 of 1</Badge>
           </div>
@@ -165,7 +165,7 @@ export default function Onboarding() {
             onClick={handleContinue}
             className={`w-full max-w-xs btn-v3 ${selected ? 'btn-v3-blue animate-pulse' : 'opacity-40 cursor-not-allowed'}`}
           >
-            INITIALIZE NEURAL LINK -&gt;
+            Initialize Neural Link -&gt;
           </button>
         </div>
       </div>

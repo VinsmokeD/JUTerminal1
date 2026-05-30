@@ -9,8 +9,8 @@ const TAGLINE = [
 ]
 
 const FEATURES = [
-  { label: 'Red Team', desc: 'Kali terminal + pentest tools', color: 'text-cs-red', border: 'border-cs-red/20 bg-cs-red-surface border-l-cs-red' },
-  { label: 'Blue Team', desc: 'SIEM console + IR playbooks', color: 'text-cs-blue', border: 'border-cs-blue/20 bg-cs-blue-surface border-l-cs-blue' },
+  { label: 'Red Team', desc: 'Kali terminal + pentest tools', color: 'text-cs-red', border: 'border-cs-red/20 bg-surface-2 border-l-cs-red' },
+  { label: 'Blue Team', desc: 'SIEM console + IR playbooks', color: 'text-cs-blue', border: 'border-cs-blue/20 bg-surface-2 border-l-cs-blue' },
   { label: 'AI Tutor', desc: 'Adaptive step-by-step guidance', color: 'text-amber-warn', border: 'border-amber-warn/20 bg-surface-2 border-l-amber-warn' },
   { label: 'Sandboxed', desc: 'Isolated Docker environments', color: 'text-green-signal', border: 'border-green-signal/20 bg-surface-2 border-l-green-signal' },
 ]
@@ -142,12 +142,12 @@ export default function Auth() {
               <div className="auth-logo-pulse-b absolute bottom-0 right-0 h-[18px] w-[18px] rounded bg-cs-blue shadow-blue-glow" />
             </div>
             <div>
-              <div className="text-txt-primary font-bold text-xl font-display">CyberSim</div>
+              <div className="text-gradient-nimbus font-bold text-xl font-display">CyberSim</div>
               <div className="text-txt-dim text-xs font-mono">Cybersecurity Training Platform</div>
             </div>
           </div>
 
-          <div className="card-v3 card-v3-spotlight p-6">
+          <div className="glass p-6">
             <h2 className="text-txt-primary font-bold text-lg mb-1 font-display">
               {mode === 'login' ? 'Welcome back' : 'Create your account'}
             </h2>
@@ -201,7 +201,7 @@ export default function Auth() {
                 disabled={loading}
                 className={`w-full btn-v3 ${mode === 'login' ? 'btn-v3-blue' : 'btn-v3-red'}`}
               >
-                {loading ? 'ESTABLISHING HANDSHAKE...' : mode === 'login' ? 'INITIALIZE INTERFACE' : 'REGISTER SECURE NODE'}
+                {loading ? 'Establishing handshake...' : mode === 'login' ? 'Initialize Interface' : 'Register Secure Node'}
               </button>
             </form>
           </div>

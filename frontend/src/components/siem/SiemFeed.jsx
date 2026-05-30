@@ -333,11 +333,11 @@ function EventRow({
 
         {/* Message + meta */}
         <div className="flex-1 min-w-0">
-          <p className={`text-xs leading-snug truncate font-medium ${noise ? 'text-txt-dim' : 'text-txt-secondary'}`}>
+          <p className={`text-xs leading-snug truncate font-semibold ${noise ? 'text-txt-dim' : 'text-txt-primary'}`}>
             {event.message}
           </p>
           <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-            <span className="text-[9px] font-mono text-txt-dim/60 flex-shrink-0">{ts}</span>
+            <span className="text-[9px] font-mono text-txt-secondary/80 flex-shrink-0">{ts}</span>
             {event.source_ip && (
               onExtractIoc ? (
                 <button

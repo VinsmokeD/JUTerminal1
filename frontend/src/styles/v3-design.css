@@ -94,189 +94,116 @@
     box-shadow: var(--elev-3);
   }
 
-  /* ── v3 Button (tactile HUD button with brackets and corner ticks) ── */
+  /* ── v3 Button (collapsed sole button system for Nimbus Console) ── */
   .btn-v3 {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 10px 22px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    padding: 10px 20px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none; /* normal casing */
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(13, 15, 20, 0.6);
-    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: var(--radius-md); /* 10px */
+    border: 1px solid transparent;
+    transition: all 150ms var(--ease-enter);
     white-space: nowrap;
     user-select: none;
   }
-  .btn-v3::before {
-    content: '[';
-    margin-right: 4px;
-    opacity: 0.5;
-    transition: transform 0.2s;
-  }
-  .btn-v3::after {
-    content: ']';
-    margin-left: 4px;
-    opacity: 0.5;
-    transition: transform 0.2s;
-  }
-  .btn-v3:hover::before {
-    transform: translateX(-3px);
-    opacity: 1;
-  }
-  .btn-v3:hover::after {
-    transform: translateX(3px);
-    opacity: 1;
-  }
+  .btn-v3::before, .btn-v3::after { display: none !important; }
   .btn-v3:active { transform: scale(0.97); }
   .btn-v3:disabled { opacity: 0.45; cursor: not-allowed; }
   .btn-v3:disabled:active { transform: none; }
 
-  .btn-v3-sm { padding: 6px 14px; font-size: 10px; }
-  .btn-v3-lg { padding: 14px 28px; font-size: 13px; }
+  .btn-v3-sm { padding: 6px 14px; font-size: 11px; }
+  .btn-v3-lg { padding: 14px 28px; font-size: 15px; }
 
-  /* Red Team Button — Duality identity (Option A)
-   * text+border = cs-red (#ff3b3b) for legibility
-   * glow (box-shadow) = hud-crimson (#ff0055) for neon accent layer */
-  .btn-v3-red {
-    background: rgba(255, 59, 59, 0.06);    /* cs-red tint */
-    color: #ff3b3b;                          /* cs-red text */
-    border-color: rgba(255, 59, 59, 0.4);   /* cs-red border */
-    box-shadow: 0 0 10px rgba(255, 0, 85, 0.1), inset 0 0 8px rgba(255, 0, 85, 0.05);  /* hud-crimson glow */
-  }
-  .btn-v3-red:hover:not(:disabled) {
-    background: rgba(255, 59, 59, 0.18);
-    border-color: rgba(255, 59, 59, 0.9);
-    color: #fff;
-    box-shadow: 0 0 20px rgba(255, 0, 85, 0.4), inset 0 0 12px rgba(255, 0, 85, 0.1); /* hud-crimson glow */
-  }
-
-  /* Blue Team Button — Duality identity (Option A)
-   * text+border = cs-blue (#3b8bff) for legibility
-   * glow (box-shadow) = hud-cyan (#00f3ff) for neon accent layer */
+  /* Primary Button (blue team accent = default interactive accent) */
   .btn-v3-blue {
-    background: rgba(59, 139, 255, 0.06);   /* cs-blue tint */
-    color: #3b8bff;                          /* cs-blue text */
-    border-color: rgba(59, 139, 255, 0.4);  /* cs-blue border */
-    box-shadow: 0 0 10px rgba(0, 243, 255, 0.1), inset 0 0 8px rgba(0, 243, 255, 0.05); /* hud-cyan glow */
+    background: var(--nb-accent);
+    color: #06121f;
   }
   .btn-v3-blue:hover:not(:disabled) {
-    background: rgba(59, 139, 255, 0.18);
-    border-color: rgba(59, 139, 255, 0.9);
-    color: #fff;
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 12px rgba(0, 243, 255, 0.1); /* hud-cyan glow */
+    background: var(--nb-accent-hover);
+    box-shadow: 0 0 16px var(--nb-accent-glow);
   }
 
-  /* Subtle HUD Button (Holographic Gray) */
+  /* Red Team Accent Button */
+  .btn-v3-red {
+    background: var(--red-primary);
+    color: #06121f;
+  }
+  .btn-v3-red:hover:not(:disabled) {
+    background: #ff808d;
+    box-shadow: 0 0 16px var(--red-glow);
+  }
+
+  /* Secondary Button (.glass + --nb-text) */
   .btn-v3-subtle {
-    background: rgba(13, 15, 20, 0.8);
+    background: var(--nb-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--nb-border);
     color: var(--text-primary);
-    border-color: var(--border);
+    box-shadow: inset 0 1px 0 var(--nb-hairline);
   }
   .btn-v3-subtle:hover:not(:disabled) {
-    background: rgba(34, 38, 47, 0.9);
+    background: rgba(255, 255, 255, 0.04);
     border-color: var(--border-glow);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
   }
 
-  /* Ghost HUD Button */
+  /* Ghost Button (transparent -> faint surface) */
   .btn-v3-ghost {
     background: transparent;
     color: var(--text-secondary);
-    border-color: transparent;
+    border: 1px solid transparent;
   }
   .btn-v3-ghost:hover:not(:disabled) {
     color: var(--text-primary);
     background: rgba(255, 255, 255, 0.03);
-    border-color: var(--border);
+    border-color: var(--nb-border);
   }
 
-  /* Danger HUD Button */
+  /* Danger Button */
   .btn-v3-danger {
-    background: rgba(255, 34, 68, 0.03);
+    background: rgba(255, 92, 108, 0.1);
     color: var(--critical);
-    border-color: rgba(255, 34, 68, 0.3);
+    border: 1px solid rgba(255, 92, 108, 0.2);
   }
   .btn-v3-danger:hover:not(:disabled) {
-    background: rgba(255, 34, 68, 0.15);
+    background: rgba(255, 92, 108, 0.2);
     border-color: var(--critical);
-    box-shadow: 0 0 12px rgba(255, 34, 68, 0.25);
   }
 
-  /* ── v3 Card (Futuristic Tactical HUD Panel with outer corner brackets and diagnostics) ── */
+  /* ── v3 Card (mapped to Nimbus Glass panels) ── */
   .card-v3 {
     position: relative;
-    background: rgba(4, 6, 9, 0.85);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.02);
+    background: var(--nb-glass);
+    backdrop-filter: blur(16px) saturate(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    border: 1px solid var(--nb-border);
+    box-shadow: inset 0 1px 0 var(--nb-hairline), 0 8px 32px rgba(0,0,0,0.35);
+    border-radius: var(--radius-lg); /* 16px */
     padding: 24px;
-    clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    transition: all 150ms var(--ease-enter);
   }
-
-  /* Tactical corner brackets using absolute elements */
-  .card-v3::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; width: 14px; height: 14px;
-    border-top: 2px solid rgba(59, 139, 255, 0.4);
-    border-left: 2px solid rgba(59, 139, 255, 0.4);
-    pointer-events: none;
-    transition: border-color 0.25s;
-  }
-  .card-v3::after {
-    content: '';
-    position: absolute;
-    bottom: 0; right: 0; width: 14px; height: 14px;
-    border-bottom: 2px solid rgba(59, 139, 255, 0.4);
-    border-right: 2px solid rgba(59, 139, 255, 0.4);
-    pointer-events: none;
-    transition: border-color 0.25s;
-  }
+  :root[data-perf="low"] .card-v3 { backdrop-filter: none; background: var(--nb-surface-2); }
+  .card-v3::before, .card-v3::after { display: none !important; }
 
   .card-v3-interactive { cursor: pointer; }
   .card-v3-interactive:hover {
-    border-color: rgba(59, 139, 255, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 20px rgba(59, 139, 255, 0.15);
-  }
-  .card-v3-interactive:hover::before {
-    border-top-color: rgba(59, 139, 255, 1);
-    border-left-color: rgba(59, 139, 255, 1);
-  }
-  .card-v3-interactive:hover::after {
-    border-bottom-color: rgba(59, 139, 255, 1);
-    border-right-color: rgba(59, 139, 255, 1);
+    border-color: var(--nb-border-strong);
+    transform: translateY(-2px); /* spec: lift max -2px */
+    box-shadow: inset 0 1px 0 var(--nb-hairline), 0 12px 40px rgba(0,0,0,0.45);
   }
 
-  /* Red Team variant of the Tactical Card */
-  .card-v3-red::before {
-    border-top-color: rgba(255, 0, 85, 0.4);
-    border-left-color: rgba(255, 0, 85, 0.4);
-  }
-  .card-v3-red::after {
-    border-bottom-color: rgba(255, 0, 85, 0.4);
-    border-right-color: rgba(255, 0, 85, 0.4);
-  }
   .card-v3-red.card-v3-interactive:hover {
-    border-color: rgba(255, 0, 85, 0.4);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 0, 85, 0.15);
-  }
-  .card-v3-red.card-v3-interactive:hover::before {
-    border-top-color: rgba(255, 0, 85, 1);
-    border-left-color: rgba(255, 0, 85, 1);
-  }
-  .card-v3-red.card-v3-interactive:hover::after {
-    border-bottom-color: rgba(255, 0, 85, 1);
-    border-right-color: rgba(255, 0, 85, 1);
+    border-color: var(--red-primary);
   }
 
   /* 2.5D tilt */
@@ -311,26 +238,26 @@
   }
   .card-v3-spotlight:hover::before { opacity: 1; }
 
-  /* ── v3 Badge (tactical military-grade badge with bracket edges) ── */
+  /* ── v3 Badge (full-radius pill, normal case) ── */
   .badge-v3 {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
-    clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
-    font-family: var(--font-mono);
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    line-height: 1;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+    line-height: 1.2;
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
-  .badge-v3-red    { background: rgba(255, 0, 85, 0.08); border-color: rgba(255, 0, 85, 0.3); color: #ff3b3b; }
-  .badge-v3-blue   { background: rgba(0, 243, 255, 0.08); border-color: rgba(0, 243, 255, 0.3); color: #00f3ff; }
-  .badge-v3-green  { background: rgba(0, 255, 136, 0.08); border-color: rgba(0, 255, 136, 0.25); color: var(--green-signal); }
-  .badge-v3-amber  { background: rgba(255, 170, 0, 0.08); border-color: rgba(255, 170, 0, 0.25); color: var(--amber-warn); }
-  .badge-v3-neutral{ background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.08); color: var(--text-secondary); }
+  .badge-v3-red    { background: rgba(255, 107, 122, 0.08); border-color: rgba(255, 107, 122, 0.2); color: var(--nb-red); }
+  .badge-v3-blue   { background: rgba(76, 194, 255, 0.08); border-color: rgba(76, 194, 255, 0.2); color: var(--nb-blue); }
+  .badge-v3-green  { background: rgba(61, 214, 140, 0.08); border-color: rgba(61, 214, 140, 0.2); color: var(--nb-success); }
+  .badge-v3-amber  { background: rgba(244, 183, 64, 0.08); border-color: rgba(244, 183, 64, 0.2); color: var(--nb-warning); }
+  .badge-v3-neutral{ background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.08); color: var(--nb-text-2); }
 
   /* ── Stat (KPI tile) ───────────────────────────── */
   .stat-v3 {
@@ -488,179 +415,40 @@
     background: var(--border);
   }
 
-/* ─── 2.5D tilt utility (used inline on cards) ────────────────────── */
-.tilt-target {
-  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0);
-  transition: transform 220ms var(--ease-enter);
-  transform-style: preserve-3d;
-}
-
-/* ─── Animation utilities ─────────────────────────────────────────── */
-@keyframes tiltIn {
-  from { opacity: 0; transform: perspective(800px) rotateX(-8deg) translateY(20px); }
-  to   { opacity: 1; transform: perspective(800px) rotateX(0) translateY(0); }
-}
-@keyframes pulseSoft {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.55; }
-}
-
-/* ─── HUD Scanline & Dot Grid Utilities ────────────────────────────── */
-
-/* CRT Screen Vignette and Curve Simulation */
-.crt-container {
-  position: relative;
-  overflow: hidden;
-}
-
-
-
-/* Dynamic CSS Text Glitch Effect */
-.glitch-text {
-  position: relative;
-  display: inline-block;
-}
-
-.glitch-text::before,
-.glitch-text::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: var(--void);
-}
-
-.glitch-text::before {
-  left: 2px;
-  text-shadow: -1px 0 #ff0055;
-  clip: rect(44px, 450px, 56px, 0);
-  animation: glitch-anim-1 5s infinite linear alternate-reverse;
-}
-
-.glitch-text::after {
-  left: -2px;
-  text-shadow: -1px 0 #00f3ff, 0 1px #00f3ff;
-  clip: rect(85px, 450px, 140px, 0);
-  animation: glitch-anim-2 5s infinite linear alternate-reverse;
-}
-
-@keyframes glitch-anim-1 {
-  0% { clip: rect(10px, 9999px, 50px, 0); }
-  10% { clip: rect(80px, 9999px, 5px, 0); }
-  20% { clip: rect(50px, 9999px, 90px, 0); }
-  30% { clip: rect(120px, 9999px, 150px, 0); }
-  40% { clip: rect(30px, 9999px, 60px, 0); }
-  50% { clip: rect(90px, 9999px, 120px, 0); }
-  60% { clip: rect(10px, 9999px, 40px, 0); }
-  70% { clip: rect(70px, 9999px, 100px, 0); }
-  80% { clip: rect(15px, 9999px, 45px, 0); }
-  90% { clip: rect(110px, 9999px, 130px, 0); }
-  100% { clip: rect(5px, 9999px, 25px, 0); }
-}
-
-@keyframes glitch-anim-2 {
-  0% { clip: rect(70px, 9999px, 105px, 0); }
-  10% { clip: rect(20px, 9999px, 85px, 0); }
-  20% { clip: rect(110px, 9999px, 130px, 0); }
-  30% { clip: rect(5px, 9999px, 45px, 0); }
-  40% { clip: rect(95px, 9999px, 120px, 0); }
-  50% { clip: rect(30px, 9999px, 75px, 0); }
-  60% { clip: rect(80px, 9999px, 110px, 0); }
-  70% { clip: rect(40px, 9999px, 95px, 0); }
-  80% { clip: rect(120px, 9999px, 140px, 0); }
-  90% { clip: rect(15px, 9999px, 60px, 0); }
-  100% { clip: rect(90px, 9999px, 115px, 0); }
-}
-
-.card-v3 {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Diagonal overlay scanline */
-.card-v3::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 100%;
-  background: linear-gradient(180deg, transparent 0%, rgba(59, 139, 255, 0.015) 50%, transparent 100%);
-  pointer-events: none;
-  animation: scanline-v3 8s linear infinite;
-  z-index: 1;
-}
-
-.card-v3-red::after {
-  background: linear-gradient(180deg, transparent 0%, rgba(255, 0, 85, 0.015) 50%, transparent 100%);
-  animation-duration: 6s; /* Slightly faster scan for red team */
-}
-
-/* Tech dot grid visible inside card backgrounds */
-.card-v3-spotlight::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
-  background-size: 16px 16px;
-  opacity: 0.4;
-  pointer-events: none;
-  z-index: 0;
-  transition: opacity 0.3s ease;
-}
-.card-v3-spotlight:hover::before {
-  opacity: 0.8;
-}
-
-/* Tech indicator brackets for card headers */
-.card-v3-header-glow {
-  text-shadow: 0 0 10px rgba(0, 243, 255, 0.35);
-}
-.card-v3-header-glow-red {
-  text-shadow: 0 0 10px rgba(255, 0, 85, 0.35);
-}
-
-/* Tactile HUD widgets */
-.hud-corner-ticks::before,
-.hud-corner-ticks::after {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-color: rgba(255, 255, 255, 0.15);
-  border-style: solid;
-  pointer-events: none;
-}
-.hud-corner-ticks::before {
-  top: 4px; left: 4px;
-  border-width: 1px 0 0 1px;
-}
-.hud-corner-ticks::after {
-  bottom: 4px; right: 4px;
-  border-width: 0 1px 1px 0;
-}
+/* Obsolete visual clutter classes (tilt, glitch, spotlight, corner ticks) removed per Nimbus Console specification */
 
 
 
 /* Custom HUD Input fields */
 .input-v3 {
-  background: rgba(8, 9, 12, 0.9) !important;
-  border: 1px solid rgba(59, 139, 255, 0.3) !important;
-  color: var(--text-primary) !important;
-  font-family: var(--font-mono) !important;
-  font-size: 12px !important;
+  background: var(--nb-glass) !important;
+  backdrop-filter: blur(16px) saturate(1.1) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.1) !important;
+  border: 1px solid var(--nb-border) !important;
+  color: var(--nb-text) !important;
+  font-family: var(--font-display) !important;
+  font-size: 13px !important;
   padding: 10px 14px !important;
-  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px) !important;
-  transition: all 0.2s ease-in-out !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 150ms var(--ease-enter) !important;
+  box-shadow: inset 0 1px 0 var(--nb-hairline) !important;
+}
+:root[data-perf="low"] .input-v3 {
+  backdrop-filter: none !important;
+  background: var(--nb-surface-2) !important;
 }
 .input-v3:focus {
-  border-color: rgba(59, 139, 255, 0.8) !important;
-  box-shadow: 0 0 10px rgba(59, 139, 255, 0.2) !important;
+  border-color: var(--nb-accent) !important;
+  box-shadow: 0 0 0 2px var(--nb-accent) !important;
   outline: none !important;
 }
 
 .input-v3-red {
-  border-color: rgba(255, 0, 85, 0.3) !important;
+  border-color: rgba(255, 107, 122, 0.3) !important;
 }
 .input-v3-red:focus {
-  border-color: rgba(255, 0, 85, 0.8) !important;
-  box-shadow: 0 0 10px rgba(255, 0, 85, 0.2) !important;
+  border-color: var(--nb-red) !important;
+  box-shadow: 0 0 0 2px var(--nb-red) !important;
 }
 
 

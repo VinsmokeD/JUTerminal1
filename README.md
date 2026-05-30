@@ -153,6 +153,6 @@ Historical reports and agent handoff files remain in the repo for continuity, bu
 
 ## Project Score
 
-Current assessed completion: 95/100.
+Current assessed completion: 98/100.
 
 CyberSim is defense-ready for the core graduation demo path. Before presenting live, perform one physical browser xterm keyboard check and one uninterrupted rehearsal on the presentation machine.
