@@ -397,6 +397,26 @@ async def _check_completion_signals(
         if not tools_satisfied:
             return False
 
+    # 1b. "Any of these tools" check (OR-group).
+    # Satisfied if the student used AT LEAST ONE of the listed tools. This lets a
+    # phase be completable through interchangeable tools (e.g. ldapsearch OR
+    # bloodhound-python OR enum4linux for AD recon) without forcing every tool,
+    # and without listing a tool that a methodology gate blocks in this phase.
+    any_tools: list[str] = signals.get("tools_used_any", [])
+    if any_tools:
+        required_any = {t.lower() for t in any_tools}
+        result = await db.execute(
+            select(CommandLog.tool)
+            .where(
+                CommandLog.session_id == session_id,
+                CommandLog.tool.in_(required_any),
+            )
+            .distinct()
+        )
+        used_any = {row[0] for row in result.fetchall()}
+        if not (required_any & used_any):
+            return False
+
     # 2. Minimum notes check
     min_notes: dict[str, int] = signals.get("min_notes_tagged", {})
     for tag, count in min_notes.items():

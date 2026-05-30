@@ -638,6 +638,91 @@ def test_30_summary_all_scenarios_valid():
     print("\n" + "=" * 70)
 
 
+# ────────────────────────────────────────────────────────────────────────────
+# SECTION 8: PROGRESSION INTEGRITY (no gate/completion deadlocks)
+# ────────────────────────────────────────────────────────────────────────────
+
+
+def _phase_items(spec):
+    """Yield (int phase_num, phase_dict) for a loaded scenario spec."""
+    for key, value in spec.get("phases", {}).items():
+        yield int(key), value
+
+
+def test_31_no_phase_completion_gate_deadlock():
+    """A phase must be reachable: no completion tool may be gated to a LATER phase.
+
+    Guards the SC-02/SC-03 class of bug where completion_signals required a tool
+    that a methodology_gate blocked until a later phase, making the phase (and the
+    whole scenario beyond it) impossible to complete by design.
+    """
+    from src.scenarios.loader import load_scenario, get_methodology_gate
+
+    for sid in ["SC-01", "SC-02", "SC-03"]:
+        spec = load_scenario(sid)
+        for phase_num, phase in _phase_items(spec):
+            signals = phase.get("completion_signals", {})
+
+            # ALL-required tools: each must be reachable at or before this phase.
+            for tool in signals.get("tools_used", []):
+                gate = get_methodology_gate(sid, tool)
+                if gate:
+                    assert gate.get("min_phase", 1) <= phase_num, (
+                        f"{sid} phase {phase_num}: required tool '{tool}' is gated to phase "
+                        f"{gate.get('min_phase')} — phase unreachable (deadlock)."
+                    )
+
+            # ANY-of tools: at least one option must be reachable at this phase.
+            any_tools = signals.get("tools_used_any", [])
+            if any_tools:
+                reachable = [
+                    tool
+                    for tool in any_tools
+                    if not (g := get_methodology_gate(sid, tool))
+                    or g.get("min_phase", 1) <= phase_num
+                ]
+                assert reachable, (
+                    f"{sid} phase {phase_num}: every tools_used_any option is gated to a later "
+                    f"phase — phase unreachable (deadlock)."
+                )
+
+
+def test_32_scoring_flag_bonuses_reference_defined_flags():
+    """Every flag id scored in scoring.red.flag_bonuses must be a defined flag.
+
+    Guards the FLAG-SC01-BONUS class of bug (a scored but undefined flag).
+    """
+    from src.scenarios.loader import load_scenario
+
+    for sid in ["SC-01", "SC-02", "SC-03"]:
+        spec = load_scenario(sid)
+        flag_ids = {f.get("id") for f in spec.get("flags", [])}
+        bonuses = spec.get("scoring", {}).get("red", {}).get("flag_bonuses", {})
+        for fid in bonuses:
+            assert fid in flag_ids, f"{sid}: scoring references undefined flag '{fid}'"
+
+
+def test_33_flags_capturable_and_required_flags_exist():
+    """Every flag is capturable (value or value_pattern) and every phase-required flag exists."""
+    from src.scenarios.loader import load_scenario
+
+    for sid in ["SC-01", "SC-02", "SC-03"]:
+        spec = load_scenario(sid)
+        flags = spec.get("flags", [])
+        flag_ids = {f.get("id") for f in flags}
+
+        for f in flags:
+            assert f.get("value") or f.get("value_pattern"), (
+                f"{sid}: flag '{f.get('id')}' has neither value nor value_pattern (uncapturable)"
+            )
+
+        for phase_num, phase in _phase_items(spec):
+            for fid in phase.get("completion_signals", {}).get("flags_captured", []):
+                assert fid in flag_ids, (
+                    f"{sid} phase {phase_num}: completion requires undefined flag '{fid}'"
+                )
+
+
 if __name__ == "__main__":
     print(
         """

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useSessionStore } from '../store/sessionStore'
+import toast from '../lib/toast'
 
 const DEFAULT_WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`
 const WS_URL = import.meta.env.VITE_WS_URL || DEFAULT_WS_URL
@@ -107,10 +108,13 @@ export function useWebSocket(sessionId) {
             break
           case 'score_update':
             setScore(msg.data.score)
-            if (msg.data.delta < 0) {
-              window.dispatchEvent(new CustomEvent('score:deducted', {
-                detail: { delta: msg.data.delta, reason: msg.data.reason },
-              }))
+            if (msg.data.delta !== 0) {
+              if (msg.data.delta < 0) {
+                window.dispatchEvent(new CustomEvent('score:deducted', {
+                  detail: { delta: msg.data.delta, reason: msg.data.reason },
+                }))
+              }
+              toast.score(msg.data.delta, msg.data.reason)
             }
             break
           case 'mode_changed':

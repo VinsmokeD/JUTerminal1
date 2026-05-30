@@ -47,6 +47,7 @@
   display: block !important;
 }
 :root[data-perf="low"] .card-v3,
+:root[data-perf="low"] .modal-v3-scrim,
 :root[data-perf="low"] [style*="backdrop-filter"] {
   /* Remove blur — most expensive compositing operation on slow hardware */
   backdrop-filter: none !important;

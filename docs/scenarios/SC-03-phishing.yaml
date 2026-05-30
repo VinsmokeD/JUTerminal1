@@ -9,10 +9,24 @@ tactics:
   - TA0043 Reconnaissance
   - TA0001 Initial Access
   - TA0002 Execution
-tools_expected: [gophish, mailutils, curl, openssl, theharvester, python3]
-network: 172.20.3.0/24
+tools_expected: [theharvester, whois, curl, openssl, gophish, swaks, msfvenom, nc, python3]
+network:
+  cidr: 172.20.3.0/24
+  hosts:
+    - name: ORION-PHISH
+      fqdn: phish.orion-logistics.sim
+      ip: 172.20.3.10
+      role: "GoPhish server (admin :3333, phishing pages :80) + attacker C2 listener (:4444)"
+    - name: ORION-MAIL
+      fqdn: mail.orion-logistics.sim
+      ip: 172.20.3.20
+      role: "Postfix mail relay (:25)"
+    - name: ORION-WS-42
+      fqdn: ws42.orion-logistics.sim
+      ip: 172.20.3.30
+      role: "Simulated Windows victim endpoint (auto-clicks, reports callback)"
 containers:
-  - ip: 172.20.3.40
+  - ip: 172.20.3.10
     role: "GoPhish Server"
   - ip: 172.20.3.20
     role: "Postfix Mail Server"
@@ -27,7 +41,7 @@ briefing: |
   1. Phishing targets are SIMULATED employees only — no real email addresses.
   2. You must submit your pretext narrative for approval before sending (platform gate).
   3. Payload must be a simulated reverse shell.
-  4. Credential harvesting pages must use the .novamed.sim domain only.
+  4. Credential harvesting pages must use the orion-logistics.sim domain only.
   5. Once shell obtained, enumerate host only — no lateral movement in this scenario.
 
 flags:
@@ -39,7 +53,7 @@ flags:
 
 methodologies:
   branch_sso:
-    label: "NEXORA SSO credential-capture simulation"
+    label: "Orion SSO credential-capture simulation"
     required_tools: ["gophish", "curl"]
     evidence_chain: ["SSO landing page", "submitted credential event", "2FA prompt telemetry"]
   branch_payload:
@@ -56,8 +70,8 @@ methodology_gates:
     min_phase: 3
     block_message: "Complete Target Research (Phase 1) and Pretext Design (Phase 2) before generating payloads."
   gophish:
-    min_phase: 4
-    block_message: "Payload creation (Phase 3) must be finished before launching the campaign."
+    min_phase: 2
+    block_message: "Build your pretext first. Configure the campaign only after Target Research (Phase 1) is documented."
 
 phases:
   1:
@@ -69,7 +83,9 @@ phases:
       - "Identify high-value targets (helpdesk, finance, IT)"
       - "Collect pretext material (recent invoices, shipment events)"
     completion_signals:
-      tools_used: ["theHarvester", "curl"]
+      # Any OSINT/recon tool counts. theHarvester is the headline tool but a
+      # student may legitimately use whois/dig/curl/nmap to profile Orion.
+      tools_used_any: ["theharvester", "whois", "curl", "nmap", "dig"]
       min_notes_tagged: { "#finding": 1 }
 
   2:
@@ -81,7 +97,10 @@ phases:
       - "Build GoPhish landing page and email template"
       - "Configure sending profile via Postfix relay"
     completion_signals:
-      tools_used: ["gophish"]
+      # Students drive GoPhish through its web admin (browser/curl to
+      # 172.20.3.10:3333), so "gophish" is rarely typed as a shell command —
+      # a curl probe of the admin/landing host is the realistic signal.
+      tools_used_any: ["curl", "gophish", "wget"]
       min_notes_tagged: { "#finding": 1 }
 
   3:
@@ -93,7 +112,10 @@ phases:
       - "Test payload against simulated endpoint"
       - "Configure C2 listener"
     completion_signals:
-      tools_used: ["msfvenom", "netcat"]
+      # Generating a payload (msfvenom) OR standing up the listener (nc/ncat)
+      # advances. The terminal records netcat as "nc", so the old "netcat"
+      # entry could never match.
+      tools_used_any: ["msfvenom", "nc", "ncat"]
 
   4:
     name: "Campaign Execution"

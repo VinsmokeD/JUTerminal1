@@ -1,6 +1,7 @@
 import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
 import { useSessionStore } from '../../store/sessionStore'
 import api from '../../lib/api'
+import EmptyStateUI from '../ui/EmptyState'
 
 // ── Severity palette ────────────────────────────────────────────────────────
 const SEV_CFG = {
@@ -206,9 +207,13 @@ export default function SiemFeed({
         aria-relevant="additions"
       >
         {events.length === 0
-          ? <EmptyState />
+          ? <EmptyStateUI
+              icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>}
+              title="Monitoring active"
+              body="Events appear when the Red Team acts against the scenario targets."
+            />
           : filtered.length === 0
-            ? <div className="flex items-center justify-center h-32 text-txt-dim text-xs font-mono">No events match your filter</div>
+            ? <div className="flex items-center justify-center h-32 text-txt-secondary text-xs font-mono">No events match your filter</div>
             : filtered.map((ev, i) => (
                 <EventRow
                   key={ev.id || i}
@@ -227,27 +232,7 @@ export default function SiemFeed({
   )
 }
 
-// ── Empty state ────────────────────────────────────────────────────────────
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center h-48 gap-3">
-      <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center">
-        <svg className="w-5 h-5 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round"
-            d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-        </svg>
-      </div>
-      <div className="text-center">
-        <p className="text-txt-dim text-xs font-mono">Monitoring active</p>
-        <p className="text-txt-dim/60 text-xs mt-0.5">Events appear when the Red Team acts</p>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <span className="dot-live w-1.5 h-1.5" />
-        <span className="text-xs text-green-signal font-mono">SIEM online</span>
-      </div>
-    </div>
-  )
-}
+
 
 // ── Individual event row ───────────────────────────────────────────────────
 function EventRow({

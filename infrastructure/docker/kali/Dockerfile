@@ -11,16 +11,16 @@ RUN echo "wireshark-common wireshark-common/install-setuid boolean false" | debc
 
 # Core tools for all scenarios — installed in one layer to minimise image size
 RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends \
-    # Recon
-    nmap nikto whatweb dnsutils whois curl wget enum4linux \
+    # Recon (theharvester → SC-03 OSINT phase 1)
+    nmap nikto whatweb dnsutils whois curl wget enum4linux theharvester \
     # Web assessment
     gobuster ffuf wfuzz sqlmap dirb wpscan \
     # Password attacks
     john hydra \
     # Wordlists & payloads
     seclists wordlists exploitdb \
-    # Network analysis & pivoting
-    netcat-openbsd tcpdump tshark wireshark-common proxychains4 \
+    # Network analysis & pivoting (redis-tools → SC-01 Redis branch; swaks → SC-03 SMTP)
+    netcat-openbsd tcpdump tshark wireshark-common proxychains4 redis-tools swaks \
     # Active Directory / SMB
     smbclient impacket-scripts samba-common-bin krb5-user \
     pipx \
@@ -66,6 +66,23 @@ RUN pip install --break-system-packages bloodhound nxc || pip install --break-sy
 # Download Kerbrute binary
 RUN wget https://github.com/ropnop/kerbrute/releases/download/v1.0.3/kerbrute_linux_amd64 -O /usr/local/bin/kerbrute \
     && chmod +x /usr/local/bin/kerbrute
+
+# gpp-decrypt for the SC-02 SYSVOL/GPP (Groups.xml cpassword) branch. Prefer the
+# Kali package; if it is unavailable in the mirror, install a minimal shim that
+# uses the Microsoft-published static GPP AES-256 key (MS-GPPREF) so the GPP
+# branch is always playable. openssl/base64/iconv ship in the base image.
+RUN (apt-get update --fix-missing && apt-get install -y --no-install-recommends gpp-decrypt \
+        && apt-get clean && rm -rf /var/lib/apt/lists/*) || true; \
+    if ! command -v gpp-decrypt >/dev/null 2>&1; then \
+        printf '%s\n' \
+            '#!/usr/bin/env bash' \
+            '# Minimal GPP cpassword decryptor (MS-GPPREF static AES-256 key).' \
+            'cp="$1"; [ -z "$cp" ] && { echo "usage: gpp-decrypt <cpassword>"; exit 1; }' \
+            'mod=$(( ${#cp} % 4 )); if [ "$mod" -eq 2 ]; then cp="${cp}=="; elif [ "$mod" -eq 3 ]; then cp="${cp}="; fi' \
+            'key=4e9906e8fcb66cc9faf49310620ffee8f496e806cc057990209b09a433b66c1b' \
+            'echo -n "$cp" | base64 -d 2>/dev/null | openssl enc -d -aes-256-cbc -K "$key" -iv 00000000000000000000000000000000 -nopad 2>/dev/null | iconv -f UTF-16LE -t ASCII 2>/dev/null; echo' \
+            > /usr/local/bin/gpp-decrypt && chmod 0755 /usr/local/bin/gpp-decrypt; \
+    fi
 
 # Create non-root student user — containers never run as root
 RUN useradd -m -s /bin/bash -u 1000 student \

@@ -82,6 +82,14 @@ add_user "svc_backup" "Backup2023!"
 add_user "it.admin" "DomainAdmin2024!"
 add_user "rgreen" "Summer2024!"
 
+# ── Privileged group membership ──────────────────────────────────────
+# it.admin is the intended Domain Admin and the end-goal of the kill chain
+# (low-priv jsmith → Kerberoast svc_backup → lateral movement → it.admin →
+# DCSync). Without this, "DCSync as Domain Admin" has no account that can
+# actually replicate. Idempotent: addmembers no-ops if already a member.
+echo "[+] Granting it.admin Domain Admin rights..."
+samba-tool group addmembers "Domain Admins" it.admin 2>/dev/null || true
+
 # ── Configure AS-REP Roasting (rgreen) ─────────────────────────────
 # Set DONT_REQ_PREAUTH (0x00400000) bit in userAccountControl
 echo "[+] Configuring AS-REP Roasting for 'rgreen'..."

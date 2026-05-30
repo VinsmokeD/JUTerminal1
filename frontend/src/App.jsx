@@ -6,6 +6,7 @@ import Auth from './pages/Auth'
 import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import CommandPalette from './components/palette/CommandPalette'
+import ToastContainer from './components/ui/Toast'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import { SessionManager } from './components/ui/SessionManager'
 
@@ -91,6 +92,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <SessionManager>
+          <ToastContainer />
           <GlobalPalette />
           <Routes>
             {/* Public landing page */}

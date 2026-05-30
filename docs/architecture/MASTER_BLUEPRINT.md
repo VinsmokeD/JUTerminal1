@@ -34,7 +34,7 @@ CyberSim is a dual-perspective cybersecurity training platform designed to bridg
 - **Network**: `172.20.2.0/24` (internal, no internet)
 - **Containers**: Samba4 AD DC (`172.20.2.20`), File Server with Finance + Public shares (`172.20.2.40`)
 - **Domain**: `nexora.local` | Admin password: `NexoraAdmin2024!`
-- **Pre-seeded users**: `jsmith` (low-priv), `svc_backup` (Kerberoastable, SPN: `CIFS/NEXORA-FS01.nexora.local`), `it.admin` (Domain Admin)
+- **Pre-seeded users**: `jsmith` (low-priv), `svc_backup` (Kerberoastable, SPN: `MSSQLSvc/nexora-fs01.nexora.local:1433`), `rgreen` (AS-REP roastable, DONT_REQ_PREAUTH), `it.admin` (Domain Admin — member of Domain Admins)
 - **Red Team Objective**: Kerberoast `svc_backup`, crack hash, DCSync as Domain Admin
 - **Blue Team Objective**: Detect Event 4769 RC4 downgrades, track lateral movement via 4624/4648 chains
 - **SIEM Events**: 4625, 4768, 4769, 4776, 4624, 4648, 4728
@@ -42,7 +42,7 @@ CyberSim is a dual-perspective cybersecurity training platform designed to bridg
 ### SC-03: Orion Logistics (Phishing & Initial Access)
 - **Focus**: OSINT, Pretexting, Payload Delivery via GoPhish
 - **Network**: `172.20.3.0/24` (internal, no internet)
-- **Containers**: GoPhish (`172.20.3.40`), Postfix mail server (`172.20.3.20`), Python Windows endpoint sim (`172.20.3.30`)
+- **Containers**: GoPhish (`172.20.3.10`, admin :3333 / phishing :80, also C2 listener :4444), Postfix mail server (`172.20.3.20`), Python Windows endpoint sim (`172.20.3.30`)
 - **Red Team Objective**: Craft phishing campaign, achieve callback from simulated victim endpoint
 - **Blue Team Objective**: Email header analysis, SPF/DKIM/DMARC validation, detect macro execution
 - **SIEM Events**: Email open, macro exec, PowerShell download cradle, scheduled task persistence, C2 beacon

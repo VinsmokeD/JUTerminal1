@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../../lib/api'
+import toast from '../../lib/toast'
 
 const FLAG_PATTERN = /^[A-Za-z0-9_\-:.!@#$%^&*()+= ]{2,}$/
 
@@ -48,6 +49,7 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
         if (res.data?.already_captured) {
           console.log('[FlagSubmitWidget] flag already captured')
           setMessage({ type: 'error', text: 'This flag was already captured!' })
+          toast.warning('This flag was already captured!')
         } else {
           console.log('[FlagSubmitWidget] flag captured successfully!')
           setMessage({ 
@@ -56,6 +58,7 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
           })
           setFlagValue('') // Input clears after successful capture only
           onFlagCaptured?.()
+          toast.achievement(`Flag Captured! +${res.data?.points_awarded || 0} pts`)
         }
       } else {
         const guidance = res.data?.detail || res.data?.guidance || res.data?.hint || 'Incorrect flag value. Try again!'
@@ -63,6 +66,7 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
         setMessage({ type: 'error', text: guidance })
         setShake(true)
         setTimeout(() => setShake(false), 500)
+        toast.error('Incorrect flag. Try again!')
       }
     } catch (err) {
       const errMsg = err.response?.data?.detail || err.response?.data?.guidance || 'Submission failed, try again'
@@ -70,6 +74,7 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
       setMessage({ type: 'error', text: errMsg })
       setShake(true)
       setTimeout(() => setShake(false), 500)
+      toast.error(errMsg)
     } finally {
       setLoading(false)
     }

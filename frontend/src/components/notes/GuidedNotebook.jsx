@@ -1,7 +1,9 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { useSessionStore } from '../../store/sessionStore'
 import api from '../../lib/api'
+import toast from '../../lib/toast'
+import { EmptyState } from '../ui'
 
 const TAGS = ['note', 'finding', 'evidence', 'ioc', 'remediation', 'todo']
 
@@ -61,6 +63,7 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
       const res = await api.post('/notes/', { session_id: sessionId, tag, content: draft.trim(), phase })
       setNotes((p) => [...p, res.data])
       setDraft('')
+      toast.success('Note saved')
     } finally {
       setSaving(false)
     }
@@ -79,6 +82,7 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
       const res = await api.post('/notes/', { session_id: sessionId, tag: 'evidence', content, phase })
       setNotes((p) => [...p, res.data])
       clearPendingEvidence()
+      toast.success('Evidence saved')
     } finally {
       setSaving(false)
     }
@@ -87,6 +91,7 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
   const remove = async (id) => {
     await api.delete(`/notes/${id}`)
     setNotes((p) => p.filter((n) => n.id !== id))
+    toast.info('Note deleted')
   }
 
   const loadTemplate = () => {
@@ -113,11 +118,13 @@ export default function GuidedNotebook({ sessionId, role = 'red', phase = 1 }) {
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
         {notes.length === 0 ? (
-          <div className="p-4 text-xs text-txt-dim font-mono leading-relaxed">
-            {skillLevel === 'beginner'
+          <EmptyState
+            icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>}
+            title="Notebook empty"
+            body={skillLevel === 'beginner'
               ? 'Start documenting your findings. Good note-taking is a critical professional skill — every observation matters.'
               : 'No notes yet. Add your first finding or observation.'}
-          </div>
+          />
         ) : (
           notes.map((n) => {
             const ts = TAG_STYLE[n.tag] || TAG_STYLE.note

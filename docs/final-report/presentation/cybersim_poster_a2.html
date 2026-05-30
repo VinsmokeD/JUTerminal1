@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CyberSim — Academic Poster (A1 / A2 / A3 print-ready)</title>
+<!--
+  CyberSim Graduation Poster — King Abdullah II School of Information Technology (KASIT), University of Jordan
+  Single-file, print-ready academic poster.
+
+  PRINTING
+  --------
+  Canvas is A1 portrait (23.4in × 33.1in) at true size. The 1 : 1.414 ISO ratio means it
+  scales pixel-perfectly down to A2 or A3.
+  • Open in Chrome/Edge  →  Ctrl/Cmd + P
+  • Destination: Save as PDF
+  • Paper size: A1 (or A2 / A3 with "Fit to printable area")
+  • Margins: None    • Background graphics: ON
+  On screen the poster auto-fits the browser width; print restores it to full size.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================= TOKENS */
+  :root{
+    --bg:#0A0F1C;          --bg-2:#0b1120;        --bg-3:#0c1426;
+    --panel:rgba(16,24,43,.66);   --panel-2:rgba(13,20,36,.82);
+    --panel-edge:rgba(140,165,210,.14);
+    --ink:#EAF1FB;         --ink-2:#A9BAD6;       --ink-3:#6F82A1;
+    --gold:#C8A94A;        --gold-hi:#EBCE78;     --gold-deep:#8c7430;
+    --green:#0B5D3B;       --green-hi:#1FA268;
+    --cyan:#00F0FF;        --cyan-deep:#0AA7BC;
+    --red:#FF2A2A;         --red-deep:#C81E2A;
+    --amber:#F4B942;       --success:#2EAD66;
+    --hair:rgba(200,169,74,.20);
+    --hair-soft:rgba(255,255,255,.075);
+    --r-lg:18px; --r-md:13px; --r-sm:9px;
+    --f-display:'Orbitron',"Segoe UI",sans-serif;
+    --f-head:'Rajdhani',"Segoe UI",sans-serif;
+    --f-body:'Inter',"Segoe UI",system-ui,sans-serif;
+    --f-mono:'JetBrains Mono','Consolas',monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:#05080f;overflow-x:hidden;}
+  body{
+    font-family:var(--f-body);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    display:flex;flex-direction:column;align-items:center;
+  }
+
+  /* screen stage that holds the (transform-scaled) poster */
+  .stage{width:100%;display:flex;justify-content:center;padding:24px 0 40px;overflow-x:hidden;}
+  .screen-hint{
+    font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;
+    color:#5b6e8c;text-align:center;padding:14px 0 0;
+  }
+  .screen-hint b{color:var(--gold);}
+
+  /* ============================================================= POSTER FRAME */
+  .poster{
+    position:relative;
+    width:23.4in;height:33.1in;
+    flex:0 0 auto;                 /* never let flex shrink the fixed A1 width */
+    transform-origin:top center;
+    background:
+      radial-gradient(1200px 760px at 82% -4%, rgba(0,240,255,.10), transparent 60%),
+      radial-gradient(1100px 720px at 16% -2%, rgba(255,42,42,.10), transparent 58%),
+      radial-gradient(1500px 1100px at 50% 116%, rgba(11,93,59,.22), transparent 60%),
+      linear-gradient(180deg,#0A0F1C 0%, #0a1120 46%, #080d18 100%);
+    color:var(--ink);
+    overflow:hidden;
+    box-shadow:0 50px 130px rgba(0,0,0,.7);
+    display:flex;flex-direction:column;
+    padding:0.42in 0.5in 0.34in;
+    isolation:isolate;
+  }
+  /* engineering grid + scanlines */
+  .poster::before{
+    content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(120,150,200,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,150,200,.045) 1px, transparent 1px);
+    background-size:46px 46px;
+    mask-image:radial-gradient(140% 110% at 50% 30%, #000 55%, transparent 100%);
+  }
+  .poster::after{
+    content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 2px, transparent 2px 5px);
+    opacity:.5;
+  }
+  .poster>*{position:relative;z-index:1;}
+
+  /* gold framing rule inside the page edge */
+  .frame{position:absolute;inset:0.2in;border:1.5px solid var(--hair);border-radius:10px;z-index:1;pointer-events:none;}
+  .frame::before,.frame::after{content:"";position:absolute;width:40px;height:40px;border:2.5px solid var(--gold);}
+  .frame::before{top:-2px;left:-2px;border-right:0;border-bottom:0;border-top-left-radius:10px;}
+  .frame::after{bottom:-2px;right:-2px;border-left:0;border-top:0;border-bottom-right-radius:10px;}
+
+  /* ============================================================= HEADER */
+  header{display:grid;grid-template-columns:auto 1fr auto;gap:26px;align-items:center;
+    padding-bottom:18px;border-bottom:2px solid var(--hair);}
+  .crest{width:1.55in;height:1.55in;flex:0 0 auto;}
+  .id-right{display:flex;align-items:center;gap:20px;}
+
+  .titleblock{text-align:center;padding:0 8px;}
+  .eyebrow{font-family:var(--f-mono);letter-spacing:.42em;font-size:14px;font-weight:500;
+    color:var(--gold);text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:14px;}
+  .eyebrow::before,.eyebrow::after{content:"";height:1px;width:64px;background:linear-gradient(90deg,transparent,var(--gold));}
+  .eyebrow::after{background:linear-gradient(90deg,var(--gold),transparent);}
+  h1{
+    font-family:var(--f-display);font-weight:800;line-height:.96;letter-spacing:.5px;
+    font-size:90px;margin:10px 0 4px;
+    background:linear-gradient(180deg,#fff 0%, #dfe9fb 38%, var(--gold-hi) 130%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 40px rgba(0,240,255,.12);
+  }
+  h1 .spark{color:var(--cyan);-webkit-text-fill-color:var(--cyan);text-shadow:0 0 26px rgba(0,240,255,.55);}
+  .subtitle{font-family:var(--f-head);font-weight:600;font-size:34px;letter-spacing:.02em;color:var(--ink);}
+  .subtitle .r{color:var(--red);} .subtitle .b{color:var(--cyan);}
+
+  .meta{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:16px;}
+  .author{
+    display:flex;align-items:baseline;gap:9px;background:var(--panel-2);
+    border:1px solid var(--panel-edge);border-radius:999px;padding:8px 17px;
+    font-size:17px;font-weight:600;color:var(--ink);
+  }
+  .author .reg{font-family:var(--f-mono);font-size:13.5px;color:var(--gold);letter-spacing:.04em;}
+  .supervise{margin-top:13px;font-size:18px;color:var(--ink-2);font-weight:500;}
+  .supervise b{color:var(--gold-hi);font-weight:700;}
+  .supervise .sep{color:var(--ink-3);margin:0 12px;}
+
+  /* crest / badge styling */
+  .badge-wrap{display:flex;flex-direction:column;align-items:center;gap:7px;}
+  .badge-cap{font-family:var(--f-mono);font-size:11px;letter-spacing:.22em;color:var(--ink-3);text-transform:uppercase;}
+  .qr{width:1.35in;height:1.35in;background:#fff;border-radius:10px;padding:7px;box-shadow:0 0 0 1px var(--panel-edge),0 12px 28px rgba(0,0,0,.45);}
+  .qr svg{display:block;width:100%;height:100%;}
+
+  /* ============================================================= MAIN GRID */
+  main{flex:1;display:grid;grid-template-columns:1.04fr 1.34fr 1.08fr;grid-template-rows:minmax(0,1fr);gap:30px;padding-top:24px;min-height:0;}
+  .col{display:flex;flex-direction:column;gap:26px;min-height:0;}
+
+  /* ---- panel chrome ---- */
+  .panel{
+    position:relative;background:var(--panel);
+    border:1px solid var(--panel-edge);border-radius:var(--r-lg);
+    padding:22px 22px 20px;
+    backdrop-filter:blur(3px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 18px 40px rgba(0,0,0,.28);
+  }
+  .panel.grow{flex:1;}
+  .panel-head{display:flex;align-items:center;gap:13px;margin-bottom:15px;}
+  .pnum{font-family:var(--f-display);font-weight:800;font-size:20px;color:var(--bg);
+    background:linear-gradient(135deg,var(--gold-hi),var(--gold));border-radius:8px;
+    padding:5px 11px;letter-spacing:1px;box-shadow:0 4px 14px rgba(200,169,74,.3);}
+  .ptitle{font-family:var(--f-head);font-weight:700;font-size:26px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--ink);}
+  .ptitle small{display:block;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.18em;
+    color:var(--ink-3);font-weight:400;text-transform:uppercase;margin-top:2px;}
+  .panel-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--hair),transparent);}
+
+  /* corner ticks */
+  .panel::before,.panel::after{content:"";position:absolute;width:13px;height:13px;pointer-events:none;}
+  .panel::before{top:8px;right:8px;border-top:2px solid var(--hair);border-right:2px solid var(--hair);}
+  .panel::after{bottom:8px;left:8px;border-bottom:2px solid var(--hair);border-left:2px solid var(--hair);}
+
+  p.lead{font-size:18px;line-height:1.55;color:var(--ink);}
+  p.body{font-size:16.5px;line-height:1.56;color:var(--ink-2);}
+  .hl-r{color:#ff7a7a;font-weight:600;} .hl-b{color:#69f3ff;font-weight:600;}
+  .hl-g{color:var(--gold-hi);font-weight:600;}
+
+  /* objective list */
+  ul.obj{list-style:none;display:flex;flex-direction:column;gap:13px;}
+  ul.obj li{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:start;font-size:16px;line-height:1.42;color:var(--ink-2);}
+  ul.obj li .tick{width:26px;height:26px;border-radius:7px;flex:0 0 auto;display:grid;place-items:center;
+    background:rgba(46,173,102,.14);border:1px solid rgba(46,173,102,.4);}
+  ul.obj li b{color:var(--ink);font-weight:600;}
+  .obj-id{font-family:var(--f-mono);font-size:12px;color:var(--gold);letter-spacing:.05em;}
+
+  /* safety chips */
+  .safe-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;}
+  .safe{display:flex;gap:11px;align-items:flex-start;background:var(--panel-2);border:1px solid var(--hair-soft);
+    border-radius:var(--r-md);padding:12px 13px;}
+  .safe .ico{width:30px;height:30px;flex:0 0 auto;color:var(--success);}
+  .safe h5{font-family:var(--f-head);font-weight:700;font-size:16px;letter-spacing:.03em;color:var(--ink);}
+  .safe p{font-size:13.3px;line-height:1.4;color:var(--ink-3);margin-top:2px;}
+  .net-strip{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;}
+  .net-pill{font-family:var(--f-mono);font-size:12.5px;color:var(--cyan);background:rgba(0,240,255,.07);
+    border:1px solid rgba(0,240,255,.28);border-radius:7px;padding:5px 11px;letter-spacing:.02em;}
+  .net-pill.x{color:var(--ink-3);background:rgba(255,255,255,.03);border-color:var(--hair-soft);}
+
+  /* ---- center: loop diagram ---- */
+  .loop-wrap{width:100%;}
+  .loop-wrap svg{display:block;width:100%;height:auto;}
+  .loop-cap{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-family:var(--f-mono);
+    font-size:12px;color:var(--ink-3);letter-spacing:.04em;}
+
+  /* tech stack ribbon */
+  .stack{display:flex;align-items:stretch;gap:0;margin-top:4px;border-radius:var(--r-md);overflow:hidden;
+    border:1px solid var(--hair-soft);}
+  .stack .node{flex:1;text-align:center;padding:11px 6px;background:var(--panel-2);position:relative;}
+  .stack .node + .node{border-left:1px solid var(--hair-soft);}
+  .stack .node .t{font-family:var(--f-head);font-weight:700;font-size:15px;color:var(--ink);letter-spacing:.04em;}
+  .stack .node .s{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3);margin-top:2px;letter-spacing:.02em;}
+  .stack .node .dot{width:7px;height:7px;border-radius:50%;margin:0 auto 7px;}
+
+  /* AI monitor */
+  .ai-modes{display:flex;gap:11px;margin-bottom:14px;}
+  .mode{flex:1;border-radius:var(--r-md);padding:12px 14px;border:1px solid var(--hair-soft);background:var(--panel-2);}
+  .mode .mh{font-family:var(--f-head);font-weight:700;font-size:17px;letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
+  .mode .mh i{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .mode p{font-size:13.2px;color:var(--ink-3);line-height:1.42;margin-top:5px;}
+  .ladder{display:flex;flex-direction:column;gap:9px;margin-top:4px;}
+  .rung{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:center;
+    background:var(--panel-2);border:1px solid var(--hair-soft);border-radius:var(--r-md);padding:11px 14px;}
+  .rung .lv{font-family:var(--f-display);font-weight:800;font-size:18px;width:46px;height:46px;border-radius:10px;
+    display:grid;place-items:center;color:var(--bg);}
+  .rung .lt{font-family:var(--f-head);font-weight:700;font-size:16.5px;letter-spacing:.03em;color:var(--ink);}
+  .rung .ld{font-size:13.4px;color:var(--ink-3);line-height:1.38;}
+  .guard{margin-top:13px;display:flex;align-items:center;gap:11px;background:rgba(255,42,42,.06);
+    border:1px solid rgba(255,42,42,.3);border-radius:var(--r-md);padding:11px 14px;}
+  .guard svg{width:26px;height:26px;color:#ff6b6b;flex:0 0 auto;}
+  .guard p{font-size:13.4px;color:#ffb3b3;line-height:1.4;}
+  .guard b{color:#fff;}
+
+  /* ---- scenario cards ---- */
+  .scn{position:relative;border-radius:var(--r-md);padding:15px 16px 14px;margin-bottom:13px;
+    background:linear-gradient(180deg, rgba(20,29,49,.9), rgba(12,18,33,.92));
+    border:1px solid var(--panel-edge);overflow:hidden;}
+  .scn:last-child{margin-bottom:0;}
+  .scn .bar{position:absolute;left:0;top:0;bottom:0;width:5px;}
+  .scn .scn-top{display:flex;align-items:center;gap:11px;}
+  .scn .sid{font-family:var(--f-display);font-weight:800;font-size:16px;letter-spacing:.5px;padding:5px 10px;border-radius:7px;color:#fff;}
+  .scn h4{font-family:var(--f-head);font-weight:700;font-size:21px;letter-spacing:.02em;color:var(--ink);flex:1;}
+  .scn .diff{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+    border:1px solid var(--hair-soft);border-radius:6px;padding:3px 8px;}
+  .scn .focus{font-size:14.5px;color:var(--ink-2);margin:9px 0 11px;line-height:1.42;}
+  .scn .lanes{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .lane{border-radius:8px;padding:9px 11px;font-size:12.6px;line-height:1.36;}
+  .lane.red{background:rgba(255,42,42,.07);border:1px solid rgba(255,42,42,.26);}
+  .lane.blue{background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.24);}
+  .lane .lh{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px;font-weight:700;}
+  .lane.red .lh{color:#ff7a7a;} .lane.blue .lh{color:#69f3ff;}
+  .lane span{color:var(--ink-2);}
+  .scn .net{position:absolute;right:14px;bottom:12px;font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3);}
+
+  /* ---- results / metrics ---- */
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .stat{background:var(--panel-2);border:1px solid var(--hair-soft);border-radius:var(--r-md);padding:14px 15px;position:relative;overflow:hidden;}
+  .stat .v{font-family:var(--f-display);font-weight:800;font-size:38px;line-height:1;letter-spacing:.5px;}
+  .stat .k{font-size:12.8px;color:var(--ink-3);margin-top:6px;line-height:1.34;}
+  .stat .spark{position:absolute;right:-6px;top:-6px;font-family:var(--f-mono);font-size:11px;opacity:.5;}
+  .v.cyan{color:var(--cyan);text-shadow:0 0 18px rgba(0,240,255,.3);}
+  .v.gold{color:var(--gold-hi);} .v.green{color:var(--green-hi);} .v.red{color:#ff6b6b;}
+  .badges{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px;}
+  .vbadge{display:flex;align-items:center;gap:8px;font-family:var(--f-head);font-weight:600;font-size:14px;letter-spacing:.03em;
+    background:rgba(46,173,102,.1);border:1px solid rgba(46,173,102,.36);color:#7ee0a8;border-radius:999px;padding:7px 14px;}
+  .vbadge svg{width:16px;height:16px;}
+  .ready{margin-top:14px;display:flex;align-items:center;gap:14px;background:linear-gradient(90deg,rgba(11,93,59,.4),rgba(11,93,59,.06));
+    border:1px solid rgba(31,162,104,.45);border-radius:var(--r-md);padding:13px 16px;}
+  .ready .score{font-family:var(--f-display);font-weight:900;font-size:42px;color:#fff;line-height:1;}
+  .ready .score small{font-size:18px;color:var(--ink-2);font-weight:600;}
+  .ready .rt{font-family:var(--f-head);font-weight:700;font-size:18px;letter-spacing:.05em;color:#7ee0a8;text-transform:uppercase;}
+  .ready .rs{font-size:12.6px;color:var(--ink-3);margin-top:2px;}
+
+  /* ============================================================= FOOTER */
+  footer{margin-top:20px;padding-top:15px;border-top:2px solid var(--hair);
+    display:grid;grid-template-columns:1.5fr 1fr auto;gap:26px;align-items:center;}
+  .fcol h6{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:7px;}
+  .fcol p,.fcol li{font-size:12.8px;color:var(--ink-3);line-height:1.5;}
+  .refs{list-style:none;display:flex;flex-wrap:wrap;gap:7px;}
+  .refs li{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);border:1px solid var(--hair-soft);border-radius:6px;padding:4px 9px;}
+  .foot-qr{display:flex;align-items:center;gap:14px;}
+  .foot-qr .qr{width:1.05in;height:1.05in;}
+  .foot-qr .repo{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);line-height:1.5;}
+  .foot-qr .repo b{color:var(--cyan);}
+  .ethics{font-size:12.4px;color:var(--ink-3);line-height:1.46;}
+  .ethics b{color:var(--amber);}
+
+  /* ============================================================= PRINT */
+  @page{ size:23.4in 33.1in; margin:0; }
+  @media print{
+    html,body{background:#0A0F1C;}
+    .stage{padding:0;height:auto !important;}
+    .screen-hint{display:none !important;}
+    .poster{transform:none !important;box-shadow:none;margin:0;}
+    *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-hint">PRINT &rarr; <b>Ctrl/Cmd + P</b> &middot; Destination <b>Save as PDF</b> &middot; Paper <b>A1 / A2 / A3</b> &middot; Margins <b>None</b> &middot; Background graphics <b>ON</b></div>
+
+<div class="stage">
+<section class="poster" id="poster">
+  <div class="frame"></div>
+
+  <!-- ========================================================= HEADER -->
+  <header>
+    <!-- University of Jordan crest (placeholder) -->
+    <div class="badge-wrap">
+      <svg class="crest" viewBox="0 0 120 120" role="img" aria-label="University of Jordan logo placeholder">
+        <defs>
+          <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#EBCE78"/><stop offset="1" stop-color="#9c8230"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="57" fill="#0c1426" stroke="url(#gGold)" stroke-width="3"/>
+        <circle cx="60" cy="60" r="47" fill="none" stroke="#1FA268" stroke-width="2" opacity=".7"/>
+        <path d="M60 22 L72 40 H48 Z" fill="url(#gGold)"/>
+        <text x="60" y="74" text-anchor="middle" font-family="Orbitron,sans-serif" font-weight="800" font-size="30" fill="url(#gGold)">UJ</text>
+        <text x="60" y="92" text-anchor="middle" font-family="Rajdhani,sans-serif" font-weight="700" font-size="9.5" letter-spacing="1.5" fill="#A9BAD6">UNIVERSITY</text>
+        <text x="60" y="102" text-anchor="middle" font-family="Rajdhani,sans-serif" font-weight="700" font-size="9.5" letter-spacing="1.5" fill="#A9BAD6">OF JORDAN</text>
+      </svg>
+      <span class="badge-cap">University of Jordan</span>
+    </div>
+
+    <!-- title block -->
+    <div class="titleblock">
+      <div class="eyebrow">Graduation Project &middot; Demo Day 2026</div>
+      <h1>Cyber<span class="spark">Sim</span></h1>
+      <div class="subtitle">Dual&#8209;Perspective Cybersecurity Training Platform &mdash; <span class="r">Red&nbsp;Team</span> &amp; <span class="b">Blue&nbsp;Team</span></div>
+      <div class="meta">
+        <span class="author">Student One <span class="reg">2018xxxxx</span></span>
+        <span class="author">Student Two <span class="reg">2019xxxxx</span></span>
+        <span class="author">Student Three <span class="reg">2019xxxxx</span></span>
+      </div>
+      <div class="supervise">Supervised by <b>[Supervisor Name]</b><span class="sep">|</span>King Abdullah&nbsp;II School of Information Technology (KASIT)</div>
+    </div>
+
+    <!-- KASIT badge + QR -->
+    <div class="id-right">
+      <div class="badge-wrap">
+        <svg class="crest" viewBox="0 0 120 120" role="img" aria-label="KASIT logo placeholder">
+          <rect x="6" y="6" width="108" height="108" rx="16" fill="#0c1426" stroke="#1FA268" stroke-width="3"/>
+          <rect x="20" y="20" width="80" height="80" rx="9" fill="none" stroke="#C8A94A" stroke-width="2" opacity=".75"/>
+          <text x="60" y="58" text-anchor="middle" font-family="Orbitron,sans-serif" font-weight="800" font-size="34" fill="#EBCE78">K</text>
+          <text x="60" y="82" text-anchor="middle" font-family="Rajdhani,sans-serif" font-weight="700" font-size="13" letter-spacing="3" fill="#A9BAD6">KASIT</text>
+        </svg>
+        <span class="badge-cap">KASIT</span>
+      </div>
+      <div class="badge-wrap">
+        <div class="qr"><svg id="qr-head" viewBox="0 0 25 25" shape-rendering="crispEdges"></svg></div>
+        <span class="badge-cap">Live Demo</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================= MAIN -->
+  <main>
+
+    <!-- ============ LEFT COLUMN — THE WHY ============ -->
+    <div class="col">
+
+      <div class="panel">
+        <div class="panel-head"><span class="pnum">01</span><div class="ptitle">Abstract<small>// the problem</small></div><span class="rule"></span></div>
+        <p class="lead">Cybersecurity students learn <span class="hl-r">offensive execution</span> and <span class="hl-b">defensive visibility</span> in separate courses &mdash; rarely seeing that an attacker's keystroke and a defender's alert are the <span class="hl-g">same event</span>.</p>
+        <p class="body" style="margin-top:11px">CyberSim closes that gap inside one browser. Students operate a Kali&#8209;style terminal against deliberately vulnerable, Docker&#8209;isolated targets while the matching SIEM telemetry streams live to a Blue&nbsp;Team analyst view. Every command, detection, note, score, and AI hint is linked into a single cause&#8209;and&#8209;effect timeline that ends in an automated debrief.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span class="pnum">02</span><div class="ptitle">Objectives<small>// design goals</small></div><span class="rule"></span></div>
+        <ul class="obj">
+          <li><span class="tick">✓</span><span><span class="obj-id">OBJ&#8209;01</span> &nbsp;<b>Safe offensive practice</b> — every target runs on an internal, internet&#8209;less Docker network.</span></li>
+          <li><span class="tick">✓</span><span><span class="obj-id">OBJ&#8209;02</span> &nbsp;<b>Live defensive visibility</b> — real SIEM events and triage workflows in the Blue workspace.</span></li>
+          <li><span class="tick">✓</span><span><span class="obj-id">OBJ&#8209;03</span> &nbsp;<b>AI&#8209;assisted learning</b> — a bounded Socratic tutor that teaches the "why", not the answer.</span></li>
+          <li><span class="tick">✓</span><span><span class="obj-id">OBJ&#8209;04</span> &nbsp;<b>Methodology tracking</b> — phases, notes, flags, and gates mirror PTES / OWASP / NIST.</span></li>
+          <li><span class="tick">✓</span><span><span class="obj-id">OBJ&#8209;05</span> &nbsp;<b>Assessment</b> — scoring, reports, and an instructor analytics dashboard.</span></li>
+          <li><span class="tick">✓</span><span><span class="obj-id">OBJ&#8209;06</span> &nbsp;<b>Demo&#8209;ready deployment</b> — one&#8209;command Docker Compose with HTTPS demo layer.</span></li>
+        </ul>
+      </div>
+
+      <div class="panel grow">
+        <div class="panel-head"><span class="pnum">03</span><div class="ptitle">Safety &amp; Isolation<small>// no real systems</small></div><span class="rule"></span></div>
+        <div class="safe-grid">
+          <div class="safe">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg>
+            <div><h5>Air&#8209;gapped Networks</h5><p>Scenario networks are <code>internal:&nbsp;true</code> — no route to the internet.</p></div>
+          </div>
+          <div class="safe">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+            <div><h5>No Live Malware</h5><p>Exploit behaviour is referenced internally, never shipped in source.</p></div>
+          </div>
+          <div class="safe">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg>
+            <div><h5>Resource Limits</h5><p>Kali and target containers are capped on CPU and memory.</p></div>
+          </div>
+          <div class="safe">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 12l3 3 5-6"/></svg>
+            <div><h5>AI Redaction</h5><p>The tutor never emits payloads, credentials, or full exploit chains.</p></div>
+          </div>
+        </div>
+        <div class="net-strip">
+          <span class="net-pill">SC&#8209;01 &middot; 172.20.1.0/24</span>
+          <span class="net-pill">SC&#8209;02 &middot; 172.20.2.0/24</span>
+          <span class="net-pill">SC&#8209;03 &middot; 172.20.3.0/24</span>
+          <span class="net-pill x">⛌ internet</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ CENTER COLUMN — THE HOW ============ -->
+    <div class="col">
+
+      <div class="panel">
+        <div class="panel-head"><span class="pnum">04</span><div class="ptitle">Dual&#8209;Perspective Learning Loop<small>// core innovation</small></div><span class="rule"></span></div>
+        <div class="loop-wrap">
+          <svg viewBox="0 0 760 470" role="img" aria-label="Dual-perspective learning loop diagram">
+            <defs>
+              <linearGradient id="redG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4d4d"/><stop offset="1" stop-color="#9e1620"/></linearGradient>
+              <linearGradient id="cyanG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3df6ff"/><stop offset="1" stop-color="#057a8a"/></linearGradient>
+              <linearGradient id="greyG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a4660"/><stop offset="1" stop-color="#1d2740"/></linearGradient>
+              <linearGradient id="flowRB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff4d4d"/><stop offset="1" stop-color="#9aa6bf"/></linearGradient>
+              <linearGradient id="flowBC" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9aa6bf"/><stop offset="1" stop-color="#3df6ff"/></linearGradient>
+              <linearGradient id="returnG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3df6ff"/><stop offset=".5" stop-color="#C8A94A"/><stop offset="1" stop-color="#ff4d4d"/></linearGradient>
+              <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <marker id="arrRB" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#cfa8a0"/></marker>
+              <marker id="arrBC" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#3df6ff"/></marker>
+              <marker id="arrRet" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff7a7a"/></marker>
+            </defs>
+
+            <!-- connectors -->
+            <line x1="232" y1="92" x2="290" y2="92" stroke="url(#flowRB)" stroke-width="4" marker-end="url(#arrRB)"/>
+            <line x1="492" y1="92" x2="550" y2="92" stroke="url(#flowBC)" stroke-width="4" marker-end="url(#arrBC)"/>
+            <text x="261" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#cfa8a0">① exploit</text>
+            <text x="521" y="80" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#7fd9e6">② telemetry</text>
+
+            <!-- NODE 1 — RED -->
+            <g filter="url(#glow)">
+              <rect x="22" y="34" width="210" height="116" rx="14" fill="#160d12" stroke="url(#redG)" stroke-width="2.5"/>
+            </g>
+            <rect x="22" y="34" width="210" height="116" rx="14" fill="none" stroke="rgba(255,77,77,.35)" stroke-width="1"/>
+            <text x="40" y="62" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing="2" fill="#ff7a7a">RED TEAM</text>
+            <!-- terminal glyph -->
+            <rect x="40" y="74" width="60" height="46" rx="6" fill="#0b0608" stroke="#ff5a5a" stroke-width="1.5"/>
+            <text x="48" y="92" font-family="JetBrains Mono,monospace" font-size="12" fill="#ff8a8a">&gt;_</text>
+            <line x1="48" y1="100" x2="86" y2="100" stroke="#7a2730" stroke-width="2"/>
+            <line x1="48" y1="108" x2="72" y2="108" stroke="#7a2730" stroke-width="2"/>
+            <text x="112" y="92" font-family="Rajdhani,sans-serif" font-weight="700" font-size="18" fill="#fff">Attacker</text>
+            <text x="112" y="112" font-family="Inter,sans-serif" font-size="12" fill="#c9b6b8">Kali terminal,</text>
+            <text x="112" y="128" font-family="Inter,sans-serif" font-size="12" fill="#c9b6b8">live PTY commands</text>
+
+            <!-- NODE 2 — TARGET (grey) -->
+            <g filter="url(#glow)">
+              <rect x="282" y="34" width="210" height="116" rx="14" fill="#121723" stroke="#5b6a86" stroke-width="2.5"/>
+            </g>
+            <text x="300" y="62" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing="2" fill="#9aa6bf">ISOLATED TARGET</text>
+            <!-- docker whale glyph -->
+            <g transform="translate(300,76)">
+              <rect x="0" y="18" width="58" height="22" rx="3" fill="#1b2740" stroke="#7f8db0" stroke-width="1.5"/>
+              <rect x="4" y="8" width="9" height="9" fill="#9aa6bf"/><rect x="15" y="8" width="9" height="9" fill="#9aa6bf"/>
+              <rect x="26" y="8" width="9" height="9" fill="#9aa6bf"/><rect x="15" y="-3" width="9" height="9" fill="#9aa6bf"/>
+              <path d="M58 22 q14 -3 18 8 q-9 5 -18 0 z" fill="#7f8db0"/>
+            </g>
+            <text x="372" y="92" font-family="Rajdhani,sans-serif" font-weight="700" font-size="18" fill="#fff">NovaMed</text>
+            <text x="372" y="112" font-family="Inter,sans-serif" font-size="12" fill="#aeb9d0">ModSecurity WAF</text>
+            <text x="372" y="128" font-family="Inter,sans-serif" font-size="12" fill="#aeb9d0">+ vuln web app</text>
+
+            <!-- NODE 3 — BLUE -->
+            <g filter="url(#glow)">
+              <rect x="542" y="34" width="200" height="116" rx="14" fill="#08171c" stroke="url(#cyanG)" stroke-width="2.5"/>
+            </g>
+            <text x="560" y="62" font-family="JetBrains Mono,monospace" font-size="11" letter-spacing="2" fill="#7fd9e6">BLUE TEAM</text>
+            <!-- siem bars glyph -->
+            <g transform="translate(560,74)">
+              <rect x="0" y="0" width="58" height="46" rx="6" fill="#04141a" stroke="#3df6ff" stroke-width="1.5"/>
+              <rect x="8" y="28" width="8" height="12" fill="#3df6ff"/><rect x="20" y="20" width="8" height="20" fill="#3df6ff"/>
+              <rect x="32" y="12" width="8" height="28" fill="#00f0ff"/><rect x="44" y="24" width="8" height="16" fill="#3df6ff"/>
+            </g>
+            <text x="630" y="92" font-family="Rajdhani,sans-serif" font-weight="700" font-size="18" fill="#fff">SIEM</text>
+            <text x="630" y="112" font-family="Inter,sans-serif" font-size="12" fill="#9fe4ee">Catches the</text>
+            <text x="630" y="128" font-family="Inter,sans-serif" font-size="12" fill="#9fe4ee">telemetry &amp; alerts</text>
+
+            <!-- telemetry pipeline band -->
+            <rect x="282" y="186" width="460" height="64" rx="12" fill="rgba(8,18,30,.7)" stroke="rgba(0,240,255,.22)" stroke-width="1.2"/>
+            <text x="298" y="206" font-family="JetBrains Mono,monospace" font-size="10.5" letter-spacing="2" fill="#6f82a1">TELEMETRY BUS</text>
+            <g font-family="Rajdhani,sans-serif" font-weight="700" font-size="13" fill="#cfe8ee">
+              <text x="312" y="234">Filebeat</text>
+              <text x="430" y="234" text-anchor="middle">Elasticsearch</text>
+              <text x="560" y="234" text-anchor="middle">Sigma · 2s poll</text>
+              <text x="690" y="234" text-anchor="middle">WebSocket</text>
+            </g>
+            <g stroke="#0aa7bc" stroke-width="2" marker-end="url(#arrBC)" opacity=".8">
+              <line x1="372" y1="229" x2="392" y2="229"/><line x1="488" y1="229" x2="508" y2="229"/><line x1="616" y1="229" x2="636" y2="229"/>
+            </g>
+            <line x1="387" y1="150" x2="387" y2="186" stroke="#5b6a86" stroke-width="2" stroke-dasharray="3 3"/>
+
+            <!-- center hub label -->
+            <text x="138" y="200" text-anchor="middle" font-family="Orbitron,sans-serif" font-weight="700" font-size="13" letter-spacing="1" fill="#C8A94A">CAUSE → EFFECT</text>
+            <text x="138" y="220" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" fill="#6f82a1">one event, two views</text>
+
+            <!-- return loop arc: blue -> red (the "loop") -->
+            <path d="M642 250 C 642 360, 120 360, 120 150" fill="none" stroke="url(#returnG)" stroke-width="4" stroke-dasharray="2 0" marker-end="url(#arrRet)"/>
+            <rect x="250" y="330" width="264" height="50" rx="12" fill="rgba(11,16,28,.92)" stroke="rgba(200,169,74,.4)" stroke-width="1.2"/>
+            <text x="382" y="352" text-anchor="middle" font-family="Rajdhani,sans-serif" font-weight="700" font-size="15" letter-spacing="1" fill="#EBCE78">③ DEBRIEF · SCORING · AI HINTS</text>
+            <text x="382" y="370" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="#9fb0c9">reflect → learn → repeat the loop</text>
+          </svg>
+        </div>
+        <div class="loop-cap"><span>Red action → isolated target → defender alert</span><span style="color:var(--gold)">median loop latency&nbsp;68&nbsp;ms</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span class="pnum">05</span><div class="ptitle">The AI Socratic Monitor<small>// OpenRouter · DeepSeek</small></div><span class="rule"></span></div>
+        <div class="ai-modes">
+          <div class="mode">
+            <div class="mh"><i style="background:var(--green-hi)"></i>Learn Mode</div>
+            <p>A patient mentor that explains concept → action → what to look for, adapted to beginner / intermediate / experienced.</p>
+          </div>
+          <div class="mode">
+            <div class="mh"><i style="background:var(--cyan)"></i>Challenge Mode</div>
+            <p>A pure Socratic examiner — answers only with questions, never a command, even at the deepest hint level.</p>
+          </div>
+        </div>
+        <div class="ladder">
+          <div class="rung"><span class="lv" style="background:linear-gradient(135deg,#69f3ff,#0aa7bc)">L1</span><div><div class="lt">Conceptual</div><div class="ld">Names the vulnerability class and why it exists.</div></div></div>
+          <div class="rung"><span class="lv" style="background:linear-gradient(135deg,#EBCE78,#C8A94A)">L2</span><div><div class="lt">Directional</div><div class="ld">Points to the right tool or technique — no syntax.</div></div></div>
+          <div class="rung"><span class="lv" style="background:linear-gradient(135deg,#ff7a7a,#c81e2a)">L3</span><div><div class="lt">Procedural</div><div class="ld">Walks the steps in plain English; student writes the payload.</div></div></div>
+        </div>
+        <div class="guard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          <p><b>Hard guardrails:</b> never outputs lab credentials, copy&#8209;pasteable payloads, or full exploit chains. Responses are rate&#8209;limited and capped at ~150 tokens.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span class="pnum">06</span><div class="ptitle">System Architecture<small>// single-node Docker stack</small></div><span class="rule"></span></div>
+        <div class="stack">
+          <div class="node"><span class="dot" style="background:#61dafb"></span><div class="t">React</div><div class="s">Vite SPA</div></div>
+          <div class="node"><span class="dot" style="background:#fff"></span><div class="t">Nginx</div><div class="s">/api · /ws</div></div>
+          <div class="node"><span class="dot" style="background:#2EAD66"></span><div class="t">FastAPI</div><div class="s">Python 3.11</div></div>
+          <div class="node"><span class="dot" style="background:#dc382d"></span><div class="t">Redis</div><div class="s">pub/sub</div></div>
+          <div class="node"><span class="dot" style="background:#336791"></span><div class="t">Postgres</div><div class="s">durable</div></div>
+          <div class="node"><span class="dot" style="background:#00bfb3"></span><div class="t">Elastic</div><div class="s">+ Filebeat</div></div>
+          <div class="node"><span class="dot" style="background:#9aa6bf"></span><div class="t">Docker</div><div class="s">scenarios</div></div>
+        </div>
+        <p class="body" style="margin-top:12px;font-size:14.5px">Terminal keystrokes proxy through FastAPI to Kali containers via the Docker exec API. Attack telemetry flows <span class="hl-b">Filebeat → Elasticsearch</span>; a Sigma&#8209;rule engine polls every 2&nbsp;s and pushes matched events to the browser over WebSocket.</p>
+      </div>
+
+    </div>
+
+    <!-- ============ RIGHT COLUMN — THE WHAT & RESULTS ============ -->
+    <div class="col">
+
+      <div class="panel">
+        <div class="panel-head"><span class="pnum">07</span><div class="ptitle">Training Scenarios<small>// the MVP scope</small></div><span class="rule"></span></div>
+
+        <div class="scn">
+          <div class="bar" style="background:linear-gradient(180deg,#00f0ff,#0aa7bc)"></div>
+          <div class="scn-top"><span class="sid" style="background:linear-gradient(135deg,#0aa7bc,#057a8a)">SC&#8209;01</span><h4>NovaMed Healthcare</h4><span class="diff">Intermediate · 60m</span></div>
+          <p class="focus">Web&#8209;app pentest &amp; WAF analysis — SQLi, LFI, IDOR and file&#8209;upload against a ModSecurity&#8209;fronted portal.</p>
+          <div class="lanes">
+            <div class="lane red"><div class="lh">Red</div><span>Recon → dir enum → exploit → webshell</span></div>
+            <div class="lane blue"><div class="lh">Blue</div><span>Web log triage · WAF SQLi alerts · correlation</span></div>
+          </div>
+          <span class="net">172.20.1.0/24</span>
+        </div>
+
+        <div class="scn">
+          <div class="bar" style="background:linear-gradient(180deg,#EBCE78,#8c7430)"></div>
+          <div class="scn-top"><span class="sid" style="background:linear-gradient(135deg,#C8A94A,#8c7430)">SC&#8209;02</span><h4>Nexora Financial</h4><span class="diff">Advanced · 90m</span></div>
+          <p class="focus">Active Directory compromise on a Samba4 domain — enumeration, Kerberoasting and lateral movement.</p>
+          <div class="lanes">
+            <div class="lane red"><div class="lh">Red</div><span>BloodHound → Kerberoast → lateral → DCSync</span></div>
+            <div class="lane blue"><div class="lh">Blue</div><span>4769 RC4 alerts · logon analysis · DCSync</span></div>
+          </div>
+          <span class="net">172.20.2.0/24</span>
+        </div>
+
+        <div class="scn">
+          <div class="bar" style="background:linear-gradient(180deg,#F4B942,#b07d12)"></div>
+          <div class="scn-top"><span class="sid" style="background:linear-gradient(135deg,#F4B942,#b07d12)">SC&#8209;03</span><h4>Orion Logistics</h4><span class="diff">Intermediate · 75m</span></div>
+          <p class="focus">Phishing &amp; endpoint telemetry — OSINT, GoPhish campaign setup and SOC&#8209;side email investigation.</p>
+          <div class="lanes">
+            <div class="lane red"><div class="lh">Red</div><span>OSINT → pretext → payload → delivery</span></div>
+            <div class="lane blue"><div class="lh">Blue</div><span>Email headers · IOC collection · triage</span></div>
+          </div>
+          <span class="net">172.20.3.0/24</span>
+        </div>
+      </div>
+
+      <div class="panel grow">
+        <div class="panel-head"><span class="pnum">08</span><div class="ptitle">Testing &amp; Results<small>// verified evidence</small></div><span class="rule"></span></div>
+        <div class="stats">
+          <div class="stat"><div class="v cyan">68<span style="font-size:18px">ms</span></div><div class="k">Median Red→Blue loop latency<br>(p95 142&nbsp;ms · 0 WS drops)</div></div>
+          <div class="stat"><div class="v gold">84<span style="font-size:18px">%</span></div><div class="k">Backend code coverage<br>(&gt; 80% graduation gate)</div></div>
+          <div class="stat"><div class="v green">81</div><div class="k">Automated tests passing<br>unit · integration · E2E</div></div>
+          <div class="stat"><div class="v cyan">100</div><div class="k">Concurrent students<br>0% request failures (Locust)</div></div>
+        </div>
+        <div class="badges">
+          <span class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l4 4L19 6"/></svg>ESLint 0 / 0</span>
+          <span class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l4 4L19 6"/></svg>mypy clean</span>
+          <span class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l4 4L19 6"/></svg>Vite build OK</span>
+          <span class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l4 4L19 6"/></svg>15 / 15 demo checks</span>
+          <span class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l4 4L19 6"/></svg>HTTPS / Caddy ready</span>
+        </div>
+        <div class="ready">
+          <div class="score">95<small>/100</small></div>
+          <div><div class="rt">Defense&#8209;Ready</div><div class="rs">Isolation verified · end&#8209;to&#8209;end learning loop confirmed · instructor analytics live.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================================= FOOTER -->
+  <footer>
+    <div class="fcol">
+      <h6>References &amp; Frameworks</h6>
+      <ul class="refs">
+        <li>PTES</li><li>OWASP WSTG</li><li>NIST SP 800&#8209;61</li><li>MITRE ATT&amp;CK</li><li>ISSAF</li><li>Sigma Rules</li><li>Docker · Elastic · FastAPI</li>
+      </ul>
+      <p class="ethics" style="margin-top:9px"><b>Ethics:</b> all attack capability operates only against isolated Docker containers. CyberSim is not a tool for testing real systems.</p>
+    </div>
+    <div class="fcol">
+      <h6>Acknowledgements</h6>
+      <p>With thanks to our supervisor and the King Abdullah&nbsp;II School of Information Technology, University of Jordan, for guidance, lab access, and review throughout this graduation project.</p>
+    </div>
+    <div class="fcol foot-qr">
+      <div class="qr"><svg id="qr-foot" viewBox="0 0 25 25" shape-rendering="crispEdges"></svg></div>
+      <div class="repo">
+        <h6 style="margin-bottom:4px">Repository &amp; Demo</h6>
+        <b>github.com/&hellip;/JUTerminal1</b><br>
+        Scan for the live CyberSim demo &amp; source.
+      </div>
+    </div>
+  </footer>
+
+</section>
+</div>
+
+<script>
+  /* ---- decorative QR placeholder (deterministic, finder-pattern accurate) ---- */
+  (function(){
+    var N=25;
+    function localFinder(lr,lc){
+      if(lr===0||lr===6||lc===0||lc===6) return true;          /* outer ring */
+      if(lr>=2&&lr<=4&&lc>=2&&lc<=4) return true;              /* 3x3 core */
+      return false;
+    }
+    var finders=[[0,0],[0,N-7],[N-7,0]];
+    function dark(r,c){
+      for(var i=0;i<finders.length;i++){var fr=finders[i][0],fc=finders[i][1];
+        if(r>=fr&&r<fr+7&&c>=fc&&c<fc+7) return localFinder(r-fr,c-fc);}
+      for(var j=0;j<finders.length;j++){var gr=finders[j][0],gc=finders[j][1];
+        if(r>=gr-1&&r<=gr+7&&c>=gc-1&&c<=gc+7) return false;}   /* quiet separators */
+      var h=(r*31+c*17+((r^c)*13))%7; return h===0||h===3;     /* pseudo data */
+    }
+    function build(id){
+      var svg=document.getElementById(id); if(!svg) return; var s="";
+      for(var r=0;r<N;r++) for(var c=0;c<N;c++) if(dark(r,c))
+        s+='<rect x="'+c+'" y="'+r+'" width="1" height="1" fill="#0A0F1C"/>';
+      svg.innerHTML=s;
+    }
+    build('qr-head'); build('qr-foot');
+  })();
+
+  /* ---- fit poster to screen width (print is unaffected: @media print resets transform) ---- */
+  (function(){
+    var poster=document.getElementById('poster'), stage=document.querySelector('.stage');
+    function fit(){
+      poster.style.transform='none';                 /* reset before measuring true size */
+      var trueW=poster.offsetWidth, trueH=poster.offsetHeight, pad=40;
+      var s=Math.min((window.innerWidth-pad)/trueW,1);
+      poster.style.transform='scale('+s+')';
+      stage.style.height=(trueH*s+pad)+'px';
+    }
+    window.addEventListener('resize',fit);
+    window.addEventListener('load',fit); fit();
+  })();
+</script>
+</body>
+</html>

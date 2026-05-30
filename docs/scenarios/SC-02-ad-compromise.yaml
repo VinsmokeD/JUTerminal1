@@ -17,7 +17,7 @@ credentials_initial:
 objectives:
   red: ["enumerate", "kerberoast svc_backup", "crack hash", "dcsync as Domain Admin"]
   blue: ["detect 4769 RC4", "detect DCSync 4662", "triage lateral movement"]
-tools_expected: [nmap, smbclient, crackmapexec, GetUserSPNs.py, hashcat, secretsdump.py, bloodhound-python, kerbrute]
+tools_expected: [nmap, smbclient, ldapsearch, enum4linux, crackmapexec, bloodhound-python, kerbrute, GetUserSPNs.py, GetNPUsers.py, hashcat, secretsdump.py, gpp-decrypt]
 flags:
   - id: kerberoast_hash
     value: "$krb5tgs$23$*svc_backup$NEXORA.LOCAL$MSSQLSvc/nexora-fs01.nexora.local:1433*$deadbeef"
@@ -63,11 +63,15 @@ phases:
     mitre: ["T1087", "T1069", "T1482"]
     objectives:
       - "Enumerate all domain users and groups"
-      - "Identify Kerberoastable service accounts"
+      - "Identify Kerberoastable service accounts (look for svc_backup and its SPN)"
       - "Map computer accounts and roles"
-      - "Find unconstrained delegation objects"
+      - "Find AS-REP roastable users (DONT_REQ_PREAUTH) and SYSVOL/GPP artifacts"
     completion_signals:
-      tools_used: ["bloodhound", "ldapsearch", "crackmapexec", "impacket-getuserspns"]
+      # Recon is tool-agnostic: any one mapping/enumeration tool satisfies this
+      # phase. None of these are gated in phase 1, so the phase is always
+      # reachable (the old list required crackmapexec@3 and getuserspns@2 — a
+      # deadlock — and used "bloodhound" which never matches "bloodhound-python").
+      tools_used_any: ["bloodhound-python", "ldapsearch", "smbclient", "enum4linux", "nmap", "crackmapexec"]
       min_notes_tagged: { "#finding": 2 }
 
   2:
