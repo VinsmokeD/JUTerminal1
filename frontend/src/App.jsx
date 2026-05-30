@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore } from './store/authStore'
 import Landing from './pages/Landing'
 import Auth from './pages/Auth'
@@ -77,6 +78,169 @@ function GlobalPalette() {
   return <CommandPalette />
 }
 
+function RouteScannerWipe() {
+  return (
+    <motion.div
+      initial={{ left: '-10vw', opacity: 0 }}
+      animate={{ 
+        left: ['-10vw', '110vw'],
+        opacity: [0, 1, 1, 0]
+      }}
+      transition={{ 
+        duration: 0.65, 
+        ease: 'easeInOut' 
+      }}
+      className="fixed top-0 bottom-0 w-[6px] z-[9999] pointer-events-none bg-gradient-to-b from-[#4CC2FF] via-[#9B7DFF] to-transparent shadow-[0_0_25px_#4CC2FF,0_0_50px_#9B7DFF]"
+    />
+  )
+}
+
+const pageTransitionVariants = {
+  initial: {
+    opacity: 0,
+    scale: 0.97,
+    filter: 'blur(4px)',
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: {
+      duration: 0.45,
+      ease: [0.34, 1.56, 0.64, 1],
+    }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.97,
+    filter: 'blur(4px)',
+    transition: {
+      duration: 0.25,
+      ease: 'easeIn',
+    }
+  }
+}
+
+function RoutePage({ children }) {
+  return (
+    <motion.div
+      variants={pageTransitionVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="w-full min-h-dvh flex flex-col origin-center"
+    >
+      <RouteScannerWipe />
+      {children}
+    </motion.div>
+  )
+}
+
+function AppContent() {
+  const location = useLocation()
+
+  return (
+    <SessionManager>
+      <ToastContainer />
+      <GlobalPalette />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          {/* Public landing page */}
+          <Route path="/" element={<RouteGuard allowOnlyUnauth><RoutePage><Landing /></RoutePage></RouteGuard>} />
+          <Route path="/auth" element={<RouteGuard allowOnlyUnauth><RoutePage><Auth /></RoutePage></RouteGuard>} />
+          <Route path="/onboarding" element={<RouteGuard requireAuth><RoutePage><ErrorBoundary><Onboarding /></ErrorBoundary></RoutePage></RouteGuard>} />
+          <Route path="/dashboard" element={<RouteGuard requireAuth requireOnboarding><RoutePage><ErrorBoundary><Dashboard /></ErrorBoundary></RoutePage></RouteGuard>} />
+          <Route
+            path="/session/:sessionId/red"
+            element={
+              <RouteGuard requireAuth>
+                <ErrorBoundary>
+                  <RoutePage>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <RedWorkspace />
+                    </Suspense>
+                  </RoutePage>
+                </ErrorBoundary>
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/session/:sessionId/blue"
+            element={
+              <RouteGuard requireAuth>
+                <ErrorBoundary>
+                  <RoutePage>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <BlueWorkspace />
+                    </Suspense>
+                  </RoutePage>
+                </ErrorBoundary>
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/session/:sessionId/debrief"
+            element={
+              <RouteGuard requireAuth>
+                <ErrorBoundary>
+                  <RoutePage>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Debrief />
+                    </Suspense>
+                  </RoutePage>
+                </ErrorBoundary>
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/instructor"
+            element={
+              <RouteGuard requireAuth>
+                <ErrorBoundary>
+                  <RoutePage>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <InstructorDashboard />
+                    </Suspense>
+                  </RoutePage>
+                </ErrorBoundary>
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <RouteGuard requireAuth>
+                <ErrorBoundary>
+                  <RoutePage>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Settings />
+                    </Suspense>
+                  </RoutePage>
+                </ErrorBoundary>
+              </RouteGuard>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <RouteGuard requireAuth>
+                <ErrorBoundary>
+                  <RoutePage>
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <Profile />
+                    </Suspense>
+                  </RoutePage>
+                </ErrorBoundary>
+              </RouteGuard>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+    </SessionManager>
+  )
+}
+
 export default function App() {
   const checkAuth = useAuthStore((s) => s.checkAuth)
   const [isChecking, setIsChecking] = useState(true)
@@ -91,90 +255,8 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <SessionManager>
-          <ToastContainer />
-          <GlobalPalette />
-          <Routes>
-            {/* Public landing page */}
-            <Route path="/" element={<RouteGuard allowOnlyUnauth><Landing /></RouteGuard>} />
-            <Route path="/auth" element={<RouteGuard allowOnlyUnauth><Auth /></RouteGuard>} />
-            <Route path="/onboarding" element={<RouteGuard requireAuth><ErrorBoundary><Onboarding /></ErrorBoundary></RouteGuard>} />
-            <Route path="/dashboard" element={<RouteGuard requireAuth requireOnboarding><ErrorBoundary><Dashboard /></ErrorBoundary></RouteGuard>} />
-            <Route
-              path="/session/:sessionId/red"
-              element={
-                <RouteGuard requireAuth>
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <RedWorkspace />
-                    </Suspense>
-                  </ErrorBoundary>
-                </RouteGuard>
-              }
-            />
-            <Route
-              path="/session/:sessionId/blue"
-              element={
-                <RouteGuard requireAuth>
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <BlueWorkspace />
-                    </Suspense>
-                  </ErrorBoundary>
-                </RouteGuard>
-              }
-            />
-            <Route
-              path="/session/:sessionId/debrief"
-              element={
-                <RouteGuard requireAuth>
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <Debrief />
-                    </Suspense>
-                  </ErrorBoundary>
-                </RouteGuard>
-              }
-            />
-            <Route
-              path="/instructor"
-              element={
-                <RouteGuard requireAuth>
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <InstructorDashboard />
-                    </Suspense>
-                  </ErrorBoundary>
-                </RouteGuard>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <RouteGuard requireAuth>
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <Settings />
-                    </Suspense>
-                  </ErrorBoundary>
-                </RouteGuard>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <RouteGuard requireAuth>
-                  <ErrorBoundary>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <Profile />
-                    </Suspense>
-                  </ErrorBoundary>
-                </RouteGuard>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </SessionManager>
+      <AppContent />
     </BrowserRouter>
   )
 }
+

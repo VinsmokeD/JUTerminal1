@@ -1,4 +1,5 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect, useRef } from 'react'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
@@ -17,12 +18,38 @@ export default function Landing() {
   const { token } = useAuthStore()
   const tier = usePerfTier()
 
+  // Spring-lagged global cursor spotlight
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+  const springX = useSpring(mouseX, { damping: 45, stiffness: 180 })
+  const springY = useSpring(mouseY, { damping: 45, stiffness: 180 })
+
+  const spotlightBg = useTransform(
+    [springX, springY],
+    ([x, y]) => `radial-gradient(900px circle at ${x}px ${y}px, rgba(76, 194, 255, 0.05) 0%, rgba(155, 125, 255, 0.03) 40%, transparent 80%)`
+  )
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      mouseX.set(e.clientX)
+      mouseY.set(e.clientY)
+    }
+    window.addEventListener('mousemove', handleMove)
+    return () => window.removeEventListener('mousemove', handleMove)
+  }, [mouseX, mouseY])
+
   const goToPlatform = () => {
     navigate(token ? '/dashboard' : '/auth')
   }
 
   return (
-    <div className="min-h-dvh bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary font-display relative">
+      <motion.div 
+        className="pointer-events-none fixed inset-0 z-30 opacity-70"
+        style={{
+          background: spotlightBg
+        }}
+      />
       {/* NAVIGATION */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-void/80 border-b border-cs-border backdrop-blur-md font-mono text-xs">
         <button onClick={() => navigate('/')} className="flex items-center gap-3">
@@ -55,7 +82,12 @@ export default function Landing() {
         ) : (
           <ParticleCanvas />
         )}
-        <div className="relative z-10 text-center w-full max-w-[900px] hud-corner-ticks border border-cs-border/30 bg-void/60 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-cs shadow-2xl">
+        <motion.div 
+          initial={{ opacity: 0, y: 30, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1], delay: 0.15 }}
+          className="relative z-10 text-center w-full max-w-[900px] hud-corner-ticks border border-cs-border/30 bg-void/60 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-cs shadow-2xl"
+        >
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-2 border border-cs-border/60 rounded-cs font-mono text-[10px] text-txt-secondary mb-8 uppercase tracking-widest">
             <span className="w-2 h-2 rounded-full bg-green-signal animate-pulse shadow-green-glow" />
@@ -89,12 +121,18 @@ export default function Landing() {
             </button>
             <a href="#how" className="btn-v3 btn-v3-subtle text-xs">Learn More</a>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* LIVE DEMO */}
       <section className="relative px-6 md:px-12 pb-24 z-10">
-        <div className="max-w-[1200px] mx-auto glass p-0 overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
+          className="max-w-[1200px] mx-auto glass p-0 overflow-hidden"
+        >
           {/* Window bar */}
           <div className="flex items-center justify-between px-5 py-3 bg-surface-2/80 border-b border-cs-border font-mono text-[10px]">
             <div className="flex gap-1.5">
@@ -173,7 +211,7 @@ export default function Landing() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* STATS */}
@@ -185,10 +223,18 @@ export default function Landing() {
             { value: '100%', label: 'Real Tools - No Simulation', color: 'text-green-signal' },
             { value: '$0', label: 'Free Tier Stack', color: 'text-amber-warn' },
           ].map((s, i) => (
-            <div key={i} className="glass text-center p-6 bg-[#0d0f14]/80">
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              whileHover={{ y: -6, transition: { duration: 0.2 } }}
+              className="glass text-center p-6 bg-[#0d0f14]/80 cursor-pointer"
+            >
               <div className={`text-4xl font-extrabold font-mono tracking-tighter mb-2 ${s.color}`}>{s.value}</div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-txt-secondary">{s.label}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -209,13 +255,25 @@ export default function Landing() {
             { step: '2', title: 'Follow methodology', desc: 'CyberSim enforces PTES phases. Skip reconnaissance and jump to exploitation? Blocked. Document your findings before advancing. Methodology gating teaches professional discipline.', color: 'text-amber-warn border-amber-warn/20 bg-amber-warn/5' },
             { step: '3', title: 'Detect in real time', desc: 'Every attacker command triggers corresponding SIEM alerts within 2 seconds. Blue team sees the same attack from the defender\'s perspective - WAF alerts, event logs, network anomalies.', color: 'text-cs-blue border-cs-blue/20 bg-cs-blue/5' },
           ].map((c, i) => (
-            <div key={i} className="glass p-8 group transition-all relative overflow-hidden bg-[#0d0f14]/80">
-              <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-mono text-xs font-bold mb-5 border ${c.color}`}>
-                {c.step}
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.15 }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="glass p-8 group transition-all relative overflow-hidden bg-[#0d0f14]/80 cursor-pointer"
+            >
+              {/* Dynamic hover color glow */}
+              <div className="absolute inset-0 z-0 bg-gradient-to-br from-transparent via-transparent to-surface-3/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="relative z-10">
+                <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-mono text-xs font-bold mb-5 border ${c.color}`}>
+                  {c.step}
+                </div>
+                <h3 className="text-lg font-bold tracking-tight mb-3 font-display text-txt-primary">{c.title}</h3>
+                <p className="text-xs text-txt-secondary leading-relaxed font-display">{c.desc}</p>
               </div>
-              <h3 className="text-lg font-bold tracking-tight mb-3 font-display text-txt-primary">{c.title}</h3>
-              <p className="text-xs text-txt-secondary leading-relaxed font-display">{c.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -235,20 +293,39 @@ export default function Landing() {
             { id: 'SC-01', cls: 'sc-01', title: 'NovaMed Healthcare Portal', desc: 'A PHP/Apache web application with patient records. Discover SQL injection, IDOR vulnerabilities, unrestricted file upload, and local file inclusion in a realistic hospital IT environment.', diff: 'Intermediate', diffCls: 'border-amber-warn/20 text-amber-warn bg-amber-warn/5', tags: ['OWASP Top 10', 'SQLi / LFI / IDOR'] },
             { id: 'SC-02', cls: 'sc-02', title: 'Nexora Financial AD', desc: 'A Samba4 Active Directory environment with a domain controller and file server. Perform Kerberoasting, crack service account hashes, move laterally, and attempt DCSync.', diff: 'Advanced', diffCls: 'border-critical/20 text-critical bg-critical/5', tags: ['Active Directory', 'Kerberos / SMB'] },
             { id: 'SC-03', cls: 'sc-03', title: 'Orion Logistics Phishing', desc: 'Conduct OSINT, craft a phishing campaign with GoPhish, deliver a payload through social engineering, and achieve initial access on a simulated corporate endpoint.', diff: 'Intermediate', diffCls: 'border-amber-warn/20 text-amber-warn bg-amber-warn/5', tags: ['Social Engineering', 'OSINT / Email'] },
-          ].map((sc) => (
-            <div key={sc.id} className="glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hover:border-nb-border-strong transition-all duration-200" onClick={goToPlatform}>
-              <div>
-                <div className="font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-cs-sm w-fit mb-4">{sc.id}</div>
-                <h3 className="text-lg font-bold tracking-tight mb-2 font-display text-txt-primary">{sc.title}</h3>
-                <p className="text-xs text-txt-secondary leading-relaxed mb-6 font-display">{sc.desc}</p>
+          ].map((sc, i) => (
+            <motion.div 
+              key={sc.id} 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: i * 0.15 }}
+              whileHover={{ 
+                y: -10, 
+                scale: 1.03,
+                boxShadow: '0 20px 40px rgba(0, 243, 255, 0.05)'
+              }}
+              className="glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer group hover:border-[#4CC2FF]/30 transition-all duration-300 relative overflow-hidden" 
+              onClick={goToPlatform}
+            >
+              {/* Refraction edge gradient flare */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#4CC2FF]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              
+              <div className="relative z-10">
+                <div className="font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-cs-sm w-fit mb-4 transition-colors group-hover:bg-[#4CC2FF]/10 group-hover:text-[#4CC2FF]">{sc.id}</div>
+                <h3 className="text-lg font-bold tracking-tight mb-2 font-display text-txt-primary group-hover:text-[#4CC2FF] transition-colors">{sc.title}</h3>
+                
+                {/* Description and details reveal */}
+                <p className="text-xs text-txt-secondary leading-relaxed mb-6 font-display group-hover:text-txt-primary transition-colors">{sc.desc}</p>
               </div>
-              <div className="flex gap-2 flex-wrap">
+              
+              <div className="flex gap-2 flex-wrap relative z-10">
                 <span className={`px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border ${sc.diffCls}`}>{sc.diff}</span>
                 {sc.tags.map(t => (
-                  <span key={t} className="px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border-cs-border text-txt-dim bg-surface-2/40">{t}</span>
+                  <span key={t} className="px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border-cs-border text-txt-dim bg-surface-2/40 group-hover:border-cs-border/60 transition-colors">{t}</span>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -283,7 +360,15 @@ export default function Landing() {
         <div className="absolute inset-0 z-0 opacity-40" style={{
           background: 'radial-gradient(ellipse 60% 40% at 30% 50%, rgba(255,59,59,0.04), transparent), radial-gradient(ellipse 60% 40% at 70% 50%, rgba(59,139,255,0.04), transparent)'
         }} />
-        <div className="relative z-10 glass p-12 bg-void/70">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98, y: 30 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
+          className="relative z-10 glass p-12 bg-void/70 overflow-hidden group"
+        >
+          {/* Neon scanline wipe decoration */}
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#4CC2FF] to-transparent opacity-30 group-hover:opacity-100 transition-opacity duration-500" />
           <div className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4">// RET-5 SYSTEMS READY //</div>
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary">
             Stop learning tools in isolation.<br />
@@ -297,7 +382,7 @@ export default function Landing() {
             <button onClick={goToPlatform} className="btn-v3 btn-v3-red text-xs">Begin SC-01: Web App Pentest</button>
             <a href="#how" className="btn-v3 btn-v3-subtle text-xs">View Demo</a>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* FOOTER */}

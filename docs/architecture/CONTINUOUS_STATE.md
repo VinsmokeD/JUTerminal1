@@ -882,3 +882,20 @@ pm run build and ran unit tests successfully.
   - Rebuilt and restarted the frontend container successfully.
   - All files committed and pushed to git origin master.
 
+---
+
+### [2026-05-30] - Antigravity (Design V7 — High-End Motion & 3D Interactive Lighting Upgrade)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user requested high-fidelity, fluid spring animations inspired by rzv.studio and brightedge.framer.website, completely removing the boot loading overlay screen on login redirection.
+* **Files modified**:
+  - `frontend/src/App.jsx` — Implemented page transitions using AnimatePresence. Extracted Routes to `AppContent` under `BrowserRouter` so useLocation transitions trigger correctly. Wrapped all Route elements in the spring-based `<RoutePage>` component which fires an entrance scale up/exit scale down and a glowing holographic scanline wipe (`RouteScannerWipe`).
+  - `frontend/src/pages/Auth.jsx` — Completely removed the console bootloader screen (`BootOverlay`), redirecting users directly on login. Replaced the mouse coordination listener with a spring-lagged cursor follow spotlight using useMotionValue and useSpring. Configured 3D card tilt tracking (`rotateX`/`rotateY`) and relative border light refract gradients (`cardHoverBg`) on hover to create interactive physical card depth.
+  - `frontend/src/pages/Landing.jsx` — Replaced client coordinate mouse listener with the shared spring-lagged spotlight. Wrapped hero cards, demo cards, stat cards, how-it-works cards, scenario cards, and CTA elements with scroll-triggered fade/scale up animations using framer-motion's whileInView/viewport parameters. Added hover relative edge lighting glow and scale translation hovers to scenario cards.
+* **What & How**:
+  - Replaced native mouse coordinate state updates with declarative, performance-optimized Framer Motion springs to simulate natural delayed spotlight drag on Auth and Landing pages.
+  - Set up AnimatePresence route swaps that scale down exiting layouts slightly (3D push-back) while sliding/fading in new layouts with a glowing scanline wipe.
+  - Wrapped card items in tilt and hover variables to make panels react dynamically to mouse coordinates.
+* **Verification**:
+  - Production build compiled successfully (`npm run build` completed in 10.00s).
+  - All 27 Vitest unit tests pass successfully.

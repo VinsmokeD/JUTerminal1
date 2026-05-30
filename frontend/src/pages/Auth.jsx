@@ -1,5 +1,6 @@
-import { useEffect, useState, Suspense, lazy } from 'react'
+import { useEffect, useState, Suspense, lazy, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useAuthStore } from '../store/authStore'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 
@@ -25,20 +26,74 @@ export default function Auth() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [typedWords, setTypedWords] = useState([])
-  const [isInitializing, setIsInitializing] = useState(false)
-  const [redirectUrl, setRedirectUrl] = useState('')
-  const [coords, setCoords] = useState({ x: 0, y: 0 })
   const { login, register } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
 
+  // Spring-lagged global cursor spotlight
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+  const springX = useSpring(mouseX, { damping: 45, stiffness: 180 })
+  const springY = useSpring(mouseY, { damping: 45, stiffness: 180 })
+
+  const spotlightBg = useTransform(
+    [springX, springY],
+    ([x, y]) => `radial-gradient(800px circle at ${x}px ${y}px, rgba(76, 194, 255, 0.05) 0%, rgba(155, 125, 255, 0.03) 40%, transparent 80%)`
+  )
+
   useEffect(() => {
     const handleMove = (e) => {
-      setCoords({ x: e.clientX, y: e.clientY })
+      mouseX.set(e.clientX)
+      mouseY.set(e.clientY)
     }
     window.addEventListener('mousemove', handleMove)
     return () => window.removeEventListener('mousemove', handleMove)
-  }, [])
+  }, [mouseX, mouseY])
+
+  // Spring-lagged card 3D tilt
+  const cardRef = useRef(null)
+  const cardRotateX = useMotionValue(0)
+  const cardRotateY = useMotionValue(0)
+  const cardSpringX = useSpring(cardRotateX, { damping: 30, stiffness: 200 })
+  const cardSpringY = useSpring(cardRotateY, { damping: 30, stiffness: 200 })
+
+  // Spring-lagged card border flash/light refract overlay
+  const cardLightX = useMotionValue(0)
+  const cardLightY = useMotionValue(0)
+  const cardLightSpringX = useSpring(cardLightX, { damping: 25, stiffness: 180 })
+  const cardLightSpringY = useSpring(cardLightY, { damping: 25, stiffness: 180 })
+
+  const cardHoverBg = useTransform(
+    [cardLightSpringX, cardLightSpringY],
+    ([x, y]) => `radial-gradient(220px circle at ${x}px ${y}px, rgba(76, 194, 255, 0.1) 0%, rgba(155, 125, 255, 0.03) 50%, transparent 100%)`
+  )
+
+  const handleCardMouseMove = (e) => {
+    const card = cardRef.current
+    if (!card) return
+    const rect = card.getBoundingClientRect()
+    const width = rect.width
+    const height = rect.height
+    const mouseXVal = e.clientX - rect.left
+    const mouseYVal = e.clientY - rect.top
+    
+    // Normalize to range [-0.5, 0.5] then map to rotation angles (max ~6 degrees)
+    const rX = -(mouseYVal / height - 0.5) * 6
+    const rY = (mouseXVal / width - 0.5) * 6
+    
+    cardRotateX.set(rX)
+    cardRotateY.set(rY)
+
+    cardLightX.set(mouseXVal)
+    cardLightY.set(mouseYVal)
+  }
+
+  const handleCardMouseLeave = () => {
+    cardRotateX.set(0)
+    cardRotateY.set(0)
+    cardLightX.set(-500)
+    cardLightY.set(-500)
+  }
 
   useEffect(() => {
     const timers = TAGLINE.map((word, index) => (
@@ -64,8 +119,7 @@ export default function Auth() {
         returnUrl = null
       }
       const from = location.state?.from?.pathname || returnUrl || (authResult?.role === 'instructor' ? '/instructor' : '/dashboard')
-      setRedirectUrl(from)
-      setIsInitializing(true)
+      navigate(from, { replace: true })
     } catch (err) {
       setError(err.response?.data?.detail || 'Authentication failed')
     } finally {
@@ -75,14 +129,10 @@ export default function Auth() {
 
   return (
     <div className="min-h-dvh bg-void flex relative">
-      {isInitializing && (
-        <BootOverlay username={username} onComplete={() => navigate(redirectUrl, { replace: true })} />
-      )}
-      
-      <div 
+      <motion.div 
         className="pointer-events-none fixed inset-0 z-30 opacity-70"
         style={{
-          background: `radial-gradient(800px circle at ${coords.x}px ${coords.y}px, rgba(76, 194, 255, 0.05) 0%, rgba(155, 125, 255, 0.03) 40%, transparent 80%)`
+          background: spotlightBg
         }}
       />
 
@@ -173,137 +223,86 @@ export default function Auth() {
             </div>
           </div>
 
-          <div className="glass p-6">
-            <h2 className="text-txt-primary font-bold text-lg mb-1 font-display">
-              {mode === 'login' ? 'Welcome back' : 'Create your account'}
-            </h2>
-            <p className="text-txt-secondary text-sm mb-6">
-              {mode === 'login' ? 'Sign in to continue your training' : 'Start your cybersecurity journey'}
-            </p>
-
-            <div className="flex gap-1 mb-6 bg-surface-2 rounded-cs p-1">
-              {['login', 'register'].map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => { setMode(m); setError('') }}
-                  className={`flex-1 py-2 rounded-cs-sm text-sm font-medium transition-colors duration-300 font-display ${
-                    mode === m ? 'bg-surface-4 text-txt-primary shadow-sm' : 'text-txt-dim hover:text-txt-secondary hover:bg-surface-3/40'
-                  }`}
-                >
-                  {m === 'login' ? 'Sign in' : 'Register'}
-                </button>
-              ))}
-            </div>
-
-            <form onSubmit={submit} className="space-y-4">
-              <div>
-                <label className="input-label font-mono text-[10px] tracking-wider uppercase text-txt-dim">Username</label>
-                <input
-                  type="text" value={username} onChange={(e) => setUsername(e.target.value)}
-                  required autoFocus
-                  className={`w-full input-v3 ${mode === 'login' ? '' : 'input-v3-red'}`}
-                  placeholder="Enter operator username"
-                />
-              </div>
-              <div>
-                <label className="input-label font-mono text-[10px] tracking-wider uppercase text-txt-dim">Password</label>
-                <input
-                  type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className={`w-full input-v3 ${mode === 'login' ? '' : 'input-v3-red'}`}
-                  placeholder="Enter security key"
-                />
-              </div>
-
-              <div className={`transition-all duration-150 ${error ? 'opacity-100 translate-y-0' : 'pointer-events-none -translate-y-1 opacity-0'}`}>
-                {error && (
-                  <div className="text-cs-red text-xs bg-cs-red-surface border border-cs-red/20 rounded-cs-sm px-3 py-2.5 font-mono">{error}</div>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full btn-v3 ${mode === 'login' ? 'btn-v3-blue' : 'btn-v3-red'}`}
-              >
-                {loading ? 'Establishing handshake...' : mode === 'login' ? 'Initialize Interface' : 'Register Secure Node'}
-              </button>
-            </form>
-          </div>
-          <p className="text-center text-txt-dim text-xs mt-4 font-mono">University of Jordan</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function BootOverlay({ username, onComplete }) {
-  const [logs, setLogs] = useState([])
-  const [progress, setProgress] = useState(0)
-
-  useEffect(() => {
-    const sequences = [
-      { log: `> Initializing secure connection for: ${username.toUpperCase()}`, delay: 100, pct: 15 },
-      { log: `> Establishing cryptographic handshake...`, delay: 400, pct: 35 },
-      { log: `> Connection established. Decrypting session credentials...`, delay: 850, pct: 60 },
-      { log: `> Allocating isolated sandboxed environment...`, delay: 1300, pct: 85 },
-      { log: `> Handshake complete. Welcome, operator.`, delay: 1750, pct: 100 },
-    ]
-
-    sequences.forEach(seq => {
-      setTimeout(() => {
-        setLogs(prev => [...prev, seq.log])
-        setProgress(seq.pct)
-      }, seq.delay)
-    })
-
-    const redirectTimer = setTimeout(() => {
-      onComplete()
-    }, 2200)
-
-    return () => {
-      clearTimeout(redirectTimer)
-    }
-  }, [username, onComplete])
-
-  return (
-    <div className="fixed inset-0 z-[100] bg-void/90 backdrop-blur-md flex items-center justify-center p-6">
-      <div className="w-full max-w-lg glass p-8 border-cs-blue/30 shadow-2xl relative overflow-hidden flex flex-col gap-6">
-        <div className="absolute top-0 left-0 w-8 h-[2px] bg-cs-blue shadow-blue-glow" />
-        <div className="absolute top-0 left-0 w-[2px] h-8 bg-cs-blue shadow-blue-glow" />
-        
-        <div className="flex items-center gap-3">
-          <div className="relative h-6 w-6">
-            <div className="absolute left-0 top-0 h-3 w-3 rounded bg-cs-red shadow-red-glow animate-ping" />
-            <div className="absolute bottom-0 right-0 h-3 w-3 rounded bg-cs-blue shadow-blue-glow animate-ping" style={{ animationDelay: '0.3s' }} />
-          </div>
-          <span className="font-display font-bold text-txt-primary">CyberSim Handshake</span>
-          <span className="ml-auto font-mono text-xs text-cs-blue animate-pulse">BOOTSTRAPPING</span>
-        </div>
-
-        <div className="bg-void/80 border border-cs-border rounded-cs p-4 font-mono text-[11px] leading-relaxed text-txt-secondary h-44 overflow-y-auto space-y-1.5 scrollbar-thin">
-          {logs.map((log, index) => (
-            <div key={index} className="flex gap-2">
-              <span className={index === logs.length - 1 && progress < 100 ? "text-cs-blue" : "text-txt-dim"}>
-                {index === logs.length - 1 && progress < 100 ? "█" : "✔"}
-              </span>
-              <span>{log}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex justify-between font-mono text-[10px] text-txt-dim">
-            <span>Handshake Progress</span>
-            <span>{progress}%</span>
-          </div>
-          <div className="w-full h-1.5 bg-surface-3 rounded-full overflow-hidden border border-cs-border/40">
-            <div 
-              className="h-full bg-cs-blue shadow-blue-glow transition-all duration-300 ease-out" 
-              style={{ width: `${progress}%` }} 
+          <motion.div
+            ref={cardRef}
+            onMouseMove={handleCardMouseMove}
+            onMouseLeave={handleCardMouseLeave}
+            style={{
+              rotateX: cardSpringX,
+              rotateY: cardSpringY,
+              transformStyle: 'preserve-3d',
+              perspective: 1000
+            }}
+            className="glass p-6 relative overflow-hidden group transition-all duration-300"
+          >
+            {/* Holographic light refract border overlay */}
+            <motion.div 
+              className="pointer-events-none absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{ background: cardHoverBg }}
             />
-          </div>
+            {/* Card Content Wrapper */}
+            <div className="relative z-10 space-y-6" style={{ transform: 'translateZ(20px)' }}>
+              <div>
+                <h2 className="text-txt-primary font-bold text-lg mb-1 font-display">
+                  {mode === 'login' ? 'Welcome back' : 'Create your account'}
+                </h2>
+                <p className="text-txt-secondary text-sm">
+                  {mode === 'login' ? 'Sign in to continue your training' : 'Start your cybersecurity journey'}
+                </p>
+              </div>
+
+              <div className="flex gap-1 bg-surface-2 rounded-cs p-1">
+                {['login', 'register'].map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => { setMode(m); setError('') }}
+                    className={`flex-1 py-2 rounded-cs-sm text-sm font-medium transition-colors duration-300 font-display ${
+                      mode === m ? 'bg-surface-4 text-txt-primary shadow-sm' : 'text-txt-dim hover:text-txt-secondary hover:bg-surface-3/40'
+                    }`}
+                  >
+                    {m === 'login' ? 'Sign in' : 'Register'}
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={submit} className="space-y-4">
+                <div>
+                  <label className="input-label font-mono text-[10px] tracking-wider uppercase text-txt-dim">Username</label>
+                  <input
+                    type="text" value={username} onChange={(e) => setUsername(e.target.value)}
+                    required autoFocus
+                    className={`w-full input-v3 ${mode === 'login' ? '' : 'input-v3-red'}`}
+                    placeholder="Enter operator username"
+                  />
+                </div>
+                <div>
+                  <label className="input-label font-mono text-[10px] tracking-wider uppercase text-txt-dim">Password</label>
+                  <input
+                    type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className={`w-full input-v3 ${mode === 'login' ? '' : 'input-v3-red'}`}
+                    placeholder="Enter security key"
+                  />
+                </div>
+
+                <div className={`transition-all duration-150 ${error ? 'opacity-100 translate-y-0' : 'pointer-events-none -translate-y-1 opacity-0'}`}>
+                  {error && (
+                    <div className="text-cs-red text-xs bg-cs-red-surface border border-cs-red/20 rounded-cs-sm px-3 py-2.5 font-mono">{error}</div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full btn-v3 ${mode === 'login' ? 'btn-v3-blue' : 'btn-v3-red'}`}
+                >
+                  {loading ? 'Establishing handshake...' : mode === 'login' ? 'Initialize Interface' : 'Register Secure Node'}
+                </button>
+              </form>
+            </div>
+          </motion.div>
+          <p className="text-center text-txt-dim text-xs mt-4 font-mono">University of Jordan</p>
         </div>
       </div>
     </div>
