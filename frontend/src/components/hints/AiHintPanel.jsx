@@ -308,14 +308,14 @@ function HintBubble({ hint }) {
             avatar: 'SYS',
             name: 'System Monitor',
             avatarBg: 'bg-critical/10 text-critical border-critical/30',
-            bubbleBg: 'bg-critical/5 border-critical/20 text-text-primary'
+            bubbleBg: 'bg-critical/5 border-critical/20 text-txt-primary'
           }
         : hint.isInsight
           ? {
               avatar: 'SCAN',
               name: 'Output Insight',
               avatarBg: 'bg-green-signal/10 text-green-signal border-green-signal/30',
-              bubbleBg: 'bg-green-signal/5 border-green-signal/20 text-text-primary'
+              bubbleBg: 'bg-green-signal/5 border-green-signal/20 text-txt-primary'
             }
           : hint.level
             ? {

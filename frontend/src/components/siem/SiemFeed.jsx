@@ -483,7 +483,7 @@ function EventRow({
                   type="button"
                   onClick={handleTriageSave}
                   disabled={triageSaving}
-                  className="btn btn-blue px-3 py-1.5 text-[10.5px] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="btn-v3 btn-v3-blue btn-v3-sm disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {triageSaving ? 'Saving...' : 'Save triage'}
                 </button>
