@@ -407,3 +407,15 @@ pm run build and ran unit tests successfully.
 * **Where**: backend/tests/ai/test_response_sanitization.py - added 3 cases for the headline secrets (Backup2023!, Password123, WebAppPass2024!) the prior test omitted (it only covered P@ssw0rd_NovaMed_2023!). Guards against a regex-list refactor silently dropping one.
 * **Minor observation (not fixed, non-fatal)**: get_ai_hint inserts ai_interactions telemetry with an FK to sessions; calling it with a non-existent session_id raises ForeignKeyViolationError (caught, hint still returns). Won't happen with real sessions. Candidate for a try/except wrap later.
 * **Verification**: pytest --ignore=tests/e2e => 301 passed in 8.47s. Live + deterministic guardrail proofs above.
+
+### [2026-05-29] - Claude Code (Phase 10: CI workflow corrected + hardened)
+* **Status**: Complete - Rewrote .github/workflows/ci.yml to be a real, hermetic gate. Locally simulated the critical test job (301 pass on a fresh DB).
+* **Why**: The existing ci.yml had a FALSE-GREEN defect (`pytest ... || echo "No tests yet"` swallowed every failure) plus env bugs that meant the suite couldn't actually connect, re-introduced the pytest pin conflict, and still set GEMINI_API_KEY.
+* **Where**: .github/workflows/ci.yml - full rewrite.
+* **What & How**:
+  - GATE jobs (must pass): backend-test (ephemeral postgres+redis services; sets TEST_POSTGRES_URL/TEST_REDIS_URL which conftest actually honors -> dedicated cybersim_test DB; OPENROUTER_API_KEY="" for deterministic fallback; real `pytest --ignore=tests/e2e -q` with NO failure-swallowing), frontend build, compose-validate (`docker compose config`), docker-build (backend+frontend images - would have caught the pin conflict).
+  - ADVISORY jobs (continue-on-error, report-only): backend-quality (black+mypy - codebase is NOT black-clean: 58 files would reformat, so blocking would red-light CI day one), frontend ESLint, security-scan (pip-audit + npm audit + gitleaks docker).
+  - Removed: `|| echo "No tests yet"` false-green, the bare `pip install pytest pytest-asyncio` re-resolve, GEMINI_API_KEY, POSTGRES_URL-that-conftest-ignores.
+  - Added concurrency cancel-in-progress; PRs gate on main+develop.
+* **Verification**: YAML parses (6 jobs). SIMULATED the backend-test job exactly: created a fresh cybersim_test database, exported the CI env vars (TEST_POSTGRES_URL/TEST_REDIS_URL/ENVIRONMENT=test/OPENROUTER_API_KEY=""), ran the job command -> 301 passed in 8.52s (init_db built tables in the empty DB; hermetic). All other GATE jobs independently verified live this session (compose config exit 0; npm build; backend+frontend image builds). NOTE: full GH Actions run requires a push (user-controlled); every gate verified locally.
+* **Follow-up (advisory debt)**: a `black src/ tests/` formatting pass (58 files) would let black become a blocking gate; gitleaks will flag the intentional sc01 .env_leak training artifact + CI test secret -> add a .gitleaks.toml allowlist later.
