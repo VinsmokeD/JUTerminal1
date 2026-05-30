@@ -430,3 +430,10 @@ pm run build and ran unit tests successfully.
 * **Verification**: 17 unit tests pass; full suite `pytest --ignore=tests/e2e` => 318 passed in 8.16s; ws/routes.py AST-parses. Backend image rebuilt to deploy. Full end-to-end WS scope-block will be exercised in the Phase 6 kill-chain walkthrough.
 
 * **LIVE E2E (rebuilt image)**: seeded a real SC-01 session (roe_acknowledged) and called _handle_terminal_command directly: 'nmap -sV 8.8.8.8' -> OUT OF SCOPE blocked; 'nmap -sV 172.20.2.20' (cross-scenario) -> blocked; 'whoami' (in-scope) -> NOT blocked. No handler exceptions. Scope gate confirmed working end-to-end.
+
+### [2026-05-29] - Claude Code (Phase 3: STRIDE threat model documented)
+* **Status**: Complete - Wrote docs/SECURITY_THREAT_MODEL.md (v1.0), a STRIDE threat model grounded in code review + the live verifications done this session.
+* **Why**: A security training platform that runs offensive tooling needs a documented containment model; high value for the graduation defense.
+* **Where**: docs/SECURITY_THREAT_MODEL.md [NEW].
+* **What & How**: Trust-boundary diagram; assets; STRIDE per component (auth/JWT, WS command proxy, AI tutor [OWASP LLM Top-10], sandbox/docker, datastores, frontend); the network-isolation invariant; residual-risk register (R1 docker.sock=High, R2 default creds, R3 sandbox cap-drop, R4 hostname ROE, R5 CSP, R6 utcnow); and an empirical-verification section listing what was proven live (isolation 6/6, AI guardrails, scope gate, WS auth, ro socket).
+* **Verification**: docs-only, no code/tests affected. Cross-checked every claimed mitigation against the actual code/files referenced.
