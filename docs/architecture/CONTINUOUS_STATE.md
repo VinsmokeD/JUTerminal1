@@ -852,3 +852,16 @@ pm run build and ran unit tests successfully.
   - All 334 backend python unit/integration tests pass successfully.
   - mypy checks pass successfully ("Success: no issues found in 58 source files").
 
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Body Fade Mask Layout Fix)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user reported that text content and titles at the bottom of pages were extremely dark, faded, and low-contrast. This was caused by the body element's `mask-image` property (which faded all content at the page edges to transparent).
+* **Files modified**:
+  - `frontend/src/index.css` — Removed the grid background and `mask-image` properties from the `body` styles, moving them to `body::before` with a negative z-index (`z-index: -2`). This isolates the fade mask effect strictly to the grid background lines, maintaining full 100% font opacity and readability for page copy, input labels, and layouts across all pages.
+* **Verification**:
+  - Production build compiled successfully in Nginx image build.
+  - Container rebuilt and restarted successfully.
+  - Changes pushed to github remote origin master branch.
+
