@@ -13,6 +13,7 @@ export default function Settings() {
     autoCopy, setAutoCopy,
     animations, setAnimations,
     verbosity, setVerbosity,
+    perfMode, setPerfMode,
     reset,
   } = useSettingsStore()
 
@@ -89,6 +90,34 @@ export default function Settings() {
                   ['reduced', 'Reduced'],
                 ]} />
               </SettingRow>
+            </div>
+          </section>
+
+          <section className="card-v3 p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-txt-secondary font-mono">Performance</h2>
+            <div className="mt-4 space-y-4">
+              <SettingRow
+                label="Render quality"
+                note={
+                  perfMode === 'low'
+                    ? 'Low: 3D and blur disabled — best for older laptops and projectors.'
+                    : perfMode === 'high'
+                    ? 'High: all effects enabled regardless of device.'
+                    : 'Auto: adapts to device capability and monitors live FPS.'
+                }
+              >
+                <Segmented value={perfMode} onChange={setPerfMode} options={[
+                  ['auto', 'Auto'],
+                  ['high', 'High'],
+                  ['low', 'Low'],
+                ]} />
+              </SettingRow>
+              {perfMode === 'auto' && (
+                <p className="text-xs text-txt-dim font-mono">
+                  Auto-detected from CPU cores, display density, and pointer type.
+                  Switches to Low if the app drops below 38 fps for 2 consecutive seconds.
+                </p>
+              )}
             </div>
           </section>
 

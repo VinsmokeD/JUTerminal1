@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   autoCopy: 'cs.terminal.autoCopy',
   animations: 'cs.ui.animations',
   verbosity: 'cs.ai.verbosity',
+  perfMode: 'cs.ui.perfMode',
 }
 
 const readSetting = (key, fallback) => {
@@ -26,12 +27,25 @@ const writeSetting = (key, value) => {
   }
 }
 
+/** Apply perf mode to the DOM — called on init and on every change. */
+function applyPerfMode(mode) {
+  if (typeof document === 'undefined') return
+  const el = document.documentElement
+  if (mode === 'low') {
+    el.dataset.perf = 'low'
+  } else {
+    delete el.dataset.perf
+  }
+}
+
 export const useSettingsStore = create((set) => ({
   terminalTheme: readSetting(STORAGE_KEYS.theme, 'dark'),
   terminalFont: Number(readSetting(STORAGE_KEYS.fontSize, '12.5')),
   autoCopy: readSetting(STORAGE_KEYS.autoCopy, 'false') === 'true',
   animations: readSetting(STORAGE_KEYS.animations, 'on'),
   verbosity: readSetting(STORAGE_KEYS.verbosity, 'balanced'),
+  /** 'auto' | 'high' | 'low' — persisted, drives data-perf attribute on <html> */
+  perfMode: readSetting(STORAGE_KEYS.perfMode, 'auto'),
 
   setTerminalTheme: (theme) => {
     writeSetting(STORAGE_KEYS.theme, theme)
@@ -60,6 +74,12 @@ export const useSettingsStore = create((set) => ({
     set({ verbosity: level })
   },
 
+  setPerfMode: (mode) => {
+    writeSetting(STORAGE_KEYS.perfMode, mode)
+    applyPerfMode(mode)
+    set({ perfMode: mode })
+  },
+
   reset: () => {
     Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key))
     const defaults = {
@@ -68,13 +88,16 @@ export const useSettingsStore = create((set) => ({
       autoCopy: false,
       animations: 'on',
       verbosity: 'balanced',
+      perfMode: 'auto',
     }
     document.documentElement.dataset.animations = 'on'
+    applyPerfMode('auto')
     set(defaults)
   },
 }))
 
-// Apply initial animations state
+// Apply initial states on page load
 if (typeof document !== 'undefined') {
   document.documentElement.dataset.animations = readSetting(STORAGE_KEYS.animations, 'on')
+  applyPerfMode(readSetting(STORAGE_KEYS.perfMode, 'auto'))
 }

@@ -32,6 +32,35 @@
   .perf-fallback { display: block !important; }
 }
 
+/* ─── Performance mode: Low (data-perf="low" on <html>) ───────────── */
+/* Set via settingsStore.setPerfMode('low'). Disables GPU-heavy layers  */
+/* while keeping all UI functionality and interactive transitions.       */
+:root[data-perf="low"] body::before,
+:root[data-perf="low"] body::after {
+  /* Kill full-screen scanline overlay + ambient radial — main compositor cost */
+  display: none !important;
+}
+:root[data-perf="low"] .perf-3d {
+  display: none !important;
+}
+:root[data-perf="low"] .perf-fallback {
+  display: block !important;
+}
+:root[data-perf="low"] .card-v3,
+:root[data-perf="low"] [style*="backdrop-filter"] {
+  /* Remove blur — most expensive compositing operation on slow hardware */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Pause looping ambient animations (scanlines, pulses, glitch) but     */
+/* keep interaction transitions (transition-duration) fully responsive. */
+:root[data-perf="low"] *,
+:root[data-perf="low"] *::before,
+:root[data-perf="low"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+}
+
 /* ─── Focus rings (visible, accessible) ───────────────────────────── */
 *:focus-visible {
   outline: none;

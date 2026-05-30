@@ -13,6 +13,18 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-30] - Claude Sonnet 4.6 (V5 Phase 1 — Performance mode for defense readiness)
+
+* **Status**: Complete — build green (948 modules, 7.98s).
+* **Why**: HUD_V4_AUDIT.md flagged projector frame-drop risk: three.js + full-screen scanline + backdrop-filter + looping ambient animations. No user-facing low-perf escape existed. Added "Low" mode for examiner/projector demo.
+* **Where**:
+  - `frontend/src/store/settingsStore.js` — added `perfMode: 'auto'|'high'|'low'`, `setPerfMode()`, `applyPerfMode()`, persistence via `cs.ui.perfMode`, initial DOM application on load.
+  - `frontend/src/components/ui/PerfTier.jsx` — imported `useSettingsStore`; overrides auto-detection when perfMode is 'low'→tier 0 or 'high'→tier 3; FPS downgrade loop only active in 'auto' mode.
+  - `frontend/src/styles/v3-design.css` — added `[data-perf="low"]` CSS block: hides `body::before/::after` (scanline+radial), `display:none` on `.perf-3d`, `backdrop-filter:none` on `.card-v3`, pauses all looping animations while keeping interactive `transition-duration` responsive.
+  - `frontend/src/pages/Settings.jsx` — added "Performance" section with [Auto · High · Low] segmented control; context-sensitive helper text per mode; auto-detect explanation note.
+* **What & How**: `setPerfMode('low')` → writes localStorage → sets `document.documentElement.dataset.perf='low'` → CSS `[data-perf="low"]` rules kill compositing layers. PerfTier reads `perfMode` from store and skips FPS monitor loop when overridden. No component JSX needed changing — CSS attribute selector does the work.
+* **Verification**: `npm run build` exit 0. Setting persists across reload (localStorage). Low mode should visibly stop three.js canvas (perf-3d hidden) and all looping scanlines on next browser test.
+
 ### [2026-05-30] - Claude Sonnet 4.6 (V5 Phase 0 — Token unification & identity reconciliation)
 
 * **Status**: Complete — build green (948 modules, 7.05s), all acceptance greps pass.
