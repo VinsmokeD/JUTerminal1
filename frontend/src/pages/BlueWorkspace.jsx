@@ -128,7 +128,7 @@ export default function BlueWorkspace() {
   const signalEvents = siemEvents.filter(e => !isNoiseEvent(e))
   const criticalCount = signalEvents.filter(e => (e.severity || '').toUpperCase() === 'CRITICAL').length
   const highCount = signalEvents.filter(e => (e.severity || '').toUpperCase() === 'HIGH').length
-  const noiseCount = siemEvents.length - signalEvents.length
+  const _noiseCount = siemEvents.length - signalEvents.length
 
   const addIoc = () => {
     if (!iocInput.trim()) return

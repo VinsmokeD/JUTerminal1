@@ -518,6 +518,30 @@ pm run build and ran unit tests successfully.
 * **What & How**: CONTINUE_HERE.md is now THE resume document - cold-start context, the "verify empirically / docs overstate gaps" lesson, current verified state, Operating Protocol (test/rebuild gotchas), and per-phase prompts (A done; B sandbox hardening, C frontend lint/a11y/CSP, D mypy, E coverage, F reliability, G kill-chain evidence, H docs, I ws/routes refactor). Next unstarted phase = B.
 * **Verification**: docs-only; rename verified via git mv; grep confirms no leftover agent-specific framing (only the legitimate 'Gemini->OpenRouter' history line remains).
 
+### [2026-05-30] - Claude Code (Phase C: Frontend quality — ESLint gate, component tests, CSP)
+* **Status**: Complete — ESLint clean + CI gate; 27 component tests passing in CI; CSP in Report-Only mode; backend test suite still 331.
+* **Why**: Phase C — raise frontend quality gates to match the black gate on the backend, and add CSP headers (R5 in the threat model).
+* **Where**:
+  - `frontend/eslint.config.js` — added missing browser globals `atob`, `btoa`, `sessionStorage` to the allow-list
+  - `frontend/src/pages/BlueWorkspace.jsx` — renamed `noiseCount` → `_noiseCount` (unused-var lint fix)
+  - `.github/workflows/ci.yml` — ESLint step flipped from `continue-on-error` (advisory) to a **GATE**; unit test step added as a **GATE**
+  - `frontend/package.json` — added `"test": "vitest run"` and `"test:watch": "vitest"` scripts
+  - `frontend/vite.config.js` — added Vitest `test` config block (jsdom env, test-setup.js, exclude e2e)
+  - `frontend/src/test-setup.js` [NEW] — @testing-library/jest-dom + HTMLElement.scrollTo shim for jsdom
+  - `frontend/src/__tests__/Button.test.jsx` [NEW] — 5 tests (variants, loading, disabled, leftIcon)
+  - `frontend/src/__tests__/ConnectionPill.test.jsx` [NEW] — 7 tests (all 4 states, defaults, aria-live)
+  - `frontend/src/__tests__/SiemFeed.test.jsx` [NEW] — 9 tests (empty state, severity counts, filter buttons, noise toggle, search input, CRITICAL filter)
+  - `frontend/src/__tests__/useWebSocket.test.js` [NEW] — 6 tests (WS creation, state transitions, auth token send, reconnect on close)
+  - `infrastructure/nginx/nginx.conf` — added `Content-Security-Policy-Report-Only` header
+  - `docs/SECURITY_THREAT_MODEL.md` — R5 updated (CSP now in Report-Only; note on enforcement after browser validation)
+* **What & How**: ESLint: only 4 errors + 1 warning found (atob/sessionStorage undefined, noiseCount unused) — all fixed in 2 changes. Tests: 27 passing (vitest run); Playwright e2e excluded from Vitest via `test.exclude`. CSP: Report-Only mode per Phase C instructions (cannot browser-test in this environment; enforce only after human validates no violations).
+* **Verification**:
+  - `npm run lint` → exit 0 (clean)
+  - `npm test` → 27 passed (vitest run)
+  - `npm run build` → exit 0 (✓ built in 10.5s)
+  - nginx -t → syntax ok; CSP-Report-Only header visible in `curl -I http://localhost/`
+  - Backend pytest: 331 passed (unaffected)
+
 ### [2026-05-30] - Claude Code (Phase B: Sandbox container hardening — R3 partial resolution)
 * **Status**: Complete — incremental cap-drop hardening applied to 4 containers; 5 containers fail-open with documented rationale; all scenarios healthy; isolation intact; pytest 331.
 * **Why**: Threat-model R3 — scenario containers running without capability restrictions. Kali (student attack) container was already hardened in Phase A. Phase B addresses the scenario *target* containers.

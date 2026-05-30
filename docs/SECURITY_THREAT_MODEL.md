@@ -143,7 +143,7 @@ Deferred: read-only rootfs (most target containers write to their own overlayfs 
 | R2 | Default admin credentials work out of the box (C3). | Med | Force a first-boot password change; document as demo-only; never ship in a shared deployment. |
 | R3 | Scenario containers partially hardened (Phase B, 2026-05-30). See §3.4 detail. | Low | read-only rootfs deferred; Samba/Postfix/SSHd containers need per-service cap analysis. |
 | R4 | `scope_enforcer` is IP-based; external **hostnames** aren't ROE-blocked (egress is still prevented by isolation). | Low | Add a conservative external-FQDN check if hostname-based ROE teaching is desired. |
-| R5 | JWT in `localStorage`. Security headers (nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy, Permissions-Policy) **added** in nginx 2026-05-29; CSP still pending. | Low | Add CSP after browser validation; consider httpOnly cookie auth. |
+| R5 | JWT in `localStorage`. Security headers (nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy, Permissions-Policy, **CSP-Report-Only**) added. | Low | Promote CSP from Report-Only to enforcing after browser validation; consider httpOnly cookie auth. |
 | R6 | JWT uses deprecated `datetime.utcnow()`. | Info | Timezone-aware fix (Phase 3/10 cleanup). |
 
 ---
