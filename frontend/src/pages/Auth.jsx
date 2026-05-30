@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense, lazy } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import ParticleCanvas from '../components/canvas/ParticleCanvas'
+
+const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
 
 const TAGLINE = [
   { text: 'Attack.', className: 'text-cs-red', delay: 600 },
@@ -22,9 +25,20 @@ export default function Auth() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [typedWords, setTypedWords] = useState([])
+  const [isInitializing, setIsInitializing] = useState(false)
+  const [redirectUrl, setRedirectUrl] = useState('')
+  const [coords, setCoords] = useState({ x: 0, y: 0 })
   const { login, register } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      setCoords({ x: e.clientX, y: e.clientY })
+    }
+    window.addEventListener('mousemove', handleMove)
+    return () => window.removeEventListener('mousemove', handleMove)
+  }, [])
 
   useEffect(() => {
     const timers = TAGLINE.map((word, index) => (
@@ -50,7 +64,8 @@ export default function Auth() {
         returnUrl = null
       }
       const from = location.state?.from?.pathname || returnUrl || (authResult?.role === 'instructor' ? '/instructor' : '/dashboard')
-      navigate(from, { replace: true })
+      setRedirectUrl(from)
+      setIsInitializing(true)
     } catch (err) {
       setError(err.response?.data?.detail || 'Authentication failed')
     } finally {
@@ -59,7 +74,18 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-dvh bg-void flex">
+    <div className="min-h-dvh bg-void flex relative">
+      {isInitializing && (
+        <BootOverlay username={username} onComplete={() => navigate(redirectUrl, { replace: true })} />
+      )}
+      
+      <div 
+        className="pointer-events-none fixed inset-0 z-30 opacity-70"
+        style={{
+          background: `radial-gradient(800px circle at ${coords.x}px ${coords.y}px, rgba(76, 194, 255, 0.05) 0%, rgba(155, 125, 255, 0.03) 40%, transparent 80%)`
+        }}
+      />
+
       <style>{`
         @keyframes authDriftA {
           0%, 100% { transform: translate3d(-4%, -3%, 0) scale(1); }
@@ -92,10 +118,10 @@ export default function Auth() {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-16 relative overflow-hidden border-r border-cs-border">
         <div className="pointer-events-none absolute -left-24 top-10 h-[420px] w-[420px] rounded-full bg-cs-red/[0.06] blur-3xl auth-gradient-a" />
         <div className="pointer-events-none absolute bottom-8 right-0 h-[480px] w-[480px] rounded-full bg-cs-blue/[0.06] blur-3xl auth-gradient-b" />
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: 'repeating-linear-gradient(180deg, rgba(255,255,255,0.8) 0 1px, transparent 1px 4px)' }}
-        />
+        
+        <Suspense fallback={<ParticleCanvas className="opacity-40" />}>
+          <HeroScene3D className="opacity-50 scale-90" />
+        </Suspense>
 
         <div className="relative z-10">
           <div className="inline-flex items-center gap-4 mb-8">
@@ -206,6 +232,78 @@ export default function Auth() {
             </form>
           </div>
           <p className="text-center text-txt-dim text-xs mt-4 font-mono">University of Jordan</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BootOverlay({ username, onComplete }) {
+  const [logs, setLogs] = useState([])
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    const sequences = [
+      { log: `> Initializing secure connection for: ${username.toUpperCase()}`, delay: 100, pct: 15 },
+      { log: `> Establishing cryptographic handshake...`, delay: 400, pct: 35 },
+      { log: `> Connection established. Decrypting session credentials...`, delay: 850, pct: 60 },
+      { log: `> Allocating isolated sandboxed environment...`, delay: 1300, pct: 85 },
+      { log: `> Handshake complete. Welcome, operator.`, delay: 1750, pct: 100 },
+    ]
+
+    sequences.forEach(seq => {
+      setTimeout(() => {
+        setLogs(prev => [...prev, seq.log])
+        setProgress(seq.pct)
+      }, seq.delay)
+    })
+
+    const redirectTimer = setTimeout(() => {
+      onComplete()
+    }, 2200)
+
+    return () => {
+      clearTimeout(redirectTimer)
+    }
+  }, [username, onComplete])
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-void/90 backdrop-blur-md flex items-center justify-center p-6">
+      <div className="w-full max-w-lg glass p-8 border-cs-blue/30 shadow-2xl relative overflow-hidden flex flex-col gap-6">
+        <div className="absolute top-0 left-0 w-8 h-[2px] bg-cs-blue shadow-blue-glow" />
+        <div className="absolute top-0 left-0 w-[2px] h-8 bg-cs-blue shadow-blue-glow" />
+        
+        <div className="flex items-center gap-3">
+          <div className="relative h-6 w-6">
+            <div className="absolute left-0 top-0 h-3 w-3 rounded bg-cs-red shadow-red-glow animate-ping" />
+            <div className="absolute bottom-0 right-0 h-3 w-3 rounded bg-cs-blue shadow-blue-glow animate-ping" style={{ animationDelay: '0.3s' }} />
+          </div>
+          <span className="font-display font-bold text-txt-primary">CyberSim Handshake</span>
+          <span className="ml-auto font-mono text-xs text-cs-blue animate-pulse">BOOTSTRAPPING</span>
+        </div>
+
+        <div className="bg-void/80 border border-cs-border rounded-cs p-4 font-mono text-[11px] leading-relaxed text-txt-secondary h-44 overflow-y-auto space-y-1.5 scrollbar-thin">
+          {logs.map((log, index) => (
+            <div key={index} className="flex gap-2">
+              <span className={index === logs.length - 1 && progress < 100 ? "text-cs-blue" : "text-txt-dim"}>
+                {index === logs.length - 1 && progress < 100 ? "█" : "✔"}
+              </span>
+              <span>{log}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between font-mono text-[10px] text-txt-dim">
+            <span>Handshake Progress</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="w-full h-1.5 bg-surface-3 rounded-full overflow-hidden border border-cs-border/40">
+            <div 
+              className="h-full bg-cs-blue shadow-blue-glow transition-all duration-300 ease-out" 
+              style={{ width: `${progress}%` }} 
+            />
+          </div>
         </div>
       </div>
     </div>
