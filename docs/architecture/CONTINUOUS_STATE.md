@@ -678,3 +678,26 @@ pm run build and ran unit tests successfully.
   - Network isolation: 9/9 scenario containers BLOCKED from internet (tested via `docker exec timeout curl`)
   - `pytest --ignore=tests/e2e -p no:cacheprovider -q` → **331 passed** (unchanged)
   - Black check: no Python files modified; still clean
+
+---
+
+### [2026-05-30] - Claude Sonnet 4.6 (Design V5 Phase 4 — Motion System Consolidation)
+
+* **Status**: COMPLETE ✅
+* **Why**: Phase 4 of the V5 Enhancement Plan. Three problems existed: (1) framer-motion variants were copy-pasted inline per component with inconsistent durations (stagger 150ms, spring/stiffness values, etc.); (2) Dashboard card entrance used a spring that could run outside the 150–300ms band; (3) Profile.jsx progress bar animated `width` (triggers layout recalc) not `transform: scaleX` (GPU-composited). Modal had no entry/exit animation.
+* **Files modified**:
+  - `frontend/src/lib/motion.js` ← **new**: canonical framer-motion preset module
+  - `frontend/src/pages/Dashboard.jsx` — import presets, remove 18 lines of inline variants
+  - `frontend/src/components/dashboard/ScenarioCard.jsx` — inline transition style now uses `var(--ease-enter)` / `var(--dur-enter)` instead of raw cubic-bezier/ms
+  - `frontend/src/pages/Profile.jsx` — progress bar: `width` → `transform: scaleX(n)` + `transition-transform duration-300`
+  - `frontend/src/components/ui/Modal.jsx` — added `AnimatePresence` + `motion.div` (modalSlideUp preset); scrim fades; panel slides up from 24px; exit at 65% duration; focus moved into panel on open
+* **What & How**:
+  - `lib/motion.js` exports 6 presets + `t` utility object. Token mirrors match `v3-design.css :root` exactly: enter=280ms [0.16,1,0.3,1], pop=180ms [0.34,1.56,0.64,1], glide=320ms [0.4,0,0.2,1], exit=180ms [0.4,0,1,1] (≈65% of enter). All durations within 150–300ms band. Stagger is 40ms/item (was 150ms).
+  - No new component files added; only lib/motion.js created.
+  - `transition-all duration-700` on width (Profile.jsx) was the only layout-property animation found in a grep sweep; fixed to `scaleX` + `duration-300`.
+  - All other `transition-all` usages are on color/border/shadow (composited) — acceptable.
+  - Ambient looping animations (glitch, scanlines, pulses) were already gated by `[data-perf="low"]` and `prefers-reduced-motion` in v3-design.css — no further change needed.
+* **Verification**:
+  - `cd frontend && npm run build` → exit 0 (8.40s, no warnings)
+  - `npm test -- --run` → 4 files · **27 passed**
+  - Grep confirms zero remaining raw cubic-bezier values in JSX inline styles outside ScenarioCard (which now uses CSS vars)
