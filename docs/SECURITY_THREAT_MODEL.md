@@ -88,9 +88,30 @@ Mapped to the **OWASP LLM Top-10**, defense-in-depth, **wired into the live path
 | Threat | Vector | Mitigation | Status |
 |---|---|---|---|
 | **EoP (highest)** | Backend RCE → docker.sock → host | Socket mounted **read-only** (`:ro`); backend is the only socket holder. | ⚠️ partial — `:ro` limits but does not eliminate; see residual risk R1 |
-| DoS | Container resource exhaustion | `deploy.resources.limits` (cpu/mem) per service; `MAX_CONCURRENT_SESSIONS`. | ✅ (cap-drop hardening pending — Phase 2b) |
+| DoS | Container resource exhaustion | `deploy.resources.limits` (cpu/mem) per service; `MAX_CONCURRENT_SESSIONS`. | ✅ |
 | Tampering | Orphaned containers | `container_cleanup` reaper + alive grace keys. | ✅ |
-| Egress | Scenario container reaches internet | `internal: true` per scenario net. | ✅ verified 6/6 |
+| Egress | Scenario container reaches internet | `internal: true` per scenario net. | ✅ verified 9/9 (Phase B re-verified) |
+| **EoP** | Scenario container privilege escalation | See cap-drop detail below. | ✅ partial (Phase B 2026-05-30) |
+
+**Phase B capability hardening detail (2026-05-30):**
+
+The Kali (student attack) container was already hardened in Phase A: `cap_drop=ALL`, `no-new-privileges`, `user=student`.
+
+Scenario target containers — hardened as of Phase B:
+
+| Container | `no-new-privileges` | `cap_drop` | `cap_add` | Removed from default set |
+|---|---|---|---|---|
+| **sc01-db** (MariaDB) | ✅ | ❌ | — | MariaDB uses `gosu` (syscall-based, not setuid-exec); cap_drop deferred — DB init needs CHOWN/SETUID/SETGID/DAC_OVERRIDE without full end-to-end DB-init testing |
+| **sc01-php** (deliberately vuln, sshd+vsftpd) | ❌ | ❌ | — | sshd and vsftpd rely on setuid-exec privilege separation; both options unsafe |
+| **sc01-webapp** (httpd:2.4.54 proxy) | ✅ | ALL | NET_BIND_SERVICE, SETUID, SETGID, KILL | AUDIT_WRITE, CHOWN, DAC_OVERRIDE, FOWNER, FSETID, MKNOD, NET_RAW, SETFCAP, SETPCAP, SYS_CHROOT removed |
+| **sc01-waf** (nginx ModSec WAF) | ✅ | ALL | NET_BIND_SERVICE, CHOWN, DAC_OVERRIDE, SETUID, SETGID, KILL | AUDIT_WRITE, FOWNER, FSETID, MKNOD, NET_RAW, SETFCAP, SETPCAP, SYS_CHROOT removed (14→8 caps) |
+| **sc02-dc** (Samba AD DC) | ❌ | ❌ | — | Needs SYS_ADMIN, NET_ADMIN, NET_BIND_SERVICE, SETUID/SETGID for AD provisioning; fail-open |
+| **sc02-fileserver** (Samba) | ❌ | ❌ | — | Same Samba privilege model; fail-open |
+| **sc03-mailrelay** (Postfix) | ❌ | ❌ | — | Postfix uses chroot + setuid programs (qmgr, pickup) for privilege separation |
+| **sc03-phish** (GoPhish, `app` user) | ✅ | ALL | NET_BIND_SERVICE | Pure Go binary, no setuid programs; non-root `app` user; only needs port 80 |
+| **sc03-victim** (Flask+Postfix) | ❌ | ❌ | — | Postfix setuid programs; fail-open |
+
+Deferred: read-only rootfs (most target containers write to their own overlayfs during operation).
 
 ### 3.5 Data stores (Postgres, Redis)
 | Threat | Mitigation | Status |
@@ -120,18 +141,29 @@ Mapped to the **OWASP LLM Top-10**, defense-in-depth, **wired into the live path
 |---|---|---|---|
 | R1 | Backend holds the docker socket (`:ro`). A backend RCE could still enumerate/exec containers. | **High** | Long-term: a brokered sandbox-control microservice with a constrained API instead of a raw socket; short-term: keep the backend attack surface minimal + patched (CI dep-audit). |
 | R2 | Default admin credentials work out of the box (C3). | Med | Force a first-boot password change; document as demo-only; never ship in a shared deployment. |
-| R3 | Scenario containers not yet `--cap-drop ALL` / `no-new-privileges` / read-only rootfs. | Med | Phase 2b sandbox hardening. |
+| R3 | Scenario containers partially hardened (Phase B, 2026-05-30). See §3.4 detail. | Low | read-only rootfs deferred; Samba/Postfix/SSHd containers need per-service cap analysis. |
 | R4 | `scope_enforcer` is IP-based; external **hostnames** aren't ROE-blocked (egress is still prevented by isolation). | Low | Add a conservative external-FQDN check if hostname-based ROE teaching is desired. |
 | R5 | JWT in `localStorage`. Security headers (nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy, Permissions-Policy) **added** in nginx 2026-05-29; CSP still pending. | Low | Add CSP after browser validation; consider httpOnly cookie auth. |
 | R6 | JWT uses deprecated `datetime.utcnow()`. | Info | Timezone-aware fix (Phase 3/10 cleanup). |
 
 ---
 
-## 6. What was empirically verified (2026-05-29)
+## 6. What was empirically verified
+
+**2026-05-29:**
 - ✅ Network isolation: 6/6 scenario containers internet-blocked; backend egress works (control).
 - ✅ AI guardrails held under adversarial prompts (direct/injection/riddle/payload); deterministic sanitizer strips all lab secrets.
 - ✅ Scope enforcement blocks public + cross-scenario IPs, allows in-scope, through the real command path.
 - ✅ WS auth verified before container attach; rate limiting present on auth.
 - ✅ docker.sock mounted read-only.
 
-*Re-verify §4 and §6 before any public/defense deployment. Track R1–R3 as the priority hardening backlog.*
+**2026-05-30 (Phase B):**
+- ✅ Network isolation: 9/9 scenario containers internet-blocked after capability hardening.
+- ✅ sc01-db healthy with `no-new-privileges` (MariaDB gosu-based privilege drop works).
+- ✅ sc01-webapp healthy with `cap_drop ALL` + `cap_add [NET_BIND_SERVICE, SETUID, SETGID, KILL]`.
+- ✅ sc01-waf healthy with `cap_drop ALL` + `cap_add [NET_BIND_SERVICE, CHOWN, DAC_OVERRIDE, SETUID, SETGID, KILL]`.
+- ✅ sc03-phish healthy with `cap_drop ALL` + `cap_add [NET_BIND_SERVICE]`.
+- ✅ Kali container: unchanged (already `cap_drop ALL` + `no-new-privileges` from Phase A).
+- ✅ Full backend test suite: 331 passed.
+
+*Re-verify §4 and §6 before any public/defense deployment. Track R1, R3 (residual) as the priority hardening backlog.*

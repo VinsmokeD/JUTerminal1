@@ -517,3 +517,22 @@ pm run build and ran unit tests successfully.
 * **Where**: GEMINI_HANDOFF_PROMPTS.md -> CONTINUE_HERE.md (git mv); reframed intro ("read this to resume in a new chat; start from Phase B"); §3 updated to 24 commits + Kali/real-terminal done.
 * **What & How**: CONTINUE_HERE.md is now THE resume document - cold-start context, the "verify empirically / docs overstate gaps" lesson, current verified state, Operating Protocol (test/rebuild gotchas), and per-phase prompts (A done; B sandbox hardening, C frontend lint/a11y/CSP, D mypy, E coverage, F reliability, G kill-chain evidence, H docs, I ws/routes refactor). Next unstarted phase = B.
 * **Verification**: docs-only; rename verified via git mv; grep confirms no leftover agent-specific framing (only the legitimate 'Gemini->OpenRouter' history line remains).
+
+### [2026-05-30] - Claude Code (Phase B: Sandbox container hardening — R3 partial resolution)
+* **Status**: Complete — incremental cap-drop hardening applied to 4 containers; 5 containers fail-open with documented rationale; all scenarios healthy; isolation intact; pytest 331.
+* **Why**: Threat-model R3 — scenario containers running without capability restrictions. Kali (student attack) container was already hardened in Phase A. Phase B addresses the scenario *target* containers.
+* **Where**:
+  - `docker-compose.yml` — added security hardening to 4 containers:
+    - `sc01-db`: `security_opt: no-new-privileges:true` (MariaDB uses gosu/syscall; cap_drop deferred — needs extensive DB-init testing)
+    - `sc01-webapp`: `no-new-privileges` + `cap_drop: ALL` + `cap_add: [NET_BIND_SERVICE, SETUID, SETGID, KILL]`
+    - `sc01-waf`: `no-new-privileges` + `cap_drop: ALL` + `cap_add: [NET_BIND_SERVICE, CHOWN, DAC_OVERRIDE, SETUID, SETGID, KILL]`
+    - `sc03-phish`: `no-new-privileges` + `cap_drop: ALL` + `cap_add: [NET_BIND_SERVICE]`
+  - `infrastructure/docker/scenarios/sc01/waf-entrypoint.sh` — made `touch` idempotent (`|| true`) so restart on a pre-initialized log volume doesn't fail without DAC_OVERRIDE
+  - `docs/SECURITY_THREAT_MODEL.md` — R3 updated with full per-container capability table, rationale, and Phase B verification evidence
+* **What & How**: Incremental approach per operating protocol — apply `no-new-privileges` first (safe everywhere except sshd/vsftpd/Postfix/Samba), then `cap_drop ALL` + minimal `cap_add`. Tested each container by force-recreating it and checking health status. WAF required fixing the entrypoint script (touch on nginx-owned volume files) and adding DAC_OVERRIDE (needed by the OWASP image's own setup scripts). sc01-php/sc02-dc/sc02-fileserver/sc03-mailrelay/sc03-victim: left unhardened — all use setuid-exec programs (sshd, vsftpd, Postfix) or complex Samba privilege model; fail-open per operating protocol.
+* **Verification**:
+  - `docker compose -f docker-compose.yml config --quiet` → exit 0
+  - All 16 containers healthy after recreating the 4 changed ones
+  - Network isolation: 9/9 scenario containers BLOCKED from internet (tested via `docker exec timeout curl`)
+  - `pytest --ignore=tests/e2e -p no:cacheprovider -q` → **331 passed** (unchanged)
+  - Black check: no Python files modified; still clean
