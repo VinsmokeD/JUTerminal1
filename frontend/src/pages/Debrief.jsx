@@ -138,7 +138,7 @@ export default function Debrief() {
     }
 
     addLine('CyberSim Mission Debrief', 18, 22)
-    addLine(`${session.scenario_id} | ${session.role?.toUpperCase()} Team | Score ${score?.final_score ?? session.score ?? '--'}/100`, 11, 18)
+    addLine(`${session.scenario_id} | ${session.role === 'red' ? 'Red' : 'Blue'} Team | Score ${score?.final_score ?? session.score ?? '--'}/100`, 11, 18)
     addLine(`Phase ${session.phase} | Findings ${findings.length} | Evidence ${evidence.length} | Events ${siemEvents.length}`, 10, 18)
     addLine('Summary', 13, 20)
     addLine(session.role === 'red'
@@ -325,9 +325,9 @@ export default function Debrief() {
           <div className="relative z-10 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <Badge tone={session.role === 'red' ? 'red' : 'blue'}>{session.role.toUpperCase()} Team</Badge>
+                <Badge tone={session.role === 'red' ? 'red' : 'blue'}>{session.role === 'red' ? 'Red' : 'Blue'} Team</Badge>
                 <span className="text-txt-dim text-xs font-mono">{session.scenario_id}</span>
-                <span className="text-txt-dim text-xs font-mono">{session.methodology?.toUpperCase()}</span>
+                <span className="text-txt-dim text-xs font-display">{session.methodology?.toUpperCase()}</span>
               </div>
               <h1 className="text-2xl font-extrabold text-txt-primary mb-2 font-display">Mission Debrief</h1>
               <p className="text-txt-secondary text-sm max-w-md leading-relaxed">
@@ -380,7 +380,7 @@ export default function Debrief() {
             {(commands.length > 0 || siemEvents.length > 0) && (
               <div className="card-v3 p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-txt-secondary font-mono uppercase tracking-wider">Attack Timeline</h3>
+                  <h3 className="text-sm font-semibold text-txt-secondary font-display normal-case">Attack Timeline</h3>
                   <Button onClick={() => setActiveTab('timeline')} variant="ghost" size="sm">View full</Button>
                 </div>
                 <Suspense fallback={<div className="h-[260px] rounded-cs-lg bg-surface-2/60 border border-cs-border animate-pulse" />}>
@@ -389,7 +389,7 @@ export default function Debrief() {
             )}
 
             <div className="card-v3 p-5">
-              <h3 className="text-sm font-semibold text-txt-secondary mb-3 font-mono uppercase tracking-wider">Session Summary</h3>
+              <h3 className="text-sm font-semibold text-txt-secondary mb-3 font-display normal-case">Session Summary</h3>
               <p className="text-sm text-txt-secondary leading-relaxed">
                 {session.role === 'red'
                   ? `Executed a structured ${session.methodology?.toUpperCase()} penetration test against ${session.scenario_id}, progressing through ${session.phase} phases. Identified ${findings.length} vulnerabilities and collected ${evidence.length} pieces of supporting evidence. Final score: ${finalScore}/100.`
@@ -418,7 +418,7 @@ export default function Debrief() {
           <div className="card-v3 p-6">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
-                <h3 className="text-sm font-semibold text-txt-secondary font-mono uppercase tracking-wider">Dual-Axis Kill Chain Timeline</h3>
+                <h3 className="text-sm font-semibold text-txt-secondary font-display normal-case">Dual-Axis Kill Chain Timeline</h3>
                 <p className="text-xs text-txt-dim mt-0.5">Red team commands vs Blue team detections with detection links</p>
               </div>
               <div className="flex items-center gap-3 text-xs text-txt-dim font-mono">
@@ -452,7 +452,7 @@ export default function Debrief() {
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Radar Chart Panel */}
                   <div className="card-v3 p-5 flex flex-col items-center justify-center">
-                    <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider self-start">Competency Radar</h3>
+                    <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case self-start">Competency Radar</h3>
                     
                     <div className="relative w-[300px] h-[300px] flex items-center justify-center">
                       <svg width="300" height="300" className="overflow-visible">
@@ -535,7 +535,7 @@ export default function Debrief() {
                   {/* Breakdown Detail Panel */}
                   <div className="card-v3 p-5 flex flex-col justify-between min-h-[300px]">
                     <div>
-                      <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider">Metric Breakdown</h3>
+                      <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case">Metric Breakdown</h3>
                       
                       {hoveredMetric ? (
                         <div className="space-y-4 animate-fadeIn">
@@ -548,7 +548,7 @@ export default function Debrief() {
                           
                           {hoveredMetric.framework && (
                             <div className="border-t border-cs-border/40 pt-4 mt-2">
-                              <span className="text-xs text-txt-dim block mb-1 font-mono uppercase">Alignment Framework:</span>
+                              <span className="text-xs text-txt-dim block mb-1 font-display normal-case">Alignment Framework:</span>
                               {hoveredMetric.link ? (
                                 <a
                                   href={hoveredMetric.link}
@@ -590,12 +590,12 @@ export default function Debrief() {
 
                 {/* AI Socratic Feedback Summary */}
                 <div className="card-v3 p-6">
-                  <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider">Coach Analysis</h3>
+                  <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case">Coach Analysis</h3>
                   <p className="text-sm text-txt-primary leading-relaxed mb-6">{coachingData.summary}</p>
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-3">
-                      <h4 className="text-xs font-semibold text-green-signal uppercase tracking-wider font-mono">Demonstrated Strengths</h4>
+                      <h4 className="text-xs font-semibold text-green-signal normal-case font-display">Demonstrated Strengths</h4>
                       {coachingData.strengths?.length > 0 ? (
                         <ul className="space-y-2">
                           {coachingData.strengths.map((s, idx) => (
@@ -611,7 +611,7 @@ export default function Debrief() {
                     </div>
 
                     <div className="space-y-3">
-                      <h4 className="text-xs font-semibold text-amber-warn uppercase tracking-wider font-mono">Areas for Improvement</h4>
+                      <h4 className="text-xs font-semibold text-amber-warn normal-case font-display">Areas for Improvement</h4>
                       {coachingData.improvement_areas?.length > 0 ? (
                         <ul className="space-y-2">
                           {coachingData.improvement_areas.map((i, idx) => (
@@ -629,7 +629,7 @@ export default function Debrief() {
 
                   <div className="grid md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-cs-border/40">
                     <div className="space-y-3">
-                      <h4 className="text-xs font-semibold text-cs-red uppercase tracking-wider font-mono">Missed Detections / Logs</h4>
+                      <h4 className="text-xs font-semibold text-cs-red normal-case font-display">Missed Detections / Logs</h4>
                       {coachingData.missed_detections?.length > 0 ? (
                         <ul className="space-y-2">
                           {coachingData.missed_detections.map((m, idx) => (
@@ -645,7 +645,7 @@ export default function Debrief() {
                     </div>
 
                     <div className="space-y-3">
-                      <h4 className="text-xs font-semibold text-cs-blue uppercase tracking-wider font-mono">Recommended Practices</h4>
+                      <h4 className="text-xs font-semibold text-cs-blue normal-case font-display">Recommended Practices</h4>
                       {coachingData.next_practice?.length > 0 ? (
                         <ul className="space-y-2">
                           {coachingData.next_practice.map((n, idx) => (
@@ -666,7 +666,7 @@ export default function Debrief() {
                 <div className="card-v3 p-6 space-y-4">
                   <div className="flex items-center justify-between border-b border-cs-border/40 pb-3">
                     <div>
-                      <h3 className="text-sm font-semibold text-txt-secondary font-mono uppercase tracking-wider">Socratic Operator Coach</h3>
+                      <h3 className="text-sm font-semibold text-txt-secondary font-display normal-case">Socratic Operator Coach</h3>
                       <p className="text-xs text-txt-dim mt-0.5">Explore scenario context and strategies. No direct answers will be given.</p>
                     </div>
                     <Badge tone={qaRemaining > 0 ? 'blue' : 'neutral'}>
@@ -687,7 +687,7 @@ export default function Debrief() {
                             ? 'bg-cs-blue/10 border border-cs-blue/20 text-txt-primary ml-8'
                             : 'bg-surface-2/50 border border-cs-border text-txt-secondary mr-8'
                         }`}>
-                          <span className={`font-bold block mb-1 uppercase text-[10px] ${
+                          <span className={`font-bold block mb-1 normal-case text-[10px] font-display ${
                             msg.sender === 'student' ? 'text-cs-blue' : 'text-green-signal'
                           }`}>
                             {msg.sender === 'student' ? 'Student' : 'AI Coach'}
@@ -698,7 +698,7 @@ export default function Debrief() {
                     )}
                     {qaLoading && (
                       <div className="bg-surface-2/50 border border-cs-border p-3 rounded-cs mr-8 text-txt-dim animate-pulse">
-                        <span className="font-bold block mb-1 uppercase text-[10px] text-green-signal">AI Coach</span>
+                        <span className="font-bold block mb-1 normal-case text-[10px] text-green-signal font-display">AI Coach</span>
                         Analyzing context and drafting Socratic guidance...
                       </div>
                     )}
@@ -862,7 +862,7 @@ function InsightsTab({ insights }) {
       <div className="card-v3 p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-sm font-semibold text-txt-secondary font-mono uppercase tracking-wider">Cause And Effect</h3>
+            <h3 className="text-sm font-semibold text-txt-secondary font-display normal-case">Cause And Effect</h3>
             <p className="text-xs text-txt-dim mt-0.5">How Red Team actions became Blue Team signals</p>
           </div>
           <Badge tone="neutral">{insights.cause_effect?.length || 0} actions</Badge>
@@ -918,7 +918,7 @@ function InsightList({ title, items = [], tone }) {
   return (
     <div className="card-v3 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h3 className={`text-xs font-semibold uppercase tracking-wider font-mono ${palette}`}>{title}</h3>
+        <h3 className={`text-xs font-semibold normal-case font-display ${palette}`}>{title}</h3>
         <Badge tone={tone || 'neutral'}>{items.length}</Badge>
       </div>
       {items.length ? (
@@ -962,7 +962,7 @@ function NoteGroup({ title, notes, tone, ordered = false }) {
   const color = tone === 'green' ? 'text-green-signal' : 'text-purple-400'
   return (
     <div className="card-v3 p-5">
-      <h3 className="text-sm font-semibold text-txt-secondary mb-3 font-mono uppercase tracking-wider">{title}</h3>
+      <h3 className="text-sm font-semibold text-txt-secondary mb-3 font-display normal-case">{title}</h3>
       <div className="space-y-2">
         {notes.map((note, index) => (
           <div key={note.id} className="flex gap-3 text-sm text-txt-secondary">

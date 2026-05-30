@@ -209,10 +209,10 @@ export default function InstructorDashboard() {
         <Badge tone="blue">Instructor</Badge>
 
         <div className="hidden flex-1 justify-center md:flex gap-6">
-          <button onClick={() => setActiveTab('sessions')} className={`text-xs font-mono uppercase tracking-[0.1em] transition-colors ${activeTab === 'sessions' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Sessions</button>
-          <button onClick={() => setActiveTab('users')} className={`text-xs font-mono uppercase tracking-[0.1em] transition-colors ${activeTab === 'users' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Users</button>
-          <button onClick={() => setActiveTab('analytics')} className={`text-xs font-mono uppercase tracking-[0.1em] transition-colors ${activeTab === 'analytics' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Learning Analytics</button>
-          <button onClick={() => setActiveTab('platform')} className={`text-xs font-mono uppercase tracking-[0.1em] transition-colors ${activeTab === 'platform' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Platform & AI</button>
+          <button onClick={() => setActiveTab('sessions')} className={`text-xs font-display normal-case transition-colors ${activeTab === 'sessions' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Sessions</button>
+          <button onClick={() => setActiveTab('users')} className={`text-xs font-display normal-case transition-colors ${activeTab === 'users' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Users</button>
+          <button onClick={() => setActiveTab('analytics')} className={`text-xs font-display normal-case transition-colors ${activeTab === 'analytics' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Learning Analytics</button>
+          <button onClick={() => setActiveTab('platform')} className={`text-xs font-display normal-case transition-colors ${activeTab === 'platform' ? 'text-cs-blue font-bold border-b-2 border-cs-blue py-4' : 'text-txt-dim hover:text-txt-primary py-4'}`}>Platform & AI</button>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
@@ -288,7 +288,7 @@ export default function InstructorDashboard() {
             )}
 
             <div className="card-v3 flex flex-wrap items-center gap-3 px-4 py-3">
-              <span className="text-xs font-mono uppercase tracking-[0.12em] text-txt-dim">Filter</span>
+              <span className="text-xs font-display normal-case text-txt-dim">Filter</span>
               <select
                 value={filter.scenario}
                 onChange={e => setFilter(f => ({ ...f, scenario: e.target.value }))}
@@ -320,9 +320,9 @@ export default function InstructorDashboard() {
 
             <div className="card-v3 overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[960px] text-xs font-mono">
+                <table className="w-full min-w-[960px] text-xs font-display">
                   <thead>
-                    <tr className="bg-surface-2 text-[10.5px] font-mono uppercase tracking-[0.12em] text-txt-dim border-b border-cs-border text-left">
+                    <tr className="bg-surface-2 text-[10.5px] font-display normal-case text-txt-dim border-b border-cs-border text-left">
                       <th className="px-4 py-3 font-medium">Student</th>
                       <th className="px-4 py-3 font-medium">Scenario</th>
                       <th className="px-4 py-3 font-medium">Role</th>
@@ -350,7 +350,7 @@ export default function InstructorDashboard() {
                             <span className="text-txt-dim text-[10px] ml-1.5">{SCENARIO_LABELS[s.scenario_id]}</span>
                           </td>
                           <td className="px-4 py-3">
-                            <Badge tone={s.role === 'red' ? 'red' : 'blue'}>{s.role}</Badge>
+                            <Badge tone={s.role === 'red' ? 'red' : 'blue'}>{s.role === 'red' ? 'Red' : 'Blue'}</Badge>
                           </td>
                           <td className="px-4 py-3 text-txt-secondary">{s.phase}</td>
                           <td className="px-4 py-3">
@@ -407,9 +407,9 @@ export default function InstructorDashboard() {
         {activeTab === 'users' && (
           <div className="card-v3 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-xs font-mono">
+              <table className="w-full text-xs font-display">
                 <thead>
-                  <tr className="bg-surface-2 text-[10.5px] font-mono uppercase tracking-[0.12em] text-txt-dim border-b border-cs-border text-left">
+                  <tr className="bg-surface-2 text-[10.5px] font-display normal-case text-txt-dim border-b border-cs-border text-left">
                     <th className="px-4 py-3 font-medium">Username</th>
                     <th className="px-4 py-3 font-medium">Role</th>
                     <th className="px-4 py-3 font-medium">Skill Level</th>
@@ -443,21 +443,21 @@ export default function InstructorDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
               <div className="card-v3 p-5 border-cs-blue/30 bg-cs-blue/5">
-                <h3 className="text-sm font-semibold text-cs-blue mb-4 font-mono uppercase tracking-wider">AI Guard & Usage Monitor</h3>
+                <h3 className="text-sm font-semibold text-cs-blue mb-4 font-display normal-case">AI Guard & Usage Monitor</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">Global Daily Tokens</div>
-                    <div className="text-2xl font-bold">{aiUsage?.global_daily_tokens_used?.toLocaleString() || 0}</div>
+                    <div className="text-[10px] font-display text-txt-dim normal-case mb-1">Global Daily Tokens</div>
+                    <div className="text-2xl font-bold font-mono">{aiUsage?.global_daily_tokens_used?.toLocaleString() || 0}</div>
                   </div>
                   <div>
-                    <div className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">Flagged Interactions</div>
-                    <div className="text-2xl font-bold text-cs-red">{aiUsage?.total_flagged_interactions || 0}</div>
+                    <div className="text-[10px] font-display text-txt-dim normal-case mb-1">Flagged Interactions</div>
+                    <div className="text-2xl font-bold text-cs-red font-mono">{aiUsage?.total_flagged_interactions || 0}</div>
                   </div>
                 </div>
               </div>
 
               <div className="card-v3 overflow-hidden">
-                <h3 className="p-4 border-b border-cs-border text-xs font-semibold text-txt-secondary font-mono uppercase tracking-wider">Recent Activity Feed</h3>
+                <h3 className="p-4 border-b border-cs-border text-xs font-semibold text-txt-secondary font-display normal-case">Recent Activity Feed</h3>
                 <div className="max-h-[500px] overflow-y-auto p-4 space-y-3">
                   {activity.map(act => (
                     <div key={act.id} className="flex gap-3 text-xs border-b border-cs-border/30 pb-3 last:border-0 last:pb-0">
@@ -480,7 +480,7 @@ export default function InstructorDashboard() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="card-v3 p-5 lg:col-span-2 relative">
-                <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider">
+                <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case">
                   Cohort Performance Distribution
                 </h3>
                 <div className="h-48 w-full bg-void rounded-cs-md border border-cs-border/40 p-4 relative">
@@ -540,7 +540,7 @@ export default function InstructorDashboard() {
               </div>
 
               <div className="card-v3 p-5">
-                <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider">
+                <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case">
                   Methodology Gaps
                 </h3>
                 <div className="space-y-4">
@@ -573,8 +573,8 @@ export default function InstructorDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="card-v3 p-5 lg:col-span-2">
-                <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider">
-                  Struggle Flags warning deck
+                <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case">
+                  Struggle Flags Warning Deck
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[300px] overflow-y-auto scrollbar-thin">
                   {analytics.struggle_flags.length === 0 ? (
@@ -618,7 +618,7 @@ export default function InstructorDashboard() {
               </div>
 
               <div className="card-v3 p-5">
-                <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-mono uppercase tracking-wider">
+                <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case">
                   Hint Heat Grid
                 </h3>
                 <div className="space-y-3">
@@ -660,7 +660,7 @@ export default function InstructorDashboard() {
             </div>
 
             <div className="card-v3 p-5 border-cs-blue/30 bg-cs-blue/5">
-              <h3 className="text-sm font-semibold text-cs-blue mb-2 font-mono uppercase tracking-wider">
+              <h3 className="text-sm font-semibold text-cs-blue mb-2 font-display normal-case">
                 Classroom Gradebook Export
               </h3>
               <p className="text-xs text-txt-dim mb-4">
@@ -683,10 +683,10 @@ export default function InstructorDashboard() {
         <div className="fixed inset-y-0 right-0 w-[450px] bg-surface-1 border-l border-cs-border shadow-2xl z-50 flex flex-col transition-transform duration-300">
           <div className="p-4 border-b border-cs-border flex justify-between items-center bg-surface-2">
             <div>
-              <h3 className="text-sm font-bold font-mono text-cs-blue uppercase tracking-wider">Live Session Inspector</h3>
+              <h3 className="text-sm font-bold font-display text-cs-blue normal-case">Live Session Inspector</h3>
               <p className="text-[10px] text-txt-dim font-mono">Session: {inspectSessionId.substring(0, 8)}</p>
             </div>
-            <button onClick={() => setInspectSessionId(null)} className="text-txt-dim hover:text-txt-primary font-mono text-sm">Close [X]</button>
+            <button onClick={() => setInspectSessionId(null)} className="text-txt-dim hover:text-txt-primary font-display normal-case text-sm">Close</button>
           </div>
           {loadingInspect ? (
             <div className="flex-1 flex items-center justify-center font-mono text-xs text-txt-dim">Loading live telemetry...</div>
@@ -700,7 +700,7 @@ export default function InstructorDashboard() {
               </div>
               
               <div className="space-y-2">
-                <h4 className="text-[10px] font-mono text-txt-dim uppercase tracking-wider">Terminal Commands Log ({inspectData.commands?.length || 0})</h4>
+                <h4 className="text-[10px] font-display text-txt-dim normal-case">Terminal Commands Log ({inspectData.commands?.length || 0})</h4>
                 <div className="bg-void p-3 rounded-cs-md border border-cs-border/40 max-h-[180px] overflow-y-auto font-mono text-[11px] space-y-1.5 scrollbar-thin">
                   {inspectData.commands?.map((c, i) => (
                     <div key={i} className="flex justify-between hover:bg-surface-3/30 p-1 rounded">
@@ -713,7 +713,7 @@ export default function InstructorDashboard() {
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-[10px] font-mono text-txt-dim uppercase tracking-wider">Student Notebook Notes ({inspectData.notes?.length || 0})</h4>
+                <h4 className="text-[10px] font-display text-txt-dim normal-case">Student Notebook Notes ({inspectData.notes?.length || 0})</h4>
                 <div className="bg-void p-3 rounded-cs-md border border-cs-border/40 max-h-[150px] overflow-y-auto font-mono text-[11px] space-y-2 scrollbar-thin">
                   {inspectData.notes?.map((n, i) => (
                     <div key={i} className="border-b border-cs-border/20 pb-2 last:border-0 last:pb-0 font-mono">
@@ -729,7 +729,7 @@ export default function InstructorDashboard() {
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-[10px] font-mono text-txt-dim uppercase tracking-wider">SIEM Detections ({inspectData.events?.length || 0})</h4>
+                <h4 className="text-[10px] font-display text-txt-dim normal-case">SIEM Detections ({inspectData.events?.length || 0})</h4>
                 <div className="bg-void p-3 rounded-cs-md border border-cs-border/40 max-h-[220px] overflow-y-auto font-mono text-[11px] space-y-2 scrollbar-thin">
                   {inspectData.events?.map((e, i) => (
                     <div key={i} className="border-b border-cs-border/20 pb-2 last:border-0 last:pb-0 flex flex-col gap-0.5 font-mono">

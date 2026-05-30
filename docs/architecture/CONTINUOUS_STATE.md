@@ -832,3 +832,23 @@ pm run build and ran unit tests successfully.
   - All 27 Vitest unit tests pass successfully.
   - All 334 backend python unit/integration tests pass successfully.
 
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Casing & Typography Sweep)
+
+* **Status**: COMPLETE ✅
+* **Why**: Completed the final casing and typography sweep for the "Nimbus Console" design system, ensuring all uppercase shouting is retired and Outfit font is mapped correctly, restricting monospace strictly to terminal, code, IP, score, and timestamps on remaining pages.
+* **Files modified**:
+  - `frontend/src/pages/Debrief.jsx` — Updated all section headings (Attack Timeline, Session Summary, Dual-Axis Kill Chain Timeline, Competency Radar, Metric Breakdown, Alignment Framework, Coach Analysis, Demonstrated Strengths, Areas for Improvement, Missed Detections / Logs, Recommended Practices, Socratic Operator Coach, Cause and Effect) from uppercase monospace to normal/title casing in Outfit (`font-display`). Capitalized Red/Blue team badge text.
+  - `frontend/src/pages/InstructorDashboard.jsx` — Replaced uppercase monospace tab buttons (Sessions, Users, Learning Analytics, Platform & AI) with Outfit normal case layout. Adjusted filter badge typography, table headers, and activity widget labels. Streamlined live inspector close labels and command/note subheadings.
+  - `frontend/src/pages/Profile.jsx` — Formatted ONLINE status badges, Operator ID joined blocks, average scores, completion rates, missionDeploymentLog and capabilitiesMap headers, and proficiency row labels to clean, normal casing.
+* **What & How**:
+  - Replaced remaining `font-mono uppercase` classes with `font-display normal-case` or equivalent Outfit classes on Debrief, Profile, and Instructor Dashboard pages.
+  - Updated status labels, buttons, and subheaders to follow sentence/title casing, removing uppercase shouting.
+  - Retained monospace font (`font-mono`) only for dates/timestamps, score percentages/numerics, and codes/session IDs.
+* **Verification**:
+  - Production build compiled successfully (`npm run build` completed in 14.60s).
+  - All 27 Vitest unit tests pass successfully.
+  - All 334 backend python unit/integration tests pass successfully.
+  - mypy checks pass successfully ("Success: no issues found in 58 source files").
+

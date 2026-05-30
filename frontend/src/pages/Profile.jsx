@@ -35,8 +35,8 @@ export default function Profile() {
                 {stats.username[0]}
               </span>
             </div>
-            <div className="absolute -bottom-2 -right-2 px-2 py-1 bg-void border border-green-signal/30 rounded-cs-sm text-[10px] font-mono text-green-signal shadow-lg">
-              ONLINE
+            <div className="absolute -bottom-2 -right-2 px-2 py-1 bg-void border border-green-signal/30 rounded-cs-sm text-[10px] font-display text-green-signal shadow-lg normal-case">
+              Online
             </div>
           </div>
           
@@ -44,26 +44,26 @@ export default function Profile() {
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-extrabold tracking-tight">{stats.username}</h1>
               <Badge tone={stats.skill_level === 'experienced' ? 'red' : 'blue'}>
-                {stats.skill_level.toUpperCase()}
+                {stats.skill_level.charAt(0).toUpperCase() + stats.skill_level.slice(1)}
               </Badge>
             </div>
-            <p className="text-txt-dim font-mono text-sm mb-6">
-              OPERATOR ID: <span className="text-txt-secondary">{stats.username.toUpperCase()}</span> 
+            <p className="text-txt-dim font-display text-sm mb-6">
+              Operator ID: <span className="text-txt-secondary">{stats.username}</span> 
               <span className="mx-3 opacity-20">|</span> 
-              JOINED: <span className="text-txt-secondary">{new Date(stats.joined_at).toLocaleDateString()}</span>
+              Joined: <span className="text-txt-secondary">{new Date(stats.joined_at).toLocaleDateString()}</span>
             </p>
             
             <div className="flex flex-wrap gap-4">
               <div className="card-v3 px-5 py-3 border-cs-border/40 bg-surface-1/40">
-                <p className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">Total Score Avg</p>
+                <p className="text-[10px] font-display text-txt-dim normal-case mb-1">Total Score Avg</p>
                 <p className="text-xl font-bold text-cs-blue">{summary.avg_score}%</p>
               </div>
               <div className="card-v3 px-5 py-3 border-cs-border/40 bg-surface-1/40">
-                <p className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">Completion Rate</p>
+                <p className="text-[10px] font-display text-txt-dim normal-case mb-1">Completion Rate</p>
                 <p className="text-xl font-bold text-green-signal">{completionRate}%</p>
               </div>
               <div className="card-v3 px-5 py-3 border-cs-border/40 bg-surface-1/40">
-                <p className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-1">Active Commands</p>
+                <p className="text-[10px] font-display text-txt-dim normal-case mb-1">Active Commands</p>
                 <p className="text-xl font-bold text-txt-primary">{summary.total_commands}</p>
               </div>
             </div>
@@ -73,7 +73,7 @@ export default function Profile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Mission History */}
           <section className="lg:col-span-2 space-y-6">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-txt-secondary font-mono mb-4 flex items-center gap-3">
+            <h2 className="text-sm font-semibold normal-case text-txt-secondary font-display mb-4 flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-cs-blue shadow-[0_0_8px_rgba(59,139,255,0.6)]" />
               Mission Deployment Log
             </h2>
@@ -81,7 +81,7 @@ export default function Profile() {
             <div className="space-y-3">
               {stats.history.length === 0 ? (
                 <div className="card-v3 p-12 text-center border-dashed border-cs-border/40">
-                  <p className="text-txt-dim font-mono text-sm uppercase">No mission history recorded.</p>
+                  <p className="text-txt-dim font-display text-sm normal-case">No mission history recorded.</p>
                   <Button variant="ghost" className="mt-4" onClick={() => navigate('/dashboard')}>
                     Start First Mission
                   </Button>
@@ -97,8 +97,8 @@ export default function Profile() {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-mono text-txt-dim font-bold tracking-widest">{m.scenario_id}</span>
                         <span className={`w-1 h-1 rounded-full ${m.role === 'red' ? 'bg-cs-red' : 'bg-cs-blue'}`} />
-                        <span className={`text-[10px] font-mono uppercase font-bold ${m.role === 'red' ? 'text-cs-red' : 'text-cs-blue'}`}>
-                          {m.role} Team
+                        <span className={`text-[10px] font-display normal-case font-bold ${m.role === 'red' ? 'text-cs-red' : 'text-cs-blue'}`}>
+                          {m.role === 'red' ? 'Red' : 'Blue'} Team
                         </span>
                       </div>
                       <h3 className="font-bold text-lg group-hover:text-cs-blue transition-colors">
@@ -110,15 +110,15 @@ export default function Profile() {
                     </div>
                     
                     <div className="text-right">
-                      <div className="text-xs font-mono text-txt-dim mb-1">SCORE</div>
-                      <div className={`text-2xl font-black ${m.score >= 80 ? 'text-green-signal' : m.score >= 60 ? 'text-amber-warn' : 'text-cs-red'}`}>
+                      <div className="text-xs font-display text-txt-dim mb-1">Score</div>
+                      <div className={`text-2xl font-black font-mono ${m.score >= 80 ? 'text-green-signal' : m.score >= 60 ? 'text-amber-warn' : 'text-cs-red'}`}>
                         {m.score}%
                       </div>
                     </div>
 
                     <div className="hidden sm:block">
-                      <div className={`px-3 py-1.5 rounded-cs-sm border text-[10px] font-bold font-mono ${m.completed_at ? 'border-green-signal/20 text-green-signal bg-green-signal/5' : 'border-amber-warn/20 text-amber-warn bg-amber-warn/5'}`}>
-                        {m.completed_at ? 'COMPLETED' : 'IN PROGRESS'}
+                      <div className={`px-3 py-1.5 rounded-cs-sm border text-[10px] font-bold font-display normal-case ${m.completed_at ? 'border-green-signal/20 text-green-signal bg-green-signal/5' : 'border-amber-warn/20 text-amber-warn bg-amber-warn/5'}`}>
+                        {m.completed_at ? 'Completed' : 'In Progress'}
                       </div>
                     </div>
                   </div>
@@ -129,7 +129,7 @@ export default function Profile() {
 
           {/* Right Column: Skills & Proficiency */}
           <section className="space-y-6">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-txt-secondary font-mono mb-4 flex items-center gap-3">
+            <h2 className="text-sm font-semibold normal-case text-txt-secondary font-display mb-4 flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-cs-red shadow-[0_0_8px_rgba(255,59,59,0.6)]" />
               Capabilities Map
             </h2>
@@ -139,14 +139,14 @@ export default function Profile() {
               <ProficiencyRow label="Defensive (Blue)" count={summary.blue_count} total={summary.total_missions} color="bg-cs-blue" shadow="shadow-cs-blue/40" />
               
               <div className="pt-6 border-t border-cs-border/40">
-                <h4 className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mb-4">Tactical Engagement Stats</h4>
+                <h4 className="text-[10px] font-display text-txt-dim normal-case mb-4">Tactical Engagement Stats</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-[10px] font-mono text-txt-dim uppercase mb-1">Missions</p>
+                    <p className="text-[10px] font-display text-txt-dim normal-case mb-1">Missions</p>
                     <p className="text-lg font-bold">{summary.total_missions}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-mono text-txt-dim uppercase mb-1">Field Notes</p>
+                    <p className="text-[10px] font-display text-txt-dim normal-case mb-1">Field Notes</p>
                     <p className="text-lg font-bold">{summary.total_notes}</p>
                   </div>
                 </div>
@@ -173,8 +173,8 @@ function ProficiencyRow({ label, count, total, color, shadow }) {
   const percent = total ? Math.round((count / total) * 100) : 0
   return (
     <div>
-      <div className="flex items-center justify-between text-xs font-mono mb-2">
-        <span className="text-txt-secondary uppercase tracking-wider">{label}</span>
+      <div className="flex items-center justify-between text-xs font-display mb-2">
+        <span className="text-txt-secondary normal-case">{label}</span>
         <span className="text-txt-primary">{percent}%</span>
       </div>
       <div className="w-full h-2 bg-void rounded-full overflow-hidden border border-cs-border/40">
