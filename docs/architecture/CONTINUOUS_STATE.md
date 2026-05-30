@@ -748,3 +748,34 @@ pm run build and ran unit tests successfully.
 * **Verification**:
   - `cd frontend && npm run build` → exit 0 (7.93s)
   - `npm test -- --run` → 4 files · **27 passed**
+
+---
+
+### [2026-05-30] - Antigravity (Design V5 Phase 6 — Final Micro-Interaction Polish)
+
+* **Status**: COMPLETE ✅
+* **Why**: Phase 6 of the V5 Enhancement Plan. Refine final micro-interactions, unify empty states, ensure single toast path, add confetti for achievements, and ensure low performance modes disable heavyweight aesthetics (like blur on modal scrim).
+* **Files modified**:
+  - `frontend/src/App.jsx` — added ToastContainer to page layout
+  - `frontend/src/components/siem/SiemFeed.jsx` — replaced local EmptyState with global component, removed redundant local EmptyState function
+  - `frontend/src/components/ui/Skeleton.jsx` — added shimmer variant + SkeletonTextLine / SkeletonStat / SkeletonCode
+  - `frontend/src/components/ui/index.js` — exported new Skeleton variants and Toast component
+  - `frontend/src/index.css` — added toast-countdown and skeleton-shimmer keyframes, added confetti-fly keyframe and confetti-particle styling
+  - `frontend/src/styles/v3-design.css` — added .modal-v3-scrim to the low performance selector to disable backdrop-filter blur
+  - `frontend/src/hooks/useWebSocket.js` — wired the global toast system for score update notifications (deductions and gains)
+  - `frontend/src/components/workspace/FlagSubmitWidget.jsx` — wired warning, achievement, and error toasts upon flag validation results
+  - `frontend/src/components/notes/GuidedNotebook.jsx` — wired toasts for note saving/deletion and replaced notes empty state with the unified EmptyState component
+  - `frontend/src/components/hints/AiHintPanel.jsx` — replaced placeholder text with the unified EmptyState component
+* **Files created**:
+  - `frontend/src/components/ui/Toast.jsx` — ToastContainer and ToastItem component with portals and AnimatePresence
+  - `frontend/src/lib/toast.js` — minimal singleton toast bus subscription model
+* **What & How**:
+  - Converted the raw score toast events and note saving/deleting actions to use a single singleton toast notification system.
+  - Implemented lightweight, pure-CSS confetti particle effects for the `achievement` toast type, gated by the performance tier.
+  - Unified empty states for lists (SIEM feed, notebook, AI chat panel, scenarios search list) under a single UI component (`EmptyState`).
+  - Added shimmer animation classes for skeleton loaders.
+  - Verified keyboard-safe modal focus traps, ESC closing, and low-perf fallback modes (no backdrop blurs on modal overlay).
+* **Verification**:
+  - `cd frontend && npm run build` → exit 0 (built in 6.07s)
+  - `npm test -- --run` → 27 passed (all tests green)
+  - `backend pytest` → 334 passed (all tests green)
