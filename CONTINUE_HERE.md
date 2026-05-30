@@ -1,8 +1,10 @@
-# CyberSim — Continuation Handoff & Phase Prompts (for the Gemini CLI agent)
+# CyberSim — CONTINUE HERE (project state + next-phase prompts)
 
-**Written:** 2026-05-29 by Claude Code, after 21 verified commits.
-**You (Gemini) start cold.** This file is your complete context. Read it fully before doing anything.
+**Written:** 2026-05-29 by Claude Code, after 24 verified commits. **Single source of truth for resuming work.**
+**You start cold** (a fresh chat has no memory of prior sessions). Read this file fully before doing anything.
 **Branch:** all work is on `master` (pushed to `origin/master`, GitHub `VinsmokeD/JUTerminal1`).
+
+**To resume in a new chat:** say *"Read CONTINUE_HERE.md, then continue from Phase &lt;X&gt;"* (next unstarted phase is **B**). Then follow the Operating Protocol (§4) for every change. Also read the files in §1.
 
 ---
 
@@ -35,9 +37,10 @@ Repo root: `C:\Users\mmjal\Documents\JUTerminal1`. Stack runs via `docker compos
 ---
 
 ## 3. CURRENT STATE — what is already DONE (do NOT redo)
-21 commits on `master` (latest first): ResizeObserver popup fix · SC-04/05 removal · pre-commit hooks · nginx security headers · configurable admin creds · SIEM/evidence verification · scoring double-count fix · black + black-CI-gate · STRIDE threat model · `scope_enforcer.py` ROE gate · hermetic CI · AI-safety regression tests · backend healthcheck/nginx gating + isolation verifier · AI verified live · Gemini→OpenRouter purge + model fix · reconnect characterization test · pytest pin fix · API 307 fix · pytest-asyncio loop fix · Phase-0 baseline/hygiene.
+24 commits on `master` (latest first): **Kali image built → REAL terminal (Phase A)** · CONTINUE_HERE doc · ResizeObserver popup fix · SC-04/05 removal · pre-commit hooks · nginx security headers · configurable admin creds · SIEM/evidence verification · scoring double-count fix · black + black-CI-gate · STRIDE threat model · `scope_enforcer.py` ROE gate · hermetic CI · AI-safety regression tests · backend healthcheck/nginx gating + isolation verifier · AI verified live · Gemini→OpenRouter purge + model fix · reconnect characterization test · pytest pin fix · API 307 fix · pytest-asyncio loop fix · Phase-0 baseline/hygiene.
 
 **Verified-good right now (do not "fix" these):**
+- **Kali terminal is REAL** — `cybersim-kali:latest` (9.1GB) built + verified (whoami=student, nmap 7.99, reaches SC-01 target, internet blocked). The Kali run is already hardened (cap_drop ALL, no-new-privileges, non-root). On a fresh machine: `docker build -t cybersim-kali:latest infrastructure/docker/kali`.
 - Test suite: **331 passing** (`pytest --ignore=tests/e2e`). CI is real (no false-green).
 - Backend + frontend images build clean; stack healthy; readiness all-green incl. OpenRouter (the owner set a real API key — it works, model `deepseek/deepseek-chat-v3-0324`).
 - Network isolation proven (6/6 scenario containers internet-blocked) — guard script `scripts/verify-network-isolation.sh`.
