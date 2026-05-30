@@ -453,3 +453,10 @@ pm run build and ran unit tests successfully.
   - backend/tests/test_coverage_gaps.py - corrected 3 assertions that ENCODED the bug (route 85->100, reports 70->95, inline 80->100 & 0->4) with explanatory comments.
   - docs/SCORING.md [NEW] - transparent rubric (start 100, live penalties, hint table by skill, linear time bonus, final = clamp(running + bonus)).
 * **Verification**: 11 scoring tests pass; full suite `pytest --ignore=tests/e2e` => 329 passed in 8.28s; black --check clean; backend image rebuilt. Callers (scoring/routes, reports/routes) now return correct, non-double-counted scores.
+
+### [2026-05-29] - Claude Code (Phase 5/6: SIEM verified rich + Red->Blue loop proven live; evidence doc)
+* **Status**: Complete - Confirmed SIEM maps are already rich (F5 stale), proved the Red->Blue data path live, and consolidated all session live-verifications into one examiner-ready evidence doc.
+* **Why**: F5 (thin SC-03 SIEM) was another stale-audit finding; SC-03 is actually the richest map (27 events / 16 ATT&CK techniques). Also verified AIInteraction telemetry insert is ALREADY try/except-guarded (the FK error I saw is caught; not a bug).
+* **Where**: docs/final-report/evidence/LIVE_VERIFICATION_2026-05-29.md [NEW].
+* **What & How**: SIEM counts - SC-01 27ev/9tech, SC-02 25/11, SC-03 27/16. Live Red->Blue: create_command_siem_events for nmap/gobuster/sqlmap on a real SC-01 session -> 6 MITRE-tagged events (T1046, T1083), 6/6 persisted in Postgres, delivered to siem:{sid}:feed. Evidence doc captures health(all green), isolation(6/6), AI(live+adversarial-safe), scope gate(live), SIEM loop(live), scoring(fixed), tests(329)+CI.
+* **Verification**: live script output captured in the doc; no code changed (SIEM already solid). Suite remains 329.
