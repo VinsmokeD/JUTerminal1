@@ -865,3 +865,20 @@ pm run build and ran unit tests successfully.
   - Container rebuilt and restarted successfully.
   - Changes pushed to github remote origin master branch.
 
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Auth Redirection Handshake & 3D WebGL Spotlight Overlay)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user requested richer animations, an interactive transition flow when redirecting from the authentication page to the platform workspaces, and custom 3D light aesthetic features.
+* **Files modified**:
+  - `frontend/src/pages/Auth.jsx` — 
+    - Wired the 3D WebGL particle network (`HeroScene3D` with 2D `ParticleCanvas` fallback) to render inside the left branding panel, enabling interactive node rotation/dragging.
+    - Implemented a cursor-tracking spotlight shader overlay (`radial-gradient` tracking client X/Y coordinates) that casts smooth interactive lighting on the login forms and panel grid.
+    - Created the `BootOverlay` component to delay page routing on successful login, showing a retro console boot log sequence (Initializing connection, verifiying credentials, allocating scenario container namespace) accompanied by a glowing progress loader bar before navigating.
+* **Verification**:
+  - Production build completed successfully (`npm run build` completed in 5.80s).
+  - All 27 Vitest unit tests pass successfully.
+  - Rebuilt and restarted the frontend container successfully.
+  - All files committed and pushed to git origin master.
+
