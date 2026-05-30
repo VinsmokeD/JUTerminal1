@@ -12,15 +12,13 @@ os.environ["POSTGRES_URL"] = os.environ.get(
     # "cybersim"); override with TEST_POSTGRES_URL for any other environment.
     "postgresql+asyncpg://cybersim:cybersim@127.0.0.1:5432/cybersim",
 )
-os.environ["REDIS_URL"] = os.environ.get(
-    "TEST_REDIS_URL",
-    "redis://127.0.0.1:6379/1"
-)
+os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:6379/1")
 
 from src.cache.redis import init_redis, close_redis
 from src.db.database import init_db
 from src.siem.engine import init_siem_batch, close_siem_batch
 from src.main import _seed_admin
+
 
 @pytest.fixture(scope="session", autouse=True)
 async def init_services():

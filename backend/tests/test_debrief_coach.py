@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 from src.ai.debrief_coach import generate_debrief_coaching, handle_debrief_qa, redact_text
 from src.config import settings
 
+
 class _ScalarResult:
     def __init__(self, items):
         self._items = list(items)
@@ -29,7 +30,9 @@ class _Result:
         return self._one if self._one is not None else (self._many[0] if self._many else None)
 
     def scalars(self):
-        return _ScalarResult(self._many if self._many else ([] if self._one is None else [self._one]))
+        return _ScalarResult(
+            self._many if self._many else ([] if self._one is None else [self._one])
+        )
 
     def fetchone(self):
         return self._one
@@ -84,7 +87,7 @@ async def test_redact_text():
     metadata = {
         "flag_hash": "FLAG-SC01-3:e8b2a1a8c9e0d1b2",
         "random_db_pass": "MedStaffPortal99!",
-        "ignored": "admin"
+        "ignored": "admin",
     }
     context = "We found FLAG-SC01-3:e8b2a1a8c9e0d1b2 and logged in with password MedStaffPortal99! as admin"
     redacted = redact_text(context, metadata)
@@ -92,19 +95,23 @@ async def test_redact_text():
     assert "MedStaffPortal99!" not in redacted
     assert "admin" in redacted  # admin is ignored from redacting
 
+
 @pytest.mark.anyio
 async def test_generate_debrief_coaching_fallback():
     # Test offline fallback (when OPENROUTER_API_KEY is not set or empty)
-    db = _FakeDb(_Result(one=None))  # Mocking scalar query for Session to return None or a mocked Session
+    db = _FakeDb(
+        _Result(one=None)
+    )  # Mocking scalar query for Session to return None or a mocked Session
     with patch.object(settings, "OPENROUTER_API_KEY", ""):
         report_data = {
             "session": {"scenario_id": "sc-01", "methodology": "ptes"},
             "score": {"final_score": 85},
             "notes": [{"tag": "#recon", "content": "enumerated port 80"}],
             "commands": [{"command": "nmap -F 172.20.1.20"}],
-            "siem_events": []
+            "siem_events": [],
         }
         import uuid
+
         session_id = f"test-session-{uuid.uuid4()}"
         res = await generate_debrief_coaching(session_id, report_data, db)
         assert "summary" in res
@@ -114,6 +121,7 @@ async def test_generate_debrief_coaching_fallback():
         assert "next_practice" in res
         assert "NovaMed" in res["summary"]
 
+
 @pytest.mark.anyio
 async def test_debrief_qa_limit():
     # Test Q&A rate limit of 3
@@ -121,10 +129,11 @@ async def test_debrief_qa_limit():
     report_data = {
         "session": {"scenario_id": "sc-01"},
     }
-    
+
     import uuid
+
     session_id = f"test-session-qa-limit-{uuid.uuid4()}"
-    
+
     # Call 1
     res1 = await handle_debrief_qa(session_id, "How to do recon?", report_data, db)
     assert res1["qa_count"] == 1

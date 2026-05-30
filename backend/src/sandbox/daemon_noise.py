@@ -9,6 +9,7 @@ Generates two types of noise:
 This makes the Blue Team SIEM feed realistic — students must filter signal from noise
 instead of seeing only attacker-generated events.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -146,11 +147,13 @@ async def _probe_http(url: str) -> None:
             await client.get(
                 url,
                 headers={
-                    "User-Agent": random.choice([
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                        "python-httpx/0.27.0",
-                        "curl/7.88.1",
-                    ])
+                    "User-Agent": random.choice(
+                        [
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                            "python-httpx/0.27.0",
+                            "curl/7.88.1",
+                        ]
+                    )
                 },
             )
     except (httpx.RequestError, asyncio.TimeoutError) as e:
@@ -193,11 +196,14 @@ async def _get_session_seed(redis: object, session_id: str) -> int | None:
     """Retrieve the randomization seed stored in Redis for a session, if any."""
     try:
         import json as _json
+
         raw = await redis.get(f"session:{session_id}:rand_seed")  # type: ignore[attr-defined]
         if raw:
             return int(raw.decode() if isinstance(raw, bytes) else raw)
     except redis.exceptions.RedisError as e:
-        logger.warning("[NOISE] Failed to get session seed from redis for session %s: %s", session_id, e)
+        logger.warning(
+            "[NOISE] Failed to get session seed from redis for session %s: %s", session_id, e
+        )
     return None
 
 
@@ -233,14 +239,20 @@ async def _run_noise_loop() -> None:
             continue
 
         for session_id_raw, scenario_id_raw in active.items():
-            session_id = session_id_raw.decode() if isinstance(session_id_raw, bytes) else session_id_raw
+            session_id = (
+                session_id_raw.decode() if isinstance(session_id_raw, bytes) else session_id_raw
+            )
             scenario_id = _decode_active_session_scenario(scenario_id_raw)
 
             now = time.time()
             try:
                 last_noise_raw = await redis.get(f"noise:{session_id}:last_event_time")
                 if last_noise_raw:
-                    last_noise = float(last_noise_raw.decode() if isinstance(last_noise_raw, bytes) else last_noise_raw)
+                    last_noise = float(
+                        last_noise_raw.decode()
+                        if isinstance(last_noise_raw, bytes)
+                        else last_noise_raw
+                    )
 
                     # Use session seed for jitter: sessions with even seeds get
                     # slightly shorter intervals to create realistic variation.
@@ -254,7 +266,9 @@ async def _run_noise_loop() -> None:
                     if now - last_noise < min_between:
                         continue
             except redis.exceptions.RedisError as e:
-                logger.warning("[NOISE] Failed to get last noise time for session %s: %s", session_id, e)
+                logger.warning(
+                    "[NOISE] Failed to get last noise time for session %s: %s", session_id, e
+                )
                 continue
 
             # Use session RNG for event selection if seed available
@@ -273,7 +287,9 @@ async def _run_noise_loop() -> None:
             try:
                 await redis.set(f"noise:{session_id}:last_event_time", str(now), ex=7200)
             except redis.exceptions.RedisError as e:
-                logger.warning("[NOISE] Failed to update last noise time for session %s: %s", session_id, e)
+                logger.warning(
+                    "[NOISE] Failed to update last noise time for session %s: %s", session_id, e
+                )
 
             # HTTP probes: run much less frequently than SIEM events
             if http_tick >= random.uniform(90.0, 180.0):

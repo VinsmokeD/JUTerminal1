@@ -5,6 +5,7 @@ has found so far (services, paths, vulnerabilities, credentials).
 Stores discovered items in Redis hashes keyed by session_id for fast retrieval
 by the context builder.
 """
+
 from __future__ import annotations
 
 import json
@@ -21,13 +22,21 @@ def _key(session_id: str, kind: str) -> str:
 
 # ── Public API ──────────────────────────────────────────────────────────────
 
-async def track_command(session_id: str, command: str, output: str, scenario_id: str) -> dict[str, Any]:
+
+async def track_command(
+    session_id: str, command: str, output: str, scenario_id: str
+) -> dict[str, Any]:
     """
     Parse a command + output pair and update the discovery state in Redis.
     Returns a dict of what was newly discovered this call.
     """
     redis = get_redis()
-    newly_discovered: dict[str, list] = {"services": [], "paths": [], "vulns": [], "credentials": []}
+    newly_discovered: dict[str, list] = {
+        "services": [],
+        "paths": [],
+        "vulns": [],
+        "credentials": [],
+    }
     cmd_lower = command.strip().lower()
     first_word = cmd_lower.split()[0] if cmd_lower else ""
 
@@ -79,10 +88,14 @@ async def track_command(session_id: str, command: str, output: str, scenario_id:
     if first_word == "curl":
         server_match = re.search(r"Server:\s*(.+)", output, re.IGNORECASE)
         if server_match:
-            await _add_to_set(redis, session_id, "services", f"server:{server_match.group(1).strip()}")
+            await _add_to_set(
+                redis, session_id, "services", f"server:{server_match.group(1).strip()}"
+            )
         php_match = re.search(r"X-Powered-By:\s*(.+)", output, re.IGNORECASE)
         if php_match:
-            await _add_to_set(redis, session_id, "services", f"runtime:{php_match.group(1).strip()}")
+            await _add_to_set(
+                redis, session_id, "services", f"runtime:{php_match.group(1).strip()}"
+            )
 
     # ── whatweb → technology stack ──────────────────────────────────────
     if first_word == "whatweb":
@@ -155,6 +168,7 @@ async def clear_discoveries(session_id: str) -> None:
 
 
 # ── Internals ───────────────────────────────────────────────────────────────
+
 
 async def _add_to_set(redis, session_id: str, kind: str, value: str) -> bool:
     """Add to Redis set, return True if newly added."""

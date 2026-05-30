@@ -16,6 +16,7 @@ Run with:
   pytest tests/integration_test.py -v --tb=short
   pytest tests/integration_test.py -v -k "performance" (benchmarks only)
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -50,12 +51,11 @@ from src.main import app
 # FIXTURES
 # ────────────────────────────────────────────────────────────────────────────
 
+
 @pytest_asyncio.fixture(scope="module")
 async def client():
     """ASGI test client with app transport."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
 
@@ -107,9 +107,12 @@ async def test_session_id(client: AsyncClient, auth_token: str):
     )
     assert resp.status_code == 200
     return resp.json()["session_id"]
+
+
 # ────────────────────────────────────────────────────────────────────────────
 # SECTION 1: TERMINAL & CONTAINER HEALTH
 # ────────────────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_01_health_endpoint_returns_ok(client: AsyncClient):
@@ -154,12 +157,15 @@ async def test_03_terminal_io_ready(client: AsyncClient, test_session_id: str):
     """✓ Terminal I/O endpoint is ready to accept WebSocket."""
     # Verify WS route exists
     from src.ws.routes import router
+
     routes = [r.path for r in router.routes]
     assert any("session_id" in r for r in routes), "WS route missing session_id param"
 
 
 @pytest.mark.asyncio
-async def test_04_session_persists_on_refresh(client: AsyncClient, auth_token: str, test_session_id: str):
+async def test_04_session_persists_on_refresh(
+    client: AsyncClient, auth_token: str, test_session_id: str
+):
     """✓ Session data persists after retrieval (browser refresh equivalent)."""
     resp = await client.get(
         f"/api/sessions/{test_session_id}",
@@ -175,6 +181,7 @@ async def test_04_session_persists_on_refresh(client: AsyncClient, auth_token: s
 # ────────────────────────────────────────────────────────────────────────────
 # SECTION 2: AUTH & SESSION MANAGEMENT
 # ────────────────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_05_register_creates_user(client: AsyncClient):
@@ -216,9 +223,14 @@ async def test_07_session_persists_with_token(client: AsyncClient, auth_token: s
     """✓ Session persists across page refresh (token reuse)."""
     # Cleanup
     while True:
-        active_resp = await client.get("/api/sessions/active", headers={"Authorization": f"Bearer {auth_token}"})
+        active_resp = await client.get(
+            "/api/sessions/active", headers={"Authorization": f"Bearer {auth_token}"}
+        )
         if active_resp.status_code == 200 and active_resp.json():
-            await client.post(f"/api/sessions/{active_resp.json()['session_id']}/end", headers={"Authorization": f"Bearer {auth_token}"})
+            await client.post(
+                f"/api/sessions/{active_resp.json()['session_id']}/end",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
         else:
             break
 
@@ -417,6 +429,7 @@ async def test_10_unauthorized_request_rejected(client: AsyncClient):
 # SECTION 3: SCENARIO LOADING & PHASE TRACKING
 # ────────────────────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_11_get_scenarios_returns_three(client: AsyncClient):
     """✓ GET /api/scenarios returns 3 scenarios (v2.0 scope)."""
@@ -437,9 +450,14 @@ async def test_12_start_session_creates_with_phase_1(client: AsyncClient, auth_t
     """✓ POST /api/sessions/start/{sc01} creates session with phase=1."""
     # Cleanup
     while True:
-        active_resp = await client.get("/api/sessions/active", headers={"Authorization": f"Bearer {auth_token}"})
+        active_resp = await client.get(
+            "/api/sessions/active", headers={"Authorization": f"Bearer {auth_token}"}
+        )
         if active_resp.status_code == 200 and active_resp.json():
-            await client.post(f"/api/sessions/{active_resp.json()['session_id']}/end", headers={"Authorization": f"Bearer {auth_token}"})
+            await client.post(
+                f"/api/sessions/{active_resp.json()['session_id']}/end",
+                headers={"Authorization": f"Bearer {auth_token}"},
+            )
         else:
             break
 
@@ -463,6 +481,7 @@ async def test_13_phase_gating_prevents_escalation(client: AsyncClient):
     with patch("src.scenarios.engine._get_current_phase", return_value=1):
         with pytest.raises(GateBlock) as exc:
             from src.scenarios.engine import check_gate
+
             await check_gate(
                 command="sqlmap -u http://172.20.1.20/search --dbs",
                 session_id="test",
@@ -529,6 +548,7 @@ async def test_17_sc04_rejected_out_of_scope(client: AsyncClient, auth_token: st
 # SECTION 4: TERMINAL COMMANDS (SC-01 to SC-03)
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def test_18_sc01_sqlmap_pattern_recognized():
     """✓ SC-01: nmap scan pattern recognized by SIEM."""
     from src.scenarios.loader import load_scenario
@@ -547,7 +567,9 @@ def test_19_sc01_gobuster_pattern_recognized():
     spec = load_scenario("SC-01")
     detection_rules = spec.get("soc_detection", [])
 
-    gobuster_rules = [r for r in detection_rules if "gobuster" in r.get("trigger_regex", "").lower()]
+    gobuster_rules = [
+        r for r in detection_rules if "gobuster" in r.get("trigger_regex", "").lower()
+    ]
     assert len(gobuster_rules) > 0, "gobuster should be in SC-01 detection rules"
 
 
@@ -570,10 +592,14 @@ def test_21_sc02_spn_enumeration_pattern_recognized():
     detection_rules = spec.get("soc_detection", [])
 
     # Look for SPN/Kerberos-related rule
-    spn_rules = [r for r in detection_rules if any(
-        keyword in r.get("trigger_regex", "").lower()
-        for keyword in ["spn", "kerberos", "getuserspn"]
-    )]
+    spn_rules = [
+        r
+        for r in detection_rules
+        if any(
+            keyword in r.get("trigger_regex", "").lower()
+            for keyword in ["spn", "kerberos", "getuserspn"]
+        )
+    ]
     assert len(spn_rules) > 0, "SPN enumeration should be in SC-02 detection rules"
 
 
@@ -584,10 +610,14 @@ def test_22_sc03_gophish_pattern_recognized():
     spec = load_scenario("SC-03")
     detection_rules = spec.get("soc_detection", [])
 
-    phishing_rules = [r for r in detection_rules if any(
-        keyword in r.get("trigger_regex", "").lower()
-        for keyword in ["gophish", "email", "phishing", "campaign"]
-    )]
+    phishing_rules = [
+        r
+        for r in detection_rules
+        if any(
+            keyword in r.get("trigger_regex", "").lower()
+            for keyword in ["gophish", "email", "phishing", "campaign"]
+        )
+    ]
     assert len(phishing_rules) > 0, "GoPhish should be in SC-03 detection rules"
 
 
@@ -598,10 +628,14 @@ def test_23_sc03_email_callback_pattern_recognized():
     spec = load_scenario("SC-03")
     detection_rules = spec.get("soc_detection", [])
 
-    callback_rules = [r for r in detection_rules if any(
-        keyword in r.get("event_template", "").lower()
-        for keyword in ["opened", "clicked", "callback", "phish"]
-    )]
+    callback_rules = [
+        r
+        for r in detection_rules
+        if any(
+            keyword in r.get("event_template", "").lower()
+            for keyword in ["opened", "clicked", "callback", "phish"]
+        )
+    ]
     assert len(callback_rules) > 0, "Email callback detection should be in SC-03 rules"
 
 
@@ -621,6 +655,7 @@ def test_24_all_commands_have_severity():
 # ────────────────────────────────────────────────────────────────────────────
 # SECTION 5: SIEM EVENT TRIGGERING
 # ────────────────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_25_siem_event_structure_valid():
@@ -741,6 +776,7 @@ async def test_30_siem_rules_have_event_templates():
 # SECTION 6: PERFORMANCE BENCHMARKS
 # ────────────────────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_31_performance_health_endpoint_latency(client: AsyncClient):
     """⏱ Health endpoint latency < 100ms."""
@@ -836,6 +872,7 @@ async def test_36_performance_auth_token_validation(client: AsyncClient, auth_to
 # SUMMARY & REPORTING
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def test_summary_all_scenarios_valid():
     """Summary: All 3 scenarios load without error."""
     from src.scenarios.loader import load_scenario, invalidate_cache
@@ -855,16 +892,16 @@ def test_summary_all_scenarios_valid():
         except Exception as e:
             results[scenario_id] = {"status": f"❌ FAIL: {e}"}
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SCENARIO VALIDATION SUMMARY")
-    print("="*70)
+    print("=" * 70)
     for scenario_id, result in results.items():
         print(f"\n{scenario_id}: {result['status']}")
         if "phases" in result:
             print(f"  - Phases: {result['phases']}")
             print(f"  - Gates: {result['gates']}")
             print(f"  - Detection Rules: {result['detection_rules']}")
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
 
     # Assert all passed
     for scenario_id, result in results.items():
@@ -872,7 +909,8 @@ def test_summary_all_scenarios_valid():
 
 
 if __name__ == "__main__":
-    print("""
+    print(
+        """
     CyberSim Integration Test Suite
     ===============================
 
@@ -889,4 +927,5 @@ if __name__ == "__main__":
 
     Run with detailed output:
       pytest tests/integration_test.py -v -s --tb=long
-    """)
+    """
+    )

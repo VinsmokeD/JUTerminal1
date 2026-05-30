@@ -8,6 +8,7 @@ Responsibilities:
 - Generate SIEM events from attacker commands
 - Validate flags submitted by students
 """
+
 from __future__ import annotations
 
 import json
@@ -37,8 +38,10 @@ from src.scenarios.loader import (
 # Gate check — called from ws/routes.py before forwarding terminal input
 # ---------------------------------------------------------------------------
 
+
 class GateBlock(Exception):
     """Raised when a command is blocked by a methodology gate."""
+
     def __init__(self, message: str, min_phase: int):
         super().__init__(message)
         self.message = message
@@ -81,6 +84,7 @@ async def check_gate(
 # ---------------------------------------------------------------------------
 # SIEM event generation — called from ws/routes.py after forwarding command
 # ---------------------------------------------------------------------------
+
 
 async def process_command_for_siem(
     command: str,
@@ -155,6 +159,7 @@ async def process_command_for_siem(
 # Phase advancement — call after every completed command
 # ---------------------------------------------------------------------------
 
+
 async def try_advance_phase(
     session_id: str,
     scenario_id: str,
@@ -185,6 +190,7 @@ async def try_advance_phase(
 # Flag validation
 # ---------------------------------------------------------------------------
 
+
 async def validate_flag(
     flag_input: str,
     scenario_id: str,
@@ -204,9 +210,7 @@ async def validate_flag(
     # ── 1. Build effective flag list ────────────────────────────────────────
     # Start with dynamic overrides from session metadata
     meta_flags: list[dict[str, Any]] = []
-    result_sess = await db.execute(
-        select(DbSession).where(DbSession.id == session_id)
-    )
+    result_sess = await db.execute(select(DbSession).where(DbSession.id == session_id))
     db_session = result_sess.scalar_one_or_none()
     if db_session:
         metadata_flags: dict[str, Any] = (db_session.session_metadata or {}).get("flags", {})
@@ -291,6 +295,7 @@ async def validate_flag(
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _parse_tool(command: str) -> str:
     """Extract the base tool name from a shell command string."""
     if not command:
@@ -329,9 +334,7 @@ async def _get_current_phase(session_id: str, db: AsyncSession) -> int:
     cached = await cache_get(f"session:{session_id}:state")
     if cached and "phase" in cached:
         return int(cached["phase"])
-    result = await db.execute(
-        select(DbSession.phase).where(DbSession.id == session_id)
-    )
+    result = await db.execute(select(DbSession.phase).where(DbSession.id == session_id))
     row = result.scalar_one_or_none()
     if hasattr(row, "phase"):
         return int(row.phase)
@@ -339,9 +342,7 @@ async def _get_current_phase(session_id: str, db: AsyncSession) -> int:
 
 
 async def _set_phase(session_id: str, new_phase: int, db: AsyncSession) -> None:
-    result = await db.execute(
-        select(DbSession).where(DbSession.id == session_id)
-    )
+    result = await db.execute(select(DbSession).where(DbSession.id == session_id))
     session = result.scalar_one_or_none()
     if session:
         session.phase = new_phase
@@ -367,19 +368,21 @@ async def _check_completion_signals(
     if required_tools:
         required = {t.lower() for t in required_tools}
         alternatives = {"gobuster", "ffuf", "dirb"}
-        
+
         expanded_required = set(required)
         if required & alternatives:
             expanded_required.update(alternatives)
-            
+
         result = await db.execute(
-            select(CommandLog.tool).where(
+            select(CommandLog.tool)
+            .where(
                 CommandLog.session_id == session_id,
                 CommandLog.tool.in_(expanded_required),
-            ).distinct()
+            )
+            .distinct()
         )
         used_tools = {row[0] for row in result.fetchall()}
-        
+
         tools_satisfied = True
         for req_tool in required:
             if req_tool in alternatives:
@@ -390,7 +393,7 @@ async def _check_completion_signals(
                 if req_tool not in used_tools:
                     tools_satisfied = False
                     break
-                    
+
         if not tools_satisfied:
             return False
 
@@ -398,7 +401,9 @@ async def _check_completion_signals(
     min_notes: dict[str, int] = signals.get("min_notes_tagged", {})
     for tag, count in min_notes.items():
         result = await db.execute(
-            select(func.count()).select_from(Note).where(
+            select(func.count())
+            .select_from(Note)
+            .where(
                 Note.session_id == session_id,
                 Note.tag == tag.lstrip("#"),
             )
@@ -417,9 +422,7 @@ async def _check_completion_signals(
 
     # 4. Report generated check
     if signals.get("report_generated"):
-        result = await db.execute(
-            select(DbSession.completed_at).where(DbSession.id == session_id)
-        )
+        result = await db.execute(select(DbSession.completed_at).where(DbSession.id == session_id))
         completed_at = result.scalar_one_or_none()
         if not completed_at:
             return False

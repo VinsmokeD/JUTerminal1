@@ -1,4 +1,5 @@
 """Learning insight builder for cause-and-effect mission debriefs."""
+
 from __future__ import annotations
 
 from collections import Counter
@@ -96,7 +97,9 @@ def _events_for_command(command: CommandLog, events: list[SiemEvent]) -> list[di
                 "detection_latency_seconds": latency,
             }
         )
-    matched.sort(key=lambda item: (-_severity_rank(item["severity"]), item["detection_latency_seconds"]))
+    matched.sort(
+        key=lambda item: (-_severity_rank(item["severity"]), item["detection_latency_seconds"])
+    )
     return matched[:5]
 
 
@@ -113,34 +116,52 @@ def _coaching(
     next_practice: list[str] = []
 
     if commands:
-        strengths.append(f"Recorded {len(commands)} command(s), creating a replayable action trail.")
+        strengths.append(
+            f"Recorded {len(commands)} command(s), creating a replayable action trail."
+        )
     else:
-        improvement_areas.append("No command trail was recorded; run scoped actions before ending the mission.")
+        improvement_areas.append(
+            "No command trail was recorded; run scoped actions before ending the mission."
+        )
 
     if notes_by_tag.get("evidence", 0) > 0:
         strengths.append("Captured evidence notes that can support a professional report.")
     else:
-        improvement_areas.append("Add evidence notes while working so the debrief is easier to defend.")
+        improvement_areas.append(
+            "Add evidence notes while working so the debrief is easier to defend."
+        )
 
     if notes_by_tag.get("finding", 0) > 0:
         strengths.append("Documented at least one finding tied to the mission.")
     elif session.role == "red":
-        improvement_areas.append("Translate discoveries into tagged findings before moving to exploitation.")
+        improvement_areas.append(
+            "Translate discoveries into tagged findings before moving to exploitation."
+        )
 
     if high_signal_count:
-        strengths.append(f"Generated {high_signal_count} high-signal detection(s) for Blue Team review.")
+        strengths.append(
+            f"Generated {high_signal_count} high-signal detection(s) for Blue Team review."
+        )
 
     detected_commands = sum(1 for count in related_counts if count > 0)
     if commands and detected_commands / len(commands) < 0.5:
-        improvement_areas.append("Several commands had no nearby detection; compare quiet activity with SIEM visibility.")
+        improvement_areas.append(
+            "Several commands had no nearby detection; compare quiet activity with SIEM visibility."
+        )
 
     if latencies and mean(latencies) <= 10:
-        strengths.append("Detections appeared quickly, making the Red-to-Blue connection easy to explain.")
+        strengths.append(
+            "Detections appeared quickly, making the Red-to-Blue connection easy to explain."
+        )
     elif latencies:
-        improvement_areas.append("Review why some actions took longer to appear as defender-visible telemetry.")
+        improvement_areas.append(
+            "Review why some actions took longer to appear as defender-visible telemetry."
+        )
 
     if len(session.hints_used or []) > 3:
-        improvement_areas.append("Hint usage was high; repeat the mission and pause longer at each methodology phase.")
+        improvement_areas.append(
+            "Hint usage was high; repeat the mission and pause longer at each methodology phase."
+        )
 
     scenario_next = {
         "SC-01": [
@@ -158,7 +179,9 @@ def _coaching(
     }
     next_practice.extend(scenario_next.get(session.scenario_id, []))
     if session.role == "blue":
-        next_practice.append("Classify each alert as true positive, false positive, investigating, or escalated.")
+        next_practice.append(
+            "Classify each alert as true positive, false positive, investigating, or escalated."
+        )
     else:
         next_practice.append("Write one note per phase before using a louder tool.")
 
@@ -172,7 +195,9 @@ def _coaching(
 async def build_learning_insights(session: Session, db: AsyncSession) -> dict:
     """Return product-level debrief insights for a session."""
     cmd_result = await db.execute(
-        select(CommandLog).where(CommandLog.session_id == session.id).order_by(CommandLog.created_at)
+        select(CommandLog)
+        .where(CommandLog.session_id == session.id)
+        .order_by(CommandLog.created_at)
     )
     commands = list(cmd_result.scalars())
 

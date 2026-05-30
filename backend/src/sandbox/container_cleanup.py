@@ -133,13 +133,9 @@ async def cleanup_orphaned_containers() -> int:
         async with AsyncSessionLocal() as db:
             result = await db.execute(select(Session))
             sessions = result.scalars().all()
-            session_index = {
-                str(session.id): session.container_id for session in sessions
-            }
+            session_index = {str(session.id): session.container_id for session in sessions}
             completed_sessions = {
-                str(session.id)
-                for session in sessions
-                if session.completed_at is not None
+                str(session.id) for session in sessions if session.completed_at is not None
             }
 
         cleaned_count = await asyncio.to_thread(
@@ -166,9 +162,7 @@ async def _cleanup_orphans(docker_client, active_container_ids: set[str]) -> int
     removed = 0
     try:
         containers = await asyncio.to_thread(
-            lambda: docker_client.containers.list(
-                filters={"label": "com.cybersim.role=kali"}
-            )
+            lambda: docker_client.containers.list(filters={"label": "com.cybersim.role=kali"})
         )
         for c in containers:
             short_id = c.id[:12]
@@ -186,13 +180,15 @@ async def _cleanup_orphans(docker_client, active_container_ids: set[str]) -> int
                 removed += 1
                 logger.info(
                     "[CLEANUP] Removed orphan Kali container %s (age %.0fs)",
-                    short_id, age_seconds,
+                    short_id,
+                    age_seconds,
                 )
                 print(f"[Cleanup] Removed orphan Kali container {short_id}")
             except Exception as exc:
                 logger.warning(
                     "[CLEANUP] Failed to remove orphan container %s: %s",
-                    short_id, exc,
+                    short_id,
+                    exc,
                 )
     except Exception as exc:
         logger.warning("[CLEANUP] Orphan sweep error: %s", exc)
@@ -209,9 +205,7 @@ async def cleanup_idle_containers(idle_threshold_minutes: int = 60):
     try:
         async with AsyncSessionLocal() as db:
             # Calculate cutoff time
-            cutoff_time = datetime.now(timezone.utc) - timedelta(
-                minutes=idle_threshold_minutes
-            )
+            cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=idle_threshold_minutes)
 
             # Find sessions with no recent commands
             query = select(Session).where(
@@ -304,6 +298,7 @@ async def container_cleanup_loop(interval_seconds: int = 60):
             # ── Stale session eviction from Redis active-sessions hash ───
             try:
                 from src.cache.redis import _get as get_redis
+
                 redis = get_redis()
                 active = await redis.hgetall("cybersim:active_sessions")
                 for sid_raw, val_raw in active.items():
@@ -324,7 +319,12 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                                 container = docker_client.containers.get(container_id)
                                 _remove_container(container, "stale session alive key expired")
                             except Exception as ce:
-                                logger.warning("[CLEANUP] Failed to remove container %s for stale session %s: %s", container_id, sid[:8], ce)
+                                logger.warning(
+                                    "[CLEANUP] Failed to remove container %s for stale session %s: %s",
+                                    container_id,
+                                    sid[:8],
+                                    ce,
+                                )
 
                         try:
                             async with AsyncSessionLocal() as db:
@@ -335,14 +335,17 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                                     db_sess.container_id = None
                                     db_sess.network_name = None
                                     await db.commit()
-                                    logger.info("[CLEANUP] Marked stale session %s as completed in DB", sid[:8])
+                                    logger.info(
+                                        "[CLEANUP] Marked stale session %s as completed in DB",
+                                        sid[:8],
+                                    )
                         except Exception as dbe:
-                            logger.error("[CLEANUP] DB update for stale session %s failed: %s", sid[:8], dbe)
+                            logger.error(
+                                "[CLEANUP] DB update for stale session %s failed: %s", sid[:8], dbe
+                            )
 
                         await redis.hdel("cybersim:active_sessions", sid)
-                        logger.info(
-                            "[CLEANUP] Evicted stale session %s from active map", sid[:8]
-                        )
+                        logger.info("[CLEANUP] Evicted stale session %s from active map", sid[:8])
             except Exception as _re:
                 logger.warning("[CLEANUP] Redis stale-session eviction failed: %s", _re)
 
@@ -353,6 +356,7 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                     # Collect container IDs from the Redis active-sessions map
                     try:
                         from src.cache.redis import _get as get_redis2
+
                         redis2 = get_redis2()
                         active2 = await redis2.hgetall("cybersim:active_sessions")
                     except redis.RedisError:
@@ -366,10 +370,7 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                             )
                         )
                         db_ids = {
-                            item
-                            for row in result.all()
-                            if row[0]
-                            for item in (row[0], row[0][:12])
+                            item for row in result.all() if row[0] for item in (row[0], row[0][:12])
                         }
 
                     active_ids = _container_ids_from_active_sessions(active2) | db_ids

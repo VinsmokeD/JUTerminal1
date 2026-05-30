@@ -1,4 +1,5 @@
 """SIEM engine — ES-poll driven, Sigma-style rule matching, Redis dedup."""
+
 from __future__ import annotations
 
 import asyncio
@@ -47,6 +48,7 @@ def _decode_active_session_scenario(value: object) -> str:
 # Rule loader
 # ---------------------------------------------------------------------------
 
+
 def _load_rules() -> list[dict]:
     rules: list[dict] = []
     for path in sorted(_RULES_DIR.glob("*.yaml")):
@@ -61,6 +63,7 @@ def _load_rules() -> list[dict]:
 # ---------------------------------------------------------------------------
 # Batch event publisher
 # ---------------------------------------------------------------------------
+
 
 async def queue_event(session_id: str, event: dict) -> None:
     if _event_queue is None:
@@ -85,7 +88,9 @@ async def _batch_flush() -> None:
                 except asyncio.QueueEmpty:
                     if batch:
                         try:
-                            session_id, event = await asyncio.wait_for(_event_queue.get(), timeout=0.1)
+                            session_id, event = await asyncio.wait_for(
+                                _event_queue.get(), timeout=0.1
+                            )
                             batch.setdefault(session_id, []).append(event)
                         except asyncio.TimeoutError:
                             break
@@ -113,6 +118,7 @@ async def _batch_flush() -> None:
 # Severity / scenario inference helpers
 # ---------------------------------------------------------------------------
 
+
 def _infer_severity(source: dict) -> str:
     level = (
         source.get("log", {}).get("level", "")
@@ -127,7 +133,9 @@ def _infer_severity(source: dict) -> str:
     if level in ("warning", "warn"):
         return "MED"
     msg = (source.get("message", "") or "").lower()
-    if any(kw in msg for kw in ("denied", "blocked", "unauthorized", "failed", "attack", "exploit")):
+    if any(
+        kw in msg for kw in ("denied", "blocked", "unauthorized", "failed", "attack", "exploit")
+    ):
         return "HIGH"
     if any(kw in msg for kw in ("warning", "suspicious", "anomaly", "brute")):
         return "MED"
@@ -148,6 +156,7 @@ def _infer_scenario(source: dict) -> str | None:
 # ---------------------------------------------------------------------------
 # Sigma-rule DSL matcher (shallow but sufficient for CyberSim field depth)
 # ---------------------------------------------------------------------------
+
 
 def _get_field(source: dict, dotted: str) -> object:
     """Traverse dotted ECS field path in a nested dict."""
@@ -194,6 +203,7 @@ def _match_dsl(source: dict, dsl: dict) -> bool:
                     return False
         elif op == "regexp":
             import re
+
             for field, pattern in value.items():
                 if not re.search(pattern, str(_get_field(source, field) or ""), re.IGNORECASE):
                     return False
@@ -203,14 +213,17 @@ def _match_dsl(source: dict, dsl: dict) -> bool:
 def _render_template(template: str, source: dict) -> str:
     """Replace {{field.path}} placeholders with source values."""
     import re
+
     def replacer(m: re.Match) -> str:
         return str(_get_field(source, m.group(1)) or "?")
+
     return re.sub(r"\{\{([^}]+)\}\}", replacer, template)
 
 
 # ---------------------------------------------------------------------------
 # Main Elasticsearch poll + rule-match loop
 # ---------------------------------------------------------------------------
+
 
 async def _poll_elasticsearch() -> None:
     global _last_poll_time
@@ -279,7 +292,9 @@ async def _poll_elasticsearch() -> None:
                         rule_scenario = rule.get("scenario")
                         severity = rule.get("severity", _infer_severity(source))
                         message = _render_template(
-                            rule.get("render", {}).get("template", source.get("message", "SIEM event")),
+                            rule.get("render", {}).get(
+                                "template", source.get("message", "SIEM event")
+                            ),
                             source,
                         )
 
@@ -323,6 +338,7 @@ async def _poll_elasticsearch() -> None:
 # Lifecycle
 # ---------------------------------------------------------------------------
 
+
 async def _ensure_es_ilm(client: httpx.AsyncClient) -> None:
     """
     Create (or update) an ILM policy + index template on Elasticsearch so
@@ -334,9 +350,7 @@ async def _ensure_es_ilm(client: httpx.AsyncClient) -> None:
             "phases": {
                 "hot": {
                     "min_age": "0ms",
-                    "actions": {
-                        "rollover": {"max_size": "5gb", "max_age": "7d"}
-                    },
+                    "actions": {"rollover": {"max_size": "5gb", "max_age": "7d"}},
                 },
                 "delete": {
                     "min_age": "30d",
@@ -347,9 +361,7 @@ async def _ensure_es_ilm(client: httpx.AsyncClient) -> None:
     }
     index_template = {
         "index_patterns": ["cybersim-logs-*", "filebeat-*"],
-        "template": {
-            "settings": {"index.lifecycle.name": "cybersim-logs"}
-        },
+        "template": {"settings": {"index.lifecycle.name": "cybersim-logs"}},
     }
     await client.put(
         "http://elasticsearch:9200/_ilm/policy/cybersim-logs",

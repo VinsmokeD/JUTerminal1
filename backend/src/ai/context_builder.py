@@ -5,6 +5,7 @@ This replaces the minimal context previously sent to OpenRouter. The AI now
 receives complete target knowledge, student discovery state, command history,
 note summaries, and behavioral signals.
 """
+
 from __future__ import annotations
 
 import time
@@ -45,6 +46,7 @@ def redact_lab_credentials_for_prompt(
             redacted = redacted.replace(credential, "<REDACTED:credential>")
     return redacted
 
+
 # ── Full target knowledge per scenario ──────────────────────────────────────
 # The AI knows EVERYTHING about the environment — all services, all vulns,
 # all attack paths. This lets it give precise, context-aware guidance.
@@ -57,12 +59,41 @@ SCENARIO_KNOWLEDGE: dict[str, dict] = {
             {
                 "ip": "172.20.1.20",
                 "hostname": "novamed-web",
-                "services": ["ssh:22/OpenSSH_8.9p1", "http:80/Apache_2.4.54/PHP_7.4.33", "https:443/Apache_2.4.54", "mysql:3306/MySQL_8.0.32"],
+                "services": [
+                    "ssh:22/OpenSSH_8.9p1",
+                    "http:80/Apache_2.4.54/PHP_7.4.33",
+                    "https:443/Apache_2.4.54",
+                    "mysql:3306/MySQL_8.0.32",
+                ],
                 "vulns": [
-                    {"id": "sqli_login", "type": "SQL Injection", "location": "/login POST parameter 'username'", "severity": "CRITICAL", "cwe": "CWE-89"},
-                    {"id": "lfi_records", "type": "Local File Inclusion", "location": "/records/?file= parameter", "severity": "HIGH", "cwe": "CWE-22"},
-                    {"id": "idor_patients", "type": "Insecure Direct Object Reference", "location": "/records/?id= sequential IDs", "severity": "HIGH", "cwe": "CWE-639"},
-                    {"id": "unrestricted_upload", "type": "Unrestricted File Upload", "location": "/uploads/ accepts .php files", "severity": "CRITICAL", "cwe": "CWE-434"},
+                    {
+                        "id": "sqli_login",
+                        "type": "SQL Injection",
+                        "location": "/login POST parameter 'username'",
+                        "severity": "CRITICAL",
+                        "cwe": "CWE-89",
+                    },
+                    {
+                        "id": "lfi_records",
+                        "type": "Local File Inclusion",
+                        "location": "/records/?file= parameter",
+                        "severity": "HIGH",
+                        "cwe": "CWE-22",
+                    },
+                    {
+                        "id": "idor_patients",
+                        "type": "Insecure Direct Object Reference",
+                        "location": "/records/?id= sequential IDs",
+                        "severity": "HIGH",
+                        "cwe": "CWE-639",
+                    },
+                    {
+                        "id": "unrestricted_upload",
+                        "type": "Unrestricted File Upload",
+                        "location": "/uploads/ accepts .php files",
+                        "severity": "CRITICAL",
+                        "cwe": "CWE-434",
+                    },
                 ],
                 "attack_path": "SQLi → extract creds → LFI to read config → upload PHP shell → RCE",
             },
@@ -81,8 +112,23 @@ SCENARIO_KNOWLEDGE: dict[str, dict] = {
                 "attack_path": "WAF blocks obvious attacks — requires evasion or less-detected vectors",
             },
         ],
-        "key_findings_expected": ["Apache/PHP stack identification", "Open ports (22,80,443,3306)", "Directory enumeration (/admin, /backup, /records, /uploads)", "SQL injection in login form", "LFI via file parameter", "IDOR in patient records", "PHP file upload to webshell", "RCE via webshell"],
-        "blue_detection_points": ["WAF alerts on SQLi patterns", "Anomalous 404 rates from enumeration", "Database auth failures", "File upload to /uploads/", "Shell process spawn from PHP"],
+        "key_findings_expected": [
+            "Apache/PHP stack identification",
+            "Open ports (22,80,443,3306)",
+            "Directory enumeration (/admin, /backup, /records, /uploads)",
+            "SQL injection in login form",
+            "LFI via file parameter",
+            "IDOR in patient records",
+            "PHP file upload to webshell",
+            "RCE via webshell",
+        ],
+        "blue_detection_points": [
+            "WAF alerts on SQLi patterns",
+            "Anomalous 404 rates from enumeration",
+            "Database auth failures",
+            "File upload to /uploads/",
+            "Shell process spawn from PHP",
+        ],
     },
     "SC-02": {
         "name": "Nexora Financial",
@@ -91,10 +137,30 @@ SCENARIO_KNOWLEDGE: dict[str, dict] = {
             {
                 "ip": "172.20.2.20",
                 "hostname": "NEXORA-DC01",
-                "services": ["dns:53/Samba_4.x", "kerberos:88/Samba_kdc", "msrpc:135", "netbios:139/Samba_4.17", "ldap:389/Samba_LDAP", "smb:445/Samba_4.17", "kpasswd:464"],
+                "services": [
+                    "dns:53/Samba_4.x",
+                    "kerberos:88/Samba_kdc",
+                    "msrpc:135",
+                    "netbios:139/Samba_4.17",
+                    "ldap:389/Samba_LDAP",
+                    "smb:445/Samba_4.17",
+                    "kpasswd:464",
+                ],
                 "vulns": [
-                    {"id": "kerberoast_svc", "type": "Kerberoastable Account", "location": "svc_backup (SPN: CIFS/NEXORA-FS01.nexora.local)", "severity": "HIGH", "cwe": "CWE-916"},
-                    {"id": "dcsync", "type": "DCSync Privilege", "location": "Domain Admin can replicate all hashes", "severity": "CRITICAL", "cwe": "CWE-269"},
+                    {
+                        "id": "kerberoast_svc",
+                        "type": "Kerberoastable Account",
+                        "location": "svc_backup (SPN: CIFS/NEXORA-FS01.nexora.local)",
+                        "severity": "HIGH",
+                        "cwe": "CWE-916",
+                    },
+                    {
+                        "id": "dcsync",
+                        "type": "DCSync Privilege",
+                        "location": "Domain Admin can replicate all hashes",
+                        "severity": "CRITICAL",
+                        "cwe": "CWE-269",
+                    },
                 ],
                 "attack_path": "BloodHound recon → find svc_backup SPN → Kerberoast → crack hash → lateral move → DCSync",
             },
@@ -103,7 +169,13 @@ SCENARIO_KNOWLEDGE: dict[str, dict] = {
                 "hostname": "NEXORA-FS01",
                 "services": ["smb:445/Samba_4.17"],
                 "vulns": [
-                    {"id": "share_access", "type": "Excessive Share Permissions", "location": "Finance share readable by svc_backup", "severity": "MEDIUM", "cwe": "CWE-732"},
+                    {
+                        "id": "share_access",
+                        "type": "Excessive Share Permissions",
+                        "location": "Finance share readable by svc_backup",
+                        "severity": "MEDIUM",
+                        "cwe": "CWE-732",
+                    },
                 ],
                 "attack_path": "Accessible via svc_backup credentials after Kerberoast crack",
             },
@@ -112,11 +184,33 @@ SCENARIO_KNOWLEDGE: dict[str, dict] = {
         "initial_creds": {"username": "jsmith", "password": "Password123"},
         "key_accounts": {
             "jsmith": {"role": "Low-privilege domain user", "groups": ["Domain Users"]},
-            "svc_backup": {"role": "Service account (Kerberoastable)", "spn": "CIFS/NEXORA-FS01.nexora.local", "password": "Backup2023!", "groups": ["Domain Users"]},
-            "it.admin": {"role": "Domain Administrator", "groups": ["Domain Admins", "Enterprise Admins"]},
+            "svc_backup": {
+                "role": "Service account (Kerberoastable)",
+                "spn": "CIFS/NEXORA-FS01.nexora.local",
+                "password": "Backup2023!",
+                "groups": ["Domain Users"],
+            },
+            "it.admin": {
+                "role": "Domain Administrator",
+                "groups": ["Domain Admins", "Enterprise Admins"],
+            },
         },
-        "key_findings_expected": ["AD domain discovery (nexora.local)", "BloodHound data collection", "Kerberoastable account identification (svc_backup)", "TGS hash extraction", "Hash cracking (Backup2023!)", "Lateral movement to file server", "DCSync attack for all hashes"],
-        "blue_detection_points": ["Event 4769 with RC4 encryption (Kerberoasting)", "Event 4625 failed auth attempts", "Event 4624 Type 3 from unusual IPs", "Event 4648 explicit credential usage", "Event 4662 replication rights (DCSync)"],
+        "key_findings_expected": [
+            "AD domain discovery (nexora.local)",
+            "BloodHound data collection",
+            "Kerberoastable account identification (svc_backup)",
+            "TGS hash extraction",
+            "Hash cracking (Backup2023!)",
+            "Lateral movement to file server",
+            "DCSync attack for all hashes",
+        ],
+        "blue_detection_points": [
+            "Event 4769 with RC4 encryption (Kerberoasting)",
+            "Event 4625 failed auth attempts",
+            "Event 4624 Type 3 from unusual IPs",
+            "Event 4648 explicit credential usage",
+            "Event 4662 replication rights (DCSync)",
+        ],
     },
     "SC-03": {
         "name": "Orion Logistics",
@@ -134,7 +228,13 @@ SCENARIO_KNOWLEDGE: dict[str, dict] = {
                 "hostname": "mail-relay",
                 "services": ["smtp:25/Postfix"],
                 "vulns": [
-                    {"id": "open_relay", "type": "Open SMTP Relay", "location": "Postfix accepts relay from scenario network", "severity": "MEDIUM", "cwe": "CWE-284"},
+                    {
+                        "id": "open_relay",
+                        "type": "Open SMTP Relay",
+                        "location": "Postfix accepts relay from scenario network",
+                        "severity": "MEDIUM",
+                        "cwe": "CWE-284",
+                    },
                 ],
                 "attack_path": "Used as sending relay for phishing campaign — passes SPF for scenario domain",
             },
@@ -143,13 +243,34 @@ SCENARIO_KNOWLEDGE: dict[str, dict] = {
                 "hostname": "victim-endpoint",
                 "services": ["http:80/simulated_windows"],
                 "vulns": [
-                    {"id": "macro_exec", "type": "Macro Execution Allowed", "location": "Simulated Office with macros enabled", "severity": "HIGH", "cwe": "CWE-94"},
+                    {
+                        "id": "macro_exec",
+                        "type": "Macro Execution Allowed",
+                        "location": "Simulated Office with macros enabled",
+                        "severity": "HIGH",
+                        "cwe": "CWE-94",
+                    },
                 ],
                 "attack_path": "Opens phishing email → executes macro → reverse shell callback",
             },
         ],
-        "key_findings_expected": ["OSINT on target organization", "GoPhish campaign setup", "Sending profile configuration via Postfix", "Phishing email template creation", "Payload generation (msfvenom)", "Campaign launch and tracking", "Callback/reverse shell received"],
-        "blue_detection_points": ["Email header anomalies (SPF/DKIM/DMARC)", "Tracking pixel fires", "Event 4688 Office spawning cmd.exe", "Event 4104 PowerShell script block", "Scheduled task creation (persistence)", "C2 beacon traffic"],
+        "key_findings_expected": [
+            "OSINT on target organization",
+            "GoPhish campaign setup",
+            "Sending profile configuration via Postfix",
+            "Phishing email template creation",
+            "Payload generation (msfvenom)",
+            "Campaign launch and tracking",
+            "Callback/reverse shell received",
+        ],
+        "blue_detection_points": [
+            "Email header anomalies (SPF/DKIM/DMARC)",
+            "Tracking pixel fires",
+            "Event 4688 Office spawning cmd.exe",
+            "Event 4104 PowerShell script block",
+            "Scheduled task creation (persistence)",
+            "C2 beacon traffic",
+        ],
     },
 }
 
@@ -176,8 +297,9 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
 
         # Get command count this phase
         cmd_count = await db.execute(
-            select(func.count(CommandLog.id))
-            .where(CommandLog.session_id == session_id, CommandLog.phase == session.phase)
+            select(func.count(CommandLog.id)).where(
+                CommandLog.session_id == session_id, CommandLog.phase == session.phase
+            )
         )
         commands_this_phase = cmd_count.scalar() or 0
 
@@ -191,16 +313,14 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
         recent_notes = note_result.scalars().all()
 
         # Load total notes for summary
-        all_notes_res = await db.execute(
-            select(Note).where(Note.session_id == session_id)
-        )
+        all_notes_res = await db.execute(select(Note).where(Note.session_id == session_id))
         all_notes = all_notes_res.scalars().all()
         note_summary = _summarize_notes(all_notes)
 
         # Load user skill level
         user_result = await db.execute(select(User).where(User.id == session.user_id))
         user = user_result.scalar_one_or_none()
-        skill_level = getattr(user, 'skill_level', 'beginner') if user else 'beginner'
+        skill_level = getattr(user, "skill_level", "beginner") if user else "beginner"
 
         # Load recent SIEM events (last 10)
         siem_res = await db.execute(
@@ -233,19 +353,29 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
 
     # ── Load command history from Redis (last 10 commands) ──────────────
     raw_commands = await lrange(f"session:{session_id}:commands", 0, 9)
-    command_history = [c.decode() if isinstance(c, bytes) else str(c) for c in raw_commands if c] if raw_commands else []
+    command_history = (
+        [c.decode() if isinstance(c, bytes) else str(c) for c in raw_commands if c]
+        if raw_commands
+        else []
+    )
 
     recent_commands = []
     for cmd in command_history:
         redacted_cmd = redact_text(cmd, session.session_metadata)
         capped_cmd = redacted_cmd[:200]
-        wrapped_cmd = f'<UNTRUSTED_DATA source="kali_terminal_command">\n{capped_cmd}\n</UNTRUSTED_DATA>'
+        wrapped_cmd = (
+            f'<UNTRUSTED_DATA source="kali_terminal_command">\n{capped_cmd}\n</UNTRUSTED_DATA>'
+        )
         recent_commands.append(wrapped_cmd)
 
     # ── Construct last command output summary ───────────────────────────
     # Redis capped list history
     terminal_chunks = await lrange(f"terminal:{session_id}:history", 0, 19)
-    reconstructed_text = "".join(list(reversed([c.decode() if isinstance(c, bytes) else str(c) for c in terminal_chunks if c])))
+    reconstructed_text = "".join(
+        list(
+            reversed([c.decode() if isinstance(c, bytes) else str(c) for c in terminal_chunks if c])
+        )
+    )
 
     ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
     cleaned_text = ANSI_RE.sub("", reconstructed_text).replace("\r", "")
@@ -270,7 +400,9 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
     for line in cmd_output_lines:
         redacted_line = redact_text(line, session.session_metadata)
         capped_line = redacted_line[:240]
-        wrapped_line = f'<UNTRUSTED_DATA source="kali_terminal_output">\n{capped_line}\n</UNTRUSTED_DATA>'
+        wrapped_line = (
+            f'<UNTRUSTED_DATA source="kali_terminal_output">\n{capped_line}\n</UNTRUSTED_DATA>'
+        )
         processed_output_lines.append(wrapped_line)
 
     first_lines = processed_output_lines[:20]
@@ -279,7 +411,16 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
     # Heuristic exit code
     exit_code = 0
     full_output_str = "\n".join(cmd_output_lines).lower()
-    error_keywords = ["command not found", "permission denied", "access denied", "failed", "invalid option", "error:", "syntax error", "traceback"]
+    error_keywords = [
+        "command not found",
+        "permission denied",
+        "access denied",
+        "failed",
+        "invalid option",
+        "error:",
+        "syntax error",
+        "traceback",
+    ]
     if any(kw in full_output_str for kw in error_keywords):
         exit_code = 1
 
@@ -287,7 +428,10 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
     fingerprints = []
     if re.search(r"\d+/tcp\s+(open|filtered)", full_output_str):
         fingerprints.append("nmap_port_list")
-    if re.search(r"you have an error in your sql syntax|mariadb|mysql\s+error|syntax\s+error\s+near", full_output_str):
+    if re.search(
+        r"you have an error in your sql syntax|mariadb|mysql\s+error|syntax\s+error\s+near",
+        full_output_str,
+    ):
         fingerprints.append("sqli_error")
     if re.search(r"samba|smb|cifs|domain\s+controller", full_output_str):
         fingerprints.append("smb_banner")
@@ -311,7 +455,9 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
     for note in recent_notes:
         note_title = f"[{note.tag}] {note.content[:50]}"
         redacted_title = redact_text(note_title, session.session_metadata)
-        wrapped_title = f'<UNTRUSTED_DATA source="student_notebook">\n{redacted_title}\n</UNTRUSTED_DATA>'
+        wrapped_title = (
+            f'<UNTRUSTED_DATA source="student_notebook">\n{redacted_title}\n</UNTRUSTED_DATA>'
+        )
         notes_summary.append(wrapped_title)
 
     # ── Flags captured ──────────────────────────────────────────────────
@@ -326,7 +472,11 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
         last_progress_time = last_flag_time
 
     now = datetime.datetime.now(datetime.timezone.utc)
-    last_progress = last_progress_time.replace(tzinfo=datetime.timezone.utc) if last_progress_time.tzinfo is None else last_progress_time
+    last_progress = (
+        last_progress_time.replace(tzinfo=datetime.timezone.utc)
+        if last_progress_time.tzinfo is None
+        else last_progress_time
+    )
     minutes_since_last_progress = int((now - last_progress).total_seconds() / 60)
 
     # ── SIEM events recent ──────────────────────────────────────────────
@@ -369,7 +519,7 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
         except (ValueError, TypeError):
             pass
 
-    ai_mode = getattr(session, 'ai_mode', 'learn')
+    ai_mode = getattr(session, "ai_mode", "learn")
     scenario_id = session.scenario_id.upper()
     target_knowledge = SCENARIO_KNOWLEDGE.get(scenario_id, {})
     redacted_knowledge = redact_for_ai(target_knowledge, current_phase=session.phase)
@@ -388,7 +538,6 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
         "flags_captured": flags_captured,
         "minutes_since_last_progress": minutes_since_last_progress,
         "siem_events_recent": siem_events_recent,
-
         # Internal metadata keys (needed by monitor.py and other parts)
         "scenario_id": scenario_id,
         "scenario_name": target_knowledge.get("name", "Unknown"),
@@ -418,7 +567,13 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
 def _summarize_notes(notes: list) -> dict[str, Any]:
     """Summarize notes into a compact representation for the AI."""
     if not notes:
-        return {"summary": "No notes taken yet.", "total": 0, "has_findings": False, "has_evidence": False, "has_iocs": False}
+        return {
+            "summary": "No notes taken yet.",
+            "total": 0,
+            "has_findings": False,
+            "has_evidence": False,
+            "has_iocs": False,
+        }
 
     tags = {}
     contents = []

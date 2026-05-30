@@ -13,6 +13,7 @@ from src.ai.debrief_coach import generate_debrief_coaching, handle_debrief_qa
 
 router = APIRouter()
 
+
 class QARequest(BaseModel):
     question: str
 
@@ -132,9 +133,7 @@ async def get_consolidated_report(
 
     # 5. SIEM events
     siem_result = await db.execute(
-        select(SiemEvent)
-        .where(SiemEvent.session_id == session_id)
-        .order_by(SiemEvent.created_at)
+        select(SiemEvent).where(SiemEvent.session_id == session_id).order_by(SiemEvent.created_at)
     )
     siem_events_list = list(siem_result.scalars())
     siem_events_data = [
@@ -165,31 +164,35 @@ async def get_consolidated_report(
         else:
             event_type = "command"
 
-        timeline.append({
-            "type": event_type,
-            "timestamp": c.created_at.isoformat(),
-            "phase": c.phase,
-            "data": {
-                "id": c.id,
-                "command": c.command,
-                "tool": c.tool,
-                "ai_hint_given": c.ai_hint_given,
+        timeline.append(
+            {
+                "type": event_type,
+                "timestamp": c.created_at.isoformat(),
+                "phase": c.phase,
+                "data": {
+                    "id": c.id,
+                    "command": c.command,
+                    "tool": c.tool,
+                    "ai_hint_given": c.ai_hint_given,
+                },
             }
-        })
+        )
 
     for e in siem_events_list:
-        timeline.append({
-            "type": "siem_event",
-            "timestamp": e.created_at.isoformat(),
-            "phase": getattr(e, "phase", None),
-            "data": {
-                "id": e.id,
-                "severity": e.severity,
-                "message": e.message,
-                "mitre_technique": e.mitre_technique,
-                "source": getattr(e, "source", "attacker"),
+        timeline.append(
+            {
+                "type": "siem_event",
+                "timestamp": e.created_at.isoformat(),
+                "phase": getattr(e, "phase", None),
+                "data": {
+                    "id": e.id,
+                    "severity": e.severity,
+                    "message": e.message,
+                    "mitre_technique": e.mitre_technique,
+                    "source": getattr(e, "source", "attacker"),
+                },
             }
-        })
+        )
 
     timeline.sort(key=lambda x: x["timestamp"])
 

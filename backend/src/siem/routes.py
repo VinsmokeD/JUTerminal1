@@ -10,13 +10,16 @@ from src.siem.forensics import run_osquery, list_forensic_targets
 
 router = APIRouter()
 
+
 class ContainmentRequest(BaseModel):
     action_type: str  # block_ip | kill_pid | isolate_host
     target_value: str
 
+
 class OsqueryRequest(BaseModel):
     target: str
     query: str
+
 
 @router.post("/{session_id}/contain")
 async def handle_containment(
@@ -32,14 +35,15 @@ async def handle_containment(
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-        
+
     return await execute_containment(
         session_id=session.id,
         user_id=current_user.id,
         scenario_id=session.scenario_id,
         action_type=body.action_type,
-        target_value=body.target_value
+        target_value=body.target_value,
     )
+
 
 @router.get("/{session_id}/forensics/targets")
 async def get_forensic_targets(
@@ -53,8 +57,9 @@ async def get_forensic_targets(
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-        
+
     return await list_forensic_targets(session.scenario_id)
+
 
 @router.post("/{session_id}/forensics/osquery")
 async def handle_osquery(
@@ -69,8 +74,9 @@ async def handle_osquery(
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-        
+
     return await run_osquery(session.scenario_id, body.target, body.query)
+
 
 @router.get("/{session_id}/actions")
 async def list_actions(
@@ -89,6 +95,7 @@ async def list_actions(
             "action_type": a.action_type,
             "target_value": a.target_value,
             "status": a.status,
-            "created_at": a.created_at.isoformat()
-        } for a in result.scalars()
+            "created_at": a.created_at.isoformat(),
+        }
+        for a in result.scalars()
     ]

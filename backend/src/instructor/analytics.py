@@ -2,6 +2,7 @@
 Phase 25 — Instructor Learning Analytics helper logic.
 Provides class-level statistics, struggle detection, SVG score distribution, and CSV export.
 """
+
 from __future__ import annotations
 
 import math
@@ -16,20 +17,20 @@ RECON_WEIGHT = 0.4
 LOOP_WEIGHT = 0.3
 HINT_WEIGHT = 0.3
 
+
 async def get_instructor_analytics(db: AsyncSession) -> dict:
     """
     Fetch class-level learning signals, common mistakes, struggle flags, and KDE score distribution.
     """
     # 1. Load all sessions
     sessions_result = await db.execute(
-        select(Session, User.username, User.role)
-        .join(User, Session.user_id == User.id)
+        select(Session, User.username, User.role).join(User, Session.user_id == User.id)
     )
     rows = sessions_result.all()
-    
+
     # Filter to student sessions only
     student_sessions = [r for r in rows if r[2] == "student"]
-    
+
     total_sessions_count = len(student_sessions)
     if total_sessions_count == 0:
         # Return empty defaults
@@ -47,7 +48,7 @@ async def get_instructor_analytics(db: AsyncSession) -> dict:
             "blind_spots": [],
             "struggle_flags": [],
             "struggle_rate": 0.0,
-            "score_distribution": _get_default_kde_coords()
+            "score_distribution": _get_default_kde_coords(),
         }
 
     # 2. Basic averages
@@ -56,11 +57,11 @@ async def get_instructor_analytics(db: AsyncSession) -> dict:
     l1_hints_total = 0
     l2_hints_total = 0
     l3_hints_total = 0
-    
+
     # Per-scenario breakdown
     # {scenario_id: {"scores": [], "durations": [], "l1": 0, "l2": 0, "l3": 0, "completed": 0, "active": 0}}
     scenario_stats: dict[str, dict] = {}
-    
+
     struggle_flags = []
     active_count = 0
     struggle_count = 0
@@ -69,12 +70,18 @@ async def get_instructor_analytics(db: AsyncSession) -> dict:
 
     for session, username, _ in student_sessions:
         scores.append(session.score)
-        
+
         # Hints count breakdown
         hints = session.hints_used or []
-        l1_cnt = sum(1 for h in hints if "L1" in str(h) or (isinstance(h, dict) and h.get("level") == 1))
-        l2_cnt = sum(1 for h in hints if "L2" in str(h) or (isinstance(h, dict) and h.get("level") == 2))
-        l3_cnt = sum(1 for h in hints if "L3" in str(h) or (isinstance(h, dict) and h.get("level") == 3))
+        l1_cnt = sum(
+            1 for h in hints if "L1" in str(h) or (isinstance(h, dict) and h.get("level") == 1)
+        )
+        l2_cnt = sum(
+            1 for h in hints if "L2" in str(h) or (isinstance(h, dict) and h.get("level") == 2)
+        )
+        l3_cnt = sum(
+            1 for h in hints if "L3" in str(h) or (isinstance(h, dict) and h.get("level") == 3)
+        )
         l1_hints_total += l1_cnt
         l2_hints_total += l2_cnt
         l3_hints_total += l3_cnt
@@ -88,9 +95,9 @@ async def get_instructor_analytics(db: AsyncSession) -> dict:
                 "hints_l2": 0,
                 "hints_l3": 0,
                 "completed": 0,
-                "active": 0
+                "active": 0,
             }
-        
+
         scenario_stats[sc_id]["scores"].append(session.score)
         scenario_stats[sc_id]["hints_l1"] += l1_cnt
         scenario_stats[sc_id]["hints_l2"] += l2_cnt
@@ -110,17 +117,19 @@ async def get_instructor_analytics(db: AsyncSession) -> dict:
         struggle_info = await calculate_session_struggle(db, session, now)
         if struggle_info["struggle_score"] > 40:
             struggle_count += 1
-            
+
         if struggle_info["struggle_score"] > 0:
-            struggle_flags.append({
-                "session_id": session.id,
-                "username": username,
-                "scenario_id": session.scenario_id,
-                "phase": session.phase,
-                "score": session.score,
-                "struggle_score": round(struggle_info["struggle_score"], 1),
-                "reasons": struggle_info["reasons"]
-            })
+            struggle_flags.append(
+                {
+                    "session_id": session.id,
+                    "username": username,
+                    "scenario_id": session.scenario_id,
+                    "phase": session.phase,
+                    "score": session.score,
+                    "struggle_score": round(struggle_info["struggle_score"], 1),
+                    "reasons": struggle_info["reasons"],
+                }
+            )
 
     # Sort struggle flags by score descending
     struggle_flags.sort(key=lambda x: x["struggle_score"], reverse=True)
@@ -136,7 +145,8 @@ async def get_instructor_analytics(db: AsyncSession) -> dict:
     )
     methodology_gaps = [
         {"tool": tool.split(":")[-1], "blocks_triggered": count}
-        for tool, count in gaps_result.all() if tool
+        for tool, count in gaps_result.all()
+        if tool
     ]
 
     # 4. Blind Spots Analysis
@@ -158,7 +168,9 @@ async def get_instructor_analytics(db: AsyncSession) -> dict:
             "avg_score": round(sum(sc_scores) / sc_count, 1) if sc_count > 0 else 0.0,
             "min_score": min(sc_scores) if sc_count > 0 else 0,
             "max_score": max(sc_scores) if sc_count > 0 else 0,
-            "avg_duration_minutes": round(sum(sc_durations) / len(sc_durations), 1) if sc_durations else 0.0,
+            "avg_duration_minutes": (
+                round(sum(sc_durations) / len(sc_durations), 1) if sc_durations else 0.0
+            ),
             "avg_hints_l1": round(sdata["hints_l1"] / sc_count, 1) if sc_count > 0 else 0.0,
             "avg_hints_l2": round(sdata["hints_l2"] / sc_count, 1) if sc_count > 0 else 0.0,
             "avg_hints_l3": round(sdata["hints_l3"] / sc_count, 1) if sc_count > 0 else 0.0,
@@ -175,7 +187,9 @@ async def get_instructor_analytics(db: AsyncSession) -> dict:
     }
 
     # 7. Cohort struggle rate
-    struggle_rate = round((struggle_count / total_sessions_count) * 100, 1) if total_sessions_count > 0 else 0.0
+    struggle_rate = (
+        round((struggle_count / total_sessions_count) * 100, 1) if total_sessions_count > 0 else 0.0
+    )
 
     # 8. Score distribution KDE coordinates
     score_distribution = generate_kde_svg_coords(scores)
@@ -224,7 +238,7 @@ async def calculate_session_struggle(db: AsyncSession, session: Session, now: da
     recon_paralysis_time = 0.0
     command_loops_count = 0
     hint_deduction = 100.0 - float(session.score or 100.0)
-    
+
     # We query the commands for this session
     cmd_res = await db.execute(
         select(CommandLog)
@@ -232,29 +246,30 @@ async def calculate_session_struggle(db: AsyncSession, session: Session, now: da
         .order_by(CommandLog.created_at.desc())
     )
     commands = cmd_res.scalars().all()
-    
+
     # 1. Recon Paralysis
     # Spent more than 30 minutes in the enumeration phase (phase 1) with at least 10 commands run,
     # but 0 milestones reached and 0 findings noted.
     if session.completed_at is None and session.phase == 1:
         elapsed_minutes = (now - session.started_at).total_seconds() / 60.0
         phase_1_cmds = [c for c in commands if c.phase == 1]
-        
+
         # Check notes
         notes_res = await db.execute(
-            select(func.count(Note.id))
-            .where(Note.session_id == session.id, Note.tag == "finding")
+            select(func.count(Note.id)).where(Note.session_id == session.id, Note.tag == "finding")
         )
         findings_count = notes_res.scalar() or 0
-        
+
         if elapsed_minutes > 30.0 and len(phase_1_cmds) >= 10 and findings_count == 0:
             recon_paralysis_time = elapsed_minutes
-            reasons.append(f"Recon Paralysis: spent {int(elapsed_minutes)}m in Recon with {len(phase_1_cmds)} commands but no findings noted.")
+            reasons.append(
+                f"Recon Paralysis: spent {int(elapsed_minutes)}m in Recon with {len(phase_1_cmds)} commands but no findings noted."
+            )
 
     # 2. Command Loops
     # Repeating the exact same command string or targeting the exact same parameter > 5 times in a 5-minute window without progress.
     # Let's inspect commands and search for loops.
-    recent_cmds = commands[:15] # look at last 15 commands
+    recent_cmds = commands[:15]  # look at last 15 commands
     cmd_counts: dict[str, list[datetime]] = {}
     for c in recent_cmds:
         cmd_str = c.command.strip()
@@ -268,15 +283,17 @@ async def calculate_session_struggle(db: AsyncSession, session: Session, now: da
             # Check window of 5 minutes (300s) between first and last of any 6 duplicate calls
             times.sort()
             for i in range(len(times) - 5):
-                diff = (times[i+5] - times[i]).total_seconds()
+                diff = (times[i + 5] - times[i]).total_seconds()
                 if diff <= 300:
                     repeats = len(times)
                     if repeats > max_repeats:
                         max_repeats = repeats
-                    
+
     if max_repeats > 5:
         command_loops_count = max_repeats
-        reasons.append(f"Command Loops: repeated same command string {max_repeats} times in a 5-minute window.")
+        reasons.append(
+            f"Command Loops: repeated same command string {max_repeats} times in a 5-minute window."
+        )
 
     # 3. Hint Dependency
     # Requesting L3 hints within 60 seconds of a command block or using hints for > 70% of the milestone steps in the active scenario.
@@ -286,14 +303,17 @@ async def calculate_session_struggle(db: AsyncSession, session: Session, now: da
         # Check if an L3 hint was requested within 60s of a gate block command
         # Query gate blocks
         blocks = [c for c in commands if c.tool and c.tool.startswith("gate_block:")]
-        
+
         # Query AIInteraction table for actual hint requests
         ai_res = await db.execute(
-            select(AIInteraction)
-            .where(AIInteraction.session_id == session.id, AIInteraction.kind == "hint", AIInteraction.hint_level == 3)
+            select(AIInteraction).where(
+                AIInteraction.session_id == session.id,
+                AIInteraction.kind == "hint",
+                AIInteraction.hint_level == 3,
+            )
         )
         hint_requests = ai_res.scalars().all()
-        
+
         timed_dependency = False
         for hr in hint_requests:
             for blk in blocks:
@@ -303,10 +323,12 @@ async def calculate_session_struggle(db: AsyncSession, session: Session, now: da
                     break
             if timed_dependency:
                 break
-        
+
         if timed_dependency:
-            reasons.append("Hint Dependency: requested Level 3 hint immediately after a methodology gate block.")
-            
+            reasons.append(
+                "Hint Dependency: requested Level 3 hint immediately after a methodology gate block."
+            )
+
     # Or hint count > 70% of milestones (phases). Scenario typically has 5-6 phases.
     # Total hints count > 4 for example
     if len(hints) >= 4:
@@ -316,37 +338,36 @@ async def calculate_session_struggle(db: AsyncSession, session: Session, now: da
     # Running offensive scans that trigger SIEM events, but leaving > 80% of these alerts unclassified (untriaged)
     # Query SIEM events (attacker-triggered)
     events_res = await db.execute(
-        select(SiemEvent)
-        .where(SiemEvent.session_id == session.id, SiemEvent.source == "attacker")
+        select(SiemEvent).where(SiemEvent.session_id == session.id, SiemEvent.source == "attacker")
     )
     attacker_events = events_res.scalars().all()
-    
+
     if len(attacker_events) >= 5:
         # Query triage classifications
         triage_res = await db.execute(
-            select(SiemTriage)
-            .where(SiemTriage.session_id == session.id, SiemTriage.classification.is_not(None))
+            select(SiemTriage).where(
+                SiemTriage.session_id == session.id, SiemTriage.classification.is_not(None)
+            )
         )
         triaged = triage_res.scalars().all()
         triaged_event_ids = {t.event_id for t in triaged}
-        
+
         untriaged_count = sum(1 for e in attacker_events if e.id not in triaged_event_ids)
         untriaged_ratio = untriaged_count / len(attacker_events) if len(attacker_events) > 0 else 0
         if untriaged_ratio > 0.8:
-            reasons.append(f"Defensive Blind Spot: triggered {len(attacker_events)} alerts but left {round(untriaged_ratio*100)}% untriaged.")
+            reasons.append(
+                f"Defensive Blind Spot: triggered {len(attacker_events)} alerts but left {round(untriaged_ratio*100)}% untriaged."
+            )
 
     # Calculate Struggle Score
     # StruggleScore = min(100, 0.4 * ReconParalysisTime + 0.3 * CommandLoopsCount + 0.3 * HintDeduction)
-    recon_term = 0.4 * min(120.0, recon_paralysis_time) # cap recon paralysis influence
-    loop_term = 0.3 * (command_loops_count * 10) # 10 points per repeat above 5
+    recon_term = 0.4 * min(120.0, recon_paralysis_time)  # cap recon paralysis influence
+    loop_term = 0.3 * (command_loops_count * 10)  # 10 points per repeat above 5
     hint_term = 0.3 * hint_deduction
-    
+
     struggle_score = min(100.0, recon_term + loop_term + hint_term)
 
-    return {
-        "struggle_score": struggle_score,
-        "reasons": reasons
-    }
+    return {"struggle_score": struggle_score, "reasons": reasons}
 
 
 async def analyze_cohort_blind_spots(db: AsyncSession, session_ids: list[str]) -> list[dict]:
@@ -363,41 +384,44 @@ async def analyze_cohort_blind_spots(db: AsyncSession, session_ids: list[str]) -
             "match": "SQL injection|sqlmap|WAF Rule 942100",
             "keywords": ["sql", "sqli", "injection", "database", "mariadb"],
             "title": "SQL Injection Exposure",
-            "category": "Offensive Visibility"
+            "category": "Offensive Visibility",
         },
         {
             "match": "Path traversal|traversal|etc/passwd",
             "keywords": ["lfi", "traversal", "file", "passwd", "apache"],
             "title": "Local File Inclusion (LFI)",
-            "category": "Offensive Visibility"
+            "category": "Offensive Visibility",
         },
         {
             "match": "webshell|file written|potential webshell",
             "keywords": ["shell", "webshell", "upload", "rce", "payload"],
             "title": "Web Shell Execution",
-            "category": "Offensive Visibility"
+            "category": "Offensive Visibility",
         },
         {
             "match": "directory brute-force|High-frequency 404s|gobuster|dirb",
             "keywords": ["gobuster", "dirb", "fuzz", "scan", "directory"],
             "title": "Active Scan Footprinting",
-            "category": "Offensive Visibility"
+            "category": "Offensive Visibility",
         },
         {
             "match": "Kerberoast|Event 4769|TGS request",
             "keywords": ["kerberoast", "tgs", "spn", "active directory", "ad"],
             "title": "Active Directory Kerberoasting",
-            "category": "Offensive Visibility"
+            "category": "Offensive Visibility",
         },
         {
             "match": "DCSync|secretsdump|Event 4728",
             "keywords": ["dcsync", "secretsdump", "dump", "domain admin"],
             "title": "Active Directory DCSync Dumps",
-            "category": "Offensive Visibility"
-        }
+            "category": "Offensive Visibility",
+        },
     ]
 
-    spot_counts = {r["title"]: {"triggered": 0, "documented": 0, "category": r["category"]} for r in blind_spot_rules}
+    spot_counts = {
+        r["title"]: {"triggered": 0, "documented": 0, "category": r["category"]}
+        for r in blind_spot_rules
+    }
 
     # Fetch notes and SIEM events for all session IDs
     for sid in session_ids:
@@ -406,8 +430,7 @@ async def analyze_cohort_blind_spots(db: AsyncSession, session_ids: list[str]) -
         notes_text = " ".join([n.content.lower() for n in notes])
 
         events_res = await db.execute(
-            select(SiemEvent)
-            .where(SiemEvent.session_id == sid, SiemEvent.source == "attacker")
+            select(SiemEvent).where(SiemEvent.session_id == sid, SiemEvent.source == "attacker")
         )
         events = events_res.scalars().all()
         events_text = " ".join([e.message.lower() for e in events])
@@ -429,14 +452,16 @@ async def analyze_cohort_blind_spots(db: AsyncSession, session_ids: list[str]) -
         doc = counts["documented"]
         if trig > 0:
             undocumented_percentage = round(((trig - doc) / trig) * 100)
-            if undocumented_percentage > 30: # Flag as blind spot if >30% fail to document
-                blind_spots.append({
-                    "title": title,
-                    "category": counts["category"],
-                    "triggered_count": trig,
-                    "documented_count": doc,
-                    "undocumented_percentage": undocumented_percentage
-                })
+            if undocumented_percentage > 30:  # Flag as blind spot if >30% fail to document
+                blind_spots.append(
+                    {
+                        "title": title,
+                        "category": counts["category"],
+                        "triggered_count": trig,
+                        "documented_count": doc,
+                        "undocumented_percentage": undocumented_percentage,
+                    }
+                )
 
     blind_spots.sort(key=lambda x: x["undocumented_percentage"], reverse=True)
     return blind_spots
@@ -444,6 +469,7 @@ async def analyze_cohort_blind_spots(db: AsyncSession, session_ids: list[str]) -
 
 def re_match(pattern: str, text: str) -> bool:
     import re
+
     try:
         return bool(re.search(pattern, text, re.IGNORECASE))
     except Exception:
@@ -470,7 +496,7 @@ def generate_kde_svg_coords(scores: list[int]) -> list[dict[str, float]]:
         h = 5.0
 
     # We evaluate 50 points on x from 0 to 100 (representing score)
-    x_points = [i * 2.0 for i in range(51)] # 0, 2, 4, ..., 100
+    x_points = [i * 2.0 for i in range(51)]  # 0, 2, 4, ..., 100
     densities = []
 
     for x in x_points:
@@ -490,7 +516,7 @@ def generate_kde_svg_coords(scores: list[int]) -> list[dict[str, float]]:
 
     coords = []
     for x, d in zip(x_points, densities):
-        svg_x = x * 5.0 # 0..100 -> 0..500
+        svg_x = x * 5.0  # 0..100 -> 0..500
         # Invert Y so higher density is higher in the chart (closer to Y=10, leaving 10px margin at top)
         svg_y = 100.0 - (d / max_d * 90.0)
         coords.append({"x": round(svg_x, 1), "y": round(svg_y, 1)})
@@ -507,6 +533,6 @@ def _get_default_kde_coords(center: float = 80.0) -> list[dict[str, float]]:
         z = (x - center) / 15.0
         y_val = math.exp(-0.5 * z * z)
         svg_x = x * 5.0
-        svg_y = 100.0 - (y_val * 85.0) # Scale y to leaves some padding
+        svg_y = 100.0 - (y_val * 85.0)  # Scale y to leaves some padding
         coords.append({"x": round(svg_x, 1), "y": round(svg_y, 1)})
     return coords

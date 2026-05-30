@@ -18,18 +18,19 @@ NO_CIDR = {"network": {}}  # e.g. SC-03 phishing — no subnet declared
 
 # ── In-scope and ambiguous inputs are always allowed ─────────────────────────
 
+
 @pytest.mark.parametrize(
     "command",
     [
-        "nmap -sV 172.20.1.20",                 # in-scope host
-        "nmap 172.20.1.0/24",                   # in-scope subnet scan
-        "curl http://172.20.1.21:3306",         # in-scope DB
+        "nmap -sV 172.20.1.20",  # in-scope host
+        "nmap 172.20.1.0/24",  # in-scope subnet scan
+        "curl http://172.20.1.21:3306",  # in-scope DB
         "curl http://app.novamed.local/login",  # hostname, no IP
         "gobuster dir -u http://app.novamed.local -w /usr/share/wordlists/dirb/common.txt",
         "echo running apache 2.4.54 with php 7.4.33",  # version strings, not IPs
-        "curl http://127.0.0.1:8080/health",    # loopback
-        "nmap -p- -T4 --open",                  # no target IP at all
-        "",                                      # empty command
+        "curl http://127.0.0.1:8080/health",  # loopback
+        "nmap -p- -T4 --open",  # no target IP at all
+        "",  # empty command
     ],
 )
 def test_in_scope_or_ambiguous_is_allowed(command: str) -> None:
@@ -39,13 +40,14 @@ def test_in_scope_or_ambiguous_is_allowed(command: str) -> None:
 
 # ── Out-of-scope IPs are blocked ─────────────────────────────────────────────
 
+
 @pytest.mark.parametrize(
     ("command", "expected_target"),
     [
-        ("nmap -sV 8.8.8.8", "8.8.8.8"),              # public internet
-        ("curl https://1.1.1.1", "1.1.1.1"),          # public internet
+        ("nmap -sV 8.8.8.8", "8.8.8.8"),  # public internet
+        ("curl https://1.1.1.1", "1.1.1.1"),  # public internet
         ("hydra -l admin 93.184.216.34 http", "93.184.216.34"),
-        ("nmap 172.20.2.20", "172.20.2.20"),          # another scenario's subnet
+        ("nmap 172.20.2.20", "172.20.2.20"),  # another scenario's subnet
     ],
 )
 def test_out_of_scope_ip_is_blocked(command: str, expected_target: str) -> None:

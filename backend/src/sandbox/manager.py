@@ -97,14 +97,10 @@ async def ensure_scenario_container(
     """
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, _ensure_scenario_targets, scenario_id, False)
-    return await loop.run_in_executor(
-        None, _ensure_sync, session_id, scenario_id, container_id
-    )
+    return await loop.run_in_executor(None, _ensure_sync, session_id, scenario_id, container_id)
 
 
-async def stop_scenario_container(
-    container_id: str, scenario_id: str | None = None
-) -> None:
+async def stop_scenario_container(container_id: str, scenario_id: str | None = None) -> None:
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(None, _stop_sync, container_id)
     if scenario_id:
@@ -128,9 +124,7 @@ async def get_kali_ip_for_session(session_id: str) -> str | None:
 
     async with AsyncSessionLocal() as db:
         result = await db.execute(
-            select(Session.container_id, Session.network_name).where(
-                Session.id == session_id
-            )
+            select(Session.container_id, Session.network_name).where(Session.id == session_id)
         )
         row = result.one_or_none()
 
@@ -412,9 +406,7 @@ def _exec_sync(container_id: str, command: str) -> str:
         return f"[exec error] {exc}"
 
 
-def _get_container_network_ip_sync(
-    container_id: str, network_name: str | None
-) -> str | None:
+def _get_container_network_ip_sync(container_id: str, network_name: str | None) -> str | None:
     try:
         client = _get_client()
         container = client.containers.get(container_id)
@@ -428,7 +420,5 @@ def _get_container_network_ip_sync(
             if ip_address:
                 return str(ip_address)
     except (NotFound, DockerException, APIError, RuntimeError) as exc:
-        logger.warning(
-            "[Sandbox] Failed to inspect container %s IP: %s", container_id, exc
-        )
+        logger.warning("[Sandbox] Failed to inspect container %s IP: %s", container_id, exc)
     return None

@@ -231,8 +231,7 @@ EDGE_CASES = [
     (
         "explain to me what a downgrade attack is",
         1,
-        "'Explain' is conceptual. The imperative form does not make it "
-        "procedural.",
+        "'Explain' is conceptual. The imperative form does not make it " "procedural.",
     ),
 ]
 
@@ -241,12 +240,12 @@ EDGE_CASES = [
 # The actual tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("question,rationale", L1_CASES)
 def test_classifier_returns_l1_for_conceptual(question: str, rationale: str) -> None:
     """Each L1 case must classify as level 1. Rationale documented per case."""
     assert classify_question(question) == 1, (
-        f"Expected L1 for {question!r}.\n"
-        f"Rationale: {rationale}"
+        f"Expected L1 for {question!r}.\n" f"Rationale: {rationale}"
     )
 
 
@@ -254,8 +253,7 @@ def test_classifier_returns_l1_for_conceptual(question: str, rationale: str) -> 
 def test_classifier_returns_l2_for_directional(question: str, rationale: str) -> None:
     """Each L2 case must classify as level 2."""
     assert classify_question(question) == 2, (
-        f"Expected L2 for {question!r}.\n"
-        f"Rationale: {rationale}"
+        f"Expected L2 for {question!r}.\n" f"Rationale: {rationale}"
     )
 
 
@@ -263,8 +261,7 @@ def test_classifier_returns_l2_for_directional(question: str, rationale: str) ->
 def test_classifier_returns_l3_for_procedural(question: str, rationale: str) -> None:
     """Each L3 case must classify as level 3."""
     assert classify_question(question) == 3, (
-        f"Expected L3 for {question!r}.\n"
-        f"Rationale: {rationale}"
+        f"Expected L3 for {question!r}.\n" f"Rationale: {rationale}"
     )
 
 
@@ -275,15 +272,14 @@ def test_classifier_edge_cases(question: str, expected: int, rationale: str) -> 
     boundaries. Changes here will affect scoring; review with care.
     """
     assert classify_question(question) == expected, (
-
-        f"Edge case mismatch for {question!r}. Expected {expected}.\n"
-        f"Rationale: {rationale}"
+        f"Edge case mismatch for {question!r}. Expected {expected}.\n" f"Rationale: {rationale}"
     )
 
 
 # ---------------------------------------------------------------------------
 # Determinism guarantee
 # ---------------------------------------------------------------------------
+
 
 def test_classifier_is_deterministic() -> None:
     """

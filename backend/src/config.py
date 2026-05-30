@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     HINT_L3_PENALTY: int = 20
     TIME_BONUS_THRESHOLD_MINUTES: int = 120
 
+
 settings = Settings()
 
 _INSECURE_SECRET = "change-me-in-production"
@@ -62,6 +63,7 @@ if settings.ENVIRONMENT == "production" and settings.JWT_SECRET == _INSECURE_SEC
 
 if settings.ENVIRONMENT != "test" and not settings.OPENROUTER_API_KEY:
     import logging
+
     logging.getLogger(__name__).warning(
         "OPENROUTER_API_KEY is not set. AI features will use static fallback hints."
     )

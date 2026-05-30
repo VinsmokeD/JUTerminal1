@@ -85,12 +85,13 @@ async def enforce_rate_limit(key: str, limit: int, window: int):
     """Enforce a rate limit using Redis. key should uniquely identify the user/ip/session."""
     try:
         from src.cache.redis import _get as get_redis
+
         redis = get_redis()
         current = await redis.get(key)
         if current is not None and int(current) >= limit:
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Too many requests. Please try again later."
+                detail="Too many requests. Please try again later.",
             )
         async with redis.pipeline(transaction=True) as pipe:
             await pipe.incr(key)
@@ -107,7 +108,7 @@ async def enforce_rate_limit(key: str, limit: int, window: int):
 async def register(body: UserCreate, request: Request, db: AsyncSession = Depends(get_db)):
     ip = request.client.host if request.client else "unknown"
     await enforce_rate_limit(f"rate_limit:register:{ip}", limit=20, window=3600)
-    
+
     result = await db.execute(select(User).where(User.username == body.username))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Username already taken")
@@ -117,14 +118,22 @@ async def register(body: UserCreate, request: Request, db: AsyncSession = Depend
     await record_activity(db, user.id, "register", None, {"username": user.username})
     await db.commit()
     await db.refresh(user)
-    return Token(access_token=create_token(user.id, user.username), token_type="bearer", username=user.username)
+    return Token(
+        access_token=create_token(user.id, user.username),
+        token_type="bearer",
+        username=user.username,
+    )
 
 
 @router.post("/login", response_model=Token)
-async def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login(
+    request: Request,
+    form: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
+):
     ip = request.client.host if request.client else "unknown"
     await enforce_rate_limit(f"rate_limit:login:{ip}", limit=30, window=300)
-    
+
     result = await db.execute(select(User).where(User.username == form.username))
     user = result.scalar_one_or_none()
     if not user or not verify_password(form.password, user.password_hash):
@@ -133,12 +142,18 @@ async def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), d
     await record_activity(db, user.id, "login", None, {"username": user.username})
     await db.commit()
 
-    return Token(access_token=create_token(user.id, user.username), token_type="bearer", username=user.username)
+    return Token(
+        access_token=create_token(user.id, user.username),
+        token_type="bearer",
+        username=user.username,
+    )
 
 
 async def require_instructor(user: User = Depends(get_current_user)) -> User:
     if user.role != "instructor":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Instructor access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Instructor access required"
+        )
     return user
 
 
@@ -159,7 +174,9 @@ async def me(user: User = Depends(get_current_user)):
 
 
 @router.put("/profile")
-async def update_profile(body: ProfileUpdate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def update_profile(
+    body: ProfileUpdate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
     changes = {}
     if body.skill_level and body.skill_level in ("beginner", "intermediate", "experienced"):
         user.skill_level = body.skill_level
@@ -171,7 +188,11 @@ async def update_profile(body: ProfileUpdate, user: User = Depends(get_current_u
     await record_activity(db, user.id, "profile_update", None, changes)
     await db.commit()
     await db.refresh(user)
-    return {"id": user.id, "skill_level": user.skill_level, "onboarding_completed": user.onboarding_completed}
+    return {
+        "id": user.id,
+        "skill_level": user.skill_level,
+        "onboarding_completed": user.onboarding_completed,
+    }
 
 
 @router.get("/stats")
@@ -183,33 +204,41 @@ async def get_user_stats(
     sess_res = await db.execute(select(func.count(Session.id)).where(Session.user_id == user.id))
     total_missions = sess_res.scalar() or 0
 
-    comp_res = await db.execute(select(func.count(Session.id)).where(Session.user_id == user.id, Session.completed_at != None))
+    comp_res = await db.execute(
+        select(func.count(Session.id)).where(
+            Session.user_id == user.id, Session.completed_at != None
+        )
+    )
     completed_missions = comp_res.scalar() or 0
 
     # 2. Score analytics
-    score_res = await db.execute(select(func.avg(Session.score)).where(Session.user_id == user.id, Session.completed_at != None))
+    score_res = await db.execute(
+        select(func.avg(Session.score)).where(
+            Session.user_id == user.id, Session.completed_at != None
+        )
+    )
     avg_score = round(float(score_res.scalar() or 0.0), 1)
 
     # 3. Activity volume
     cmd_res = await db.execute(
-        select(func.count(CommandLog.id))
-        .join(Session)
-        .where(Session.user_id == user.id)
+        select(func.count(CommandLog.id)).join(Session).where(Session.user_id == user.id)
     )
     total_commands = cmd_res.scalar() or 0
 
     note_res = await db.execute(
-        select(func.count(Note.id))
-        .join(Session)
-        .where(Session.user_id == user.id)
+        select(func.count(Note.id)).join(Session).where(Session.user_id == user.id)
     )
     total_notes = note_res.scalar() or 0
 
     # 4. Role distribution
-    red_res = await db.execute(select(func.count(Session.id)).where(Session.user_id == user.id, Session.role == "red"))
+    red_res = await db.execute(
+        select(func.count(Session.id)).where(Session.user_id == user.id, Session.role == "red")
+    )
     red_count = red_res.scalar() or 0
 
-    blue_res = await db.execute(select(func.count(Session.id)).where(Session.user_id == user.id, Session.role == "blue"))
+    blue_res = await db.execute(
+        select(func.count(Session.id)).where(Session.user_id == user.id, Session.role == "blue")
+    )
     blue_count = blue_res.scalar() or 0
 
     # 5. Recent History
@@ -244,5 +273,5 @@ async def get_user_stats(
             "red_count": red_count,
             "blue_count": blue_count,
         },
-        "history": history
+        "history": history,
     }

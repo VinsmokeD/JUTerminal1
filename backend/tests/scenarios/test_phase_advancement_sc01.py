@@ -70,8 +70,12 @@ async def test_sc01_phase_advancement_kill_chain(ids: tuple[str, str]) -> None:
 
         db.add_all(
             [
-                CommandLog(session_id=session_id, command="whatweb http://target", tool="whatweb", phase=1),
-                CommandLog(session_id=session_id, command="curl -I http://target", tool="curl", phase=1),
+                CommandLog(
+                    session_id=session_id, command="whatweb http://target", tool="whatweb", phase=1
+                ),
+                CommandLog(
+                    session_id=session_id, command="curl -I http://target", tool="curl", phase=1
+                ),
                 Note(session_id=session_id, tag="finding", content="#finding headers", phase=1),
             ]
         )
@@ -80,7 +84,12 @@ async def test_sc01_phase_advancement_kill_chain(ids: tuple[str, str]) -> None:
 
         db.add_all(
             [
-                CommandLog(session_id=session_id, command="gobuster dir -u http://target", tool="gobuster", phase=2),
+                CommandLog(
+                    session_id=session_id,
+                    command="gobuster dir -u http://target",
+                    tool="gobuster",
+                    phase=2,
+                ),
                 Note(session_id=session_id, tag="finding", content="#finding paths", phase=2),
             ]
         )

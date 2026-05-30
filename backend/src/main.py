@@ -88,6 +88,7 @@ app.include_router(playbooks_router, tags=["playbooks"])
 app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
 app.include_router(siem_router, prefix="/api/siem", tags=["siem"])
 
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "version": "0.1.0"}
@@ -102,6 +103,7 @@ async def readiness():
     """
     import httpx as _httpx
     from sqlalchemy import text as _text
+
     checks: dict[str, dict] = {}
 
     # ── Postgres ──────────────────────────────────────────────────────
@@ -115,6 +117,7 @@ async def readiness():
     # ── Redis ─────────────────────────────────────────────────────────
     try:
         from src.cache.redis import _get as _get_redis
+
         r = _get_redis()
         await r.ping()
         active = await r.hlen("cybersim:active_sessions")
@@ -145,12 +148,20 @@ async def readiness():
             }
         else:
             # Check cache first (cached 60s)
-            cached_or = await r.get("health:openrouter:status") if checks.get("redis", {}).get("status") == "ok" else None
+            cached_or = (
+                await r.get("health:openrouter:status")
+                if checks.get("redis", {}).get("status") == "ok"
+                else None
+            )
             if cached_or:
                 checks["openrouter"] = {"status": "ok", "cached": True}
             else:
                 async with _httpx.AsyncClient() as client:
-                    resp = await client.get("https://openrouter.ai/api/v1/auth/key", headers={"Authorization": f"Bearer {settings.OPENROUTER_API_KEY}"}, timeout=3.0)
+                    resp = await client.get(
+                        "https://openrouter.ai/api/v1/auth/key",
+                        headers={"Authorization": f"Bearer {settings.OPENROUTER_API_KEY}"},
+                        timeout=3.0,
+                    )
                     resp.raise_for_status()
                 checks["openrouter"] = {"status": "ok"}
                 if checks.get("redis", {}).get("status") == "ok":
@@ -160,6 +171,7 @@ async def readiness():
 
     overall = "ok" if all(c["status"] == "ok" for c in checks.values()) else "degraded"
     from fastapi.responses import JSONResponse
+
     return JSONResponse(
         content={"status": overall, "checks": checks, "version": "0.1.0"},
         status_code=200 if overall == "ok" else 503,

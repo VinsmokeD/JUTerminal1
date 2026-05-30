@@ -97,9 +97,7 @@ def _load_system_prompt(mode: str = "challenge") -> str:
     return _system_prompt_learn if mode == "learn" else _system_prompt_challenge
 
 
-def _format_context_for_ai(
-    context: dict, command: str | None, hint_level: int | None
-) -> str:
+def _format_context_for_ai(context: dict, command: str | None, hint_level: int | None) -> str:
     """Format the full context dict into a structured prompt string."""
     envelope = {
         "scenario": context.get("scenario"),
@@ -159,6 +157,7 @@ def _probe_target(host: str, port: int, timeout: float = 1.5) -> bool:
 
 def _get_primary_target(scenario_id: str) -> tuple[str, int] | None:
     from src.scenarios.loader import load_scenario
+
     try:
         spec = load_scenario(scenario_id)
         hosts = (spec.get("network") or {}).get("hosts", [])
@@ -212,10 +211,12 @@ async def get_ai_hint(
     target_reachable = True
 
     # Check if this is a tutor call (explicit request or free-text question)
-    is_tutor_call = (hint_level is not None or question is not None)
+    is_tutor_call = hint_level is not None or question is not None
 
     if not settings.OPENROUTER_API_KEY:
-        logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=no_key is_tutor_call={is_tutor_call}")
+        logger.info(
+            f"[AI Monitor] session_id={session_id[:8]} exit=no_key is_tutor_call={is_tutor_call}"
+        )
         if is_tutor_call:
             fallback = _get_fallback_hint(session_state, command, hint_level)
             return f"[Offline tutor] {fallback}"
@@ -235,7 +236,9 @@ async def get_ai_hint(
         last_call = await cache_get(cooldown_key)
         if last_call:
             if _should_emit_static_command_hint(command):
-                logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=cooldown_block (nudge_fallback)")
+                logger.info(
+                    f"[AI Monitor] session_id={session_id[:8]} exit=cooldown_block (nudge_fallback)"
+                )
                 return _get_fallback_hint(session_state, command, hint_level)
             logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=cooldown_block (nudge)")
             return None
@@ -258,33 +261,45 @@ async def get_ai_hint(
         user_msg = _format_context_for_ai(context, command, hint_level)
 
         import hashlib
+
         msg_hash = hashlib.sha256(user_msg.encode("utf-8")).hexdigest()
-        logger.info(f"[AI Monitor] session_id={session_id[:8]} sha256={msg_hash} user_msg_len={len(user_msg)} question={question[:50] if question else 'None'}")
+        logger.info(
+            f"[AI Monitor] session_id={session_id[:8]} sha256={msg_hash} user_msg_len={len(user_msg)} question={question[:50] if question else 'None'}"
+        )
 
         # Estimate prompt tokens
         estimated_tokens = len(user_msg) // 4
 
         # Hard cap: max envelope size: 12,000 tokens
         if estimated_tokens > 12000:
-            logger.warning(f"[AI Monitor] session_id={session_id[:8]} envelope too large ({estimated_tokens} tokens). Pruning history.")
+            logger.warning(
+                f"[AI Monitor] session_id={session_id[:8]} envelope too large ({estimated_tokens} tokens). Pruning history."
+            )
             if "last_command_output_summary" in context:
-                context["last_command_output_summary"]["first_lines"] = context["last_command_output_summary"]["first_lines"][:5]
-                context["last_command_output_summary"]["last_lines"] = context["last_command_output_summary"]["last_lines"][:5]
+                context["last_command_output_summary"]["first_lines"] = context[
+                    "last_command_output_summary"
+                ]["first_lines"][:5]
+                context["last_command_output_summary"]["last_lines"] = context[
+                    "last_command_output_summary"
+                ]["last_lines"][:5]
             user_msg = _format_context_for_ai(context, command, hint_level)
             msg_hash = hashlib.sha256(user_msg.encode("utf-8")).hexdigest()
-            logger.info(f"[AI Monitor] session_id={session_id[:8]} sha256={msg_hash} (pruned) user_msg_len={len(user_msg)}")
+            logger.info(
+                f"[AI Monitor] session_id={session_id[:8]} sha256={msg_hash} (pruned) user_msg_len={len(user_msg)}"
+            )
             estimated_tokens = len(user_msg) // 4
 
         # 1. Budget Enforcement (OWASP LLM10)
         from src.db.database import AsyncSessionLocal, Session
+
         async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                select(Session.user_id).where(Session.id == session_id)
-            )
+            result = await db.execute(select(Session.user_id).where(Session.id == session_id))
             user_id = result.scalar_one_or_none() or "unknown"
 
         if not await check_ai_budget(user_id, prompt_tokens_estimate=estimated_tokens):
-            logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=budget_exceeded user_id={user_id}")
+            logger.info(
+                f"[AI Monitor] session_id={session_id[:8]} exit=budget_exceeded user_id={user_id}"
+            )
             return _get_fallback_hint(session_state, command, hint_level)
 
         # Learn mode gets more tokens for detailed explanations
@@ -330,23 +345,25 @@ async def get_ai_hint(
                 resp.raise_for_status()
                 data = resp.json()
         except httpx.HTTPStatusError as e:
-            logger.error(f"[AI Monitor] session_id={session_id[:8]} exit=api_http_error({e.response.status_code}) error={e.response.text}")
+            logger.error(
+                f"[AI Monitor] session_id={session_id[:8]} exit=api_http_error({e.response.status_code}) error={e.response.text}"
+            )
             return _get_fallback_hint(session_state, command, hint_level)
         except httpx.TimeoutException as e:
-            logger.error(f"[AI Monitor] session_id={session_id[:8]} exit=api_timeout error={str(e)}")
+            logger.error(
+                f"[AI Monitor] session_id={session_id[:8]} exit=api_timeout error={str(e)}"
+            )
             return _get_fallback_hint(session_state, command, hint_level)
         except Exception as e:
-            logger.error(f"[AI Monitor] session_id={session_id[:8]} exit=api_exception error={type(e).__name__}: {str(e)}")
+            logger.error(
+                f"[AI Monitor] session_id={session_id[:8]} exit=api_exception error={type(e).__name__}: {str(e)}"
+            )
             return _get_fallback_hint(session_state, command, hint_level)
 
-        hint_text = (
-            data.get("choices", [{}])[0]
-            .get("message", {})
-            .get("content", "")
-            .strip()
+        hint_text = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+        logger.info(
+            f"[AI Monitor] session_id={session_id[:8]} exit=api_success model={settings.OPENROUTER_MODEL}"
         )
-        logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=api_success model={settings.OPENROUTER_MODEL}")
-
 
         # Track usage
         usage = data.get("usage", {})
@@ -355,19 +372,16 @@ async def get_ai_hint(
         try:
             await record_ai_usage(user_id, prompt_tokens, completion_tokens)
         except Exception as telemetry_error:
-            logger.warning(
-                "AI usage telemetry failed: %s", telemetry_error, exc_info=True
-            )
+            logger.warning("AI usage telemetry failed: %s", telemetry_error, exc_info=True)
 
         # 2. Output Validation (OWASP LLM05 / LLM07)
         scenario_secrets = _collect_scenario_secrets(context.get("scenario_id", ""))
-        is_valid, safe_text = validate_ai_output(
-            hint_text, scenario_secrets=scenario_secrets
-        )
+        is_valid, safe_text = validate_ai_output(hint_text, scenario_secrets=scenario_secrets)
         sanitization = sanitize_tutor_response(safe_text if is_valid else hint_text, mode=mode)
 
         # 3. Log interaction to DB
         from src.db.database import AIInteraction
+
         try:
             async with AsyncSessionLocal() as db:
                 interaction = AIInteraction(
@@ -387,9 +401,7 @@ async def get_ai_hint(
                 db.add(interaction)
                 await db.commit()
         except Exception as telemetry_error:
-            logger.warning(
-                "AI interaction logging failed: %s", telemetry_error, exc_info=True
-            )
+            logger.warning("AI interaction logging failed: %s", telemetry_error, exc_info=True)
 
         if not is_valid:
             if settings.ENVIRONMENT == "development":
@@ -404,7 +416,9 @@ async def get_ai_hint(
             await cache_set(f"ai:{session_id}:tutor_cooldown", time.time(), ttl=10)
         else:
             await cache_set(f"ai:{session_id}:nudge_cooldown", time.time(), ttl=60)
-        await cache_set(f"ai:{session_id}:last_call", time.time(), ttl=settings.AI_CALL_COOLDOWN_SECONDS)
+        await cache_set(
+            f"ai:{session_id}:last_call", time.time(), ttl=settings.AI_CALL_COOLDOWN_SECONDS
+        )
 
         # Track last command time for behavioral signals
         await cache_set(f"session:{session_id}:last_cmd_time", time.time(), ttl=7200)
@@ -467,9 +481,7 @@ def _get_fallback_hint(
         },
     }
 
-    hint = hints.get((scenario, role, phase), {}).get(
-        level, generic.get(level, generic[1])
-    )
+    hint = hints.get((scenario, role, phase), {}).get(level, generic.get(level, generic[1]))
     if hint_level:
         return hint
 

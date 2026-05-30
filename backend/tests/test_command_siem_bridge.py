@@ -60,9 +60,9 @@ def test_smoke_commands_match_active_bridge_rules(scenario_id: str, command: str
 )
 def test_sc02_bridge_reproduction_list(cmd, min_matches):
     matches = match_command_events(cmd, "SC-02")
-    assert len(matches) >= min_matches, (
-        f"{cmd!r} produced {len(matches)} matches, expected >= {min_matches}"
-    )
+    assert (
+        len(matches) >= min_matches
+    ), f"{cmd!r} produced {len(matches)} matches, expected >= {min_matches}"
 
 
 @pytest.mark.parametrize(
@@ -77,9 +77,9 @@ def test_sc02_bridge_reproduction_list(cmd, min_matches):
 )
 def test_sc03_bridge_reproduction_list(cmd, min_matches):
     matches = match_command_events(cmd, "SC-03")
-    assert len(matches) >= min_matches, (
-        f"{cmd!r} produced {len(matches)} matches, expected >= {min_matches}"
-    )
+    assert (
+        len(matches) >= min_matches
+    ), f"{cmd!r} produced {len(matches)} matches, expected >= {min_matches}"
 
 
 @pytest.mark.parametrize(

@@ -1,4 +1,5 @@
 """Unit tests for SIEM Redis deduplication."""
+
 from __future__ import annotations
 
 import asyncio
@@ -35,8 +36,10 @@ async def test_same_doc_emitted_once(mock_redis):
     async def fake_queue(session_id: str, event: dict):
         emitted.append((session_id, event))
 
-    with patch("src.siem.engine.get_redis", return_value=redis_mock), \
-         patch("src.siem.engine.queue_event", new=fake_queue):
+    with (
+        patch("src.siem.engine.get_redis", return_value=redis_mock),
+        patch("src.siem.engine.queue_event", new=fake_queue),
+    ):
 
         from src.siem import engine
 

@@ -61,7 +61,9 @@ async def test_placeholder_fallback_is_silent():
     _reset_output_pattern_state()
     from src.scenarios.output_patterns import scan_output_chunk
 
-    insights = await scan_output_chunk(f"test-sess-5-{uuid.uuid4().hex}", "SC-02", "bash: syntax error near unexpected token `<'\n")
+    insights = await scan_output_chunk(
+        f"test-sess-5-{uuid.uuid4().hex}", "SC-02", "bash: syntax error near unexpected token `<'\n"
+    )
 
     assert insights == []
 
@@ -73,8 +75,12 @@ async def test_phase_filter_blocks_out_of_phase_sc01_schema_hint():
 
     sess_blocked = f"phase-blocked-{uuid.uuid4().hex}"
     sess_allowed = f"phase-allowed-{uuid.uuid4().hex}"
-    phase_one = await scan_output_chunk(sess_blocked, "SC-01", "available databases [2]: novamed\n", 1)
-    phase_four = await scan_output_chunk(sess_allowed, "SC-01", "available databases [2]: novamed\n", 4)
+    phase_one = await scan_output_chunk(
+        sess_blocked, "SC-01", "available databases [2]: novamed\n", 1
+    )
+    phase_four = await scan_output_chunk(
+        sess_allowed, "SC-01", "available databases [2]: novamed\n", 4
+    )
 
     assert phase_one == []
     assert [item["id"] for item in phase_four] == ["sc01-sqlmap-dbs"]

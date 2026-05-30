@@ -18,62 +18,63 @@ FALLBACK_DEBRIEF = {
         "summary": "You have completed the NovaMed Healthcare Web Application Pentest. Your methodology progress indicates you explored the target, but there is room to refine your sequencing between identification and active exploitation.",
         "strengths": [
             "Identified web server directory structures and potential endpoints.",
-            "Located the input vectors suitable for testing vulnerability hypothesis."
+            "Located the input vectors suitable for testing vulnerability hypothesis.",
         ],
         "improvement_areas": [
             "Ensure you document recon findings thoroughly before launching active exploit tools.",
-            "Monitor WAF alerts during active scans to understand detection footprints."
+            "Monitor WAF alerts during active scans to understand detection footprints.",
         ],
         "missed_detections": [
             "ModSecurity WAF logs for directory traversal attempts.",
-            "SQL Injection error-based alerts triggered on search parameters."
+            "SQL Injection error-based alerts triggered on search parameters.",
         ],
         "next_practice": [
             "Practice manual parameter fuzzing rather than relying purely on automated scanners.",
-            "Review WAF exclusion rules to understand how to bypass controls stealthily."
-        ]
+            "Review WAF exclusion rules to understand how to bypass controls stealthily.",
+        ],
     },
     "sc-02": {
         "summary": "You have completed the Nexora Financial Active Directory Compromise scenario. Moving laterally in active domains requires stealth, precision, and methodical host mapping.",
         "strengths": [
             "Conducted target domain enumeration to map users and SMB shares.",
-            "Identified kerberoastable accounts within the environment."
+            "Identified kerberoastable accounts within the environment.",
         ],
         "improvement_areas": [
             "Avoid noisy queries that trigger high-severity Event 4769 RC4 downgrade alerts.",
-            "Ensure you log and organize credentials systematically in your notebook."
+            "Ensure you log and organize credentials systematically in your notebook.",
         ],
         "missed_detections": [
             "DCSync detection alerts from domain controller logs.",
-            "AS-REP Roasting indicators of interest."
+            "AS-REP Roasting indicators of interest.",
         ],
         "next_practice": [
             "Study Kerberos delegation attacks and defense mechanisms.",
-            "Review how security analysts distinguish benign domain queries from malicious recon."
-        ]
+            "Review how security analysts distinguish benign domain queries from malicious recon.",
+        ],
     },
     "sc-03": {
         "summary": "You have completed the Orion Logistics Phishing & Initial Access scenario. Initial access relies heavily on pretext alignment and payload stealth.",
         "strengths": [
             "Configured phishing templates and successfully targeted victim profiles.",
-            "Established a callback from the simulated user endpoint."
+            "Established a callback from the simulated user endpoint.",
         ],
         "improvement_areas": [
             "Improve email headers to bypass SPF/DKIM validation controls more effectively.",
-            "Be mindful of persistence tasks triggering immediate endpoint detection alerts."
+            "Be mindful of persistence tasks triggering immediate endpoint detection alerts.",
         ],
         "missed_detections": [
             "PowerShell download cradle alerts in endpoint telemetry.",
-            "Scheduled task creation logs on the victim workstation."
+            "Scheduled task creation logs on the victim workstation.",
         ],
         "next_practice": [
             "Practice obfuscating PowerShell download instructions.",
-            "Study how email gateway security controls block suspicious macro attachments."
-        ]
-    }
+            "Study how email gateway security controls block suspicious macro attachments.",
+        ],
+    },
 }
 
 from src.ai.security import redact_text
+
 
 async def generate_debrief_coaching(session_id: str, report_data: dict, db: AsyncSession) -> dict:
     """
@@ -100,9 +101,18 @@ async def generate_debrief_coaching(session_id: str, report_data: dict, db: Asyn
     fallback = FALLBACK_DEBRIEF.get(scenario_id, FALLBACK_DEBRIEF["sc-01"])
 
     # Prepare context for the prompt, redact it first
-    notes_summary = "\n".join([f"- Note ({n['tag']}): {n['content']}" for n in report_data.get("notes", [])])
-    commands_summary = "\n".join([f"- Command: {c['command']}" for c in report_data.get("commands", [])[:50]]) # limit history
-    siem_summary = "\n".join([f"- Alert: {e['message']} (Severity: {e['severity']})" for e in report_data.get("siem_events", [])[:50]])
+    notes_summary = "\n".join(
+        [f"- Note ({n['tag']}): {n['content']}" for n in report_data.get("notes", [])]
+    )
+    commands_summary = "\n".join(
+        [f"- Command: {c['command']}" for c in report_data.get("commands", [])[:50]]
+    )  # limit history
+    siem_summary = "\n".join(
+        [
+            f"- Alert: {e['message']} (Severity: {e['severity']})"
+            for e in report_data.get("siem_events", [])[:50]
+        ]
+    )
 
     raw_context = f"""
 Scenario ID: {scenario_id}
@@ -124,10 +134,12 @@ SIEM Events Triggered:
     if not settings.OPENROUTER_API_KEY:
         logger.info("OPENROUTER_API_KEY not set. Using offline fallback debrief coach.")
         # Enrich fallback slightly based on score
-        final_score_val = report_data.get('score', {}).get('final_score', 100)
+        final_score_val = report_data.get("score", {}).get("final_score", 100)
         enriched = dict(fallback)
         if final_score_val < 70:
-            enriched["summary"] += " Your final score reflects some difficulties, likely due to excessive hint usage or gate locks. Focus on thorough recon next time."
+            enriched[
+                "summary"
+            ] += " Your final score reflects some difficulties, likely due to excessive hint usage or gate locks. Focus on thorough recon next time."
         await cache_set(f"ai:debrief:{session_id}:result", enriched, ttl=86400)
         return enriched
 
@@ -157,7 +169,10 @@ Do not wrap your response in markdown code blocks. Just return the JSON object."
         "temperature": 0.3,
         "messages": [
             {"role": "system", "content": sys_prompt},
-            {"role": "user", "content": f"Here is the student session context:\n{scrubbed_context}"},
+            {
+                "role": "user",
+                "content": f"Here is the student session context:\n{scrubbed_context}",
+            },
         ],
     }
     headers = {
@@ -176,9 +191,9 @@ Do not wrap your response in markdown code blocks. Just return the JSON object."
             )
             resp.raise_for_status()
             data = resp.json()
-            
+
         content = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
-        
+
         # Clean any markdown formatting if LLM disobeyed
         if content.startswith("```json"):
             content = content.replace("```json", "", 1)
@@ -187,28 +202,46 @@ Do not wrap your response in markdown code blocks. Just return the JSON object."
         content = content.strip()
 
         parsed_json = json.loads(content)
-        
+
         # Verify keys
-        required_keys = {"summary", "strengths", "improvement_areas", "missed_detections", "next_practice"}
+        required_keys = {
+            "summary",
+            "strengths",
+            "improvement_areas",
+            "missed_detections",
+            "next_practice",
+        }
         if all(key in parsed_json for key in required_keys):
             # Double-check scrub response
             parsed_json["summary"] = redact_text(parsed_json["summary"], metadata)
             parsed_json["strengths"] = [redact_text(s, metadata) for s in parsed_json["strengths"]]
-            parsed_json["improvement_areas"] = [redact_text(i, metadata) for i in parsed_json["improvement_areas"]]
-            parsed_json["missed_detections"] = [redact_text(m, metadata) for m in parsed_json["missed_detections"]]
-            parsed_json["next_practice"] = [redact_text(n, metadata) for n in parsed_json["next_practice"]]
-            
+            parsed_json["improvement_areas"] = [
+                redact_text(i, metadata) for i in parsed_json["improvement_areas"]
+            ]
+            parsed_json["missed_detections"] = [
+                redact_text(m, metadata) for m in parsed_json["missed_detections"]
+            ]
+            parsed_json["next_practice"] = [
+                redact_text(n, metadata) for n in parsed_json["next_practice"]
+            ]
+
             await cache_set(f"ai:debrief:{session_id}:result", parsed_json, ttl=86400)
             return parsed_json
-            
+
     except Exception as e:
-        logger.warning("Debrief coach OpenRouter API call failed or returned invalid JSON. Using fallback. Error: %s", e)
+        logger.warning(
+            "Debrief coach OpenRouter API call failed or returned invalid JSON. Using fallback. Error: %s",
+            e,
+        )
 
     # Cache and return fallback
     await cache_set(f"ai:debrief:{session_id}:result", fallback, ttl=86400)
     return fallback
 
-async def handle_debrief_qa(session_id: str, question: str, report_data: dict, db: AsyncSession) -> dict:
+
+async def handle_debrief_qa(
+    session_id: str, question: str, report_data: dict, db: AsyncSession
+) -> dict:
     """
     Handle post-session Socratic Q&A, restricting questions to max 3 per session.
     """
@@ -220,7 +253,7 @@ async def handle_debrief_qa(session_id: str, question: str, report_data: dict, d
         return {
             "response": "You have reached your limit of 3 debrief questions for this session.",
             "qa_count": current_count,
-            "remaining": 0
+            "remaining": 0,
         }
 
     # Increment question count
@@ -240,11 +273,7 @@ async def handle_debrief_qa(session_id: str, question: str, report_data: dict, d
     )
 
     if not settings.OPENROUTER_API_KEY:
-        return {
-            "response": fallback_response,
-            "qa_count": new_count,
-            "remaining": 3 - new_count
-        }
+        return {"response": fallback_response, "qa_count": new_count, "remaining": 3 - new_count}
 
     # Build prompt
     sys_prompt = f"""You are the Socratic Cybersecurity Coach for the student's debrief.
@@ -255,9 +284,9 @@ Constraints:
 2. NEVER give direct answers. Guide with questions.
 3. Limit response to 120 words.
 """
-    
+
     scrubbed_question = redact_text(question, metadata)
-    
+
     payload = {
         "model": settings.OPENROUTER_MODEL,
         "max_tokens": 150,
@@ -283,18 +312,10 @@ Constraints:
             )
             resp.raise_for_status()
             data = resp.json()
-            
+
         content = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
         response_text = redact_text(content, metadata)
-        return {
-            "response": response_text,
-            "qa_count": new_count,
-            "remaining": 3 - new_count
-        }
+        return {"response": response_text, "qa_count": new_count, "remaining": 3 - new_count}
     except Exception as e:
         logger.warning("Debrief Q&A API call failed. Error: %s", e)
-        return {
-            "response": fallback_response,
-            "qa_count": new_count,
-            "remaining": 3 - new_count
-        }
+        return {"response": fallback_response, "qa_count": new_count, "remaining": 3 - new_count}

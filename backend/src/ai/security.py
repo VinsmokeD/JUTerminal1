@@ -12,6 +12,7 @@ class SanitizationResult(NamedTuple):
     violations: list[str]
     fallback_category: str | None
 
+
 # Define injection patterns that we should strip or escape from student input
 _INJECTION_MARKERS = [
     r"(?i)ignore previous",
@@ -37,13 +38,35 @@ _SENSITIVE_KEY_PARTS = (
 )
 _REDACTED_VALUE = "<REDACTED - student must discover>"
 
-FLAG_REGEX = re.compile(r"FLAG\{[A-Za-z0-9_]+\}|FLAG-SC\d+-\d+|kerberoast_hash|dcsync_krbtgt_nthash", re.IGNORECASE)
-CREDENTIAL_REGEX = re.compile(r"\b(password|passwd|pass|key|hash|secret|token|credential)\s*[:=]\s*([^\s,;\"']+)", re.IGNORECASE)
+FLAG_REGEX = re.compile(
+    r"FLAG\{[A-Za-z0-9_]+\}|FLAG-SC\d+-\d+|kerberoast_hash|dcsync_krbtgt_nthash", re.IGNORECASE
+)
+CREDENTIAL_REGEX = re.compile(
+    r"\b(password|passwd|pass|key|hash|secret|token|credential)\s*[:=]\s*([^\s,;\"']+)",
+    re.IGNORECASE,
+)
 
 FORBIDDEN_PATTERNS: list[tuple[re.Pattern, str, str]] = [
-    (re.compile(r"\b(sqlmap|hydra|hashcat|john|metasploit|msfconsole|gobuster|ffuf|nikto|wpscan|wfuzz|enum4linux|crackmapexec|impacket-\w+)\s+-\w", re.IGNORECASE), "tool_with_flag", "tool_choice"),
-    (re.compile(r"\bnmap\s+-(s[STUVAWVMi]|O|A|T[0-5]|p-|D|f|Pn)\b.*?\d{1,3}\.\d{1,3}", re.IGNORECASE), "nmap_flag", "recon"),
-    (re.compile(r"['\"]\s*OR\s+['\"]?\s*1\s*['\"]?\s*=\s*['\"]?\s*1", re.IGNORECASE), "sqli_tautology", "sqli"),
+    (
+        re.compile(
+            r"\b(sqlmap|hydra|hashcat|john|metasploit|msfconsole|gobuster|ffuf|nikto|wpscan|wfuzz|enum4linux|crackmapexec|impacket-\w+)\s+-\w",
+            re.IGNORECASE,
+        ),
+        "tool_with_flag",
+        "tool_choice",
+    ),
+    (
+        re.compile(
+            r"\bnmap\s+-(s[STUVAWVMi]|O|A|T[0-5]|p-|D|f|Pn)\b.*?\d{1,3}\.\d{1,3}", re.IGNORECASE
+        ),
+        "nmap_flag",
+        "recon",
+    ),
+    (
+        re.compile(r"['\"]\s*OR\s+['\"]?\s*1\s*['\"]?\s*=\s*['\"]?\s*1", re.IGNORECASE),
+        "sqli_tautology",
+        "sqli",
+    ),
     (re.compile(r"\badmin['\"]?\s*--"), "sqli_admin_bypass", "sqli"),
     (re.compile(r"UNION\s+SELECT", re.IGNORECASE), "sqli_union", "sqli"),
     (re.compile(r"<script[^>]*>", re.IGNORECASE), "xss_script_tag", "xss"),
@@ -59,7 +82,14 @@ FORBIDDEN_PATTERNS: list[tuple[re.Pattern, str, str]] = [
 
 
 LEARN_MODE_PATTERNS: list[tuple[re.Pattern, str, str]] = [
-    (re.compile(r"\b(sqlmap|hydra|hashcat|john|metasploit|msfconsole|gobuster|ffuf|nikto|wpscan|wfuzz|enum4linux|crackmapexec|impacket-\w+)\b(?!\s*-\w)", re.IGNORECASE), "tool_leakage", "tool_choice"),
+    (
+        re.compile(
+            r"\b(sqlmap|hydra|hashcat|john|metasploit|msfconsole|gobuster|ffuf|nikto|wpscan|wfuzz|enum4linux|crackmapexec|impacket-\w+)\b(?!\s*-\w)",
+            re.IGNORECASE,
+        ),
+        "tool_leakage",
+        "tool_choice",
+    ),
 ]
 
 
@@ -82,7 +112,9 @@ def sanitize_tutor_response(text: str, mode: str = "challenge") -> SanitizationR
     Only payload shapes are filtered.
     """
     if not text:
-        return SanitizationResult(text=text, was_flagged=False, violations=[], fallback_category=None)
+        return SanitizationResult(
+            text=text, was_flagged=False, violations=[], fallback_category=None
+        )
 
     violations: list[str] = []
     triggered_category: str | None = None
@@ -98,10 +130,18 @@ def sanitize_tutor_response(text: str, mode: str = "challenge") -> SanitizationR
                 triggered_category = category
 
     if violations:
-        clean = SOCRATIC_FALLBACKS.get(triggered_category or "default", SOCRATIC_FALLBACKS["default"])
-        return SanitizationResult(text=clean, was_flagged=True, violations=violations, fallback_category=triggered_category)
+        clean = SOCRATIC_FALLBACKS.get(
+            triggered_category or "default", SOCRATIC_FALLBACKS["default"]
+        )
+        return SanitizationResult(
+            text=clean,
+            was_flagged=True,
+            violations=violations,
+            fallback_category=triggered_category,
+        )
 
     return SanitizationResult(text=text, was_flagged=False, violations=[], fallback_category=None)
+
 
 def redact_text(text: str, session_metadata: dict | None = None) -> str:
     if not text:
@@ -110,6 +150,7 @@ def redact_text(text: str, session_metadata: dict | None = None) -> str:
     # are caught before regexes modify them
     if session_metadata:
         sensitive_vals = []
+
         def extract_strings(val):
             if isinstance(val, str):
                 if len(val) >= 4:
@@ -120,6 +161,7 @@ def redact_text(text: str, session_metadata: dict | None = None) -> str:
             elif isinstance(val, list):
                 for item in val:
                     extract_strings(item)
+
         extract_strings(session_metadata)
         for val in sorted(set(sensitive_vals), key=len, reverse=True):
             if val in ("true", "false", "null", "none", "admin", "user"):
@@ -140,14 +182,14 @@ def sanitize_untrusted(text: str | None) -> str:
     """
     if not text:
         return ""
-    
+
     sanitized = text
     for pattern in _INJECTION_MARKERS:
         sanitized = re.sub(pattern, "[REDACTED_MARKER]", sanitized)
-    
+
     # Escape any existing closing tags
     sanitized = sanitized.replace("<<END>>", "[ESCAPED_END]")
-    
+
     return f"<<UNTRUSTED_STUDENT_INPUT>>\n{sanitized}\n<<END>>"
 
 
@@ -187,12 +229,14 @@ def _redact_for_ai_impl(target_knowledge: dict, current_phase: int = 1) -> dict:
     redacted = _redact_sensitive_values(target_knowledge)
     if isinstance(redacted.get("key_accounts"), dict):
         redacted["key_accounts"] = [
-            {"username": account_name, **account}
-            if isinstance(account, dict)
-            else {"username": account_name, "details": account}
+            (
+                {"username": account_name, **account}
+                if isinstance(account, dict)
+                else {"username": account_name, "details": account}
+            )
             for account_name, account in redacted["key_accounts"].items()
         ]
-    
+
     # 1. Redact initial credentials
     if "initial_creds" in redacted:
         creds = dict(redacted["initial_creds"])
@@ -201,7 +245,7 @@ def _redact_for_ai_impl(target_knowledge: dict, current_phase: int = 1) -> dict:
         if "hash" in creds:
             creds["hash"] = "<REDACTED — student must discover>"
         redacted["initial_creds"] = creds
-        
+
     # 2. Redact key accounts
     if "key_accounts" in redacted:
         accounts = []
@@ -237,38 +281,39 @@ def validate_ai_output(text: str | None, scenario_secrets: list[str] = None) -> 
     """
     Reject or scrub responses that leak known credentials, contain HTML, or verbatim echo prompts.
     (OWASP LLM05 - Improper Output Handling & LLM07 - System Prompt Leakage)
-    
+
     Returns (is_valid, sanitized_text_or_fallback).
     """
     if not text:
         return False, ""
-        
+
     # 1. Check length
     if len(text) > 4000:
         return False, "[Output rejected: length exceeded safety limit]"
-        
+
     # 2. Check for HTML/Script tags
-    if re.search(r"<script.*?>.*?</script>", text, flags=re.IGNORECASE | re.DOTALL) or \
-       re.search(r"<iframe.*?>", text, flags=re.IGNORECASE):
+    if re.search(r"<script.*?>.*?</script>", text, flags=re.IGNORECASE | re.DOTALL) or re.search(
+        r"<iframe.*?>", text, flags=re.IGNORECASE
+    ):
         return False, "[Output rejected: unsafe HTML/script detected]"
-        
+
     # 3. System prompt leakage
     leak_phrases = [
         "You are a cybersecurity training tutor",
         "You are a cybersecurity training monitor",
         "Never reveal credentials",
-        "UNTRUSTED_STUDENT_INPUT"
+        "UNTRUSTED_STUDENT_INPUT",
     ]
     for phrase in leak_phrases:
         if phrase.lower() in text.lower():
             return False, "[Output rejected: system instruction leakage detected]"
-            
+
     # 4. Leakage of known scenario secrets (if provided)
     if scenario_secrets:
         for secret in scenario_secrets:
             if secret and secret in text:
                 return False, "[Output rejected: sensitive credential disclosure detected]"
-                
+
     return True, text
 
 
@@ -279,25 +324,25 @@ async def check_ai_budget(user_id: str, prompt_tokens_estimate: int = 0) -> bool
     """
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     hour = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H")
-    
+
     global_daily_key = f"ai:budget:global:{today}:tokens"
     user_daily_key = f"ai:budget:user:{user_id}:{today}:tokens"
     user_hourly_key = f"ai:budget:user:{user_id}:{hour}:calls"
-    
+
     # Check current limits before incrementing
     global_tokens = int(await cache_get(global_daily_key) or 0)
     user_tokens = int(await cache_get(user_daily_key) or 0)
     user_calls = int(await cache_get(user_hourly_key) or 0)
-    
+
     if global_tokens + prompt_tokens_estimate >= settings.AI_GLOBAL_DAILY_TOKEN_BUDGET:
         return False
-        
+
     if user_tokens + prompt_tokens_estimate >= settings.AI_USER_DAILY_TOKEN_BUDGET:
         return False
-        
+
     if user_calls >= settings.AI_USER_HOURLY_CALL_LIMIT:
         return False
-        
+
     return True
 
 
@@ -307,13 +352,13 @@ async def record_ai_usage(user_id: str, prompt_tokens: int, completion_tokens: i
     """
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     hour = datetime.now(timezone.utc).strftime("%Y-%m-%d-%H")
-    
+
     global_daily_key = f"ai:budget:global:{today}:tokens"
     user_daily_key = f"ai:budget:user:{user_id}:{today}:tokens"
     user_hourly_key = f"ai:budget:user:{user_id}:{hour}:calls"
-    
+
     total_tokens = prompt_tokens + completion_tokens
-    
+
     # 24 hour TTL for daily, 2 hour TTL for hourly
     await cache_increment(global_daily_key, amount=total_tokens, ttl=86400)
     await cache_increment(user_daily_key, amount=total_tokens, ttl=86400)

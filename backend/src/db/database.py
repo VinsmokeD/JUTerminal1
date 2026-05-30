@@ -33,9 +33,13 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[str] = mapped_column(String(20), default="student")
-    skill_level: Mapped[str] = mapped_column(String(20), default="beginner")  # beginner | intermediate | experienced
+    skill_level: Mapped[str] = mapped_column(
+        String(20), default="beginner"
+    )  # beginner | intermediate | experienced
     onboarding_completed: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     sessions: Mapped[list["Session"]] = relationship(back_populates="user")
 
 
@@ -51,11 +55,15 @@ class Session(Base):
     score: Mapped[int] = mapped_column(Integer, default=100)
     hints_used: Mapped[list] = mapped_column(JSON, default=list)
     roe_acknowledged: Mapped[bool] = mapped_column(Boolean, default=False)
-    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     container_id: Mapped[str | None] = mapped_column(String, nullable=True)
     network_name: Mapped[str | None] = mapped_column(String, nullable=True)
-    session_metadata: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict, nullable=True)
+    session_metadata: Mapped[dict | None] = mapped_column(
+        "metadata", JSON, default=dict, nullable=True
+    )
     user: Mapped["User"] = relationship(back_populates="sessions")
     notes: Mapped[list["Note"]] = relationship(back_populates="session")
     commands: Mapped[list["CommandLog"]] = relationship(back_populates="session")
@@ -69,7 +77,9 @@ class Note(Base):
     tag: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(String, nullable=False)
     phase: Mapped[int] = mapped_column(Integer, default=1)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     session: Mapped["Session"] = relationship(back_populates="notes")
 
 
@@ -82,7 +92,9 @@ class CommandLog(Base):
     phase: Mapped[int] = mapped_column(Integer, default=1)
     triggered_siem_events: Mapped[list] = mapped_column(JSON, default=list)
     ai_hint_given: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     session: Mapped["Session"] = relationship(back_populates="commands")
 
 
@@ -95,9 +107,13 @@ class SiemEvent(Base):
     raw_log: Mapped[str | None] = mapped_column(String, nullable=True)
     mitre_technique: Mapped[str | None] = mapped_column(String(20), nullable=True)
     source_ip: Mapped[str | None] = mapped_column(String(45), nullable=True)
-    source: Mapped[str] = mapped_column(String(50), default="attacker")  # attacker | background | system
+    source: Mapped[str] = mapped_column(
+        String(50), default="attacker"
+    )  # attacker | background | system
     acknowledged: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     session: Mapped["Session"] = relationship(back_populates="siem_events")
 
 
@@ -109,7 +125,9 @@ class AutoEvidence(Base):
     output_summary: Mapped[str] = mapped_column(String, nullable=False)
     tool_name: Mapped[str | None] = mapped_column(String(50), nullable=True)
     tag: Mapped[str] = mapped_column(String(20), default="evidence")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class SiemTriage(Base):
@@ -117,9 +135,13 @@ class SiemTriage(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     session_id: Mapped[str] = mapped_column(String, ForeignKey("sessions.id"))
     event_id: Mapped[str] = mapped_column(String(100), nullable=False)
-    classification: Mapped[str | None] = mapped_column(String(20), nullable=True)  # investigating | true_positive | false_positive | escalated
+    classification: Mapped[str | None] = mapped_column(
+        String(20), nullable=True
+    )  # investigating | true_positive | false_positive | escalated
     notes: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class AIInteraction(Base):
@@ -127,8 +149,12 @@ class AIInteraction(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     session_id: Mapped[str] = mapped_column(String, ForeignKey("sessions.id"))
     user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    kind: Mapped[str] = mapped_column(String(20), nullable=False)  # unprompted | hint_request | learn
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    kind: Mapped[str] = mapped_column(
+        String(20), nullable=False
+    )  # unprompted | hint_request | learn
     hint_level: Mapped[int | None] = mapped_column(Integer, nullable=True)
     command_context: Mapped[str | None] = mapped_column(String, nullable=True)
     phase: Mapped[int] = mapped_column(Integer, default=1)
@@ -148,7 +174,9 @@ class UserActivity(Base):
     session_id: Mapped[str | None] = mapped_column(String, ForeignKey("sessions.id"), nullable=True)
     event_type: Mapped[str] = mapped_column(String(50), nullable=False)
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class ContainmentAction(Base):
@@ -156,10 +184,14 @@ class ContainmentAction(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     session_id: Mapped[str] = mapped_column(String, ForeignKey("sessions.id"))
     user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"))
-    action_type: Mapped[str] = mapped_column(String(50), nullable=False)  # block_ip | kill_pid | isolate_host
+    action_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # block_ip | kill_pid | isolate_host
     target_value: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="pending")  # pending | success | failed
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
 
 async def init_db():

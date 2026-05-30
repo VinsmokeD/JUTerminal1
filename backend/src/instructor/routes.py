@@ -8,6 +8,7 @@ Endpoints (all require role=instructor):
 Auth: require_instructor dependency checks user.role == "instructor".
 Default instructor: username=admin / password=CyberSimAdmin! (seeded in main.py lifespan)
 """
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -16,7 +17,17 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from pydantic import BaseModel
-from src.db.database import get_db, Session, User, SiemEvent, SiemTriage, CommandLog, Note, AIInteraction, UserActivity
+from src.db.database import (
+    get_db,
+    Session,
+    User,
+    SiemEvent,
+    SiemTriage,
+    CommandLog,
+    Note,
+    AIInteraction,
+    UserActivity,
+)
 from src.auth.routes import require_instructor, hash_password
 from src.reports.generator import generate_report
 from src.sandbox.manager import stop_scenario_container
@@ -114,20 +125,24 @@ async def get_metrics(
 ) -> dict:
     """Aggregate platform statistics for instructor overview."""
     total_sessions = await db.scalar(select(func.count(Session.id))) or 0
-    active_sessions = await db.scalar(
-        select(func.count(Session.id)).where(Session.completed_at.is_(None))
-    ) or 0
+    active_sessions = (
+        await db.scalar(select(func.count(Session.id)).where(Session.completed_at.is_(None))) or 0
+    )
     avg_score = await db.scalar(select(func.avg(Session.score))) or 0.0
     total_siem_events = await db.scalar(select(func.count(SiemEvent.id))) or 0
-    total_triaged_events = await db.scalar(
-        select(func.count(SiemTriage.id)).where(SiemTriage.classification.is_not(None))
-    ) or 0
+    total_triaged_events = (
+        await db.scalar(
+            select(func.count(SiemTriage.id)).where(SiemTriage.classification.is_not(None))
+        )
+        or 0
+    )
 
     # Per-scenario breakdown
     scenario_rows = (
         await db.execute(
-            select(Session.scenario_id, func.count(Session.id), func.avg(Session.score))
-            .group_by(Session.scenario_id)
+            select(Session.scenario_id, func.count(Session.id), func.avg(Session.score)).group_by(
+                Session.scenario_id
+            )
         )
     ).all()
 
@@ -160,6 +175,7 @@ def _coverage_percent(done: int, total: int) -> int:
 
 # ── User Management ────────────────────────────────────────────────────────
 
+
 @router.get("/users")
 async def list_users(
     db: AsyncSession = Depends(get_db),
@@ -173,8 +189,9 @@ async def list_users(
             "role": u.role,
             "skill_level": u.skill_level,
             "onboarding_completed": u.onboarding_completed,
-            "created_at": u.created_at.isoformat()
-        } for u in result.scalars()
+            "created_at": u.created_at.isoformat(),
+        }
+        for u in result.scalars()
     ]
 
 
@@ -199,7 +216,7 @@ async def create_user(
         username=body.username,
         password_hash=hash_password(body.password),
         role=body.role,
-        skill_level=body.skill_level
+        skill_level=body.skill_level,
     )
     db.add(user)
     await db.commit()
@@ -246,25 +263,35 @@ async def user_drilldown(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    sessions = await db.execute(select(Session).where(Session.user_id == user_id).order_by(Session.started_at.desc()))
+    sessions = await db.execute(
+        select(Session).where(Session.user_id == user_id).order_by(Session.started_at.desc())
+    )
     session_list = [
         {
-            "id": s.id, "scenario_id": s.scenario_id, "role": s.role,
-            "score": s.score, "started_at": s.started_at.isoformat(),
-            "completed_at": s.completed_at.isoformat() if s.completed_at else None
-        } for s in sessions.scalars()
+            "id": s.id,
+            "scenario_id": s.scenario_id,
+            "role": s.role,
+            "score": s.score,
+            "started_at": s.started_at.isoformat(),
+            "completed_at": s.completed_at.isoformat() if s.completed_at else None,
+        }
+        for s in sessions.scalars()
     ]
 
     return {
         "user": {
-            "id": user.id, "username": user.username, "role": user.role,
-            "skill_level": user.skill_level, "joined": user.created_at.isoformat()
+            "id": user.id,
+            "username": user.username,
+            "role": user.role,
+            "skill_level": user.skill_level,
+            "joined": user.created_at.isoformat(),
         },
-        "sessions": session_list
+        "sessions": session_list,
     }
 
 
 # ── Session Management ─────────────────────────────────────────────────────
+
 
 @router.get("/sessions/{session_id}/detail")
 async def session_detail(
@@ -292,7 +319,7 @@ async def session_detail(
         "started_at": session.started_at.isoformat(),
         "completed_at": session.completed_at.isoformat() if session.completed_at else None,
         "status": "completed" if session.completed_at else "active",
-        "container_id": session.container_id
+        "container_id": session.container_id,
     }
 
 
@@ -314,6 +341,7 @@ async def terminate_session(
     await db.commit()
 
     from src.cache.redis import cache_delete
+
     await cache_delete(f"session:{session_id}:state")
 
     return {"status": "terminated"}
@@ -326,19 +354,28 @@ async def session_ai_interactions(
     _: User = Depends(require_instructor),
 ) -> list[dict]:
     result = await db.execute(
-        select(AIInteraction).where(AIInteraction.session_id == session_id).order_by(AIInteraction.created_at.asc())
+        select(AIInteraction)
+        .where(AIInteraction.session_id == session_id)
+        .order_by(AIInteraction.created_at.asc())
     )
     return [
         {
-            "id": a.id, "kind": a.kind, "hint_level": a.hint_level,
-            "command_context": a.command_context, "response_text": a.response_text,
-            "prompt_tokens": a.prompt_tokens, "completion_tokens": a.completion_tokens,
-            "flagged": a.flagged, "created_at": a.created_at.isoformat()
-        } for a in result.scalars()
+            "id": a.id,
+            "kind": a.kind,
+            "hint_level": a.hint_level,
+            "command_context": a.command_context,
+            "response_text": a.response_text,
+            "prompt_tokens": a.prompt_tokens,
+            "completion_tokens": a.completion_tokens,
+            "flagged": a.flagged,
+            "created_at": a.created_at.isoformat(),
+        }
+        for a in result.scalars()
     ]
 
 
 # ── Platform Activity & AI ─────────────────────────────────────────────────
+
 
 @router.get("/activity")
 async def get_platform_activity(
@@ -359,8 +396,9 @@ async def get_platform_activity(
             "event_type": act.event_type,
             "session_id": act.session_id,
             "metadata": act.metadata_json,
-            "created_at": act.created_at.isoformat()
-        } for act, username in result.all()
+            "created_at": act.created_at.isoformat(),
+        }
+        for act, username in result.all()
     ]
 
 
@@ -370,20 +408,21 @@ async def get_ai_usage(
     _: User = Depends(require_instructor),
 ) -> dict:
     from src.cache.redis import cache_get
+
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     global_daily_key = f"ai:budget:global:{today}:tokens"
     global_tokens = int(await cache_get(global_daily_key) or 0)
 
-    flagged_res = await db.execute(select(func.count(AIInteraction.id)).where(AIInteraction.flagged == True))
+    flagged_res = await db.execute(
+        select(func.count(AIInteraction.id)).where(AIInteraction.flagged == True)
+    )
     total_flagged = flagged_res.scalar() or 0
 
-    return {
-        "global_daily_tokens_used": global_tokens,
-        "total_flagged_interactions": total_flagged
-    }
+    return {"global_daily_tokens_used": global_tokens, "total_flagged_interactions": total_flagged}
 
 
 # ── Instructor Analytics (Phase 25) ───────────────────────────────────────────
+
 
 @router.get("/analytics")
 async def get_analytics(
@@ -392,6 +431,7 @@ async def get_analytics(
 ) -> dict:
     """Fetch class-level learning signals, struggle flags, and score distribution."""
     from src.instructor.analytics import get_instructor_analytics
+
     return await get_instructor_analytics(db)
 
 
@@ -407,9 +447,7 @@ async def export_grades(
 
     # fetch student sessions
     sessions_result = await db.execute(
-        select(Session, User)
-        .join(User, Session.user_id == User.id)
-        .where(User.role == "student")
+        select(Session, User).join(User, Session.user_id == User.id).where(User.role == "student")
     )
     rows = sessions_result.all()
 
@@ -417,62 +455,85 @@ async def export_grades(
     writer = csv.writer(output)
 
     if format.lower() == "moodle":
-        writer.writerow([
-            "First name", "Surname", "ID number", "Institution",
-            "Department", "Email address", "Grade", "Feedback"
-        ])
+        writer.writerow(
+            [
+                "First name",
+                "Surname",
+                "ID number",
+                "Institution",
+                "Department",
+                "Email address",
+                "Grade",
+                "Feedback",
+            ]
+        )
         for session, user in rows:
             # Query notes for feedback
-            notes_res = await db.execute(
-                select(Note.content)
-                .where(Note.session_id == session.id)
-            )
+            notes_res = await db.execute(select(Note.content).where(Note.session_id == session.id))
             notes_contents = notes_res.scalars().all()
             feedback = "; ".join(notes_contents)[:500] if notes_contents else "No notes submitted."
 
-            writer.writerow([
-                user.username,
-                "Student",
-                user.id,
-                "University",
-                "Cybersecurity",
-                f"{user.username}@example.com",
-                session.score,
-                feedback
-            ])
+            writer.writerow(
+                [
+                    user.username,
+                    "Student",
+                    user.id,
+                    "University",
+                    "Cybersecurity",
+                    f"{user.username}@example.com",
+                    session.score,
+                    feedback,
+                ]
+            )
     else:  # canvas default
-        writer.writerow([
-            "Student", "ID", "SIS User ID", "SIS Login ID",
-            "Section", "CyberSim Score", "CyberSim Time (m)", "Adherence %"
-        ])
+        writer.writerow(
+            [
+                "Student",
+                "ID",
+                "SIS User ID",
+                "SIS Login ID",
+                "Section",
+                "CyberSim Score",
+                "CyberSim Time (m)",
+                "Adherence %",
+            ]
+        )
         for session, user in rows:
             # count gate blocks
-            blocks_count = await db.scalar(
-                select(func.count(CommandLog.id))
-                .where(CommandLog.session_id == session.id, CommandLog.tool.like("gate_block:%"))
-            ) or 0
+            blocks_count = (
+                await db.scalar(
+                    select(func.count(CommandLog.id)).where(
+                        CommandLog.session_id == session.id, CommandLog.tool.like("gate_block:%")
+                    )
+                )
+                or 0
+            )
             adherence = max(0, 100 - (blocks_count * 5))
             duration = 0.0
             if session.completed_at:
-                duration = round((session.completed_at - session.started_at).total_seconds() / 60.0, 1)
+                duration = round(
+                    (session.completed_at - session.started_at).total_seconds() / 60.0, 1
+                )
 
-            writer.writerow([
-                user.username,
-                user.id,
-                user.username,
-                user.username,
-                user.skill_level.capitalize() if user.skill_level else "Beginner",
-                session.score,
-                duration,
-                adherence
-            ])
+            writer.writerow(
+                [
+                    user.username,
+                    user.id,
+                    user.username,
+                    user.username,
+                    user.skill_level.capitalize() if user.skill_level else "Beginner",
+                    session.score,
+                    duration,
+                    adherence,
+                ]
+            )
 
     csv_content = output.getvalue()
     filename = f"cybersim_grades_{format}_{datetime.now(timezone.utc).strftime('%Y%m%d')}.csv"
     return Response(
         content=csv_content,
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
 
@@ -506,7 +567,7 @@ async def session_timeline(
                 "command": c.command,
                 "tool": c.tool,
                 "phase": c.phase,
-                "created_at": c.created_at.isoformat()
+                "created_at": c.created_at.isoformat(),
             }
             for c in commands
         ],
@@ -516,10 +577,10 @@ async def session_timeline(
                 "severity": e.severity,
                 "message": e.message,
                 "source": e.source,
-                "created_at": e.created_at.isoformat()
+                "created_at": e.created_at.isoformat(),
             }
             for e in events
-        ]
+        ],
     }
 
 
@@ -556,17 +617,14 @@ async def session_live_inspect(
     )
     events = events_res.scalars().all()
 
-    triage_res = await db.execute(
-        select(SiemTriage)
-        .where(SiemTriage.session_id == session_id)
-    )
+    triage_res = await db.execute(select(SiemTriage).where(SiemTriage.session_id == session_id))
     triage_list = triage_res.scalars().all()
-    triage_map = {t.event_id: {"classification": t.classification, "notes": t.notes} for t in triage_list}
+    triage_map = {
+        t.event_id: {"classification": t.classification, "notes": t.notes} for t in triage_list
+    }
 
     notes_res = await db.execute(
-        select(Note)
-        .where(Note.session_id == session_id)
-        .order_by(Note.created_at.desc())
+        select(Note).where(Note.session_id == session_id).order_by(Note.created_at.desc())
     )
     notes = notes_res.scalars().all()
 
@@ -585,8 +643,9 @@ async def session_live_inspect(
                 "command": c.command,
                 "tool": c.tool,
                 "phase": c.phase,
-                "created_at": c.created_at.isoformat()
-            } for c in commands
+                "created_at": c.created_at.isoformat(),
+            }
+            for c in commands
         ],
         "events": [
             {
@@ -596,15 +655,17 @@ async def session_live_inspect(
                 "source": e.source,
                 "created_at": e.created_at.isoformat(),
                 "classification": triage_map.get(e.id, {}).get("classification"),
-                "notes": triage_map.get(e.id, {}).get("notes")
-            } for e in events
+                "notes": triage_map.get(e.id, {}).get("notes"),
+            }
+            for e in events
         ],
         "notes": [
             {
                 "tag": n.tag,
                 "content": n.content,
                 "phase": n.phase,
-                "created_at": n.created_at.isoformat()
-            } for n in notes
-        ]
+                "created_at": n.created_at.isoformat(),
+            }
+            for n in notes
+        ],
     }

@@ -1,4 +1,5 @@
 """Report generator — assembles session data into a structured Markdown report."""
+
 from datetime import timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -19,18 +20,26 @@ async def generate_report(session: Session, db: AsyncSession) -> str:
     siem_events = list(siem_result.scalars())
 
     cmd_result = await db.execute(
-        select(CommandLog).where(CommandLog.session_id == session.id).order_by(CommandLog.created_at)
+        select(CommandLog)
+        .where(CommandLog.session_id == session.id)
+        .order_by(CommandLog.created_at)
     )
     commands = list(cmd_result.scalars())
 
     triage_result = await db.execute(
-        select(SiemTriage).where(SiemTriage.session_id == session.id).order_by(SiemTriage.created_at)
+        select(SiemTriage)
+        .where(SiemTriage.session_id == session.id)
+        .order_by(SiemTriage.created_at)
     )
     triage_decisions = list(triage_result.scalars())
 
     role_label = "Penetration Test" if session.role == "red" else "Incident Response"
     started = session.started_at.strftime("%Y-%m-%d %H:%M UTC")
-    ended = session.completed_at.strftime("%Y-%m-%d %H:%M UTC") if session.completed_at else "In progress"
+    ended = (
+        session.completed_at.strftime("%Y-%m-%d %H:%M UTC")
+        if session.completed_at
+        else "In progress"
+    )
 
     sections = [
         f"# {role_label} Report — {session.scenario_id}",
@@ -91,7 +100,9 @@ async def generate_report(session: Session, db: AsyncSession) -> str:
         ]
         for triage in triage_decisions[:30]:
             event_label = _table_cell(event_messages.get(triage.event_id, triage.event_id))
-            classification = _table_cell((triage.classification or "investigating").replace("_", " ").title())
+            classification = _table_cell(
+                (triage.classification or "investigating").replace("_", " ").title()
+            )
             notes = _table_cell(triage.notes or "")
             sections += [f"| {event_label} | {classification} | {notes} |"]
         sections += [""]

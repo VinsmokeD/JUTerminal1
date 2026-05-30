@@ -57,9 +57,7 @@ def _generic_patterns() -> list[dict[str, Any]]:
     patterns: list[dict[str, Any]] = []
     for item in _GENERIC_PATTERNS_RAW:
         try:
-            patterns.append(
-                {**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)}
-            )
+            patterns.append({**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)})
         except (KeyError, re.error):
             continue
     return patterns
@@ -76,9 +74,7 @@ def _load_patterns(scenario_id: str) -> list[dict[str, Any]]:
     patterns: list[dict[str, Any]] = []
     for item in raw:
         try:
-            patterns.append(
-                {**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)}
-            )
+            patterns.append({**item, "_compiled": re.compile(item["regex"], re.IGNORECASE)})
         except (KeyError, re.error):
             continue
     return patterns
@@ -150,9 +146,7 @@ async def scan_output_chunk(
                 "id": pattern.get("id"),
                 "matched_line": line[-500:],
                 "what": pattern.get("what", "Interesting output fingerprint detected."),
-                "why": pattern.get(
-                    "why", "This line can guide the next investigation step."
-                ),
+                "why": pattern.get("why", "This line can guide the next investigation step."),
                 "next": pattern.get(
                     "next",
                     "Record the evidence and continue with the scenario methodology.",
@@ -184,9 +178,7 @@ async def scan_output_chunk(
                 "id": pattern.get("id"),
                 "matched_line": line[-500:],
                 "what": pattern.get("what", "Interesting output fingerprint detected."),
-                "why": pattern.get(
-                    "why", "This line can guide the next investigation step."
-                ),
+                "why": pattern.get("why", "This line can guide the next investigation step."),
                 "next": pattern.get(
                     "next",
                     "Record the evidence and continue with the scenario methodology.",

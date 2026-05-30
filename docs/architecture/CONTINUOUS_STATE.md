@@ -437,3 +437,9 @@ pm run build and ran unit tests successfully.
 * **Where**: docs/SECURITY_THREAT_MODEL.md [NEW].
 * **What & How**: Trust-boundary diagram; assets; STRIDE per component (auth/JWT, WS command proxy, AI tutor [OWASP LLM Top-10], sandbox/docker, datastores, frontend); the network-isolation invariant; residual-risk register (R1 docker.sock=High, R2 default creds, R3 sandbox cap-drop, R4 hostname ROE, R5 CSP, R6 utcnow); and an empirical-verification section listing what was proven live (isolation 6/6, AI guardrails, scope gate, WS auth, ro socket).
 * **Verification**: docs-only, no code/tests affected. Cross-checked every claimed mitigation against the actual code/files referenced.
+
+### [2026-05-29] - Claude Code (style: black formatting pass + make black a CI gate)
+* **Status**: Complete - Applied black across backend (src + tests); 59 files reformatted, tree now black-clean. Flipped the CI black check from advisory to a blocking gate.
+* **Why**: The project declares black ([tool.black] line-length 100, py311) and CI ran `black --check`, but the tree wasn't clean (58 files) so black couldn't be a real gate. Formatting is behavior-only, so it is safe to apply wholesale and then enforce.
+* **Where**: backend/src/** + backend/tests/** (formatting only); .github/workflows/ci.yml (black step -> blocking).
+* **Verification**: `black --check src/ tests/` exit 0 (clean); full suite `pytest --ignore=tests/e2e` => 318 passed (unchanged - behavior preserved); backend image rebuilt. mypy stays advisory (still has type findings).

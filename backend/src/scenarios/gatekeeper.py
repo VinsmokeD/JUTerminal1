@@ -14,6 +14,7 @@ Usage:
         await ws.send_text(f"[GATE] {result.redirect_message}")
         return
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -51,14 +52,9 @@ _PHASE_GATES: dict[str, dict[str, str]] = {
             "Credential attacks are blocked in Passive Reconnaissance. "
             "Do you have a login form identified yet?"
         ),
-        "john": (
-            "Password cracking is blocked. Have you obtained a hash to crack first?"
-        ),
-        "hashcat": (
-            "Password cracking is blocked. Have you obtained a hash to crack first?"
-        ),
+        "john": ("Password cracking is blocked. Have you obtained a hash to crack first?"),
+        "hashcat": ("Password cracking is blocked. Have you obtained a hash to crack first?"),
     },
-
     # SC-01: Active scanning — exploitation still blocked
     "Active Scanning": {
         "sqlmap": (
@@ -74,7 +70,6 @@ _PHASE_GATES: dict[str, dict[str, str]] = {
             "Complete your enumeration — what services and versions have you identified?"
         ),
     },
-
     # SC-01: Vulnerability ID — automation still needs manual confirmation first
     "Vulnerability Identification": {
         "metasploit": (
@@ -86,7 +81,6 @@ _PHASE_GATES: dict[str, dict[str, str]] = {
             "Have you documented the vulnerability and its CVSS score before attempting exploitation?"
         ),
     },
-
     # SC-02 & SC-03: Intelligence Gathering / Reconnaissance
     "Intelligence Gathering": {
         "sqlmap": (
@@ -118,7 +112,6 @@ _PHASE_GATES: dict[str, dict[str, str]] = {
             "Have you enumerated the domain and identified your target account?"
         ),
     },
-
     # SC-02: Pre-engagement phase for phishing
     "Pre-engagement": {
         "msfvenom": (
@@ -130,7 +123,6 @@ _PHASE_GATES: dict[str, dict[str, str]] = {
             "Have you confirmed your document macro executes on the simulated endpoint?"
         ),
     },
-
     # SC-02: Threat Modeling — before active attack
     "Threat Modeling": {
         "secretsdump": (

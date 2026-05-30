@@ -29,11 +29,13 @@ async def get_scenario_phases(scenario_id: str) -> list[dict]:
         phases = scenario.get("phases", {})
         result = []
         for p_id, p_data in sorted(phases.items(), key=lambda x: int(x[0])):
-            result.append({
-                "phase": int(p_id),
-                "name": p_data.get("name", ""),
-                "mitre": p_data.get("mitre", [])
-            })
+            result.append(
+                {
+                    "phase": int(p_id),
+                    "name": p_data.get("name", ""),
+                    "mitre": p_data.get("mitre", []),
+                }
+            )
         return result
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

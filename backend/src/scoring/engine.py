@@ -1,4 +1,5 @@
 """Scoring engine — computes final score adjustments and time bonuses."""
+
 from datetime import datetime
 
 from src.config import settings
@@ -18,7 +19,11 @@ def compute_time_bonus(started_at: datetime, completed_at: datetime | None) -> i
 
 def compute_hint_penalty(hints_used: list) -> int:
     """Sum all hint penalties from the hints_used list."""
-    penalty_map = {1: settings.HINT_L1_PENALTY, 2: settings.HINT_L2_PENALTY, 3: settings.HINT_L3_PENALTY}
+    penalty_map = {
+        1: settings.HINT_L1_PENALTY,
+        2: settings.HINT_L2_PENALTY,
+        3: settings.HINT_L3_PENALTY,
+    }
     penalty = 0
     for h in hints_used:
         if isinstance(h, dict):
@@ -29,7 +34,9 @@ def compute_hint_penalty(hints_used: list) -> int:
     return penalty
 
 
-def final_score(base: int, hints_used: list[dict], started_at: datetime, completed_at: datetime | None) -> int:
+def final_score(
+    base: int, hints_used: list[dict], started_at: datetime, completed_at: datetime | None
+) -> int:
     bonus = compute_time_bonus(started_at, completed_at)
     penalty = compute_hint_penalty(hints_used)
     total = base + bonus - penalty

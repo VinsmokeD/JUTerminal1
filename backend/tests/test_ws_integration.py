@@ -17,6 +17,7 @@ Run with:
   cd backend
   pytest tests/test_ws_integration.py -v
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -48,11 +49,10 @@ from src.main import app  # noqa: E402  (must come after env setup)
 
 # ── Fixtures ───────────────────────────────────────────────────────────────
 
+
 @pytest_asyncio.fixture(scope="module")
 async def client():
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
 
@@ -76,6 +76,7 @@ async def auth_token(client: AsyncClient):
 
 # ── Test 1: Health ──────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_health(client: AsyncClient):
     r = await client.get("/health")
@@ -87,9 +88,11 @@ async def test_health(client: AsyncClient):
 
 # ── Test 2: Auth register + login ─────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_register_and_login(client: AsyncClient):
     import time
+
     username = f"ci_user_{int(time.time())}"
 
     reg = await client.post(
@@ -108,18 +111,16 @@ async def test_register_and_login(client: AsyncClient):
 
 # ── Test 3: Duplicate username rejected ────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_duplicate_username_rejected(client: AsyncClient):
-    await client.post(
-        "/api/auth/register", json={"username": "dup_user", "password": "x"}
-    )
-    resp = await client.post(
-        "/api/auth/register", json={"username": "dup_user", "password": "y"}
-    )
+    await client.post("/api/auth/register", json={"username": "dup_user", "password": "x"})
+    resp = await client.post("/api/auth/register", json={"username": "dup_user", "password": "y"})
     assert resp.status_code == 400
 
 
 # ── Test 4: Scenarios list returns 3 entries (v2.0 scope) ──────────────────
+
 
 @pytest.mark.asyncio
 async def test_scenarios_returns_three(client: AsyncClient):
@@ -136,8 +137,10 @@ async def test_scenarios_returns_three(client: AsyncClient):
 
 # ── Test 5: YAML loader — all specs load cleanly ────────────────────────────
 
+
 def test_scenario_loader_all_specs():
     from src.scenarios.loader import load_scenario, invalidate_cache
+
     invalidate_cache()
     for sid in ("SC-01", "SC-02", "SC-03"):
         spec = load_scenario(sid)
@@ -149,11 +152,13 @@ def test_scenario_loader_all_specs():
 
 def test_scenario_loader_rejects_unknown():
     from src.scenarios.loader import load_scenario
+
     with pytest.raises(ValueError, match="Unknown scenario"):
         load_scenario("SC-99")
 
 
 # ── Test 6: Engine gate — blocks tool in wrong phase ──────────────────────
+
 
 @pytest.mark.asyncio
 async def test_engine_gate_blocks_in_phase_1(client: AsyncClient, auth_token: str):
@@ -177,6 +182,7 @@ async def test_engine_gate_blocks_in_phase_1(client: AsyncClient, auth_token: st
 
 # ── Test 7: Engine gate — passes when phase is sufficient ─────────────────
 
+
 @pytest.mark.asyncio
 async def test_engine_gate_passes_at_correct_phase():
     from unittest.mock import AsyncMock, patch
@@ -196,6 +202,7 @@ async def test_engine_gate_passes_at_correct_phase():
 
 # ── Test 8: Engine gate — ungated tool always passes ──────────────────────
 
+
 @pytest.mark.asyncio
 async def test_engine_gate_ungated_tool_passes():
     from unittest.mock import AsyncMock, patch
@@ -212,6 +219,7 @@ async def test_engine_gate_ungated_tool_passes():
 
 
 # ── Test 9: SIEM event generation from command ────────────────────────────
+
 
 @pytest.mark.asyncio
 async def test_siem_events_generated_for_gobuster():
@@ -238,6 +246,7 @@ async def test_siem_events_generated_for_gobuster():
 
 # ── Test 10: Session start rejected for SC-04 (out of v2.0 scope) ─────────
 
+
 @pytest.mark.asyncio
 async def test_session_start_rejects_sc04(client: AsyncClient, auth_token: str):
     r = await client.post(
@@ -250,18 +259,22 @@ async def test_session_start_rejects_sc04(client: AsyncClient, auth_token: str):
 
 # ── Test 11: WebSocket connection accepted with valid JWT ──────────────────
 
+
 @pytest.mark.asyncio
 async def test_websocket_rejects_invalid_token():
     """WS endpoint must reject connections without a valid token."""
     # We verify the endpoint exists and rejects bad auth
     # (Full WS test requires running server + Redis + Postgres)
     from src.ws.routes import router
+
     routes = [r.path for r in router.routes]
     assert any("session_id" in r for r in routes)
 
 
 @pytest.mark.asyncio
-async def test_session_start_is_lazy_about_container_provision(client: AsyncClient, auth_token: str):
+async def test_session_start_is_lazy_about_container_provision(
+    client: AsyncClient, auth_token: str
+):
     """Mission launch returns the session immediately; WS attach provisions the PTY."""
     import time
 
@@ -293,7 +306,6 @@ async def test_session_start_is_lazy_about_container_provision(client: AsyncClie
     assert body["session_id"]
     assert body["container_id"] is None
     assert elapsed < 3.0
-
 
 
 @pytest.mark.asyncio

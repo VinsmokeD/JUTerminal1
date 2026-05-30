@@ -53,9 +53,9 @@ async def check_port_internal(container: Any, port: int) -> bool:
         f"python -c \"import socket; s = socket.socket(); s.settimeout(0.5); s.connect(('127.0.0.1', {port}))\"",
         f"curl -s -I http://127.0.0.1:{port}",
         f"wget -q --spider http://127.0.0.1:{port}",
-        f"bash -c \"cat < /dev/null > /dev/tcp/127.0.0.1/{port}\"",
+        f'bash -c "cat < /dev/null > /dev/tcp/127.0.0.1/{port}"',
     ]
-    
+
     # Special probe for MariaDB
     if port == 3306:
         cmds.insert(0, "mariadb-admin ping -h 127.0.0.1 -uroot -pNovaMedRoot2024!")
@@ -72,7 +72,7 @@ async def check_port_internal(container: Any, port: int) -> bool:
                 return True
         except Exception:
             continue
-            
+
     # Default fallback: check if container says it is running and let it pass if no shell tools succeed
     return False
 
@@ -114,17 +114,15 @@ async def get_session_readiness(session_id: str, scenario_id: str) -> dict[str, 
     kali_name = f"kali-{session_id[:8]}"
     try:
         loop = asyncio.get_running_loop()
-        kali_container = await loop.run_in_executor(
-            None, lambda: client.containers.get(kali_name)
-        )
+        kali_container = await loop.run_in_executor(None, lambda: client.containers.get(kali_name))
         kali_status = kali_container.status
-        
+
         # Self-heal if stopped/exited
         if kali_status not in ("running", "restarting"):
             print(f"[Readiness] Kali container {kali_name} is {kali_status}. Restarting...")
             await loop.run_in_executor(None, kali_container.start)
             kali_status = "running"
-            
+
         checks["kali"] = {
             "status": "ok" if kali_status == "running" else "error",
             "detail": f"Container status: {kali_status}",
@@ -154,22 +152,24 @@ async def get_session_readiness(session_id: str, scenario_id: str) -> dict[str, 
                 None, lambda: client.containers.get(container_name)
             )
             c_status = container.status
-            
+
             # If not running, attempt self-healing
             if c_status not in ("running", "restarting"):
-                print(f"[Readiness] Target container {container_name} is {c_status}. Attempting self-heal...")
+                print(
+                    f"[Readiness] Target container {container_name} is {c_status}. Attempting self-heal..."
+                )
                 healed = await self_heal_target(service_name)
                 if healed:
                     container = await loop.run_in_executor(
                         None, lambda: client.containers.get(container_name)
                     )
                     c_status = container.status
-            
+
             # Check port inside container
             port_open = False
             if c_status == "running":
                 port_open = await check_port_internal(container, port)
-                
+
             # If port is closed but container is running, we might still count it ok if no other options,
             # but let's be strict: if container is running and healthy (or status is running), we check port_open
             # Let's say: status ok if running, and warning if port check fails.
@@ -191,7 +191,7 @@ async def get_session_readiness(session_id: str, scenario_id: str) -> dict[str, 
                 status = "error"
                 detail = f"Status: {c_status}"
                 targets_status = "degraded"
-                
+
             targets_detail[service_name] = {
                 "status": status,
                 "detail": detail,
@@ -269,7 +269,7 @@ async def get_session_readiness(session_id: str, scenario_id: str) -> dict[str, 
             cached_status = None
             if checks.get("redis", {}).get("status") == "ok":
                 cached_status = await r.get("health:openrouter:status")
-                
+
             if cached_status:
                 checks["openrouter"] = {
                     "status": "ok",

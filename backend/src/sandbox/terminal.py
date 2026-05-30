@@ -13,6 +13,7 @@ Data flow:
                                                                   ↓
                                            WS handler → browser xterm.js
 """
+
 from __future__ import annotations
 
 import json
@@ -26,12 +27,20 @@ logger = logging.getLogger(__name__)
 try:
     import docker
     from docker.errors import NotFound, DockerException, APIError
+
     _docker_available = True
 except ImportError:
     _docker_available = False
-    class DockerException(Exception): pass
-    class APIError(Exception): pass
-    class NotFound(Exception): pass
+
+    class DockerException(Exception):
+        pass
+
+    class APIError(Exception):
+        pass
+
+    class NotFound(Exception):
+        pass
+
 
 import redis as sync_redis  # synchronous client, part of redis[hiredis] already installed
 
@@ -50,6 +59,7 @@ _active_sessions_lock = threading.Lock()
 # ---------------------------------------------------------------------------
 # Public async API (called from ws/routes.py — main event loop)
 # ---------------------------------------------------------------------------
+
 
 async def send_terminal_input(session_id: str, data: str) -> None:
     """Forward keyboard input to the active Docker PTY with Redis as fallback."""
@@ -72,15 +82,18 @@ async def send_terminal_input(session_id: str, data: str) -> None:
     await redis.publish(f"terminal:{session_id}:input", json.dumps({"data": data}))
 
 
-async def stream_terminal_output(session_id: str, container_id: str, scenario_id: str = "SC-01") -> None:
+async def stream_terminal_output(
+    session_id: str, container_id: str, scenario_id: str = "SC-01"
+) -> None:
     """
     Start a background thread that proxies Docker exec <-> Redis.
     Idempotent — subsequent calls for the same session_id are no-ops.
     Falls back to an interactive mock terminal when Docker is unavailable.
     """
     if container_id.startswith("mock-"):
-        raise RuntimeError("Strict mode enabled: Mock terminals are no longer supported. Docker targets only.")
-
+        raise RuntimeError(
+            "Strict mode enabled: Mock terminals are no longer supported. Docker targets only."
+        )
 
     with _active_sessions_lock:
         if session_id in _active_sessions:
@@ -120,6 +133,7 @@ def unregister_terminal_output_listener(session_id: str, output_queue: "queue.Qu
 # ---------------------------------------------------------------------------
 # Sync helpers used inside background threads
 # ---------------------------------------------------------------------------
+
 
 def _make_sync_redis() -> sync_redis.Redis:
     """Open a fresh synchronous Redis connection for use in a background thread."""
@@ -218,7 +232,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
 
                     # Split into ≤4KB frames to prevent overwhelming frontend
                     for i in range(0, len(chunk), max_chunk_size):
-                        frame = chunk[i:i+max_chunk_size]
+                        frame = chunk[i : i + max_chunk_size]
                         r.publish(f"terminal:{session_id}:output", json.dumps({"data": frame}))
                         _fanout_terminal_output(session_id, frame)
 
@@ -229,7 +243,9 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                     pipe.expire(f"terminal:{session_id}:history", 86400)
                     pipe.execute()
                 except (OSError, sync_redis.RedisError, ValueError) as exc:
-                    logger.warning(f"[Terminal] Docker->Redis proxy error for session {session_id}: {exc}")
+                    logger.warning(
+                        f"[Terminal] Docker->Redis proxy error for session {session_id}: {exc}"
+                    )
                     break
             stop_event.set()  # Signal the sibling thread to exit too
 
@@ -244,7 +260,9 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                     if text:
                         raw_sock.sendall(text.encode("utf-8"))
                 except OSError as exc:
-                    logger.warning(f"[Terminal] Queue->Docker proxy error for session {session_id}: {exc}")
+                    logger.warning(
+                        f"[Terminal] Queue->Docker proxy error for session {session_id}: {exc}"
+                    )
                     stop_event.set()
                     break
                 finally:
@@ -271,14 +289,18 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                                 except queue.Full:
                                     pass
                         except (json.JSONDecodeError, KeyError, TypeError) as exc:
-                            logger.warning(f"[Terminal] Redis message parse error for session {session_id}: {exc}")
+                            logger.warning(
+                                f"[Terminal] Redis message parse error for session {session_id}: {exc}"
+                            )
                             break
             finally:
                 try:
                     pub.unsubscribe()
                     pub.close()
                 except sync_redis.RedisError as exc:
-                    logger.debug(f"[Terminal] Redis unsubscribe error for session {session_id}: {exc}")
+                    logger.debug(
+                        f"[Terminal] Redis unsubscribe error for session {session_id}: {exc}"
+                    )
             stop_event.set()
 
         read_thread = threading.Thread(target=_docker_to_redis, daemon=True)
@@ -290,8 +312,17 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
 
         stop_event.wait()  # Block until one side exits, then clean up
 
-    except (DockerException, APIError, NotFound, OSError, sync_redis.RedisError, RuntimeError) as exc:
-        logger.error(f"[Terminal] Proxy error for session {session_id}, container {container_id}: {exc}")
+    except (
+        DockerException,
+        APIError,
+        NotFound,
+        OSError,
+        sync_redis.RedisError,
+        RuntimeError,
+    ) as exc:
+        logger.error(
+            f"[Terminal] Proxy error for session {session_id}, container {container_id}: {exc}"
+        )
         if settings.ENVIRONMENT == "development":
             print(f"[Terminal] Proxy error for session {session_id[:8]}: {exc}")
     finally:
@@ -310,6 +341,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
 # ---------------------------------------------------------------------------
 # Mock stream (dev without Docker)
 # ---------------------------------------------------------------------------
+
 
 def _build_banner(scenario_id: str) -> str:
     try:

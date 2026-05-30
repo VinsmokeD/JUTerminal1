@@ -5,6 +5,7 @@ Tests terminal latency, SIEM events, and concurrent session handling.
 Run with:
   locust -f backend/tests/load_test.py --host=http://localhost --users 50 --spawn-rate 5 --run-time 5m
 """
+
 import time
 import uuid
 import sys
@@ -30,15 +31,13 @@ class CyberSimUser(HttpUser):
         username = f"load_user_{uuid.uuid4().hex[:8]}"
         password = "TestPass123!"
         resp = self.client.post(
-            "/api/auth/register",
-            json={"username": username, "password": password}
+            "/api/auth/register", json={"username": username, "password": password}
         )
         if resp.status_code == 200:
             self.token = resp.json().get("access_token")
         else:
             resp = self.client.post(
-                "/api/auth/login",
-                data={"username": username, "password": password}
+                "/api/auth/login", data={"username": username, "password": password}
             )
             self.token = resp.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {self.token}"}
@@ -55,7 +54,7 @@ class CyberSimUser(HttpUser):
         resp = self.client.post(
             "/api/sessions/start",
             json={"scenario_id": "SC-01", "role": "red"},
-            headers=self.headers
+            headers=self.headers,
         )
         if resp.status_code == 200:
             self.session_id = resp.json().get("session_id")
@@ -69,19 +68,16 @@ class CyberSimUser(HttpUser):
                 json={
                     "session_id": self.session_id,
                     "content": "Testing SQL injection",
-                    "tags": ["#finding"]
+                    "tags": ["#finding"],
                 },
-                headers=self.headers
+                headers=self.headers,
             )
 
     @task(3)
     def get_metrics(self):
         """Get session metrics."""
         if self.session_id:
-            self.client.get(
-                f"/api/scoring/metrics/{self.session_id}",
-                headers=self.headers
-            )
+            self.client.get(f"/api/scoring/metrics/{self.session_id}", headers=self.headers)
 
 
 class InstructorUser(HttpUser):
@@ -92,8 +88,7 @@ class InstructorUser(HttpUser):
     def on_start(self):
         """Authenticate as admin."""
         resp = self.client.post(
-            "/api/auth/login",
-            data={"username": "admin", "password": "CyberSimAdmin!"}
+            "/api/auth/login", data={"username": "admin", "password": "CyberSimAdmin!"}
         )
         if resp.status_code == 200:
             self.token = resp.json().get("access_token")

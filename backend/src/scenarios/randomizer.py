@@ -9,6 +9,7 @@ Randomization remains available only when the session start API explicitly asks
 for it. This keeps viva/demo runs reproducible while preserving the production
 variant machinery for later classroom cohorts.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -39,6 +40,7 @@ def _is_bypass(session_id: str) -> bool:
 # ---------------------------------------------------------------------------
 # Seed helpers
 # ---------------------------------------------------------------------------
+
 
 def get_seed(session_id: str) -> int:
     """Return a deterministic 32-bit integer seed from MD5(session_id)."""
@@ -118,6 +120,7 @@ def _primary_target_ip(scenario_id: str) -> str:
 # Public: generate_randomized_session_metadata
 # ---------------------------------------------------------------------------
 
+
 def generate_randomized_session_metadata(
     session_id: str,
     scenario_id: str,
@@ -142,7 +145,9 @@ def generate_randomized_session_metadata(
         db_pass = rng.choice(_SC01_DB_PASSES)
         primary_vuln = rng.choice(_SC01_VULNS)
         target_ip = _primary_target_ip(scid)
-        flag_value = f"FLAG{{NovaMed_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
+        flag_value = (
+            f"FLAG{{NovaMed_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
+        )
         return {
             "seed": get_seed(session_id),
             "scenario_variant": primary_vuln.upper(),
@@ -164,7 +169,9 @@ def generate_randomized_session_metadata(
         gpp_dir = rng.choice(_SC02_GPP_DIRS)
         spn = rng.choice(_SC02_KERBEROASTABLE_SPNS)
         target_ip = _primary_target_ip(scid)
-        flag_value = f"FLAG{{Nexora_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
+        flag_value = (
+            f"FLAG{{Nexora_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
+        )
         return {
             "seed": get_seed(session_id),
             "scenario_variant": f"Kerberoast/{spn.split('/')[0]}",
@@ -186,7 +193,9 @@ def generate_randomized_session_metadata(
         pretext = rng.choice(_SC03_PRETEXTS)
         relay = rng.choice(_SC03_RELAY_ROUTES)
         target_ip = _primary_target_ip(scid)
-        flag_value = f"FLAG{{Orion_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
+        flag_value = (
+            f"FLAG{{Orion_{hashlib.md5(session_id.encode()).hexdigest()[:8]}}}"  # noqa: S324
+        )
         return {
             "seed": get_seed(session_id),
             "scenario_variant": pretext.split("—")[0].strip(),
@@ -209,6 +218,7 @@ def generate_randomized_session_metadata(
 # ---------------------------------------------------------------------------
 # Public: build_iptables_rules
 # ---------------------------------------------------------------------------
+
 
 def build_iptables_rules(
     session_id: str,
@@ -246,6 +256,7 @@ def build_iptables_rules(
 # Public: build_flag_tarball
 # ---------------------------------------------------------------------------
 
+
 def build_flag_tarball(flag_path: str, flag_value: str) -> bytes:
     """
     Build an in-memory tar archive that places flag_value at flag_path.
@@ -263,6 +274,7 @@ def build_flag_tarball(flag_path: str, flag_value: str) -> bytes:
 # ---------------------------------------------------------------------------
 # Public: apply_randomization (Docker-SDK side-effects)
 # ---------------------------------------------------------------------------
+
 
 async def apply_randomization(
     session_id: str,
@@ -325,7 +337,9 @@ async def apply_randomization(
         flag_entry = flags.get("FLAG-SC03-1", {})
         flag_value = flag_entry.get("value", "")
         if flag_value:
-            _inject_flag_file(client, "cybersim-sc03-victim-1", "/tmp/flag.txt", flag_value)  # noqa: S108
+            _inject_flag_file(
+                client, "cybersim-sc03-victim-1", "/tmp/flag.txt", flag_value
+            )  # noqa: S108
 
 
 def _inject_flag_file(

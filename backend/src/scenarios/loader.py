@@ -3,6 +3,7 @@ Scenario YAML loader.
 Reads SC-01, SC-02, SC-03 specs from docs/scenarios/ and provides a
 typed interface consumed by the engine and routes.
 """
+
 from __future__ import annotations
 
 import re
@@ -63,17 +64,19 @@ def list_scenarios() -> list[dict[str, Any]]:
     for sid in _YAML_FILES:
         try:
             spec = load_scenario(sid)
-            result.append({
-                "id": spec["id"],
-                "title": spec["title"],
-                "description": spec.get("description", ""),
-                "difficulty": spec.get("difficulty", "intermediate"),
-                "duration_hours": round(spec.get("estimated_duration_minutes", 180) / 60, 1),
-                "frameworks": spec.get("frameworks", []),
-                "mitre_tactics": spec.get("tactics", []),
-                "network": spec.get("network"),
-                "phase_count": len(spec.get("phases", {})),
-            })
+            result.append(
+                {
+                    "id": spec["id"],
+                    "title": spec["title"],
+                    "description": spec.get("description", ""),
+                    "difficulty": spec.get("difficulty", "intermediate"),
+                    "duration_hours": round(spec.get("estimated_duration_minutes", 180) / 60, 1),
+                    "frameworks": spec.get("frameworks", []),
+                    "mitre_tactics": spec.get("tactics", []),
+                    "network": spec.get("network"),
+                    "phase_count": len(spec.get("phases", {})),
+                }
+            )
         except Exception as exc:  # noqa: BLE001
             result.append({"id": sid, "error": str(exc)})
     return result

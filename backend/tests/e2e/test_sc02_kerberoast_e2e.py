@@ -10,6 +10,7 @@ Prerequisites:
   - Backend reachable at http://localhost:8001
   - Elasticsearch reachable at http://localhost:9200
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -30,6 +31,7 @@ pytestmark = pytest.mark.skipif(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _compose(*args: str, check: bool = True) -> subprocess.CompletedProcess:
     return subprocess.run(
@@ -80,6 +82,7 @@ async def _poll_siem_events(
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def api_token(base_url: str) -> str:
     """Register a test user and return a JWT."""
@@ -109,6 +112,7 @@ def base_url() -> str:
 # ---------------------------------------------------------------------------
 # Main e2e test
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.e2e
 @pytest.mark.asyncio
@@ -190,6 +194,7 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
         # Trigger container provisioning by establishing WebSocket connection
         # and authenticating with the JWT.
         from httpx_ws import aconnect_ws
+
         ws_url = f"ws://localhost:8001/ws/{session_id}"
         try:
             async with aconnect_ws(ws_url, client) as ws:
@@ -250,12 +255,12 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
 
     assert len(matched) >= 1, "No sc02.kerberoast event arrived within 30s"
     ev = matched[0]
-    assert ev.get("detection_latency_ms", 99999) < 5000, (
-        f"Detection latency {ev.get('detection_latency_ms')} ms exceeds 5000 ms"
-    )
-    assert ev.get("mitre_technique") == "T1558.003", (
-        f"Expected MITRE T1558.003 but got {ev.get('mitre_technique')}"
-    )
+    assert (
+        ev.get("detection_latency_ms", 99999) < 5000
+    ), f"Detection latency {ev.get('detection_latency_ms')} ms exceeds 5000 ms"
+    assert (
+        ev.get("mitre_technique") == "T1558.003"
+    ), f"Expected MITRE T1558.003 but got {ev.get('mitre_technique')}"
 
     # ── Step 5: typo variant — must produce ZERO sc02.kerberoast events ──────
     typo_count_before = len(matched)
@@ -270,6 +275,6 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
         events_after = await _poll_siem_events(session_id, base_url, timeout_s=1)
 
     kerberoast_after = [e for e in events_after if e.get("rule_id") == "sc02.kerberoast"]
-    assert len(kerberoast_after) == typo_count_before, (
-        "Typo command GetUserSPNz.py triggered a sc02.kerberoast event — regex theater not dead!"
-    )
+    assert (
+        len(kerberoast_after) == typo_count_before
+    ), "Typo command GetUserSPNz.py triggered a sc02.kerberoast event — regex theater not dead!"

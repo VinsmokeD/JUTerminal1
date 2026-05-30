@@ -8,6 +8,7 @@ Covers:
   - Dedup key TTL (1 hour)
   - Scenario inference routing
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -17,6 +18,7 @@ from unittest.mock import AsyncMock, patch
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
 
 class FakeRedis:
     """Minimal in-memory Redis mock for lifecycle tests."""
@@ -93,6 +95,7 @@ class _FakePipeline:
 
 # ── keepalive key TTL ─────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_keepalive_key_has_correct_ttl():
     """Keepalive key must be set with ex=7200."""
@@ -116,6 +119,7 @@ async def test_keepalive_key_does_not_overwrite_with_shorter_ttl():
 
 # ── stale session eviction ────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_stale_session_evicted_from_active_map():
     """
@@ -124,8 +128,8 @@ async def test_stale_session_evicted_from_active_map():
     """
     redis = FakeRedis()
     ACTIVE_KEY = "cybersim:active_sessions"
-    stale_id   = "sess-stale-001"
-    alive_id   = "sess-alive-001"
+    stale_id = "sess-stale-001"
+    alive_id = "sess-alive-001"
 
     # Seed active map with both sessions
     await redis.hset(ACTIVE_KEY, stale_id, json.dumps({"scenario_id": "SC-02"}))
@@ -172,6 +176,7 @@ async def test_active_session_not_evicted_while_alive():
 
 # ── dedup key TTL ─────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_dedup_key_ttl_is_one_hour():
     """SIEM dedup keys must have exactly 3600s TTL."""
@@ -187,13 +192,14 @@ async def test_dedup_key_nx_prevents_duplicate():
     """Second SET NX on same dedup key must return None (already exists)."""
     redis = FakeRedis()
     key = "cybersim:siem:emitted:sess-002:sc02.kerberoast:doc-xyz"
-    first  = await redis.set(key, "1", ex=3600, nx=True)
+    first = await redis.set(key, "1", ex=3600, nx=True)
     second = await redis.set(key, "1", ex=3600, nx=True)
-    assert first  is True, "First SET NX should succeed"
+    assert first is True, "First SET NX should succeed"
     assert second is None, "Second SET NX on same key should return None (already exists)"
 
 
 # ── command cap alignment ─────────────────────────────────────────────────────
+
 
 def test_command_cap_matches_read_window():
     """
@@ -203,9 +209,9 @@ def test_command_cap_matches_read_window():
     import re
     from pathlib import Path
 
-    routes_src = (
-        Path(__file__).resolve().parents[1] / "src" / "ws" / "routes.py"
-    ).read_text(encoding="utf-8")
+    routes_src = (Path(__file__).resolve().parents[1] / "src" / "ws" / "routes.py").read_text(
+        encoding="utf-8"
+    )
 
     # Find lpush_capped call
     write_match = re.search(r"lpush_capped\([^)]+max_len=(\d+)\)", routes_src)
@@ -225,9 +231,11 @@ def test_command_cap_matches_read_window():
 
 # ── active_sessions payload decoding ─────────────────────────────────────────
 
+
 def test_decode_active_session_scenario_plain_string():
     """Legacy plain scenario_id strings decode correctly."""
     from src.siem.engine import _decode_active_session_scenario
+
     assert _decode_active_session_scenario(b"SC-02") == "SC-02"
     assert _decode_active_session_scenario("SC-01") == "SC-01"
 
@@ -235,6 +243,7 @@ def test_decode_active_session_scenario_plain_string():
 def test_decode_active_session_scenario_json_payload():
     """New JSON payload format extracts scenario_id."""
     from src.siem.engine import _decode_active_session_scenario
+
     payload = json.dumps({"scenario_id": "SC-03", "role": "red", "phase": 2})
     assert _decode_active_session_scenario(payload.encode()) == "SC-03"
 
@@ -242,5 +251,6 @@ def test_decode_active_session_scenario_json_payload():
 def test_decode_active_session_scenario_malformed_json():
     """Malformed JSON falls back to raw string without crashing."""
     from src.siem.engine import _decode_active_session_scenario
+
     result = _decode_active_session_scenario(b"{not-valid-json")
     assert isinstance(result, str)

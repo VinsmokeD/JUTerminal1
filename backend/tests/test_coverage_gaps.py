@@ -38,7 +38,9 @@ class _Result:
         return self._one
 
     def scalars(self):
-        return _ScalarResult(self._many if self._many else ([] if self._one is None else [self._one]))
+        return _ScalarResult(
+            self._many if self._many else ([] if self._one is None else [self._one])
+        )
 
     def fetchone(self):
         return self._one
@@ -239,7 +241,10 @@ async def test_reports_consolidated_endpoint_returns_session_fields(monkeypatch)
     )
 
     async def fake_insights(_session, _db):
-        return {"summary": "Student correlated command and alert", "recommendations": ["Document evidence"]}
+        return {
+            "summary": "Student correlated command and alert",
+            "recommendations": ["Document evidence"],
+        }
 
     monkeypatch.setattr("src.reports.routes.build_learning_insights", fake_insights)
 

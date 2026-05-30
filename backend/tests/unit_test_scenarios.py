@@ -11,6 +11,7 @@ Run with:
   cd backend
   pytest tests/unit_test_scenarios.py -v
 """
+
 import os
 import sys
 import pytest
@@ -22,6 +23,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # ────────────────────────────────────────────────────────────────────────────
 # SECTION 1: SCENARIO LOADING
 # ────────────────────────────────────────────────────────────────────────────
+
 
 def test_01_load_sc01_scenario():
     """Load SC-01 scenario YAML."""
@@ -134,6 +136,7 @@ def test_09_scenario_has_siem_rules():
 # SECTION 2: METHODOLOGY GATES
 # ────────────────────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
 async def test_ai_missing_key_returns_static_socratic_command_hint(monkeypatch):
     """Missing OpenRouter key should not leave meaningful command observations blank."""
@@ -182,12 +185,11 @@ async def test_ai_rate_limit_returns_static_socratic_command_hint(monkeypatch):
 @pytest.mark.asyncio
 async def test_ai_probe_failure_does_not_emit_offline_message(monkeypatch):
     from src.ai import monitor
+
     monkeypatch.setattr(monitor, "_probe_target", lambda h, p, **kw: False)
     monkeypatch.setattr(monitor.settings, "OPENROUTER_API_KEY", "")
     state = {"scenario_id": "SC-02", "phase": 1, "role": "red", "discoveries": {}}
-    result = await monitor.get_ai_hint(
-        "sess-probe", state, "nmap -sV 172.20.2.20", None
-    )
+    result = await monitor.get_ai_hint("sess-probe", state, "nmap -sV 172.20.2.20", None)
     assert result is None or "offline" not in result.lower()
     assert result is None or "starting up" not in result.lower()
 
@@ -196,6 +198,7 @@ def test_explicit_hint_bypasses_offline_guard(monkeypatch):
     """hint_level=1 must still return guidance even when target is unreachable."""
     import asyncio
     from src.ai import monitor
+
     monkeypatch.setattr(monitor, "_probe_target", lambda h, p, **kw: False)
     monkeypatch.setattr(monitor.settings, "OPENROUTER_API_KEY", "")
     state = {"scenario_id": "SC-02", "phase": 1, "role": "red", "discoveries": {}}
@@ -280,7 +283,9 @@ def test_11_sc01_gates_advanced_tools():
     dirb_gate = get_methodology_gate("SC-01", "dirb")
 
     # At least one should exist
-    assert gobuster_gate is not None or dirb_gate is not None, "SC-01 should gate directory enumeration"
+    assert (
+        gobuster_gate is not None or dirb_gate is not None
+    ), "SC-01 should gate directory enumeration"
 
 
 def test_12_sc02_gates_kerberos_tools():
@@ -314,6 +319,7 @@ def test_14_ungated_tools_return_none():
 # ────────────────────────────────────────────────────────────────────────────
 # SECTION 3: SIEM DETECTION RULES
 # ────────────────────────────────────────────────────────────────────────────
+
 
 def test_15_siem_rules_have_required_fields():
     """All SIEM rules should have required fields."""
@@ -353,10 +359,20 @@ def test_17_sc01_has_waf_rules():
     rules = spec.get("soc_detection", [])
 
     # WAF rules should detect SQL injection, path traversal, etc.
-    waf_rules = [r for r in rules if any(
-        keyword in r.get("trigger_regex", "").lower()
-        for keyword in ["sqlmap", "union select", "sql injection", "path traversal", "shell.php"]
-    )]
+    waf_rules = [
+        r
+        for r in rules
+        if any(
+            keyword in r.get("trigger_regex", "").lower()
+            for keyword in [
+                "sqlmap",
+                "union select",
+                "sql injection",
+                "path traversal",
+                "shell.php",
+            ]
+        )
+    ]
     assert len(waf_rules) > 0, "SC-01 should have WAF detection rules"
 
 
@@ -368,10 +384,15 @@ def test_18_sc02_has_ad_rules():
     rules = spec.get("soc_detection", [])
 
     # Look for AD-related rules in trigger_regex
-    ad_rules = [r for r in rules if any(
-        keyword in r.get("trigger_regex", "").lower() or keyword in r.get("event_template", "").lower()
-        for keyword in ["kerberos", "ad", "user", "enum", "spn", "getuserspn", "domain"]
-    )]
+    ad_rules = [
+        r
+        for r in rules
+        if any(
+            keyword in r.get("trigger_regex", "").lower()
+            or keyword in r.get("event_template", "").lower()
+            for keyword in ["kerberos", "ad", "user", "enum", "spn", "getuserspn", "domain"]
+        )
+    ]
     assert len(ad_rules) > 0, "SC-02 should have AD detection rules"
 
 
@@ -383,10 +404,15 @@ def test_19_sc03_has_phishing_rules():
     rules = spec.get("soc_detection", [])
 
     # Phishing rules in trigger_regex
-    phish_rules = [r for r in rules if any(
-        keyword in r.get("trigger_regex", "").lower() or keyword in r.get("event_template", "").lower()
-        for keyword in ["phishing", "email", "gophish", "campaign", "opened", "clicked"]
-    )]
+    phish_rules = [
+        r
+        for r in rules
+        if any(
+            keyword in r.get("trigger_regex", "").lower()
+            or keyword in r.get("event_template", "").lower()
+            for keyword in ["phishing", "email", "gophish", "campaign", "opened", "clicked"]
+        )
+    ]
     assert len(phish_rules) > 0, "SC-03 should have phishing detection rules"
 
 
@@ -414,6 +440,7 @@ def test_20_siem_rules_have_trigger_patterns():
 # SECTION 4: MITRE ATT&CK & CWE MAPPINGS
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def test_21_siem_rules_have_mitre_mappings():
     """All SIEM rules should have MITRE ATT&CK technique mappings."""
     from src.scenarios.loader import load_scenario
@@ -431,7 +458,9 @@ def test_21_siem_rules_have_mitre_mappings():
 
         # At least 80% should have mappings
         coverage = (len(rules) - len(unmapped)) / len(rules) * 100
-        assert coverage >= 80, f"{scenario_id}: Only {coverage:.1f}% have MITRE mappings (missing: {unmapped})"
+        assert (
+            coverage >= 80
+        ), f"{scenario_id}: Only {coverage:.1f}% have MITRE mappings (missing: {unmapped})"
 
 
 def test_22_siem_rules_have_cwe_mappings():
@@ -474,6 +503,7 @@ def test_23_mitre_techniques_format_valid():
 # ────────────────────────────────────────────────────────────────────────────
 # SECTION 5: SCENARIO EVENT COUNTS
 # ────────────────────────────────────────────────────────────────────────────
+
 
 def test_24_total_siem_events_across_scenarios():
     """Total SIEM events across all scenarios should be >= 12 (4 per scenario minimum)."""
@@ -533,6 +563,7 @@ def test_27_sc03_event_minimum():
 # SECTION 6: CACHE PERFORMANCE
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def test_28_yaml_loader_caches_results():
     """YAML loader should cache results (second load is instant)."""
     from src.scenarios.loader import load_scenario, invalidate_cache
@@ -574,15 +605,16 @@ def test_29_loader_invalidate_cache_works():
 # SECTION 7: SUMMARY REPORT
 # ────────────────────────────────────────────────────────────────────────────
 
+
 def test_30_summary_all_scenarios_valid():
     """Summary: All scenarios are valid and complete."""
     from src.scenarios.loader import load_scenario, invalidate_cache
 
     invalidate_cache()
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SCENARIO VALIDATION SUMMARY")
-    print("="*70)
+    print("=" * 70)
 
     summary = {}
     for scenario_id in ["SC-01", "SC-02", "SC-03"]:
@@ -593,7 +625,7 @@ def test_30_summary_all_scenarios_valid():
             "Phases": len(spec.get("phases", [])),
             "Gates": len(spec.get("methodology_gates", {})),
             "SIEM Rules": len(spec.get("soc_detection", [])),
-            "Status": "✅ VALID"
+            "Status": "✅ VALID",
         }
 
     for scenario_id, data in summary.items():
@@ -603,11 +635,12 @@ def test_30_summary_all_scenarios_valid():
         print(f"  Gates:      {data['Gates']}")
         print(f"  SIEM Rules: {data['SIEM Rules']}")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
 
 
 if __name__ == "__main__":
-    print("""
+    print(
+        """
     CyberSim Scenario Unit Tests
     ============================
 
@@ -624,4 +657,5 @@ if __name__ == "__main__":
 
     Run with output:
       pytest tests/unit_test_scenarios.py -v -s
-    """)
+    """
+    )

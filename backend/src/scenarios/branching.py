@@ -1,4 +1,5 @@
 """Branch inference and branch-aware hint helpers."""
+
 from __future__ import annotations
 
 import json
@@ -43,7 +44,9 @@ def _branch_cache_key(session_id: str) -> str:
     return f"session:{session_id}:active_branch"
 
 
-async def infer_active_branch(session_id: str, scenario_id: str, command: str) -> dict[str, str] | None:
+async def infer_active_branch(
+    session_id: str, scenario_id: str, command: str
+) -> dict[str, str] | None:
     """Infer and cache the active scenario branch from a submitted command."""
     current = await get_active_branch(session_id)
     for branch_id, label, pattern in _BRANCH_RULES.get(scenario_id, []):
@@ -59,16 +62,13 @@ async def get_active_branch(session_id: str) -> dict[str, str] | None:
     return cached if isinstance(cached, dict) else None
 
 
-def get_branch_hint(scenario_id: str, role: str, phase: int, branch_id: str | None, level: int) -> list[str] | None:
+def get_branch_hint(
+    scenario_id: str, role: str, phase: int, branch_id: str | None, level: int
+) -> list[str] | None:
     if not branch_id:
         return None
     data = _load_branch_hints()
-    phase_hints = (
-        data.get(scenario_id, {})
-        .get(role, {})
-        .get(str(phase), {})
-        .get(branch_id, {})
-    )
+    phase_hints = data.get(scenario_id, {}).get(role, {}).get(str(phase), {}).get(branch_id, {})
     hint = phase_hints.get(f"L{level}")
     if isinstance(hint, list):
         return hint

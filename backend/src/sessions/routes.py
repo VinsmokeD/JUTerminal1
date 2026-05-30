@@ -5,7 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from src.auth.routes import get_current_user, enforce_rate_limit
-from src.db.database import get_db, Session, User, CommandLog, SiemEvent, SiemTriage, ContainmentAction
+from src.db.database import (
+    get_db,
+    Session,
+    User,
+    CommandLog,
+    SiemEvent,
+    SiemTriage,
+    ContainmentAction,
+)
 from src.sandbox.manager import stop_scenario_container
 from src.cache.redis import cache_set, cache_get, cache_delete
 from src.activity.service import record_activity
@@ -64,15 +72,17 @@ async def start_session(
             detail={
                 "error": "active_session_exists",
                 "session_id": active_session.id,
-                "scenario_id": active_session.scenario_id
-            }
+                "scenario_id": active_session.scenario_id,
+            },
         )
 
     # Pre-generate session ID so metadata can be seeded deterministically
     import uuid as _uuid
+
     new_session_id = str(_uuid.uuid4())
 
     from src.scenarios.randomizer import generate_randomized_session_metadata
+
     is_automated_test_user = current_user.username.startswith(("test_", "test-"))
     session_metadata = (
         {}
@@ -89,7 +99,13 @@ async def start_session(
         session_metadata=session_metadata or None,
     )
     db.add(session)
-    await record_activity(db, current_user.id, "scenario_start", session.id, {"scenario_id": scenario_id, "role": body.role})
+    await record_activity(
+        db,
+        current_user.id,
+        "scenario_start",
+        session.id,
+        {"scenario_id": scenario_id, "role": body.role},
+    )
     await db.commit()
 
     # Cache session state for fast access
@@ -154,7 +170,8 @@ async def list_sessions(
     db: AsyncSession = Depends(get_db),
 ) -> list[dict]:
     result = await db.execute(
-        select(Session).where(Session.user_id == current_user.id)
+        select(Session)
+        .where(Session.user_id == current_user.id)
         .order_by(Session.started_at.desc())
         .limit(20)
     )
@@ -190,7 +207,9 @@ async def end_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
     session.completed_at = datetime.now(timezone.utc)
-    await record_activity(db, current_user.id, "scenario_complete", session.id, {"final_score": session.score})
+    await record_activity(
+        db, current_user.id, "scenario_complete", session.id, {"final_score": session.score}
+    )
     await db.commit()
 
     if session.container_id:
@@ -239,12 +258,14 @@ async def restart_session(
     # Snapshot current run
     meta = session.session_metadata or {}
     runs = meta.get("runs", [])
-    runs.append({
-        "phase": session.phase,
-        "score": session.score,
-        "ended_at": datetime.now(timezone.utc).isoformat()
-    })
-    
+    runs.append(
+        {
+            "phase": session.phase,
+            "score": session.score,
+            "ended_at": datetime.now(timezone.utc).isoformat(),
+        }
+    )
+
     # Reset metadata overrides for flags if any
     if "flags" in meta:
         meta["flags"] = {}
@@ -256,9 +277,8 @@ async def restart_session(
 
     # Clear command_log for this session
     from sqlalchemy import delete
-    await db.execute(
-        delete(CommandLog).where(CommandLog.session_id == session_id)
-    )
+
+    await db.execute(delete(CommandLog).where(CommandLog.session_id == session_id))
     await db.commit()
 
     # Reset cache
@@ -285,10 +305,18 @@ async def get_session_commands(
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Session not found")
     cmds = await db.execute(
-        select(CommandLog).where(CommandLog.session_id == session_id).order_by(CommandLog.created_at)
+        select(CommandLog)
+        .where(CommandLog.session_id == session_id)
+        .order_by(CommandLog.created_at)
     )
     return [
-        {"id": c.id, "command": c.command, "tool": c.tool, "phase": c.phase, "created_at": c.created_at.isoformat()}
+        {
+            "id": c.id,
+            "command": c.command,
+            "tool": c.tool,
+            "phase": c.phase,
+            "created_at": c.created_at.isoformat(),
+        }
         for c in cmds.scalars().all()
     ]
 
@@ -305,17 +333,21 @@ async def get_session_events(
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Session not found")
     evts = await db.execute(
-        select(SiemEvent).where(SiemEvent.session_id == session_id).order_by(SiemEvent.created_at.desc())
+        select(SiemEvent)
+        .where(SiemEvent.session_id == session_id)
+        .order_by(SiemEvent.created_at.desc())
     )
-    triage_rows = await db.execute(
-        select(SiemTriage).where(SiemTriage.session_id == session_id)
-    )
+    triage_rows = await db.execute(select(SiemTriage).where(SiemTriage.session_id == session_id))
     triage_by_event = {t.event_id: t for t in triage_rows.scalars().all()}
     return [
         {
-            "id": e.id, "severity": e.severity, "message": e.message,
-            "source": e.source, "mitre_technique": e.mitre_technique,
-            "source_ip": e.source_ip, "raw_log": e.raw_log,
+            "id": e.id,
+            "severity": e.severity,
+            "message": e.message,
+            "source": e.source,
+            "mitre_technique": e.mitre_technique,
+            "source_ip": e.source_ip,
+            "raw_log": e.raw_log,
             "created_at": e.created_at.isoformat(),
             "triage": _triage_dict(triage_by_event.get(e.id)),
         }
@@ -336,7 +368,9 @@ async def get_session_triage(
         raise HTTPException(status_code=404, detail="Session not found")
 
     triage = await db.execute(
-        select(SiemTriage).where(SiemTriage.session_id == session_id).order_by(SiemTriage.created_at)
+        select(SiemTriage)
+        .where(SiemTriage.session_id == session_id)
+        .order_by(SiemTriage.created_at)
     )
     return [_triage_dict(t) for t in triage.scalars().all()]
 
@@ -360,7 +394,9 @@ async def upsert_session_triage(
         raise HTTPException(status_code=404, detail="Session not found")
 
     event_result = await db.execute(
-        select(SiemEvent.id).where(SiemEvent.id == body.event_id, SiemEvent.session_id == session_id)
+        select(SiemEvent.id).where(
+            SiemEvent.id == body.event_id, SiemEvent.session_id == session_id
+        )
     )
     if not event_result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="SIEM event not found")
@@ -400,7 +436,9 @@ async def get_killchain_data(
         raise HTTPException(status_code=404, detail="Session not found")
 
     cmds = await db.execute(
-        select(CommandLog).where(CommandLog.session_id == session_id).order_by(CommandLog.created_at)
+        select(CommandLog)
+        .where(CommandLog.session_id == session_id)
+        .order_by(CommandLog.created_at)
     )
     commands_list = list(cmds.scalars().all())
 
@@ -410,12 +448,16 @@ async def get_killchain_data(
     events_list = list(evts.scalars().all())
 
     ai_interactions = await db.execute(
-        select(AIInteraction).where(AIInteraction.session_id == session_id).order_by(AIInteraction.created_at)
+        select(AIInteraction)
+        .where(AIInteraction.session_id == session_id)
+        .order_by(AIInteraction.created_at)
     )
     ai_list = list(ai_interactions.scalars().all())
 
     actions = await db.execute(
-        select(ContainmentAction).where(ContainmentAction.session_id == session_id).order_by(ContainmentAction.created_at)
+        select(ContainmentAction)
+        .where(ContainmentAction.session_id == session_id)
+        .order_by(ContainmentAction.created_at)
     )
     actions_list = list(actions.scalars().all())
 
@@ -423,27 +465,50 @@ async def get_killchain_data(
 
     return {
         "commands": [
-            {"id": c.id, "command": c.command, "tool": c.tool, "phase": c.phase, "created_at": c.created_at.isoformat()}
+            {
+                "id": c.id,
+                "command": c.command,
+                "tool": c.tool,
+                "phase": c.phase,
+                "created_at": c.created_at.isoformat(),
+            }
             for c in commands_list
         ],
         "siem_events": [
-            {"id": e.id, "severity": e.severity, "message": e.message, "source": e.source, "mitre_technique": e.mitre_technique, "created_at": e.created_at.isoformat()}
+            {
+                "id": e.id,
+                "severity": e.severity,
+                "message": e.message,
+                "source": e.source,
+                "mitre_technique": e.mitre_technique,
+                "created_at": e.created_at.isoformat(),
+            }
             for e in events_list
         ],
         "containment_actions": [
-            {"id": a.id, "action_type": a.action_type, "target_value": a.target_value, "status": a.status, "created_at": a.created_at.isoformat()}
+            {
+                "id": a.id,
+                "action_type": a.action_type,
+                "target_value": a.target_value,
+                "status": a.status,
+                "created_at": a.created_at.isoformat(),
+            }
             for a in actions_list
         ],
         "cause_effect": insights.get("cause_effect", []),
         "ai_interactions": [
             {
-                "id": a.id, "kind": a.kind, "hint_level": a.hint_level,
-                "command_context": a.command_context, "response_text": a.response_text,
-                "created_at": a.created_at.isoformat(), "flagged": a.flagged
+                "id": a.id,
+                "kind": a.kind,
+                "hint_level": a.hint_level,
+                "command_context": a.command_context,
+                "response_text": a.response_text,
+                "created_at": a.created_at.isoformat(),
+                "flagged": a.flagged,
             }
             for a in ai_list
         ],
-        "phases": session.phase
+        "phases": session.phase,
     }
 
 
@@ -461,6 +526,7 @@ async def check_session_readiness(
         raise HTTPException(status_code=404, detail="Session not found")
 
     from src.sandbox.readiness import get_session_readiness
+
     res = await get_session_readiness(session.id, session.scenario_id)
 
     meta = session.session_metadata or {}
@@ -511,6 +577,7 @@ async def submit_flag(
         raise HTTPException(status_code=404, detail="Session not found")
 
     from src.scenarios.engine import validate_flag, try_advance_phase
+
     res = await validate_flag(body.flag_value, session.scenario_id, session.id, db)
     if res.get("valid") and not res.get("already_captured"):
         await try_advance_phase(session.id, session.scenario_id, db)
@@ -533,9 +600,11 @@ async def submit_flag(
 async def _session_dict(s: Session) -> dict:
     meta = s.session_metadata or {}
     from src.cache.redis import cache_get
+
     cached = await cache_get(f"session:{s.id}:state") or {}
     flags_captured = cached.get("flags_captured", [])
     from src.scenarios.loader import get_flags
+
     try:
         total_flags = len(get_flags(s.scenario_id))
     except Exception:

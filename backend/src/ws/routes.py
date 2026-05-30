@@ -49,9 +49,7 @@ _HINT_PENALTIES = {
     "intermediate": {1: 5, 2: 10, 3: 20},
     "experienced": {1: 10, 2: 20, 3: 40},
 }
-_ACTIVE_SESSIONS_KEY = (
-    "cybersim:active_sessions"  # Redis hash: session_id → JSON session state
-)
+_ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → JSON session state
 
 router = APIRouter()
 
@@ -86,12 +84,8 @@ async def _send_reconnect_history(websocket: WebSocket, session_id: str) -> None
         {
             "type": "history",
             "data": {
-                "commands": list(
-                    reversed([str(c) for c in command_history if c is not None])
-                ),
-                "terminal": list(
-                    reversed([str(c) for c in terminal_chunks if c is not None])
-                ),
+                "commands": list(reversed([str(c) for c in command_history if c is not None])),
+                "terminal": list(reversed([str(c) for c in terminal_chunks if c is not None])),
             },
         }
     )
@@ -112,9 +106,7 @@ async def _handle_terminal_command(
             await send_json(
                 {
                     "type": "error",
-                    "data": {
-                        "message": "ROE acknowledgment required before issuing commands."
-                    },
+                    "data": {"message": "ROE acknowledgment required before issuing commands."},
                 }
             )
             return
@@ -251,11 +243,7 @@ async def _handle_terminal_command(
                 await db.execute(
                     update(CommandLog)
                     .where(CommandLog.id == cmd_row.id)
-                    .values(
-                        triggered_siem_events=[
-                            event["id"] for event in generated_siem_events
-                        ]
-                    )
+                    .values(triggered_siem_events=[event["id"] for event in generated_siem_events])
                 )
             await record_activity(
                 db,
@@ -281,9 +269,7 @@ async def _handle_terminal_command(
 
     tool_name = _gt(command)
     previous_branch = session_state.get("active_branch")
-    active_branch = await infer_active_branch(
-        session_id, session_state["scenario_id"], command
-    )
+    active_branch = await infer_active_branch(session_id, session_state["scenario_id"], command)
     if active_branch and active_branch != previous_branch:
         session_state["active_branch"] = active_branch
         await send_json({"type": "branch_update", "data": active_branch})
@@ -313,11 +299,7 @@ async def _handle_terminal_command(
             await db.execute(
                 update(CommandLog)
                 .where(CommandLog.id == cmd_log_id)
-                .values(
-                    triggered_siem_events=[
-                        event["id"] for event in generated_siem_events
-                    ]
-                )
+                .values(triggered_siem_events=[event["id"] for event in generated_siem_events])
             )
         await db.commit()
     if generated_siem_events:
@@ -342,8 +324,7 @@ async def _handle_terminal_command(
                 "data": {
                     "command": command,
                     "discoveries": discoveries,
-                    "tool": tool_name
-                    or (command.strip().split()[0] if command.strip() else ""),
+                    "tool": tool_name or (command.strip().split()[0] if command.strip() else ""),
                 },
             }
         )
@@ -354,16 +335,12 @@ async def _handle_terminal_command(
         if cmd_log_id is not None:
             async with AsyncSessionLocal() as db:
                 await db.execute(
-                    update(CommandLog)
-                    .where(CommandLog.id == cmd_log_id)
-                    .values(ai_hint_given=True)
+                    update(CommandLog).where(CommandLog.id == cmd_log_id).values(ai_hint_given=True)
                 )
                 await db.commit()
 
     async with AsyncSessionLocal() as db:
-        new_phase = await try_advance_phase(
-            session_id, session_state["scenario_id"], db
-        )
+        new_phase = await try_advance_phase(session_id, session_state["scenario_id"], db)
     if new_phase != session_state["phase"]:
         old_phase = session_state["phase"]
         session_state["phase"] = new_phase
@@ -469,9 +446,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 async with AsyncSessionLocal() as _db:
                     from sqlalchemy import select as _sel
 
-                    _r = await _db.execute(
-                        _sel(Session).where(Session.id == session_id)
-                    )
+                    _r = await _db.execute(_sel(Session).where(Session.id == session_id))
                     _s = _r.scalar_one_or_none()
                     _meta = _s.session_metadata if _s else {}
                 if _meta:
@@ -482,9 +457,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     )
             except Exception as _exc:
 
-                logging.getLogger(__name__).warning(
-                    "[WS] Randomization apply failed: %s", _exc
-                )
+                logging.getLogger(__name__).warning("[WS] Randomization apply failed: %s", _exc)
 
         asyncio.create_task(_apply_rand())
 
@@ -502,19 +475,18 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     # container is running — prevents spurious SIEM noise when Docker is unavailable.
     redis = get_redis_client()
     has_real_container = bool(
-        session_state["container_id"]
-        and not session_state["container_id"].startswith("mock-")
+        session_state["container_id"] and not session_state["container_id"].startswith("mock-")
     )
     if has_real_container:
-        await redis.hset(
-            _ACTIVE_SESSIONS_KEY, session_id, _active_session_payload(session_state)
-        )
+        await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, _active_session_payload(session_state))
         await redis.set(f"cybersim:session:{session_id}:alive", "1", ex=7200)
 
     # Subscribe to SIEM channels via Redis pub/sub. Terminal output is delivered
     # through the direct listener queue and still persisted to Redis for refresh.
     pubsub = redis.pubsub()
-    logging.getLogger("src.ws.routes").info(f"[WS Connect] Subscribing to SIEM channel: siem:{session_id}:feed")
+    logging.getLogger("src.ws.routes").info(
+        f"[WS Connect] Subscribing to SIEM channel: siem:{session_id}:feed"
+    )
     await pubsub.subscribe(f"siem:{session_id}:feed")
     send_lock = asyncio.Lock()
     command_queue: asyncio.Queue[str] = asyncio.Queue(maxsize=50)
@@ -530,9 +502,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             try:
                 # Query db to see if force_unlocked is set
                 async with AsyncSessionLocal() as db:
-                    sess_res = await db.execute(
-                        select(Session).where(Session.id == session_id)
-                    )
+                    sess_res = await db.execute(select(Session).where(Session.id == session_id))
                     sess = sess_res.scalar_one_or_none()
                     if sess:
                         meta = sess.session_metadata or {}
@@ -550,9 +520,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         }
                     )
                 else:
-                    res = await get_session_readiness(
-                        session_id, session_state["scenario_id"]
-                    )
+                    res = await get_session_readiness(session_id, session_state["scenario_id"])
                     readiness_status = res["status"]
                     await _send_json(
                         {
@@ -563,7 +531,6 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         }
                     )
             except Exception as e:
-    
 
                 logging.getLogger(__name__).warning("[WS] Readiness check error: %s", e)
             await asyncio.sleep(5)
@@ -581,15 +548,17 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     data = message["data"]
                     if isinstance(data, bytes):
                         data = data.decode("utf-8")
-                    
+
                     # Handle double-encoded JSON if it somehow happens, or raw dict-as-string
                     payload = json.loads(data)
                     if isinstance(payload, str):
                         payload = json.loads(payload)
-                        
+
                     await _send_json({"type": "siem_event", "data": payload})
                 except Exception as e:
-                    logging.getLogger("src.ws.routes").error(f"[WS SIEM] Error processing message: {e}")
+                    logging.getLogger("src.ws.routes").error(
+                        f"[WS SIEM] Error processing message: {e}"
+                    )
         except Exception as e:
             logging.getLogger("src.ws.routes").error(f"[WS SIEM] PubSub listener error: {e}")
 
@@ -616,9 +585,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         while True:
             command = await command_queue.get()
             try:
-                await _handle_terminal_command(
-                    session_id, session_state, command, _send_json
-                )
+                await _handle_terminal_command(session_id, session_state, command, _send_json)
             except Exception as exc:
                 logging.getLogger(__name__).warning(
                     "[WS] Command processing failed for session %s: %s",
@@ -636,9 +603,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     async def _send_hint(level: int) -> None:
         hint_text = None
         hint_steps = None
-        active_branch = session_state.get("active_branch") or await get_active_branch(
-            session_id
-        )
+        active_branch = session_state.get("active_branch") or await get_active_branch(session_id)
 
         hints_data = _load_hints(session_state["scenario_id"])
         sc_hints = hints_data.get(session_state["scenario_id"], {})
@@ -679,9 +644,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         try:
             async with AsyncSessionLocal() as db:
                 # Fetch current session to get hints_used list and current score
-                sess_res = await db.execute(
-                    select(Session).where(Session.id == session_id)
-                )
+                sess_res = await db.execute(select(Session).where(Session.id == session_id))
                 sess = sess_res.scalar_one_or_none()
                 if sess:
                     current_hints = list(sess.hints_used or [])
@@ -704,12 +667,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         ai_hint_given=True,
                     )
                 )
-                await record_activity(
-                    db, user_id, "hint_request", session_id, {"level": level}
-                )
+                await record_activity(db, user_id, "hint_request", session_id, {"level": level})
                 await db.commit()
         except Exception as _he:
-
 
             logging.getLogger(__name__).warning(
                 "[WS] Hint logging failed for %s: %s", session_id[:8], _he
@@ -891,9 +851,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 if new_mode in ("learn", "challenge"):
                     async with AsyncSessionLocal() as db:
                         await db.execute(
-                            update(Session)
-                            .where(Session.id == session_id)
-                            .values(ai_mode=new_mode)
+                            update(Session).where(Session.id == session_id).values(ai_mode=new_mode)
                         )
                         db.add(
                             CommandLog(

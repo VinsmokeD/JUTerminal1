@@ -80,13 +80,17 @@ def _is_incomplete_shell_fragment(command: str) -> bool:
         logger.info("[SIEM Bridge] Command is empty after stripping.")
         return True
     if _TRAILING_CONTINUATION.search(stripped):
-        logger.info(f"[SIEM Bridge] Command '{command}' filtered: ends with trailing continuation backslash.")
+        logger.info(
+            f"[SIEM Bridge] Command '{command}' filtered: ends with trailing continuation backslash."
+        )
         return True
     if _OPTION_ONLY.search(stripped):
         logger.info(f"[SIEM Bridge] Command '{command}' filtered: option/flag only command.")
         return True
     if _SCRIPT_ONLY.search(stripped):
-        logger.info(f"[SIEM Bridge] Command '{command}' filtered: script only invocation without target options.")
+        logger.info(
+            f"[SIEM Bridge] Command '{command}' filtered: script only invocation without target options."
+        )
         return True
     return False
 
@@ -105,7 +109,9 @@ def match_command_events(command: str, scenario_id: str) -> list[dict[str, Any]]
     if not matches:
         logger.info(f"[SIEM Bridge] Command '{command}' matched 0 rules in scenario {scenario_id}")
     else:
-        logger.info(f"[SIEM Bridge] Command '{command}' matched {len(matches)} rules in scenario {scenario_id}: {[m.get('id') for m in matches]}")
+        logger.info(
+            f"[SIEM Bridge] Command '{command}' matched {len(matches)} rules in scenario {scenario_id}: {[m.get('id') for m in matches]}"
+        )
 
     return matches[:4]
 
@@ -122,9 +128,7 @@ async def create_command_siem_events(
     db: AsyncSession,
 ) -> list[dict[str, Any]]:
     """Persist SIEM events for command-map matches and return WS payloads."""
-    source_ip = await get_kali_ip_for_session(session_id) or _source_ip_for_scenario(
-        scenario_id
-    )
+    source_ip = await get_kali_ip_for_session(session_id) or _source_ip_for_scenario(scenario_id)
     now = datetime.now(timezone.utc)
     payloads: list[dict[str, Any]] = []
 
@@ -133,9 +137,7 @@ async def create_command_siem_events(
     for matched in match_command_events(command, scenario_id):
         event_id = str(uuid.uuid4())
         raw_severity = str(matched.get("severity", "LOW"))
-        raw_log = _render_raw_log(
-            str(matched.get("raw_log", command)), command, source_ip, now
-        )
+        raw_log = _render_raw_log(str(matched.get("raw_log", command)), command, source_ip, now)
         category = matched.get("category")
         source = "educational_bridge"
 
@@ -186,9 +188,7 @@ async def create_command_siem_events(
     return payloads
 
 
-async def publish_command_siem_events(
-    session_id: str, events: list[dict[str, Any]]
-) -> None:
+async def publish_command_siem_events(session_id: str, events: list[dict[str, Any]]) -> None:
     channel = f"siem:{session_id}:feed"
     logger.info(f"[SIEM Bridge] Publishing {len(events)} events to channel: {channel}")
     for event in events:
