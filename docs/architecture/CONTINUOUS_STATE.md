@@ -13,6 +13,24 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-30] - Claude Sonnet 4.6 (V5 Phase 3 — Full surface elevation 3A–3G)
+
+* **Status**: Complete — build ✓ (9.62s), lint exit 0, 27/27 tests pass.
+* **Why**: Design V5 Phase 3 — elevate all core surfaces with micro-interactions, accessibility, and polish before the graduation defense.
+* **Where** (10 files changed, 308 ins / 47 del):
+  - `frontend/src/index.css` — added @keyframes: shake, dot-bounce (×3 stagger), slideFromTop, countUp. New utility classes: animate-shake, dot-bounce-1/2/3, siem-event-new, animate-count-up.
+  - `frontend/src/components/terminal/Terminal.jsx` — traffic-dot titlebar (decorative ●●● + blinking cursor), phosphor inset glow perf-gated by role.
+  - `frontend/src/components/siem/SiemFeed.jsx` — visually hidden aria-live assertive/polite announcer for new events, role=log on event list, isNew prop drives siem-event-new slide animation on newest row.
+  - `frontend/src/components/hints/AiHintPanel.jsx` — three-dot bounce typing indicator (replaces spinner); auto-grow textarea (max 96px); rotating placeholders every 4s; L1/L2/L3 hint quick buttons with score cost; copy/👍/👎 action row fades in on hover for AI messages.
+  - `frontend/src/components/workspace/WorkspaceTopBar.jsx` — useCountUp hook animates score over 600ms; border color tier (green/amber/red) on score badge; ◆◇ flag progress indicators.
+  - `frontend/src/components/workspace/FlagSubmitWidget.jsx` — live border-color format validation (green valid / red invalid as user types); animate-shake on wrong submission.
+  - `frontend/src/components/palette/CommandPalette.jsx` — added "End mission & debrief" + "Toggle SIEM live/pause" items with dispatch actions.
+  - `frontend/src/components/dashboard/ScenarioCard.jsx` — activeSessionId prop triggers RESUME badge + pulsing green dot.
+  - `frontend/src/pages/Dashboard.jsx` — passes activeMission?.id to ScenarioCard when scenario IDs match.
+  - `frontend/src/pages/Debrief.jsx` — ScoreRing number counts up 0→score over 1.2s in sync with SVG ring fill via useCountUp hook.
+* **What & How**: All changes are pure presentational/progressive enhancement — no API changes, no state-machine changes, no backend impact. CSS keyframes drive animations; React hooks (useCountUp) drive numeric reveals; aria-live handles screen-reader announcements. Perf-gating via inline opacity/shadow values (phosphor glow is just a CSS box-shadow — always fast).
+* **Verification**: `npm run build` → ✓ built in 9.62s. `npm run lint` → exit 0. `npm test` → 27 passed. No runtime errors expected (purely additive JSX + CSS).
+
 ### [2026-05-30] - Claude Sonnet 4.6 (V5 Phase 2 — Bug-fix & consolidation sweep)
 
 * **Status**: Complete — build green (7.80s), lint clean (exit 0), zero legacy dead-class references.
