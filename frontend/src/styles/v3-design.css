@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Motion verbs */
+  /* Motion verbs — canonical definitions live here */
   --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-pop:   cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-glide: cubic-bezier(0.4, 0, 0.2, 1);
@@ -12,10 +12,7 @@
   --dur-pop:   180ms;
   --dur-glide: 320ms;
 
-  /* Refined text (AA-contrast on void) */
-  --text-secondary: #9ba3b8;
-  --text-dim: #5a6178;
-  --text-ghost: #3a4054;
+  /* Text vars (--text-secondary/dim/ghost) are canonical in index.css :root — not redefined here */
 
   /* Elevation */
   --elev-1: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 2px rgba(0,0,0,0.4);
@@ -115,32 +112,36 @@
   .btn-v3-sm { padding: 6px 14px; font-size: 10px; }
   .btn-v3-lg { padding: 14px 28px; font-size: 13px; }
 
-  /* Crimson HUD Button (Red Team) */
+  /* Red Team Button — Duality identity (Option A)
+   * text+border = cs-red (#ff3b3b) for legibility
+   * glow (box-shadow) = hud-crimson (#ff0055) for neon accent layer */
   .btn-v3-red {
-    background: rgba(255, 0, 85, 0.06);
-    color: #ff3b3b;
-    border-color: rgba(255, 0, 85, 0.4);
-    box-shadow: 0 0 10px rgba(255, 0, 85, 0.1), inset 0 0 8px rgba(255, 0, 85, 0.05);
+    background: rgba(255, 59, 59, 0.06);    /* cs-red tint */
+    color: #ff3b3b;                          /* cs-red text */
+    border-color: rgba(255, 59, 59, 0.4);   /* cs-red border */
+    box-shadow: 0 0 10px rgba(255, 0, 85, 0.1), inset 0 0 8px rgba(255, 0, 85, 0.05);  /* hud-crimson glow */
   }
   .btn-v3-red:hover:not(:disabled) {
-    background: rgba(255, 0, 85, 0.18);
-    border-color: rgba(255, 0, 85, 0.9);
+    background: rgba(255, 59, 59, 0.18);
+    border-color: rgba(255, 59, 59, 0.9);
     color: #fff;
-    box-shadow: 0 0 20px rgba(255, 0, 85, 0.4), inset 0 0 12px rgba(255, 0, 85, 0.1);
+    box-shadow: 0 0 20px rgba(255, 0, 85, 0.4), inset 0 0 12px rgba(255, 0, 85, 0.1); /* hud-crimson glow */
   }
 
-  /* Cyan HUD Button (Blue Team) */
+  /* Blue Team Button — Duality identity (Option A)
+   * text+border = cs-blue (#3b8bff) for legibility
+   * glow (box-shadow) = hud-cyan (#00f3ff) for neon accent layer */
   .btn-v3-blue {
-    background: rgba(0, 243, 255, 0.06);
-    color: #00f3ff;
-    border-color: rgba(0, 243, 255, 0.4);
-    box-shadow: 0 0 10px rgba(0, 243, 255, 0.1), inset 0 0 8px rgba(0, 243, 255, 0.05);
+    background: rgba(59, 139, 255, 0.06);   /* cs-blue tint */
+    color: #3b8bff;                          /* cs-blue text */
+    border-color: rgba(59, 139, 255, 0.4);  /* cs-blue border */
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.1), inset 0 0 8px rgba(0, 243, 255, 0.05); /* hud-cyan glow */
   }
   .btn-v3-blue:hover:not(:disabled) {
-    background: rgba(0, 243, 255, 0.18);
-    border-color: rgba(0, 243, 255, 0.9);
+    background: rgba(59, 139, 255, 0.18);
+    border-color: rgba(59, 139, 255, 0.9);
     color: #fff;
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 12px rgba(0, 243, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4), inset 0 0 12px rgba(0, 243, 255, 0.1); /* hud-cyan glow */
   }
 
   /* Subtle HUD Button (Holographic Gray) */

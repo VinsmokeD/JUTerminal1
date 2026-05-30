@@ -32,15 +32,22 @@
   --border-glow: #2a2f40;
 
   --text-primary: #e8eaf0;
-  --text-secondary: #8890a4;
-  --text-dim: #4a5068;
+  --text-secondary: #9ba3b8;   /* canonical — matches txt-secondary in tailwind.config.js */
+  --text-dim: #5a6178;         /* canonical — matches txt-dim */
+  --text-ghost: #3a4054;       /* canonical — matches txt-ghost */
 
   /* Accents */
   --green-signal: #00ff88;
   --amber-warn: #ffaa00;
   --critical: #ff2244;
+  --magenta: #a855f7;
 
-  /* Typography */
+  /* Typography
+   * font-hud     = Orbitron  → hero wordmark + large HUD numerals ONLY
+   * font-display = Outfit    → headings, labels, all UI text
+   * font-mono    = JetBrains Mono → terminal, SIEM, scores, IPs, code
+   */
+  --font-hud: 'Orbitron', sans-serif;
   --font-display: 'Outfit', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 

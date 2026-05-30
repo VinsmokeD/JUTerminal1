@@ -13,6 +13,19 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-30] - Claude Sonnet 4.6 (V5 Phase 0 — Token unification & identity reconciliation)
+
+* **Status**: Complete — build green (948 modules, 7.05s), all acceptance greps pass.
+* **Why**: Triple token drift (same semantic colors defined 3× with different values), dual color identity with no rule (Duality and HUD neon colliding inside single components), Orbitron incorrectly first in `fontFamily.display` (causing `.font-display` to render Orbitron instead of Outfit), missing `magenta` token making Pro-Tip hints render unstyled.
+* **Where**:
+  - `frontend/tailwind.config.js` — added `magenta: '#a855f7'`; split `fontFamily` into `hud: ['Orbitron']` + `display: ['Outfit']` + `mono: ['JetBrains Mono']`; added two-tier color rule comment.
+  - `frontend/src/index.css :root` — fixed `--text-secondary #8890a4 → #9ba3b8`, `--text-dim #4a5068 → #5a6178`; added `--text-ghost: #3a4054`, `--font-hud: 'Orbitron'`, `--magenta: #a855f7`.
+  - `frontend/src/styles/v3-design.css :root` — removed duplicate `--text-secondary/--text-dim/--text-ghost` definitions that were the fragile import-order patch; kept motion vars and elevation.
+  - `frontend/src/styles/v3-design.css` buttons — fixed `.btn-v3-red` bg/border from hud-crimson → cs-red (glow stays hud-crimson); fixed `.btn-v3-blue` text+border from hud-cyan → cs-blue (glow stays hud-cyan). One identity per element.
+  - `DESIGN.md` — updated color palette section with two-tier rule table; updated typography table (Orbitron=hud only, Outfit=display).
+* **What & How**: Phase 0 of DESIGN_V5_ENHANCEMENT_PLAN.md. No component JSX changed. Pure token/CSS fixes. The `magenta` Tailwind token now resolves `border-magenta/30 text-magenta bg-magenta/5` in AiHintPanel.jsx's Pro-Tip tag.
+* **Verification**: `npm run build` exit 0 (948 modules). `grep` confirms v3-design.css `:root` has no `--text-secondary` redefinition. Canonical values in index.css match tailwind.config.js token values.
+
 * **Status**: Complete - verified zero runtime errors across all routes via Puppeteer and cleaned up redundant button classes.
 * **Why**: The user requested a review of the frontend to ensure stability after reporting an intermittent React `TypeError` (which was likely from a cached/stale build) and to keep the current design as it was deemed "good".
 * **Where**:

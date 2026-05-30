@@ -4,7 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* The Duality Palette */
+        /*
+         * TWO-TIER COLOR IDENTITY (V5 — Option A, locked 2026-05-30)
+         * ─────────────────────────────────────────────────────────────
+         * DUALITY (cs-red / cs-blue)   = semantic layer: text, borders, severity
+         * HUD NEON (hud-crimson / hud-cyan) = glow/accent layer: box-shadows only
+         * Never use hud-* for readable text or solid borders.
+         */
+
+        /* Tier 1 — Duality (semantic/legible) */
         'cs-red': {
           DEFAULT: '#ff3b3b',
           glow: '#ff3b3b40',
@@ -17,6 +25,12 @@ export default {
           dim: '#3b8bff15',
           surface: '#080d1a',
         },
+
+        /* Tier 2 — HUD Neon (glow/accent — box-shadows and halos only) */
+        'hud-void': '#030508',
+        'hud-cyan': '#00f3ff',
+        'hud-crimson': '#ff0055',
+
         /* Neutrals */
         void: '#08090c',
         'surface-1': '#0d0f14',
@@ -26,23 +40,26 @@ export default {
         'surface-hover': '#1d212c',
         'cs-border': '#1e2230',
         'cs-border-glow': '#2a2f40',
+
         /* Text (AA-contrast tuned) */
         'txt-primary': '#e8eaf0',
         'txt-secondary': '#9ba3b8',
         'txt-dim': '#5a6178',
         'txt-ghost': '#3a4054',
-        /* Accents */
+
+        /* Semantic accents */
         'green-signal': '#00ff88',
         'amber-warn': '#ffaa00',
         critical: '#ff2244',
-        /* HUD Immersive Glows */
-        'hud-void': '#030508',
-        'hud-cyan': '#00f3ff',
-        'hud-crimson': '#ff0055',
+        magenta: '#a855f7',      /* AI / Pro-Tip / hint accent */
       },
       fontFamily: {
-        display: ['"Orbitron"', '"Outfit"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"Cascadia Code"', '"Fira Code"', 'monospace'],
+        /* hud     — Orbitron: hero wordmark + large HUD numerals ONLY */
+        hud:     ['"Orbitron"', 'sans-serif'],
+        /* display — Outfit: all headings, labels, UI text */
+        display: ['"Outfit"', 'sans-serif'],
+        /* mono    — JetBrains Mono: terminal, SIEM, IPs, scores, code */
+        mono:    ['"JetBrains Mono"', '"Cascadia Code"', '"Fira Code"', 'monospace'],
       },
       fontSize: {
         /* CyberSim type scale v3 - [size, { lineHeight, letterSpacing, fontWeight }] */

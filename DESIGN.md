@@ -8,6 +8,10 @@
 
 ## 🎨 Color Palette
 
+> **Two-Tier Color Rule (V5, Option A — locked 2026-05-30)**
+> - **Tier 1 — Duality** (`cs-red` / `cs-blue`): semantic layer — text, borders, severity chips. Use for readable content.
+> - **Tier 2 — HUD Neon** (`hud-crimson` / `hud-cyan`): glow/accent layer — box-shadows, focus halos, laser lines only. Never for text or solid borders.
+
 ### 1. The Voids (Surfaces)
 *   **Void** (`#08090c`): The primary background. Deep, focused, zero-distraction.
 *   **Surface 1** (`#0d0f14`): Primary panel background.
@@ -15,27 +19,31 @@
 *   **Surface 3** (`#1a1d26`): Cards, hover states, interactive elements.
 *   **Surface 4** (`#22262f`): Tooltips, dropdowns, high-elevation elements.
 
-### 2. The Duality (Core Accents)
-*   **Cyber Red** (`#ff3b3b`): Red Team, Active Threats, Critical Alerts.
-    *   *Glow*: `rgba(255, 59, 59, 0.25)`
-*   **Cyber Blue** (`#3b8bff`): Blue Team, Defensive Actions, Trusted Traffic.
-    *   *Glow*: `rgba(59, 139, 255, 0.25)`
+### 2. The Duality — Tier 1 (text / borders / severity)
+*   **cs-red** (`#ff3b3b`): Red Team, Active Threats, Critical Alerts — text and border identity.
+*   **cs-blue** (`#3b8bff`): Blue Team, Defensive Actions, Trusted Traffic — text and border identity.
 
-### 3. Functional Accents
-*   **Precision Green** (`#00ff88`): "System Ready," Successful Commands, Safe Zones (UJ-inspired).
-*   **Amber Warn** (`#ffaa00`): Medium alerts, Pending actions, Rate limiting.
-*   **Critical Magenta** (`#ff2244`): System failures, Out-of-scope breaches.
+### 3. HUD Neon — Tier 2 (glow / box-shadows only)
+*   **hud-crimson** (`#ff0055`): Red Team neon glow layer (box-shadows, halos). Not for text/borders.
+*   **hud-cyan** (`#00f3ff`): Blue Team neon glow layer (box-shadows, halos). Not for text/borders.
+
+### 4. Functional Accents
+*   **green-signal** (`#00ff88`): System Ready, Successful Commands, Safe Zones.
+*   **amber-warn** (`#ffaa00`): Medium alerts, Pending actions.
+*   **critical** (`#ff2244`): System failures, Out-of-scope breaches.
+*   **magenta** (`#a855f7`): AI Tutor, Pro-Tip hints, hint accent.
 
 ---
 
-##  Typography
+## Typography
 
-*   **Display**: `Outfit`
-    *   Used for titles, headers, and brand elements.
-    *   Feel: Modern, structured, authoritative.
-*   **Monospace**: `JetBrains Mono`
-    *   Used for all technical data, terminal output, SIEM logs, and methodology steps.
-    *   Feel: Industrial, precise, code-first.
+| Role | Font | Where |
+|------|------|--------|
+| `font-hud` | **Orbitron** | Hero wordmark, large HUD numerals ONLY — never body text |
+| `font-display` | **Outfit** | All headings, labels, UI text, body prose |
+| `font-mono` | **JetBrains Mono** | Terminal output, SIEM logs, IPs, scores, code |
+
+> **Rule:** Never use Orbitron for readable body-length text — it is a geometric display face built for short glyphs only. Any element that previously used `.font-display` and rendered Orbitron (because tailwind put it first) now correctly renders Outfit.
 
 ---
 
