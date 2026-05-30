@@ -13,6 +13,17 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-30] - Claude Sonnet 4.6 (V5 Phase 2 — Bug-fix & consolidation sweep)
+
+* **Status**: Complete — build green (7.80s), lint clean (exit 0), zero legacy dead-class references.
+* **Why**: Design V5 Phase 2 — remove styling debt before later phases build on top: dead legacy button CSS, two `text-text-primary` typos, one legacy `btn btn-blue` usage in SiemFeed.
+* **Where**:
+  - `frontend/src/components/hints/AiHintPanel.jsx` — fixed two `text-text-primary` → `text-txt-primary` (error bubble + insight bubble `bubbleBg` strings).
+  - `frontend/src/components/siem/SiemFeed.jsx` — migrated triage save button from `btn btn-blue` to `btn-v3 btn-v3-blue btn-v3-sm`.
+  - `frontend/src/index.css` — deleted entire legacy `.btn`/`.btn-red`/`.btn-blue`/`.btn-ghost`/`.btn-sm` block (~50 lines). Sole button entry point is now `btn-v3*`.
+* **What & How**: Audit confirmed all JSX already used `btn-v3*` except the one SiemFeed triage button (found via `git diff`). `text-text-primary` typos were in uncommitted working-tree changes. After removing the CSS block, a final grep across all `*.jsx`/`*.js`/`*.css` under `frontend/src` found zero legacy references.
+* **Verification**: `npm run build` → ✓ built in 7.80s (exit 0). `npm run lint` → exit 0. `grep -rn "btn-red|btn-blue|btn-ghost|text-text-"` → 0 matches.
+
 ### [2026-05-30] - Claude Sonnet 4.6 (V5 Phase 1 — Performance mode for defense readiness)
 
 * **Status**: Complete — build green (948 modules, 7.98s).
