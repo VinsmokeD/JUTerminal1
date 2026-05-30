@@ -500,3 +500,8 @@ pm run build and ran unit tests successfully.
   - frontend/src/main.jsx - replaced the alert-on-everything handler with: swallow benign ResizeObserver loop errors (both variants) via the capture-phase 'error' listener + 'unhandledrejection' + window.onerror; log real errors to console (non-blocking) instead of alert().
   - frontend/src/hooks/useTerminal.js - ResizeObserver now defers fitAddon.fit() to requestAnimationFrame (+ try/catch), breaking the synchronous resize loop at the source.
 * **Verification**: `docker compose build frontend` (vite ✓ built in 19.72s, exit 0); recreated container; served bundle: 'Global Error' alert string => 0 occurrences (gone), 'ResizeObserver loop completed...' suppression => present. Frontend serves 200.
+
+### [2026-05-29] - Claude Code (Handoff: GEMINI_HANDOFF_PROMPTS.md authored)
+* **Status**: Complete - Wrote a self-contained continuation handoff for the Gemini CLI agent with detailed per-phase prompts.
+* **Where**: GEMINI_HANDOFF_PROMPTS.md [NEW, root].
+* **What & How**: Cold-start context (what CyberSim is, current verified state after 21 commits, the "docs overstate gaps - verify empirically" lesson, the test/rebuild gotchas), an Operating Protocol, and 9 ready-to-paste phase prompts (A Kali image/real terminal, B sandbox cap-drop hardening, C frontend lint-gate/tests/a11y/CSP, D mypy gate, E coverage honesty, F reliability/observability, G scenario kill-chain evidence, H docs truth pass + optional historical SC-04/05 purge, I ws/routes refactor). Each prompt has objective/steps/gate + the protocol references. Verification commands + hard rules included.
