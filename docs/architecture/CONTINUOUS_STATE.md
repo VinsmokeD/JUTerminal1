@@ -471,3 +471,8 @@ pm run build and ran unit tests successfully.
   - backend/tests/test_config.py [NEW] - 2 tests (default + env override).
   - Also confirmed: our code uses NO datetime.utcnow() (R6 deprecation is library-internal to python-jose); SC-04/SC-05 have ZERO dangling assets (F4 already clean).
 * **Verification**: 331 passed; black clean; backend rebuilt; LIVE - admin login still works with the default (token len 191) AND the warning "Default admin password in use ... Set ADMIN_PASSWORD" is emitted in backend logs. Production deploys with the default password will now fail-fast at startup.
+
+### [2026-05-29] - Claude Code (Phase 3/8: nginx security headers - R5)
+* **Status**: Complete - Added clickjacking/MIME/referrer/feature security headers to nginx; verified live. No code/tests affected.
+* **Where**: infrastructure/nginx/nginx.conf - server-level add_header (always) for X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy (geo/mic/cam off). CSP intentionally deferred (needs browser validation vs Vite SPA + xterm + WS). docs/SECURITY_THREAT_MODEL.md R5 updated.
+* **Verification**: `nginx -t` syntax ok; `nginx -s reload` clean (config is bind-mounted, no image rebuild); curl -I shows all 4 headers; frontend still 200 + /health ok.

@@ -122,7 +122,7 @@ Mapped to the **OWASP LLM Top-10**, defense-in-depth, **wired into the live path
 | R2 | Default admin credentials work out of the box (C3). | Med | Force a first-boot password change; document as demo-only; never ship in a shared deployment. |
 | R3 | Scenario containers not yet `--cap-drop ALL` / `no-new-privileges` / read-only rootfs. | Med | Phase 2b sandbox hardening. |
 | R4 | `scope_enforcer` is IP-based; external **hostnames** aren't ROE-blocked (egress is still prevented by isolation). | Low | Add a conservative external-FQDN check if hostname-based ROE teaching is desired. |
-| R5 | JWT in `localStorage`; no CSP yet. | Low | Phase 8: CSP + consider httpOnly cookie auth. |
+| R5 | JWT in `localStorage`. Security headers (nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy, Permissions-Policy) **added** in nginx 2026-05-29; CSP still pending. | Low | Add CSP after browser validation; consider httpOnly cookie auth. |
 | R6 | JWT uses deprecated `datetime.utcnow()`. | Info | Timezone-aware fix (Phase 3/10 cleanup). |
 
 ---
