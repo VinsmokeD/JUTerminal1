@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '../lib/motion'
 import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
 import CyberSimNav from '../components/nav/CyberSimNav'
@@ -54,29 +55,8 @@ const FILTER_CHIPS = [
 
 const DIFFICULTY_CHIPS = ['All', 'Beginner', 'Intermediate', 'Advanced']
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15
-    }
-  }
-}
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 15
-    }
-  }
-}
+const containerVariants = staggerContainer(0.04)
+const cardVariants = staggerItem
 
 export default function Dashboard() {
   const { scenarios, fetchScenarios, startSession } = useSessionStore()

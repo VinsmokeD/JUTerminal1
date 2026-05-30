@@ -178,7 +178,7 @@ function ProficiencyRow({ label, count, total, color, shadow }) {
         <span className="text-txt-primary">{percent}%</span>
       </div>
       <div className="w-full h-2 bg-void rounded-full overflow-hidden border border-cs-border/40">
-        <div className={`h-full ${color} ${shadow} transition-all duration-700`} style={{ width: `${percent}%` }} />
+        <div className={`h-full w-full ${color} ${shadow} transition-transform duration-300 origin-left`} style={{ transform: `scaleX(${percent / 100})` }} />
       </div>
     </div>
   )

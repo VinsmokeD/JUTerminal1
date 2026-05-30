@@ -54,7 +54,7 @@ export default function ScenarioCard({
         style={{
           transform: 'perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg))',
           transformStyle: 'preserve-3d',
-          transition: 'transform 220ms cubic-bezier(0.16,1,0.3,1), border-color 280ms, box-shadow 280ms',
+          transition: 'transform 220ms var(--ease-enter), border-color var(--dur-enter), box-shadow var(--dur-enter)',
           willChange: 'transform',
         }}
       >
