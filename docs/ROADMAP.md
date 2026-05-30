@@ -22,7 +22,7 @@ Current assessed completion: 78/100.
 | P0 | Start full core Docker stack and verify `/health`, auth, scenarios, and frontend |
 | P1 | Start each scenario profile and verify container health |
 | P1 | Verify login to scenario launch to terminal command to SIEM event to debrief |
-| P1 | Confirm Gemini fallback and rate limiting |
+| P1 | Confirm AI tutor (OpenRouter) fallback and rate limiting |
 | P2 | Add or refresh frontend lint config if `npm run lint` is expected in CI |
 | P2 | Remove or ignore generated caches from source folders |
 

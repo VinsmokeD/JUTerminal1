@@ -44,8 +44,8 @@ fi
 if [[ ! -f ".env" ]]; then
   fail "Missing .env. Run scripts/demo-bootstrap.sh or copy .env.demo.example."
 else
-  if grep -Eq 'your_google_ai_studio_key_here|replace_with_|REPLACE_WITH' .env; then
-    warn ".env still contains placeholder values. Gemini hints or auth may be incomplete."
+  if grep -Eq 'your_openrouter_api_key_here|your_google_ai_studio_key_here|replace_with_|REPLACE_WITH' .env; then
+    warn ".env still contains placeholder values. AI tutor (OpenRouter) hints or auth may be incomplete."
   fi
 fi
 

@@ -285,7 +285,7 @@ Addresses #38"
 ```bash
 # Good: Each commit does one thing
 git add backend/src/ai/monitor.py
-git commit -m "feat: integrate gemini for hints"
+git commit -m "feat: integrate openrouter for hints"
 git add tests/test_ai_monitor.py
 git commit -m "test: add AI monitor integration tests"
 

@@ -365,3 +365,17 @@ pm run build and ran unit tests successfully.
   - docs/architecture/MASTER_ENHANCEMENT_PLAN.md - F1 reclassified HIGH->LOW with code-line evidence; Phase 7 retitled "verify/harden" not "build".
 * **What & How**: Evidence that reconnect exists: backend _send_reconnect_history (ws/routes.py:79,456) replays terminal:{sid}:history + session:{sid}:commands; idempotent PTY stream (:452-453); alive/active_sessions grace keys (:469,727). Frontend useWebSocket.js: exponential-backoff auto-reconnect (:154-178), connection-state machine, pending-frame replay, ws_ping->ws_pong (:137), history rehydration (:92). The replay logic previously had ZERO test coverage; now characterized.
 * **Verification**: pytest --ignore=tests/e2e => 298 passed in 8.55s (after flushing test redis db/1). New test passes in isolation. Backend image rebuilt to sync the clarity fix.
+
+### [2026-05-29] - Claude Code (Phase 4/11: Gemini->OpenRouter purge + AI-config truth)
+* **Status**: Complete - Purged stale Gemini references from maintained docs+scripts, fixed a functional demo-deploy bug, and corrected the default AI model. MAJOR FINDING surfaced: the live OPENROUTER_API_KEY is a placeholder, so the AI tutor has been silently running on static fallback hints.
+* **Why**: F2/F3 doc drift + empirical verification of the AI path. Reading config and testing the live OpenRouter call (401 Unauthorized) revealed the key is `your_ope...` (placeholder) AND the model `deepseek/deepseek-v4-pro` is not a real OpenRouter model.
+* **Where**:
+  - scripts/demo-bootstrap.sh - was writing a .env with GEMINI_API_KEY/GEMINI_MODEL=gemini-2.5-flash -> a fresh demo VPS would MISCONFIGURE the AI entirely. Fixed to OPENROUTER_API_KEY + OPENROUTER_MODEL=deepseek/deepseek-chat-v3-0324. (FUNCTIONAL FIX, not cosmetic.)
+  - scripts/demo-day-check.sh - placeholder detection + warning text updated to OpenRouter.
+  - docs/ARCHITECTURE.md, FEATURES.md, README.md, ROADMAP.md, findings.md, GIT_WORKFLOW.md, architecture/network-and-environment.md - replaced Gemini misdescriptions of CyberSim's own AI with OpenRouter (DeepSeek). FEATURES.md now notes the silent-fallback risk.
+  - backend/src/config.py, .env.example, .env.demo.example, live .env - OPENROUTER_MODEL deepseek/deepseek-v4-pro -> deepseek/deepseek-chat-v3-0324 (the README-documented, real OpenRouter model). Now consistent across all 5 sources + root README.
+  - .gitignore - added .env.bak*/*.bak (backed up .env before editing it).
+  - docs/architecture/BASELINE_2026-05-29.md - added C5 (placeholder API key, HIGH) + C6 (invalid model, resolved); marked C4 resolved.
+* **What & How**: DELIBERATELY did NOT touch history/, final-report/chapters (academic Gemini-the-product references), reports/ snapshots, or CURRENT_STATUS_REPORT (dated). Only maintained, reviewer-facing docs + functional scripts. Verified the model is invalid-by-default by hitting OpenRouter live (401). The placeholder KEY cannot be fixed by me - it is the user's secret to provide.
+* **Verification**: grep for "gemini" across the 12 edited files => 0. Model string identical across config.py/.env/.env.example/.env.demo.example/README. Backend image rebuilt (exit 0); live backend now reports deepseek/deepseek-chat-v3-0324. pytest --ignore=tests/e2e => 298 passed. readiness still correctly reports openrouter degraded (placeholder key).
+* **ACTION REQUIRED BY USER**: set a real OPENROUTER_API_KEY in .env to enable live AI tutoring; until then the static fallback hints serve all sessions.

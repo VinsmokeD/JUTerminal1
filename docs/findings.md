@@ -16,5 +16,5 @@
 ## Constraints & Discoveries
 - CyberSim Architecture: React (Vite) + FastAPI (Python) + Docker.
 - Existing `claude.md` defines current project state (Phase 1 Infrastructure Complete).
-- Gemini Flash integration for AI monitoring.
+- OpenRouter (DeepSeek) integration for AI monitoring.
 - Need to implement Layer 1 SOPs in `architecture/` for Terminal, SIEM, and Scenario Engines.

@@ -43,7 +43,7 @@ The root `docker-compose.yml` defines the core services and three scenario profi
 | `src/sandbox` | Docker container lifecycle, terminal proxy, cleanup, noise |
 | `src/scenarios` | Scenario loading, hints, methodology gates |
 | `src/siem` | Command/log to event mapping |
-| `src/ai` | Gemini hint context and discovery tracking |
+| `src/ai` | OpenRouter (DeepSeek) hint context and discovery tracking |
 | `src/notes` | Notebook CRUD |
 | `src/scoring` | Score and metric calculation |
 | `src/reports` | Debrief/timeline/report generation |

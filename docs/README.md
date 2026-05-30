@@ -11,7 +11,7 @@ This folder is the maintained documentation entry point for CyberSim. Older repo
 | [FEATURES.md](FEATURES.md) | Implemented product capabilities and scenario scope |
 | [SETUP.md](SETUP.md) | Installation, local development, verification commands |
 | [TEAM_SETUP_GUIDE.md](TEAM_SETUP_GUIDE.md) | Full team machine setup, verification, reset, and troubleshooting guide |
-| [AI_SYSTEM.md](AI_SYSTEM.md) | Gemini hint system, safety boundaries, rate limits |
+| [AI_SYSTEM.md](AI_SYSTEM.md) | OpenRouter (DeepSeek) hint system, safety boundaries, rate limits |
 | [ROADMAP.md](ROADMAP.md) | Current status, risks, and next milestones |
 | [product/PRODUCT_EVOLUTION_PLAN.md](product/PRODUCT_EVOLUTION_PLAN.md) | Product north star, strategic pillars, and implementation roadmap |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Development workflow and quality gates |

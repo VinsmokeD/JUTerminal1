@@ -9,7 +9,7 @@
 | Red Team terminal | Partially verified | xterm.js frontend and backend WebSocket/sandbox modules exist; full Docker terminal path needs runtime verification |
 | Blue Team SIEM feed | Partially verified | Event maps and feed components exist; live stream needs full-stack verification |
 | Notes | Implemented | Backend routes and frontend notebook components exist |
-| AI hints | Implemented with fallback risk | Gemini integration exists; requires valid key and runtime safety testing |
+| AI hints | Implemented with fallback risk | OpenRouter (DeepSeek) integration exists; requires a valid OPENROUTER_API_KEY or it silently uses static fallback hints |
 | Scoring and debrief | Implemented | Scoring/report routes and timeline UI exist |
 | Instructor dashboard | Implemented | Role-gated backend and frontend page exist |
 | Docker scenario profiles | Implemented | Compose profiles exist for SC-01, SC-02, and SC-03 |

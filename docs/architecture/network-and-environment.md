@@ -154,11 +154,11 @@ COPY .zshrc /home/student/.zshrc
 ```bash
 # .env.example — copy to .env and fill in
 
-# AI Monitor
-GEMINI_API_KEY=your_google_ai_studio_key_here
-GEMINI_MODEL=gemini-1.5-flash-latest
-GEMINI_MAX_TOKENS=150
-GEMINI_CALLS_PER_MINUTE=15
+# AI Monitor (OpenRouter / DeepSeek)
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+OPENROUTER_MODEL=deepseek/deepseek-chat-v3-0324
+OPENROUTER_MAX_TOKENS=150
+AI_CALL_COOLDOWN_SECONDS=10
 
 # Database
 POSTGRES_URL=postgresql://cybersim:cybersim@postgres:5432/cybersim

@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # OpenRouter AI (OpenAI-compatible)
     OPENROUTER_API_KEY: str = ""
-    OPENROUTER_MODEL: str = "deepseek/deepseek-v4-pro"
+    OPENROUTER_MODEL: str = "deepseek/deepseek-chat-v3-0324"
     OPENROUTER_MAX_TOKENS: int = 300
     AI_CALL_COOLDOWN_SECONDS: int = 10
 

@@ -5,7 +5,7 @@ APP_DIR="${APP_DIR:-/opt/cybersim}"
 REPO_URL="${REPO_URL:-https://github.com/VinsmokeD/JUTerminal1.git}"
 REPO_REF="${REPO_REF:-main}"
 CYBERSIM_DOMAIN="${CYBERSIM_DOMAIN:-}"
-GEMINI_API_KEY="${GEMINI_API_KEY:-your_google_ai_studio_key_here}"
+OPENROUTER_API_KEY="${OPENROUTER_API_KEY:-your_openrouter_api_key_here}"
 
 if [[ "${EUID}" -ne 0 ]]; then
   echo "Run this script as root on the VPS." >&2
@@ -82,9 +82,9 @@ write_env_file() {
   cat > "${APP_DIR}/.env" <<ENV
 CYBERSIM_DOMAIN=${domain}
 
-GEMINI_API_KEY=${GEMINI_API_KEY}
-GEMINI_MODEL=gemini-2.5-flash
-GEMINI_MAX_TOKENS=150
+OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+OPENROUTER_MODEL=deepseek/deepseek-chat-v3-0324
+OPENROUTER_MAX_TOKENS=150
 AI_CALL_COOLDOWN_SECONDS=10
 
 POSTGRES_USER=cybersim
@@ -136,7 +136,7 @@ main() {
   echo "App dir: ${APP_DIR}"
   echo "Domain: ${domain}"
   echo
-  echo "If GEMINI_API_KEY is still a placeholder, edit ${APP_DIR}/.env before the demo."
+  echo "If OPENROUTER_API_KEY is still a placeholder, edit ${APP_DIR}/.env before the demo."
   echo "Then run:"
   echo "  cd ${APP_DIR} && bash scripts/demo-deploy.sh"
 }
