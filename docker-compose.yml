@@ -126,8 +126,8 @@ services:
       - "8001:8000"
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-deepseek/deepseek-chat-v3-0324}
-      - OPENROUTER_MAX_TOKENS=${OPENROUTER_MAX_TOKENS:-150}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-google/gemini-2.0-flash-001}
+      - OPENROUTER_MAX_TOKENS=${OPENROUTER_MAX_TOKENS:-500}
       - AI_CALL_COOLDOWN_SECONDS=${AI_CALL_COOLDOWN_SECONDS:-10}
       - POSTGRES_URL=postgresql+asyncpg://${POSTGRES_USER:-cybersim}:${POSTGRES_PASSWORD:-cybersim}@postgres:5432/${POSTGRES_DB:-cybersim}
       - REDIS_URL=redis://redis:6379/0

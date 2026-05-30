@@ -30,8 +30,13 @@ class Settings(BaseSettings):
 
     # OpenRouter AI (OpenAI-compatible)
     OPENROUTER_API_KEY: str = ""
-    OPENROUTER_MODEL: str = "deepseek/deepseek-chat-v3-0324"
-    OPENROUTER_MAX_TOKENS: int = 300
+    # Smarter model choices (set in .env to override):
+    #   google/gemini-2.0-flash-001       — fast, smart, affordable (default)
+    #   anthropic/claude-3-5-haiku-20241022 — best Socratic quality
+    #   anthropic/claude-3-5-sonnet-20241022 — maximum quality, higher cost
+    #   deepseek/deepseek-chat-v3-0324    — previous default, still good
+    OPENROUTER_MODEL: str = "google/gemini-2.0-flash-001"
+    OPENROUTER_MAX_TOKENS: int = 500
     AI_CALL_COOLDOWN_SECONDS: int = 10
 
     # AI Budgets & Security

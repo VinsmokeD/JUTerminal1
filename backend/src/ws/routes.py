@@ -492,7 +492,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     send_lock = asyncio.Lock()
     command_queue: asyncio.Queue[str] = asyncio.Queue(maxsize=50)
 
-    readiness_status = "initializing"
+    # If a real Kali container is already attached, unblock terminal input immediately.
+    # The full readiness_checker still runs in background and updates the frontend overlay
+    # with detailed checks. This prevents the 5-15s window where all keystrokes were
+    # silently dropped while target-container port probes ran.
+    readiness_status = (
+        "ready" if (container_id and not container_id.startswith("mock-")) else "initializing"
+    )
     force_unlocked = False
 
     async def _readiness_checker() -> None:
@@ -571,16 +577,30 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 return None
 
         while True:
-            frame = await asyncio.to_thread(_get_frame)
-            if frame:
-                await _send_json({"type": "terminal_output", "data": {"data": frame}})
-                for insight in await scan_output_chunk(
-                    session_id,
-                    session_state["scenario_id"],
-                    frame,
-                    session_state.get("phase"),
-                ):
-                    await _send_json({"type": "output_insight", "data": insight})
+            try:
+                frame = await asyncio.to_thread(_get_frame)
+                if frame:
+                    await _send_json({"type": "terminal_output", "data": {"data": frame}})
+                    try:
+                        for insight in await scan_output_chunk(
+                            session_id,
+                            session_state["scenario_id"],
+                            frame,
+                            session_state.get("phase"),
+                        ):
+                            await _send_json({"type": "output_insight", "data": insight})
+                    except Exception as _scan_exc:
+                        logging.getLogger(__name__).warning(
+                            "[WS] scan_output_chunk error session %s: %s",
+                            session_id[:8],
+                            _scan_exc,
+                        )
+            except Exception as _loop_exc:
+                logging.getLogger(__name__).warning(
+                    "[WS] terminal_output_to_ws error session %s: %s",
+                    session_id[:8],
+                    _loop_exc,
+                )
 
     async def _command_worker() -> None:
         while True:

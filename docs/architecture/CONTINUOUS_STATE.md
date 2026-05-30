@@ -518,6 +518,26 @@ pm run build and ran unit tests successfully.
 * **What & How**: CONTINUE_HERE.md is now THE resume document - cold-start context, the "verify empirically / docs overstate gaps" lesson, current verified state, Operating Protocol (test/rebuild gotchas), and per-phase prompts (A done; B sandbox hardening, C frontend lint/a11y/CSP, D mypy, E coverage, F reliability, G kill-chain evidence, H docs, I ws/routes refactor). Next unstarted phase = B.
 * **Verification**: docs-only; rename verified via git mv; grep confirms no leftover agent-specific framing (only the legitimate 'Gemini->OpenRouter' history line remains).
 
+### [2026-05-30] - Claude Code (Bugfix: terminal typing + live output + smarter AI model)
+* **Status**: Complete — three bugs fixed; backend rebuilt + healthy; 331 tests still pass.
+* **Why**: User reported: (1) terminal typing wrong (characters silently dropped on session start), (2) Kali terminal output only visible after page refresh, (3) request for smarter AI model.
+* **Root causes found**:
+  1. `readiness_status = "initializing"` was set at WS connect, ALL terminal_raw keystrokes were silently dropped until `get_session_readiness()` returned "ready". That function probes target container ports (via `container.exec_run()`) which takes 5–15s. Fix: immediately set `readiness_status = "ready"` if a real (non-mock) Kali container_id is attached. Full readiness check still runs in background for the frontend overlay.
+  2. `_terminal_output_to_ws()` asyncio task had no try/except around `scan_output_chunk()`. Any Redis error or output-pattern exception would crash the entire task loop silently, stopping all live terminal output. History still accumulated in Redis (explaining the "refresh shows output" symptom). Fix: nested try/except around `scan_output_chunk` and the outer loop.
+  3. AI model was `deepseek/deepseek-chat-v3-0324` at 150 max_tokens — too small for quality Socratic guidance.
+* **Where**:
+  - `backend/src/ws/routes.py` — readiness_status init (1-liner); `_terminal_output_to_ws` try/except
+  - `backend/src/config.py` — `OPENROUTER_MODEL = "google/gemini-2.0-flash-001"`, `OPENROUTER_MAX_TOKENS = 500`
+  - `docker-compose.yml` — default model + max_tokens updated to match
+  - `.env.example` — model options documented
+  - `.env` — updated `OPENROUTER_MODEL` + `OPENROUTER_MAX_TOKENS` directly (gitignored, live change)
+* **Verification**:
+  - `pytest --ignore=tests/e2e` → 331 passed (unchanged behavior)
+  - `black --check src/ tests/` → exit 0
+  - Backend rebuilt + redeployed; healthy in 35s
+  - `docker exec cybersim-backend-1 env | grep OPENROUTER` → MODEL=google/gemini-2.0-flash-001, MAX_TOKENS=500
+  - `/api/health/readiness` → status ok, openrouter ok
+
 ### [2026-05-30] - Claude Code (Phase D: mypy type-safety — 54 errors → 0, now a CI gate)
 * **Status**: Complete — mypy exits 0 across all 58 source files; promoted to a blocking CI gate alongside black. pytest still 331 passed.
 * **Why**: Phase D — make the type checker a real gate (was advisory with 54 errors). CONTINUE_HERE §4 mandates: "mypy src/ --ignore-missing-imports exits 0; pytest still 331; mypy is a CI gate."
