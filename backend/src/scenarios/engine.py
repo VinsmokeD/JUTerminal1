@@ -408,7 +408,7 @@ async def _check_completion_signals(
                 Note.tag == tag.lstrip("#"),
             )
         )
-        actual = result.scalar() or 0
+        actual = int(result.scalar() or 0)
         if actual < count:
             return False
 

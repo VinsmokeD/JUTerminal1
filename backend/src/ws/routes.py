@@ -3,6 +3,7 @@ import json
 import logging
 import queue as thread_queue
 import time
+from typing import Any
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
 from sqlalchemy import select, update, func
@@ -54,7 +55,7 @@ _ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → 
 router = APIRouter()
 
 
-def _active_session_payload(session_state: dict) -> str:
+def _active_session_payload(session_state: dict[str, Any]) -> str:
     """Return the Redis active-session value used by SIEM, noise, and cleanup."""
     return json.dumps(
         {
@@ -92,7 +93,7 @@ async def _send_reconnect_history(websocket: WebSocket, session_id: str) -> None
 
 
 async def _handle_terminal_command(
-    session_id: str, session_state: dict, command: str, send_json
+    session_id: str, session_state: dict[str, Any], command: str, send_json
 ) -> None:
     """Process complete commands without blocking raw PTY keystrokes."""
     if not command.strip():
@@ -397,7 +398,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         if not session:
             await websocket.close(code=4004)
             return
-        session_state = {
+        session_state: dict[str, Any] = {
             "scenario_id": session.scenario_id,
             "user_id": user_id,
             "role": session.role,
@@ -478,7 +479,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         session_state["container_id"] and not session_state["container_id"].startswith("mock-")
     )
     if has_real_container:
-        await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, _active_session_payload(session_state))
+        await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, _active_session_payload(session_state))  # type: ignore[misc]  # redis-py overloads return Awaitable|int
         await redis.set(f"cybersim:session:{session_id}:alive", "1", ex=7200)
 
     # Subscribe to SIEM channels via Redis pub/sub. Terminal output is delivered
@@ -906,7 +907,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         except (WebSocketDisconnect, RuntimeError):
             pass
         try:
-            await redis.hdel(_ACTIVE_SESSIONS_KEY, session_id)
+            await redis.hdel(_ACTIVE_SESSIONS_KEY, session_id)  # type: ignore[misc]  # redis-py overloads return Awaitable|int
         except (WebSocketDisconnect, RuntimeError):
             pass
         try:

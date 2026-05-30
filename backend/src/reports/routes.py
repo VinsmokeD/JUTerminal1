@@ -3,6 +3,7 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
+from typing import Any
 
 from src.auth.routes import get_current_user
 from src.db.database import get_db, Session, User, CommandLog, SiemEvent, Note, SiemTriage
@@ -152,7 +153,7 @@ async def get_consolidated_report(
     learning_insights_data = await build_learning_insights(session, db)
 
     # 7. Timeline
-    timeline = []
+    timeline: list[dict[str, Any]] = []
     for c in commands_list:
         cmd_str = c.command
         if cmd_str.startswith("[phase_advance]"):

@@ -315,7 +315,7 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
         # Load total notes for summary
         all_notes_res = await db.execute(select(Note).where(Note.session_id == session_id))
         all_notes = all_notes_res.scalars().all()
-        note_summary = _summarize_notes(all_notes)
+        note_summary = _summarize_notes(list(all_notes))
 
         # Load user skill level
         user_result = await db.execute(select(User).where(User.id == session.user_id))
@@ -575,7 +575,7 @@ def _summarize_notes(notes: list) -> dict[str, Any]:
             "has_iocs": False,
         }
 
-    tags = {}
+    tags: dict[str, int] = {}
     contents = []
     for note in notes:
         tags[note.tag] = tags.get(note.tag, 0) + 1

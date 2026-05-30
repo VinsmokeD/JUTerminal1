@@ -103,8 +103,8 @@ async def generate_report(session: Session, db: AsyncSession) -> str:
             classification = _table_cell(
                 (triage.classification or "investigating").replace("_", " ").title()
             )
-            notes = _table_cell(triage.notes or "")
-            sections += [f"| {event_label} | {classification} | {notes} |"]
+            triage_notes = _table_cell(triage.notes or "")
+            sections += [f"| {event_label} | {classification} | {triage_notes} |"]
         sections += [""]
 
     # Recommendations

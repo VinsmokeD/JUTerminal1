@@ -92,10 +92,12 @@ jobs:
         run: pip install -r requirements.txt
       # GATE: the tree is black-clean as of 2026-05-29; keep it that way.
       # Run `black src/ tests/` locally to fix.
+      # GATE: tree is black-clean as of 2026-05-29; keep it that way.
       - name: Black (GATE)
         run: black --check src/ tests/
-      - name: mypy (advisory)
-        continue-on-error: true
+      # GATE: tree is mypy-clean as of 2026-05-30 (54→0 errors); keep it that way.
+      # Run `mypy src/ --ignore-missing-imports` locally to check before committing.
+      - name: mypy (GATE)
         run: mypy src/ --ignore-missing-imports
 
   # ── GATE: frontend production build + lint ─────────────────────────────────

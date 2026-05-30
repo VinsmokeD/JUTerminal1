@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from docker import from_env as docker_from_env
 from docker.errors import NotFound, APIError
+from redis.exceptions import RedisError as RedisError
 
 from src.db.database import AsyncSessionLocal, Session, CommandLog
 
@@ -300,7 +301,7 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                 from src.cache.redis import _get as get_redis
 
                 redis = get_redis()
-                active = await redis.hgetall("cybersim:active_sessions")
+                active = await redis.hgetall("cybersim:active_sessions")  # type: ignore[misc]  # redis-py stub
                 for sid_raw, val_raw in active.items():
                     sid = sid_raw.decode() if isinstance(sid_raw, bytes) else sid_raw
                     alive = await redis.exists(f"cybersim:session:{sid}:alive")
@@ -344,7 +345,7 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                                 "[CLEANUP] DB update for stale session %s failed: %s", sid[:8], dbe
                             )
 
-                        await redis.hdel("cybersim:active_sessions", sid)
+                        await redis.hdel("cybersim:active_sessions", sid)  # type: ignore[misc]  # redis-py stub
                         logger.info("[CLEANUP] Evicted stale session %s from active map", sid[:8])
             except Exception as _re:
                 logger.warning("[CLEANUP] Redis stale-session eviction failed: %s", _re)
@@ -358,8 +359,8 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                         from src.cache.redis import _get as get_redis2
 
                         redis2 = get_redis2()
-                        active2 = await redis2.hgetall("cybersim:active_sessions")
-                    except redis.RedisError:
+                        active2 = await redis2.hgetall("cybersim:active_sessions")  # type: ignore[misc]  # redis-py stub
+                    except RedisError:
                         active2 = {}
                     # Also pull from DB for belt-and-suspenders
                     async with AsyncSessionLocal() as db:

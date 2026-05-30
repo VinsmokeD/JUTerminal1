@@ -194,7 +194,7 @@ def _match_dsl(source: dict, dsl: dict) -> bool:
         elif op == "range":
             for field, bounds in value.items():
                 try:
-                    v = float(_get_field(source, field) or 0)
+                    v = float(str(_get_field(source, field) or 0))
                     if "gte" in bounds and v < bounds["gte"]:
                         return False
                     if "lte" in bounds and v > bounds["lte"]:
@@ -233,7 +233,7 @@ async def _poll_elasticsearch() -> None:
             await asyncio.sleep(2.0)
             try:
                 redis = get_redis()
-                raw = await redis.hgetall(_ACTIVE_KEY)
+                raw = await redis.hgetall(_ACTIVE_KEY)  # type: ignore[misc]  # redis-py stub
             except Exception:
                 continue
 

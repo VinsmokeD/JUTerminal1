@@ -349,7 +349,7 @@ async def get_session_events(
             "source_ip": e.source_ip,
             "raw_log": e.raw_log,
             "created_at": e.created_at.isoformat(),
-            "triage": _triage_dict(triage_by_event.get(e.id)),
+            "triage": _triage_dict(t) if (t := triage_by_event.get(e.id)) else None,
         }
         for e in evts.scalars().all()
     ]
@@ -629,9 +629,7 @@ async def _session_dict(s: Session) -> dict:
     }
 
 
-def _triage_dict(triage: SiemTriage | None) -> dict | None:
-    if triage is None:
-        return None
+def _triage_dict(triage: SiemTriage) -> dict:
     return {
         "id": triage.id,
         "session_id": triage.session_id,

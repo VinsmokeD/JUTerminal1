@@ -4,7 +4,7 @@
 **You start cold** (a fresh chat has no memory of prior sessions). Read this file fully before doing anything.
 **Branch:** all work is on `master` (pushed to `origin/master`, GitHub `VinsmokeD/JUTerminal1`).
 
-**To resume in a new chat:** say *"Read CONTINUE_HERE.md, then continue from Phase &lt;X&gt;"* (next unstarted phase is **B**). Then follow the Operating Protocol (§4) for every change. Also read the files in §1.
+**To resume in a new chat:** say *"Read CONTINUE_HERE.md, then continue from Phase &lt;X&gt;"* (next unstarted phase is **D**). Then follow the Operating Protocol (§4) for every change. Also read the files in §1.
 
 ---
 
@@ -37,7 +37,7 @@ Repo root: `C:\Users\mmjal\Documents\JUTerminal1`. Stack runs via `docker compos
 ---
 
 ## 3. CURRENT STATE — what is already DONE (do NOT redo)
-24 commits on `master` (latest first): **Kali image built → REAL terminal (Phase A)** · CONTINUE_HERE doc · ResizeObserver popup fix · SC-04/05 removal · pre-commit hooks · nginx security headers · configurable admin creds · SIEM/evidence verification · scoring double-count fix · black + black-CI-gate · STRIDE threat model · `scope_enforcer.py` ROE gate · hermetic CI · AI-safety regression tests · backend healthcheck/nginx gating + isolation verifier · AI verified live · Gemini→OpenRouter purge + model fix · reconnect characterization test · pytest pin fix · API 307 fix · pytest-asyncio loop fix · Phase-0 baseline/hygiene.
+26 commits on `master` (latest first): **Phase C: ESLint gate + 27 tests + CSP-Report-Only** · **Phase B: sandbox cap-drop hardening (R3 partial)** · Kali image built → REAL terminal (Phase A) · CONTINUE_HERE doc · ResizeObserver popup fix · SC-04/05 removal · pre-commit hooks · nginx security headers · configurable admin creds · SIEM/evidence verification · scoring double-count fix · black + black-CI-gate · STRIDE threat model · `scope_enforcer.py` ROE gate · hermetic CI · AI-safety regression tests · backend healthcheck/nginx gating + isolation verifier · AI verified live · Gemini→OpenRouter purge + model fix · reconnect characterization test · pytest pin fix · API 307 fix · pytest-asyncio loop fix · Phase-0 baseline/hygiene.
 
 **Verified-good right now (do not "fix" these):**
 - **Kali terminal is REAL** — `cybersim-kali:latest` (9.1GB) built + verified (whoami=student, nmap 7.99, reaches SC-01 target, internet blocked). The Kali run is already hardened (cap_drop ALL, no-new-privileges, non-root). On a fresh machine: `docker build -t cybersim-kali:latest infrastructure/docker/kali`.
@@ -51,6 +51,10 @@ Repo root: `C:\Users\mmjal\Documents\JUTerminal1`. Stack runs via `docker compos
 - Black is a blocking CI gate; the tree is black-clean. Pre-commit config exists.
 
 **Kali image: BUILT + verified 2026-05-29** (`cybersim-kali:latest`, 9.1GB). Real terminal works (whoami=student, nmap 7.99, reaches SC-01 target 172.20.1.20 → HTTP 200, internet BLOCKED). **Phase A is DONE.** On a fresh machine, rebuild it: `docker build -t cybersim-kali:latest infrastructure/docker/kali`.
+
+**Phase B (2026-05-30) DONE**: sc01-db `no-new-privileges`; sc01-webapp + sc01-waf + sc03-phish `cap_drop ALL` + minimal caps. sc01-php/sc02-dc/sc02-fileserver/sc03-mailrelay/sc03-victim fail-open (documented rationale). 9/9 scenario containers internet-blocked; 331 tests pass.
+
+**Phase C (2026-05-30) DONE**: ESLint clean + CI gate; 27 Vitest component tests; CSP-Report-Only in nginx; backend 331 tests unaffected.
 
 ---
 

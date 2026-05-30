@@ -155,7 +155,7 @@ async def get_discoveries(session_id: str) -> dict[str, list[str]]:
     redis = get_redis()
     result = {}
     for kind in ("services", "paths", "vulns", "credentials"):
-        members = await redis.smembers(_key(session_id, kind))
+        members = await redis.smembers(_key(session_id, kind))  # type: ignore[misc]  # redis-py stub returns Awaitable|set
         result[kind] = sorted(members) if members else []
     return result
 

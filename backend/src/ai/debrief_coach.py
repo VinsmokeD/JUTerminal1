@@ -137,9 +137,10 @@ SIEM Events Triggered:
         final_score_val = report_data.get("score", {}).get("final_score", 100)
         enriched = dict(fallback)
         if final_score_val < 70:
-            enriched[
-                "summary"
-            ] += " Your final score reflects some difficulties, likely due to excessive hint usage or gate locks. Focus on thorough recon next time."
+            enriched["summary"] = str(enriched.get("summary", "")) + (
+                " Your final score reflects some difficulties, likely due to excessive hint"
+                " usage or gate locks. Focus on thorough recon next time."
+            )
         await cache_set(f"ai:debrief:{session_id}:result", enriched, ttl=86400)
         return enriched
 

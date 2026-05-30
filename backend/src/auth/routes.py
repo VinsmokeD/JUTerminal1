@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
 import hashlib
 
 import bcrypt
@@ -177,7 +178,7 @@ async def me(user: User = Depends(get_current_user)):
 async def update_profile(
     body: ProfileUpdate, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
 ):
-    changes = {}
+    changes: dict[str, Any] = {}
     if body.skill_level and body.skill_level in ("beginner", "intermediate", "experienced"):
         user.skill_level = body.skill_level
         changes["skill_level"] = body.skill_level

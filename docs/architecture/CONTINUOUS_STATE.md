@@ -518,6 +518,33 @@ pm run build and ran unit tests successfully.
 * **What & How**: CONTINUE_HERE.md is now THE resume document - cold-start context, the "verify empirically / docs overstate gaps" lesson, current verified state, Operating Protocol (test/rebuild gotchas), and per-phase prompts (A done; B sandbox hardening, C frontend lint/a11y/CSP, D mypy, E coverage, F reliability, G kill-chain evidence, H docs, I ws/routes refactor). Next unstarted phase = B.
 * **Verification**: docs-only; rename verified via git mv; grep confirms no leftover agent-specific framing (only the legitimate 'Gemini->OpenRouter' history line remains).
 
+### [2026-05-30] - Claude Code (Phase D: mypy type-safety — 54 errors → 0, now a CI gate)
+* **Status**: Complete — mypy exits 0 across all 58 source files; promoted to a blocking CI gate alongside black. pytest still 331 passed.
+* **Why**: Phase D — make the type checker a real gate (was advisory with 54 errors). CONTINUE_HERE §4 mandates: "mypy src/ --ignore-missing-imports exits 0; pytest still 331; mypy is a CI gate."
+* **Where** (all Python, no behavior change, black-clean after each edit):
+  - `src/api/playbooks.py` — annotated `parse_playbook_sections` return type + inner `current_section: dict[str, Any] | None`
+  - `src/auth/routes.py` — `changes: dict[str, Any]` (was inferred as `dict[str, str]`, blocking bool assignment)
+  - `src/notes/routes.py` — split reused `result` var → `session_result` / `notes_result` so mypy tracks the correct scalar type
+  - `src/reports/routes.py` — `timeline: list[dict[str, Any]]` annotation
+  - `src/reports/generator.py` — renamed collision variable `notes` → `triage_notes` inside triage loop
+  - `src/sessions/routes.py` — `_triage_dict` now accepts `SiemTriage` (not `| None`); call site fixed to `_triage_dict(t) if (t := ...) else None`
+  - `src/ws/routes.py` — `from typing import Any`; `session_state: dict[str, Any]`; two redis-py overload `# type: ignore[misc]` for `hset`/`hdel`
+  - `src/sandbox/daemon_noise.py` — `from redis.exceptions import RedisError`; replaced shadowing `redis.exceptions.RedisError` with `RedisError`; `http_tick: float`; one `# type: ignore[misc]` for `hgetall`
+  - `src/sandbox/container_cleanup.py` — same `RedisError` import pattern; three `# type: ignore[misc]` for redis-py awaitable overloads; switched to `RedisError` in except
+  - `src/ai/security.py` — `scenario_secrets: list[str] | None = None` (explicit Optional)
+  - `src/ai/discovery_tracker.py` — one `# type: ignore[misc]` for `smembers`
+  - `src/ai/debrief_coach.py` — `str(enriched.get(...)) + suffix` instead of `Sequence[str] +=`
+  - `src/ai/context_builder.py` — `tags: dict[str, int] = {}`; `list(all_notes)` cast at call site
+  - `src/instructor/analytics.py` — `blind_spot_rules: list[dict[str, Any]]`; `spot_counts: dict[str, dict[str, Any]]`
+  - `src/cache/redis.py` — one `# type: ignore[misc]` for `lrange`
+  - `src/siem/engine.py` — `float(str(...))` cast; one `# type: ignore[misc]` for `hgetall`
+  - `src/scenarios/engine.py` — `int(result.scalar() or 0)` cast for comparison
+  - `.github/workflows/ci.yml` — mypy step promoted from `continue-on-error` advisory to a GATE
+* **Verification**:
+  - `mypy src/ --ignore-missing-imports` → "Success: no issues found in 58 source files"
+  - `black --check src/ tests/` → exit 0 (89 files unchanged)
+  - `pytest --ignore=tests/e2e -p no:cacheprovider -q` → **331 passed** (unchanged behavior)
+
 ### [2026-05-30] - Claude Code (Phase C: Frontend quality — ESLint gate, component tests, CSP)
 * **Status**: Complete — ESLint clean + CI gate; 27 component tests passing in CI; CSP in Report-Only mode; backend test suite still 331.
 * **Why**: Phase C — raise frontend quality gates to match the black gate on the backend, and add CSP headers (R5 in the threat model).

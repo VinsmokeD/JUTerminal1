@@ -6,6 +6,7 @@ Provides class-level statistics, struggle detection, SVG score distribution, and
 from __future__ import annotations
 
 import math
+from typing import Any
 from datetime import datetime, timezone
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -379,7 +380,7 @@ async def analyze_cohort_blind_spots(db: AsyncSession, session_ids: list[str]) -
 
     # Let's map semantic alerts to note keywords
     # Key: alert signature keyword -> (Note keyword matches, Blind Spot title, Category)
-    blind_spot_rules = [
+    blind_spot_rules: list[dict[str, Any]] = [
         {
             "match": "SQL injection|sqlmap|WAF Rule 942100",
             "keywords": ["sql", "sqli", "injection", "database", "mariadb"],
@@ -418,8 +419,8 @@ async def analyze_cohort_blind_spots(db: AsyncSession, session_ids: list[str]) -
         },
     ]
 
-    spot_counts = {
-        r["title"]: {"triggered": 0, "documented": 0, "category": r["category"]}
+    spot_counts: dict[str, dict[str, Any]] = {
+        str(r["title"]): {"triggered": 0, "documented": 0, "category": r["category"]}
         for r in blind_spot_rules
     }
 

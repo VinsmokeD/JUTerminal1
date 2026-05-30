@@ -18,7 +18,7 @@ import logging
 import random
 import time
 import uuid
-import redis.exceptions
+from redis.exceptions import RedisError as RedisError
 from datetime import datetime, timezone
 
 import httpx
@@ -188,7 +188,7 @@ async def _publish_noise_event(session_id: str, scenario_id: str) -> None:
     try:
         redis = get_redis_client()
         await redis.publish(f"siem:{session_id}:feed", json.dumps(payload))
-    except redis.exceptions.RedisError as e:
+    except RedisError as e:
         logger.warning("[NOISE] Failed to publish noise event for session %s: %s", session_id, e)
 
 
@@ -200,7 +200,7 @@ async def _get_session_seed(redis: object, session_id: str) -> int | None:
         raw = await redis.get(f"session:{session_id}:rand_seed")  # type: ignore[attr-defined]
         if raw:
             return int(raw.decode() if isinstance(raw, bytes) else raw)
-    except redis.exceptions.RedisError as e:
+    except RedisError as e:
         logger.warning(
             "[NOISE] Failed to get session seed from redis for session %s: %s", session_id, e
         )
@@ -216,11 +216,11 @@ async def _run_noise_loop() -> None:
     Interval is intentionally long so noise doesn't overwhelm students who
     haven't typed any commands yet. Noise events are also dimmed in the UI.
     """
-    http_tick = 0
+    http_tick: float = 0.0
     try:
         redis = get_redis_client()
         await redis.delete(_ACTIVE_SESSIONS_KEY)
-    except redis.exceptions.RedisError as e:
+    except RedisError as e:
         logger.warning("[NOISE] Failed to clear active sessions key on startup: %s", e)
 
     while True:
@@ -230,8 +230,8 @@ async def _run_noise_loop() -> None:
 
         try:
             redis = get_redis_client()
-            active: dict[bytes, bytes] = await redis.hgetall(_ACTIVE_SESSIONS_KEY)
-        except redis.exceptions.RedisError as e:
+            active: dict[bytes, bytes] = await redis.hgetall(_ACTIVE_SESSIONS_KEY)  # type: ignore[misc]  # redis-py stub returns Awaitable|dict
+        except RedisError as e:
             logger.warning("[NOISE] Failed to get active sessions: %s", e)
             continue
 
@@ -265,7 +265,7 @@ async def _run_noise_loop() -> None:
 
                     if now - last_noise < min_between:
                         continue
-            except redis.exceptions.RedisError as e:
+            except RedisError as e:
                 logger.warning(
                     "[NOISE] Failed to get last noise time for session %s: %s", session_id, e
                 )
@@ -286,7 +286,7 @@ async def _run_noise_loop() -> None:
 
             try:
                 await redis.set(f"noise:{session_id}:last_event_time", str(now), ex=7200)
-            except redis.exceptions.RedisError as e:
+            except RedisError as e:
                 logger.warning(
                     "[NOISE] Failed to update last noise time for session %s: %s", session_id, e
                 )
@@ -326,7 +326,7 @@ async def _publish_noise_event_direct(
     try:
         redis = get_redis_client()
         await redis.publish(f"siem:{session_id}:feed", json.dumps(payload))
-    except redis.exceptions.RedisError as e:
+    except RedisError as e:
         logger.warning("[NOISE] Failed to publish noise event for session %s: %s", session_id, e)
 
 

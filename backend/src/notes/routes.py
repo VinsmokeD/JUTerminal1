@@ -60,16 +60,16 @@ async def list_notes(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> list[dict]:
-    result = await db.execute(
+    session_result = await db.execute(
         select(Session).where(Session.id == session_id, Session.user_id == current_user.id)
     )
-    if not result.scalar_one_or_none():
+    if not session_result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Session not found")
 
-    result = await db.execute(
+    notes_result = await db.execute(
         select(Note).where(Note.session_id == session_id).order_by(Note.created_at)
     )
-    return [_note_dict(n) for n in result.scalars()]
+    return [_note_dict(n) for n in notes_result.scalars()]
 
 
 @router.delete("/{note_id}")

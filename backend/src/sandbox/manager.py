@@ -23,6 +23,7 @@ except ImportError:
     _docker_available = False
 
     if not TYPE_CHECKING:
+
         class DockerException(Exception):
             pass
 
@@ -31,11 +32,12 @@ except ImportError:
 
         class NotFound(Exception):
             pass
+
     else:
         # Fallbacks for mypy when docker is not installed
         DockerException = Exception  # type: ignore[misc, assignment]
-        APIError = Exception         # type: ignore[misc, assignment]
-        NotFound = Exception         # type: ignore[misc, assignment]
+        APIError = Exception  # type: ignore[misc, assignment]
+        NotFound = Exception  # type: ignore[misc, assignment]
 
 
 from src.config import settings

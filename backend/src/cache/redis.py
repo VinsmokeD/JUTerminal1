@@ -151,7 +151,7 @@ async def lrange(key: str, start: int = 0, end: int = -1) -> list[Any]:
         items = _memory_lists.get(key, [])
         stop = None if end == -1 else end + 1
         return items[start:stop]
-    items = await _get().lrange(key, start, end)
+    items = await _get().lrange(key, start, end)  # type: ignore[misc]  # redis-py stub returns Awaitable|list
     result = []
     for item in items:
         try:

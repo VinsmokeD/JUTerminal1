@@ -5,6 +5,7 @@ Serves comprehensive IR playbooks for SC-01, SC-02, SC-03
 
 from fastapi import APIRouter, HTTPException
 from pathlib import Path
+from typing import Any
 import json
 import anyio
 
@@ -233,10 +234,10 @@ def get_playbook_title(scenario_id: str) -> str:
     return titles.get(scenario_id, f"Playbook for {scenario_id}")
 
 
-def parse_playbook_sections(content: str) -> list:
+def parse_playbook_sections(content: str) -> list[dict[str, Any]]:
     """Parse markdown playbook into sections"""
-    sections = []
-    current_section = None
+    sections: list[dict[str, Any]] = []
+    current_section: dict[str, Any] | None = None
 
     for line in content.split("\n"):
         if line.startswith("## "):

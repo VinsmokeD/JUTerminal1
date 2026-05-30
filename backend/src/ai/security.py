@@ -277,7 +277,9 @@ def _redact_for_ai_impl(target_knowledge: dict, current_phase: int = 1) -> dict:
     return redacted
 
 
-def validate_ai_output(text: str | None, scenario_secrets: list[str] = None) -> tuple[bool, str]:
+def validate_ai_output(
+    text: str | None, scenario_secrets: list[str] | None = None
+) -> tuple[bool, str]:
     """
     Reject or scrub responses that leak known credentials, contain HTML, or verbatim echo prompts.
     (OWASP LLM05 - Improper Output Handling & LLM07 - System Prompt Leakage)
