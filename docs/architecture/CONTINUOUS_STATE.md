@@ -701,3 +701,32 @@ pm run build and ran unit tests successfully.
   - `cd frontend && npm run build` → exit 0 (8.40s, no warnings)
   - `npm test -- --run` → 4 files · **27 passed**
   - Grep confirms zero remaining raw cubic-bezier values in JSX inline styles outside ScenarioCard (which now uses CSS vars)
+
+---
+
+### [2026-05-30] - Claude Sonnet 4.6 (Design V5 Phase 5 — Accessibility & Responsive Sweep)
+
+* **Status**: COMPLETE ✅
+* **Why**: Phase 5 of the V5 Enhancement Plan. Four audit areas: contrast (txt-dim ≈3.6:1 below 4.5:1 WCAG AA for body text), focus trapping (Modal/Palette let Tab escape to page background), viewport units (min-h-screen clips on mobile browsers with address bars), and readable text that was using the dim color.
+* **Files modified**:
+  - `frontend/src/hooks/useFocusTrap.js` ← **new**: reusable focus-trap hook
+  - `frontend/src/components/ui/Modal.jsx` — useFocusTrap wired; rAF focus on open
+  - `frontend/src/components/palette/CommandPalette.jsx` — useFocusTrap via panelRef
+  - `frontend/src/pages/Auth.jsx` — sign-in paragraph contrast + min-h-dvh
+  - `frontend/src/pages/BlueWorkspace.jsx` — loading state contrast + min-h-dvh
+  - `frontend/src/pages/RedWorkspace.jsx` — loading state contrast + min-h-dvh
+  - `frontend/src/pages/Debrief.jsx` — coaching/loading text contrast + min-h-dvh
+  - `frontend/src/pages/Dashboard.jsx` — min-h-dvh
+  - `frontend/src/pages/Landing.jsx` — min-h-dvh
+  - `frontend/src/pages/Settings.jsx` — min-h-dvh
+  - `frontend/src/pages/Profile.jsx` — min-h-dvh (both main + loading function)
+  - `frontend/src/pages/Onboarding.jsx` — min-h-dvh
+  - `frontend/src/pages/InstructorDashboard.jsx` — min-h-dvh
+  - `frontend/src/index.css` — workspace-shell responsive min-height: 100dvh
+* **What & How**:
+  - useFocusTrap: finds all focusable elements within a container ref, intercepts Tab/Shift+Tab to cycle within them, restores previously-focused element on deactivation. Applied to Modal and CommandPalette.
+  - Contrast: txt-dim (#5a6178 on void #08090c ≈ 3.6:1) kept for decorative metadata labels; readable body text sentences upgraded to txt-secondary (#9ba3b8 ≈ 5.4:1). Targeted the instances most likely to be read: auth subtitle, loading messages, coaching state paragraph.
+  - min-h-dvh: dvh (dynamic viewport height) accounts for browser chrome (address bars) on mobile. Swap is safe on all evergreen browsers; provides no visible change on desktop.
+* **Verification**:
+  - `cd frontend && npm run build` → exit 0 (7.93s)
+  - `npm test -- --run` → 4 files · **27 passed**
