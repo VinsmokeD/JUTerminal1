@@ -105,15 +105,39 @@ const renderTextWithMarkdown = (text) => {
   return escaped
 }
 
+const CHAT_STORAGE_KEY = (sessionId) => `cs.ai.chat.${sessionId}`
+const MAX_PERSISTED_HINTS = 50
+
 export default function AiHintPanel({ onSubmitQuestion, connectionState }) {
-  const [hints, setHints] = useState([])
+  const { phase, currentSession, activeBranch } = useSessionStore()
+  const sessionId = currentSession?.id
+
+  // Load persisted chat on mount; fallback to empty if none stored
+  const [hints, setHints] = useState(() => {
+    if (!sessionId) return []
+    try {
+      const stored = localStorage.getItem(CHAT_STORAGE_KEY(sessionId))
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
   const [loading, setLoading] = useState(false)
   const [inputText, setInputText] = useState('')
   const [showInfo, setShowInfo] = useState(false)
-  const { phase, currentSession, activeBranch } = useSessionStore()
   const messagesEndRef = useRef(null)
 
   const role = currentSession?.role || 'red'
+
+  // Persist hints to localStorage whenever they change
+  useEffect(() => {
+    if (!sessionId) return
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY(sessionId), JSON.stringify(hints.slice(0, MAX_PERSISTED_HINTS)))
+    } catch {
+      // quota exceeded — silently skip
+    }
+  }, [hints, sessionId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

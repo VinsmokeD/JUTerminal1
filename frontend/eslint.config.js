@@ -15,6 +15,7 @@ const browserGlobals = {
   WebSocket: 'readonly',
   atob: 'readonly',
   btoa: 'readonly',
+  Node: 'readonly',
   cancelAnimationFrame: 'readonly',
   clearInterval: 'readonly',
   clearTimeout: 'readonly',

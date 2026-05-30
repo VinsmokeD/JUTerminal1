@@ -76,7 +76,9 @@ USER student
 WORKDIR /home/student
 
 # Shell prompt — shows current scenario context
+# sed strips Windows CRLF (\r) that can be introduced when building on Windows
 COPY --chown=student:student .bashrc /home/student/.bashrc
+RUN sed -i 's/\r$//' /home/student/.bashrc
 
 # Pre-create working directories
 RUN mkdir -p /home/student/{recon,exploits,loot,notes,tools}

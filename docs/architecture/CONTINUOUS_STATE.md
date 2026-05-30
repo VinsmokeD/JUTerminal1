@@ -518,6 +518,23 @@ pm run build and ran unit tests successfully.
 * **What & How**: CONTINUE_HERE.md is now THE resume document - cold-start context, the "verify empirically / docs overstate gaps" lesson, current verified state, Operating Protocol (test/rebuild gotchas), and per-phase prompts (A done; B sandbox hardening, C frontend lint/a11y/CSP, D mypy, E coverage, F reliability, G kill-chain evidence, H docs, I ws/routes refactor). Next unstarted phase = B.
 * **Verification**: docs-only; rename verified via git mv; grep confirms no leftover agent-specific framing (only the legitimate 'Gemini->OpenRouter' history line remains).
 
+### [2026-05-30] - Claude Code (Bugfix: CRLF in Kali .bashrc + AI chat persistence)
+* **Status**: Complete — CRLF fix applied to running container immediately; manager.py applies it on every future session start; Dockerfile ensures clean image rebuilds; AI chat persists to localStorage per session.
+* **Why**: User reported broken Kali terminal (`bash: $'\r': command not found`, `syntax error near $'{\r''`) and garbled prompt (`] $ ent@kali:~ [SC-01` instead of `student@kali:~$`). Root cause: `.bashrc` had Windows CRLF endings; PS1 variable included trailing `\r`, causing cursor to jump to column 0 after printing the prompt. User also requested AI chat history to survive page refresh.
+* **Where**:
+  - `backend/src/sandbox/manager.py` — added `_fix_bashrc_crlf(container)` (runs `sed -i 's/\r$//'` as `student` user, the file owner — must NOT be root because cap_drop=ALL removes DAC_OVERRIDE); called after `_repair_kali_tools` in both `_start_sync` and `_ensure_sync`
+  - `infrastructure/docker/kali/Dockerfile` — added `RUN sed -i 's/\r$//' /home/student/.bashrc` after COPY; permanent fix for future image rebuilds
+  - `.gitattributes` — added `*.bashrc text eol=lf` and `infrastructure/docker/**/.bashrc text eol=lf` rules so git normalizes future edits
+  - `frontend/src/components/hints/AiHintPanel.jsx` — hints state initialized from `localStorage.getItem(cs.ai.chat.{sessionId})`; persisted to localStorage on every change; up to 50 messages stored per session; survives page refresh and machine restart
+  - `frontend/eslint.config.js` — added `Node: 'readonly'` browser global (missed by the Phase C ESLint pass; used in Button.test.jsx)
+* **Immediate fix**: `docker exec -u student kali-a3bb04c6 sed -i 's/\r$//' /home/student/.bashrc` applied to running container directly.
+* **Verification**:
+  - `cat -A /home/student/.bashrc | grep '^M'` → 0 CRLF remaining in running container
+  - `pytest --ignore=tests/e2e` → 331 passed
+  - `npm run lint` → exit 0 (clean)
+  - `npm test` → 27 passed
+  - Backend + frontend rebuilt and redeployed; both healthy
+
 ### [2026-05-30] - Claude Code (Bugfix: terminal typing + live output + smarter AI model)
 * **Status**: Complete — three bugs fixed; backend rebuilt + healthy; 331 tests still pass.
 * **Why**: User reported: (1) terminal typing wrong (characters silently dropped on session start), (2) Kali terminal output only visible after page refresh, (3) request for smarter AI model.

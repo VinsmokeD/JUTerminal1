@@ -260,6 +260,18 @@ def _repair_kali_tools(container: "docker.models.containers.Container") -> bool:
         return True
 
 
+def _fix_bashrc_crlf(container: "docker.models.containers.Container") -> None:
+    """Strip Windows CRLF from .bashrc so bash doesn't error on every function.
+    Must run as 'student' (file owner) since cap_drop=ALL removes DAC_OVERRIDE from root."""
+    try:
+        container.exec_run(
+            ["sed", "-i", "s/\r$//", "/home/student/.bashrc"],
+            user="student",
+        )
+    except (DockerException, APIError):
+        pass
+
+
 def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
     sc_num = scenario_id.lower().replace("-", "")  # sc01, sc02, sc03
     network_name = _get_scenario_network(sc_num)
@@ -351,6 +363,7 @@ EOF
                 print(f"[Sandbox] krb5/hosts setup failed: {result.output[:200]}")
 
         _repair_kali_tools(container)
+        _fix_bashrc_crlf(container)
         return container.id, network_name
 
     except (DockerException, APIError, RuntimeError) as exc:
@@ -380,6 +393,7 @@ def _ensure_sync(
             if container.status != "running":
                 container.start()
             if _repair_kali_tools(container):
+                _fix_bashrc_crlf(container)
                 return container.id, network_name, False
             container.remove(force=True)
         except (NotFound, DockerException, APIError, RuntimeError) as exc:
