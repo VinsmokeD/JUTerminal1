@@ -2,9 +2,11 @@ import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { modalSlideUp } from '../../lib/motion'
+import useFocusTrap from '../../hooks/useFocusTrap'
 
 export default function Modal({ open, onClose, title, children, footer, size = 'md' }) {
   const panelRef = useRef(null)
+  useFocusTrap(panelRef, open)
 
   useEffect(() => {
     if (!open) return
@@ -12,8 +14,8 @@ export default function Modal({ open, onClose, title, children, footer, size = '
     document.addEventListener('keydown', onKey)
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    // Move focus into panel on open
-    panelRef.current?.focus()
+    // Move focus into panel after animation frame so motion.div is mounted
+    requestAnimationFrame(() => panelRef.current?.focus())
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = prev

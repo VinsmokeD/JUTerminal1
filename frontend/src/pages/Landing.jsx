@@ -22,7 +22,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary font-display">
       {/* NAVIGATION */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-void/80 border-b border-cs-border backdrop-blur-md font-mono text-xs">
         <button onClick={() => navigate('/')} className="flex items-center gap-3">

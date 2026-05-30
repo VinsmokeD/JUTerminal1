@@ -152,7 +152,7 @@ export default function BlueWorkspace() {
     }
   }
 
-  if (loadingSession || !session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading...</div>
+  if (loadingSession || !session) return <div className="min-h-dvh bg-void flex items-center justify-center text-txt-secondary text-sm font-mono">Loading...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   const nist = NIST_PHASES[phase] || NIST_PHASES[1]

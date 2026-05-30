@@ -90,7 +90,7 @@ export default function Onboarding() {
 
   return (
     <div
-      className="min-h-screen bg-void px-6 py-10 flex items-center justify-center"
+      className="min-h-dvh bg-void px-6 py-10 flex items-center justify-center"
       style={{
         backgroundImage: `
           linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),

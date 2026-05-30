@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useSessionStore } from '../../store/sessionStore'
+import useFocusTrap from '../../hooks/useFocusTrap'
 
 /**
  * CommandPalette — global ⌘K (Ctrl+K) command launcher.
@@ -54,9 +55,11 @@ export default function CommandPalette() {
   const [cursor, setCursor] = useState(0)
   const inputRef = useRef(null)
   const listRef = useRef(null)
+  const panelRef = useRef(null)
   const navigate = useNavigate()
   const { logout } = useAuthStore()
   const { currentSession, aiMode } = useSessionStore()
+  useFocusTrap(panelRef, open)
 
   const items = useMemo(() => {
     const active = currentSession
@@ -257,6 +260,7 @@ export default function CommandPalette() {
       <div className="modal-v3-scrim" onClick={() => setOpen(false)} />
       <div className="modal-v3-container" style={{ alignItems: 'flex-start', paddingTop: '12vh' }}>
         <div
+          ref={panelRef}
           className="modal-v3-panel"
           style={{ maxWidth: 640, maxHeight: '70vh', display: 'flex', flexDirection: 'column' }}
           role="dialog"

@@ -59,7 +59,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-void flex">
+    <div className="min-h-dvh bg-void flex">
       <style>{`
         @keyframes authDriftA {
           0%, 100% { transform: translate3d(-4%, -3%, 0) scale(1); }
@@ -151,7 +151,7 @@ export default function Auth() {
             <h2 className="text-txt-primary font-bold text-lg mb-1 font-display">
               {mode === 'login' ? 'Welcome back' : 'Create your account'}
             </h2>
-            <p className="text-txt-dim text-sm mb-6">
+            <p className="text-txt-secondary text-sm mb-6">
               {mode === 'login' ? 'Sign in to continue your training' : 'Start your cybersecurity journey'}
             </p>
 

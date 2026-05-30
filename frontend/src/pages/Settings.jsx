@@ -23,7 +23,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary font-display">
       <CyberSimNav />
       <main className="mx-auto max-w-5xl px-6 py-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

@@ -23,7 +23,7 @@ export default function Profile() {
   const completionRate = summary.total_missions ? Math.round((summary.completed_missions / summary.total_missions) * 100) : 0
 
   return (
-    <div className="min-h-screen bg-void text-txt-primary font-display pb-12">
+    <div className="min-h-dvh bg-void text-txt-primary font-display pb-12">
       <CyberSimNav />
       
       <main className="max-w-6xl mx-auto px-6 pt-10">
@@ -186,7 +186,7 @@ function ProficiencyRow({ label, count, total, color, shadow }) {
 
 function ProfileLoading() {
   return (
-    <div className="min-h-screen bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary font-display">
       <CyberSimNav />
       <div className="max-w-4xl mx-auto px-6 pt-24 space-y-12">
         <div className="flex gap-8 items-center animate-pulse">

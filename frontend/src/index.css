@@ -1037,7 +1037,7 @@
 @media (max-width: 1180px) {
   .workspace-shell {
     height: auto;
-    min-height: 100vh;
+    min-height: 100dvh;
     overflow-y: auto;
   }
 

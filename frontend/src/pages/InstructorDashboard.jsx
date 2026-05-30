@@ -196,7 +196,7 @@ export default function InstructorDashboard() {
   if (loading) return <InstructorLoading />
 
   return (
-    <div className="min-h-screen bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary font-display">
       <header className="sticky top-0 z-40 h-14 bg-surface-1 border-b border-cs-border px-6 flex items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="relative h-[22px] w-[22px]">
@@ -776,7 +776,7 @@ function Sparkline({ tone = 'blue' }) {
 
 function InstructorLoading() {
   return (
-    <div className="min-h-screen bg-void flex items-center justify-center">
+    <div className="min-h-dvh bg-void flex items-center justify-center">
       <style>{`
         @keyframes instructorLogoA { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.9); } }
         @keyframes instructorLogoB { 0%, 100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } }

@@ -168,7 +168,7 @@ export default function Dashboard() {
   }) : []
 
   return (
-    <div className="min-h-screen bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary font-display">
       {/* Nav */}
       <CyberSimNav
         rightContent={

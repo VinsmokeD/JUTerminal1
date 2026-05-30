@@ -306,7 +306,7 @@ export default function Debrief() {
   ]
 
   return (
-    <div className="min-h-screen bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary font-display">
       <CyberSimNav />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
@@ -444,7 +444,7 @@ export default function Debrief() {
             {coachingLoading || !coachingData ? (
               <div className="card-v3 p-8 text-center flex flex-col items-center justify-center min-h-[300px]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cs-blue mb-4"></div>
-                <p className="text-txt-dim text-sm font-mono">Generating Socratic coaching session...</p>
+                <p className="text-txt-secondary text-sm font-mono">Generating Socratic coaching session...</p>
               </div>
             ) : (
               <>
@@ -754,7 +754,7 @@ export default function Debrief() {
 
 function DebriefLoading() {
   return (
-    <div className="min-h-screen bg-void flex items-center justify-center">
+    <div className="min-h-dvh bg-void flex items-center justify-center">
       <style>{`
         @keyframes debriefPulseA { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.9); } }
         @keyframes debriefPulseB { 0%, 100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } }
@@ -764,7 +764,7 @@ function DebriefLoading() {
           <div className="absolute left-0 top-0 h-6 w-6 rounded bg-cs-red shadow-red-glow" style={{ animation: 'debriefPulseA 1.4s ease-in-out infinite' }} />
           <div className="absolute bottom-0 right-0 h-6 w-6 rounded bg-cs-blue shadow-blue-glow" style={{ animation: 'debriefPulseB 1.4s ease-in-out infinite' }} />
         </div>
-        <span className="text-sm text-txt-dim font-mono">Loading debrief...</span>
+        <span className="text-sm text-txt-secondary font-mono">Loading debrief...</span>
       </div>
     </div>
   )

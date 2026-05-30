@@ -174,7 +174,7 @@ export default function RedWorkspace() {
     window.addEventListener('mouseup', handleUp)
   }, [])
 
-  if (loadingSession || !session) return <div className="min-h-screen bg-void flex items-center justify-center text-txt-dim text-sm font-mono">Loading session...</div>
+  if (loadingSession || !session) return <div className="min-h-dvh bg-void flex items-center justify-center text-txt-secondary text-sm font-mono">Loading session...</div>
   if (!roeAcked) return <RoeBriefing session={session} onAcknowledged={() => setRoeAcked(true)} />
 
   const firstTargetIp = session.scenario_id === 'SC-01' ? '172.20.1.20' : session.scenario_id === 'SC-02' ? '172.20.2.20' : '172.20.3.40'
