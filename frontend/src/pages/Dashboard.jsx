@@ -357,6 +357,7 @@ export default function Dashboard() {
                       summary={summary}
                       learnPoints={LEARN_POINTS[sc.id] || []}
                       showLearnPoints={isBeginner}
+                      activeSessionId={activeMission?.scenario_id === sc.id ? activeMission?.id : null}
                       onClick={() => setBriefing(sc)}
                     />
                   </motion.div>

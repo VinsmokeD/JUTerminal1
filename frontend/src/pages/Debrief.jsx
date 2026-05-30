@@ -770,6 +770,24 @@ function DebriefLoading() {
   )
 }
 
+function useCountUp(target, duration = 1000) {
+  const [display, setDisplay] = useState(0)
+  useEffect(() => {
+    const clamped = Math.max(0, Math.min(100, Number(target) || 0))
+    const steps = clamped
+    if (steps === 0) return
+    const interval = duration / steps
+    let step = 0
+    const id = setInterval(() => {
+      step++
+      setDisplay(Math.round((clamped * step) / steps))
+      if (step >= steps) clearInterval(id)
+    }, interval)
+    return () => clearInterval(id)
+  }, [target, duration])
+  return display
+}
+
 function ScoreRing({ score, gradeColor, gradeLabel }) {
   const [ready, setReady] = useState(false)
   const radius = 48
@@ -777,6 +795,7 @@ function ScoreRing({ score, gradeColor, gradeLabel }) {
   const clamped = Math.max(0, Math.min(100, Number(score) || 0))
   const offset = ready ? circumference - (clamped / 100) * circumference : circumference
   const stroke = clamped >= 80 ? '#00ff88' : clamped >= 60 ? '#ffaa00' : '#ff3b3b'
+  const displayScore = useCountUp(ready ? clamped : 0, 1200)
 
   useEffect(() => {
     const timer = requestAnimationFrame(() => setReady(true))
@@ -798,7 +817,7 @@ function ScoreRing({ score, gradeColor, gradeLabel }) {
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
-            style={{ 
+            style={{
               transition: 'stroke-dashoffset 1.2s ease-out',
               filter: `drop-shadow(0 0 5px ${stroke}a0)`
             }}
@@ -806,7 +825,7 @@ function ScoreRing({ score, gradeColor, gradeLabel }) {
         </svg>
         <div className="absolute inset-3 rounded-full bg-[#030508]/80 border border-cs-border backdrop-blur-md flex items-center justify-center">
           <div>
-            <div className={`text-4xl font-extrabold font-mono ${gradeColor}`}>{score}</div>
+            <div className={`text-4xl font-extrabold font-mono tabular-nums ${gradeColor}`}>{displayScore}</div>
             <div className="text-xs text-txt-dim font-mono">/100</div>
           </div>
         </div>

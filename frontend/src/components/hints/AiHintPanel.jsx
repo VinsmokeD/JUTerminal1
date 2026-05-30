@@ -108,6 +108,16 @@ const renderTextWithMarkdown = (text) => {
 const CHAT_STORAGE_KEY = (sessionId) => `cs.ai.chat.${sessionId}`
 const MAX_PERSISTED_HINTS = 50
 
+const PLACEHOLDERS = [
+  'Ask about port scanning…',
+  'What is T1046?',
+  'How do I enumerate SMB?',
+  'What is Kerberoasting?',
+  'Explain SQL injection…',
+  'What does this MITRE technique mean?',
+  'How do I escalate privileges?',
+]
+
 export default function AiHintPanel({ onSubmitQuestion, connectionState }) {
   const { phase, currentSession, activeBranch } = useSessionStore()
   const sessionId = currentSession?.id
@@ -125,7 +135,24 @@ export default function AiHintPanel({ onSubmitQuestion, connectionState }) {
   const [loading, setLoading] = useState(false)
   const [inputText, setInputText] = useState('')
   const [showInfo, setShowInfo] = useState(false)
+  const [placeholderIdx, setPlaceholderIdx] = useState(0)
   const messagesEndRef = useRef(null)
+  const textareaRef = useRef(null)
+
+  // Rotate placeholder every 4s when input is empty
+  useEffect(() => {
+    if (inputText) return
+    const id = setInterval(() => setPlaceholderIdx((p) => (p + 1) % PLACEHOLDERS.length), 4000)
+    return () => clearInterval(id)
+  }, [inputText])
+
+  // Auto-grow textarea
+  const handleInput = (e) => {
+    setInputText(e.target.value)
+    const el = e.target
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 96) + 'px'
+  }
 
   const role = currentSession?.role || 'red'
 
@@ -184,7 +211,6 @@ export default function AiHintPanel({ onSubmitQuestion, connectionState }) {
     const text = inputText.trim()
     if (!text || loading || connectionState === 'failed') return
 
-    // Add user question to stream
     setHints((p) => [{
       text,
       sender: 'user',
@@ -192,8 +218,15 @@ export default function AiHintPanel({ onSubmitQuestion, connectionState }) {
     }, ...p].slice(0, 30))
 
     setInputText('')
+    if (textareaRef.current) { textareaRef.current.style.height = 'auto' }
     setLoading(true)
     onSubmitQuestion?.(text)
+  }
+
+  const requestHint = (level) => {
+    if (loading || connectionState === 'failed') return
+    window.dispatchEvent(new CustomEvent('mission:request-hint', { detail: { level } }))
+    setLoading(true)
   }
 
   const ctx = PHASE_CONTEXT[role]?.[phase] || PHASE_CONTEXT.red[1]
@@ -240,49 +273,92 @@ export default function AiHintPanel({ onSubmitQuestion, connectionState }) {
         )}
 
         {loading && (
-          <div className="flex items-center gap-2.5 text-xs text-txt-secondary border border-cs-blue/20 rounded-cs p-3.5 bg-cs-blue/5 backdrop-blur-sm shadow-sm animate-pulse">
-            <div className="w-3.5 h-3.5 border-2 border-cs-blue/30 border-t-cs-blue rounded-full animate-spin flex-shrink-0" />
-            <span className="font-mono text-cs-blue">AI Tutor is thinking...</span>
+          <div className="flex items-center gap-2.5 text-xs text-txt-secondary border border-cs-blue/20 rounded-cs p-3.5 bg-cs-blue/5 backdrop-blur-sm shadow-sm">
+            <div className="flex items-center gap-1 px-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-cs-blue dot-bounce-1" />
+              <span className="w-1.5 h-1.5 rounded-full bg-cs-blue dot-bounce-2" />
+              <span className="w-1.5 h-1.5 rounded-full bg-cs-blue dot-bounce-3" />
+            </div>
+            <span className="font-mono text-cs-blue">AI Tutor is thinking…</span>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* ACTION CHAT INPUT */}
-      <form onSubmit={handleSubmit} className="border-t border-cs-border p-3 bg-surface-2/40 backdrop-blur-md flex items-center gap-2 shrink-0">
-        <input
-          type="text"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          disabled={loading || connectionState === 'failed'}
-          placeholder="Ask the tutor a question..."
-          className="flex-1 bg-surface-3 border border-cs-border rounded-cs-sm px-3 py-1.5 text-xs text-txt-primary placeholder:text-txt-dim focus:outline-none focus:border-cs-blue/50 transition-colors disabled:opacity-40"
-        />
-        <button
-          type="submit"
-          disabled={loading || !inputText.trim() || connectionState === 'failed'}
-          className="btn-v3 btn-v3-blue btn-v3-sm text-[11px] font-mono px-3.5 py-1.5 disabled:opacity-45"
-        >
-          Send
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowInfo(!showInfo)}
-          className="text-txt-dim hover:text-txt-secondary p-1 transition-colors flex-shrink-0"
-          title="Tutor Info"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
-        </button>
-      </form>
+      <div className="border-t border-cs-border bg-surface-2/40 backdrop-blur-md shrink-0">
+        {/* Quick hint request buttons */}
+        <div className="flex items-center gap-1 px-3 pt-2 pb-0">
+          <span className="text-[9.5px] font-mono text-txt-dim uppercase tracking-wider mr-1">Hint:</span>
+          {[1, 2, 3].map((lvl) => (
+            <button
+              key={lvl}
+              type="button"
+              onClick={() => requestHint(lvl)}
+              disabled={loading || connectionState === 'failed'}
+              className={`text-[9.5px] font-mono px-2 py-0.5 rounded-cs-sm border transition-colors disabled:opacity-40 ${
+                lvl === 1 ? 'border-amber-warn/30 text-amber-warn bg-amber-warn/5 hover:bg-amber-warn/10' :
+                lvl === 2 ? 'border-orange-400/30 text-orange-400 bg-orange-400/5 hover:bg-orange-400/10' :
+                            'border-cs-red/30 text-cs-red bg-cs-red/5 hover:bg-cs-red/10'
+              }`}
+              title={`Request Level ${lvl} hint${lvl === 1 ? ' (−2 pts)' : lvl === 2 ? ' (−5 pts)' : ' (−10 pts)'}`}
+            >
+              L{lvl} {lvl === 1 ? '−2' : lvl === 2 ? '−5' : '−10'}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-3 flex items-end gap-2">
+          <textarea
+            ref={textareaRef}
+            value={inputText}
+            onChange={handleInput}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e) }
+            }}
+            disabled={loading || connectionState === 'failed'}
+            placeholder={PLACEHOLDERS[placeholderIdx]}
+            rows={1}
+            className="flex-1 bg-surface-3 border border-cs-border rounded-cs-sm px-3 py-1.5 text-xs text-txt-primary placeholder:text-txt-dim focus:outline-none focus:border-cs-blue/50 transition-colors disabled:opacity-40 resize-none overflow-hidden leading-relaxed"
+            style={{ minHeight: '32px', maxHeight: '96px' }}
+          />
+          <button
+            type="submit"
+            disabled={loading || !inputText.trim() || connectionState === 'failed'}
+            className="btn-v3 btn-v3-blue btn-v3-sm text-[11px] font-mono px-3.5 py-1.5 disabled:opacity-45 flex-shrink-0"
+          >
+            Send
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowInfo(!showInfo)}
+            className="text-txt-dim hover:text-txt-secondary p-1 transition-colors flex-shrink-0"
+            title="Tutor Info"
+            aria-label="Tutor info"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
 
 function HintBubble({ hint }) {
+  const [copied, setCopied] = useState(false)
+  const isAi = !hint.sender || hint.sender === 'system_welcome'
+
+  const copyText = () => {
+    navigator.clipboard?.writeText(hint.text || '').then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+
   const parsed = hint.sender === 'user' || hint.sender === 'system_welcome'
     ? { format: 'general', paragraphs: [hint.text] }
     : (hint.steps && !hint.isInsight
@@ -353,7 +429,7 @@ function HintBubble({ hint }) {
           <span className="text-[10px] text-txt-dim font-mono">{hint.ts}</span>
         </div>
         {/* Bubble Body */}
-        <div className={`border rounded-cs px-3.5 py-3 text-xs leading-relaxed backdrop-blur-sm shadow-sm ${config.bubbleBg}`}>
+        <div className={`border rounded-cs px-3.5 py-3 text-xs leading-relaxed backdrop-blur-sm shadow-sm ${config.bubbleBg} group/bubble`}>
           {parsed?.format === 'tagged' && (
             <div className="space-y-3">
               {parsed.sections.map((section, idx) => {
@@ -394,6 +470,21 @@ function HintBubble({ hint }) {
               {parsed.paragraphs.map((p, idx) => (
                 <p key={idx} className="text-txt-primary" dangerouslySetInnerHTML={{ __html: renderTextWithMarkdown(p) }} />
               ))}
+            </div>
+          )}
+
+          {/* Action row — shown on hover for AI messages */}
+          {isAi && hint.sender !== 'user' && (
+            <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-cs-border/30 opacity-0 group-hover/bubble:opacity-100 transition-opacity duration-150">
+              <button
+                onClick={copyText}
+                aria-label="Copy message"
+                className="text-[9.5px] font-mono text-txt-dim hover:text-txt-secondary px-2 py-0.5 rounded border border-transparent hover:border-cs-border transition-colors"
+              >
+                {copied ? '✓ copied' : 'copy'}
+              </button>
+              <button aria-label="Helpful" className="text-[11px] hover:scale-110 transition-transform" title="Helpful">👍</button>
+              <button aria-label="Not helpful" className="text-[11px] hover:scale-110 transition-transform" title="Not helpful">👎</button>
             </div>
           )}
         </div>

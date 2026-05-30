@@ -21,6 +21,7 @@ export default function ScenarioCard({
   summary,
   learnPoints = [],
   showLearnPoints = false,
+  activeSessionId = null,
   onClick,
   onLaunch,
 }) {
@@ -76,9 +77,17 @@ export default function ScenarioCard({
           <span className="font-mono text-[10.5px] tracking-[0.12em] uppercase text-txt-dim">
             {scenario.id}
           </span>
-          <span className={`badge-v3 ${diffCls}`}>
-            {scenario.difficulty}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {activeSessionId && (
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-green-signal/40 bg-green-signal/10 text-[9px] font-mono font-bold text-green-signal uppercase tracking-wide">
+                <span className="w-1 h-1 rounded-full bg-green-signal animate-pulse-soft" aria-hidden />
+                RESUME
+              </span>
+            )}
+            <span className={`badge-v3 ${diffCls}`}>
+              {scenario.difficulty}
+            </span>
+          </div>
         </div>
 
         {/* Title */}

@@ -75,6 +75,8 @@ export default function CommandPalette() {
       { id: 'term-clear', section: 'Terminal', label: 'Clear terminal', hint: 'Clear the active terminal viewport', tone: 'neutral', action: 'terminal-event', eventName: 'terminal:clear' },
       { id: 'term-copy-all', section: 'Terminal', label: 'Copy terminal output', hint: 'Copy all visible scrollback', tone: 'neutral', action: 'terminal-event', eventName: 'terminal:copy-all' },
       { id: 'term-new-tab', section: 'Terminal', label: 'Open workspace tab', hint: 'Open current session in a new browser tab', tone: 'neutral', action: 'terminal-event', eventName: 'terminal:new-tab' },
+      { id: 'end-mission', section: 'Mission', label: 'End mission & debrief', hint: 'Navigate to the mission debrief report', tone: 'neutral', action: 'end-mission' },
+      { id: 'siem-toggle-live', section: 'Tool', label: 'Toggle SIEM live/pause', hint: 'Pause or resume the live SIEM event feed', tone: 'blue', action: 'siem-toggle' },
     ]
 
     if (active?.id) {
@@ -189,6 +191,16 @@ export default function CommandPalette() {
     if (item.action === 'switch-role' && currentSession?.id) {
       setOpen(false)
       navigate(`/session/${currentSession.id}/${item.role}`)
+      return
+    }
+    if (item.action === 'end-mission' && currentSession?.id) {
+      setOpen(false)
+      navigate(`/session/${currentSession.id}/debrief`)
+      return
+    }
+    if (item.action === 'siem-toggle') {
+      setOpen(false)
+      window.dispatchEvent(new CustomEvent('siem:toggle-pause'))
       return
     }
     setOpen(false)

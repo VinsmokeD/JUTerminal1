@@ -70,9 +70,25 @@ export default function SiemFeed({
 } = {}) {
   const events = useSessionStore((s) => s.siemEvents)
   const listRef = useRef(null)
+  const prevCountRef = useRef(0)
   const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
   const [hideNoise, setHideNoise] = useState(false)    // default show noise
+  const [announcement, setAnnouncement] = useState('')
+  const [announcementUrgent, setAnnouncementUrgent] = useState(false)
+
+  // Screen-reader announcements for new events
+  useEffect(() => {
+    const prev = prevCountRef.current
+    if (events.length > prev) {
+      const newest = events[0]
+      const sev = (newest?.severity || '').toUpperCase()
+      const urgent = sev === 'CRITICAL'
+      setAnnouncementUrgent(urgent)
+      setAnnouncement(`New ${sev} event: ${newest?.message || 'SIEM alert'}`)
+    }
+    prevCountRef.current = events.length
+  }, [events])
 
   const filtered = useMemo(() => {
     return events.filter((ev) => {
@@ -172,7 +188,23 @@ export default function SiemFeed({
       </div>
 
       {/* ── Event list ────────────────────────────────────────────────── */}
-      <div ref={listRef} className="flex-1 overflow-y-auto space-y-px p-2 pb-4">
+      {/* Screen-reader live region — visually hidden */}
+      <span
+        className="sr-only"
+        aria-live={announcementUrgent ? 'assertive' : 'polite'}
+        aria-atomic="true"
+      >
+        {announcement}
+      </span>
+
+      <div
+        ref={listRef}
+        className="flex-1 overflow-y-auto space-y-px p-2 pb-4"
+        aria-label="SIEM event feed"
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions"
+      >
         {events.length === 0
           ? <EmptyState />
           : filtered.length === 0
@@ -181,6 +213,7 @@ export default function SiemFeed({
                 <EventRow
                   key={ev.id || i}
                   event={ev}
+                  isNew={i === 0 && events.length > 1}
                   enableTriage={enableTriage}
                   sessionId={sessionId}
                   onTriageSave={onTriageSave}
@@ -219,6 +252,7 @@ function EmptyState() {
 // ── Individual event row ───────────────────────────────────────────────────
 function EventRow({
   event,
+  isNew = false,
   enableTriage = false,
   sessionId = null,
   onTriageSave = null,
@@ -288,7 +322,8 @@ function EventRow({
       className={`group relative overflow-hidden rounded-cs-sm border border-cs-border/40 mb-px
         transition-all duration-150 cursor-pointer select-none
         ${expanded ? 'bg-surface-1/80' : 'bg-surface-1/40 hover:bg-surface-1/70'}
-        ${noise ? 'opacity-30 hover:opacity-55' : ''}`}
+        ${noise ? 'opacity-30 hover:opacity-55' : ''}
+        ${isNew ? 'siem-event-new' : ''}`}
       onClick={toggle}
       role="button"
       tabIndex={0}

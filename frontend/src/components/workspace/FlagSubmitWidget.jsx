@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../../lib/api'
 
+const FLAG_PATTERN = /^[A-Za-z0-9_\-:.!@#$%^&*()+= ]{2,}$/
+
 export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCaptured, flagsCaptured = [], totalFlags = 0 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [flagValue, setFlagValue] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null) // { type: 'success' | 'error', text: string }
+  const [shake, setShake] = useState(false)
   const popoverRef = useRef(null)
 
   useEffect(() => {
@@ -58,11 +61,15 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
         const guidance = res.data?.detail || res.data?.guidance || res.data?.hint || 'Incorrect flag value. Try again!'
         console.log('[FlagSubmitWidget] flag invalid:', guidance)
         setMessage({ type: 'error', text: guidance })
+        setShake(true)
+        setTimeout(() => setShake(false), 500)
       }
     } catch (err) {
       const errMsg = err.response?.data?.detail || err.response?.data?.guidance || 'Submission failed, try again'
       console.error('[FlagSubmitWidget] API error:', err, 'message:', errMsg)
       setMessage({ type: 'error', text: errMsg })
+      setShake(true)
+      setTimeout(() => setShake(false), 500)
     } finally {
       setLoading(false)
     }
@@ -84,7 +91,7 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-surface-3 border border-cs-border rounded-cs p-4 shadow-xl z-50">
+        <div className={`absolute right-0 mt-2 w-80 bg-surface-3 border border-cs-border rounded-cs p-4 shadow-xl z-50 ${shake ? 'animate-shake' : ''}`}>
           <form onSubmit={handleSubmit} className="space-y-3 font-display">
             <div>
               <label className="block text-[10px] font-mono uppercase tracking-wider text-txt-dim mb-1">
@@ -93,10 +100,14 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
               <input
                 type="text"
                 value={flagValue}
-                onChange={(e) => setFlagValue(e.target.value)}
+                onChange={(e) => { setFlagValue(e.target.value); setMessage(null) }}
                 disabled={loading}
                 placeholder="e.g. FLAG-SC01-1"
-                className="w-full bg-surface-2 border border-cs-border rounded-cs px-3 py-1.5 text-xs text-txt-primary placeholder:text-txt-dim focus:outline-none focus:border-cs-blue transition-colors disabled:opacity-40 font-mono"
+                className={`w-full bg-surface-2 rounded-cs px-3 py-1.5 text-xs text-txt-primary placeholder:text-txt-dim focus:outline-none transition-colors disabled:opacity-40 font-mono border ${
+                  !flagValue ? 'border-cs-border focus:border-cs-blue' :
+                  FLAG_PATTERN.test(flagValue) ? 'border-green-signal/50 focus:border-green-signal' :
+                  'border-cs-red/40 focus:border-cs-red/60'
+                }`}
                 autoFocus
               />
             </div>

@@ -194,6 +194,18 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
+      {/* Traffic-dot titlebar */}
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-cs-border/40 bg-surface-1/60 shrink-0 select-none">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-cs-red/60" aria-hidden />
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-warn/60" aria-hidden />
+          <span className="w-2.5 h-2.5 rounded-full bg-green-signal/60" aria-hidden />
+        </div>
+        <span className="font-mono text-[10px] text-txt-dim ml-2">
+          student@kali:~<span className="term-cursor text-green-signal">_</span>
+        </span>
+      </div>
+
       <TerminalToolbar
         fontSize={terminal.fontSize}
         renderer={terminal.renderer}
@@ -225,7 +237,13 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
       <div
         ref={containerRef}
         className="min-h-0 flex-1 terminal"
-        style={{ padding: '16px', background: 'transparent' }}
+        style={{
+          padding: '16px',
+          background: 'transparent',
+          boxShadow: isRed
+            ? 'inset 0 0 80px rgba(255,0,85,0.025)'
+            : 'inset 0 0 80px rgba(0,243,255,0.02)',
+        }}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onMouseDown={() => terminal.focus()}

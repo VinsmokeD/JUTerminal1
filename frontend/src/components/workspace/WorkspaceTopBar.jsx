@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import ConnectionPill from './ConnectionPill'
@@ -32,6 +33,27 @@ const formatTime = (s) => {
 }
 
 const scoreTone = (s) => s >= 80 ? 'text-green-signal' : s >= 50 ? 'text-amber-warn' : 'text-cs-red'
+const scoreBorder = (s) => s >= 80 ? 'border-green-signal/20' : s >= 50 ? 'border-amber-warn/20' : 'border-cs-red/20'
+
+function useCountUp(target, duration = 600) {
+  const [display, setDisplay] = useState(target)
+  const prev = useRef(target)
+  useEffect(() => {
+    const start = prev.current
+    const diff = target - start
+    if (diff === 0) return
+    const steps = Math.max(10, Math.abs(diff))
+    const interval = duration / steps
+    let step = 0
+    const id = setInterval(() => {
+      step++
+      setDisplay(Math.round(start + (diff * step) / steps))
+      if (step >= steps) { clearInterval(id); prev.current = target }
+    }, interval)
+    return () => clearInterval(id)
+  }, [target, duration])
+  return display
+}
 
 export default function WorkspaceTopBar({
   role,
@@ -52,6 +74,7 @@ export default function WorkspaceTopBar({
   const navigate = useNavigate()
   const tokens = ROLE_TOKENS[role] || ROLE_TOKENS.red
   const activeBranch = useSessionStore((state) => state.activeBranch)
+  const displayScore = useCountUp(score ?? 100)
 
   return (
     <div
@@ -119,6 +142,17 @@ export default function WorkspaceTopBar({
           />
         )}
 
+        {/* Flag ◆◇ progress indicators */}
+        {role === 'red' && totalFlags > 0 && (
+          <div className="hidden sm:flex items-center gap-0.5" aria-label={`${flagsCaptured.length} of ${totalFlags} flags captured`}>
+            {Array.from({ length: totalFlags }).map((_, i) => (
+              <span key={i} className={`text-[10px] transition-colors duration-300 ${i < flagsCaptured.length ? 'text-green-signal' : 'text-txt-dim'}`} aria-hidden>
+                {i < flagsCaptured.length ? '◆' : '◇'}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="hidden lg:block">
           <ConnectionPill state={connection} />
         </div>
@@ -150,9 +184,9 @@ export default function WorkspaceTopBar({
           {formatTime(elapsed)}
         </div>
 
-        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-cs-border bg-surface-2 font-mono text-[11px]">
+        <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border bg-surface-2 font-mono text-[11px] transition-colors duration-500 ${scoreBorder(score)}`}>
           <span className="text-txt-dim uppercase tracking-wider text-[9.5px] hidden sm:inline">Score</span>
-          <span className={`font-bold tabular-nums ${scoreTone(score)}`}>{score}</span>
+          <span className={`font-bold tabular-nums ${scoreTone(score)}`}>{displayScore}</span>
         </div>
 
         <button
