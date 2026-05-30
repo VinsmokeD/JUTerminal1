@@ -37,6 +37,11 @@ cp .env.example .env
 # Edit .env: set JWT_SECRET, OPENROUTER_API_KEY
 docker compose up -d
 # App: http://localhost:3000  |  API: http://localhost:8001/api/docs
+
+# REQUIRED for a real Red Team terminal (~6-15 min, ~9 GB image).
+# Without this image the terminal runs in mock mode (commands still drive
+# SIEM/AI/scoring, but do not execute in a real shell).
+docker build -t cybersim-kali:latest infrastructure/docker/kali
 ```
 
 CyberSim uses OpenRouter for the AI monitor. The default budget/performance model is `deepseek/deepseek-chat-v3-0324`.

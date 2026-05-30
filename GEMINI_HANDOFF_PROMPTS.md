@@ -47,7 +47,7 @@ Repo root: `C:\Users\mmjal\Documents\JUTerminal1`. Stack runs via `docker compos
 - Catalog is exactly SC-01/02/03. Tutor prompt never mentions other scenarios.
 - Black is a blocking CI gate; the tree is black-clean. Pre-commit config exists.
 
-**Known gap that affects manual testing:** the **Kali image is NOT built** (`cybersim-kali:latest` missing), so the terminal runs in **mock mode** (commands drive SIEM/AI/scoring but don't execute in a real shell). See Phase A.
+**Kali image: BUILT + verified 2026-05-29** (`cybersim-kali:latest`, 9.1GB). Real terminal works (whoami=student, nmap 7.99, reaches SC-01 target 172.20.1.20 → HTTP 200, internet BLOCKED). **Phase A is DONE.** On a fresh machine, rebuild it: `docker build -t cybersim-kali:latest infrastructure/docker/kali`.
 
 ---
 
@@ -90,7 +90,8 @@ Repo root: `C:\Users\mmjal\Documents\JUTerminal1`. Stack runs via `docker compos
 
 ---
 
-### PHASE A — Build the Kali image so the terminal is REAL (not mock)
+### PHASE A — Build the Kali image so the terminal is REAL (not mock) — ✅ DONE 2026-05-29
+> Image built + verified (real whoami/nmap, reaches targets, internet-blocked). Only re-run on a fresh machine. Prompt kept for reference:
 ```
 TASK: Make the Red Team terminal execute real commands in a Kali sandbox instead of mock mode.
 

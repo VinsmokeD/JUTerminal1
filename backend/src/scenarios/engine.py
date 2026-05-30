@@ -336,9 +336,9 @@ async def _get_current_phase(session_id: str, db: AsyncSession) -> int:
         return int(cached["phase"])
     result = await db.execute(select(DbSession.phase).where(DbSession.id == session_id))
     row = result.scalar_one_or_none()
-    if hasattr(row, "phase"):
-        return int(row.phase)
-    return int(row) if row else 1
+    if row is not None:
+        return int(row)
+    return 1
 
 
 async def _set_phase(session_id: str, new_phase: int, db: AsyncSession) -> None:

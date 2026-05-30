@@ -7,9 +7,11 @@ from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, JSON, Flo
 from sqlalchemy.pool import NullPool
 from src.config import settings
 
+from typing import Any, Dict
+
 _running_under_pytest = any("pytest" in arg for arg in sys.argv)
 
-_engine_options = {
+_engine_options: Dict[str, Any] = {
     "echo": settings.ENVIRONMENT == "development",
     "pool_pre_ping": True,
     "pool_recycle": 3600,

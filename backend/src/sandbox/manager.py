@@ -10,6 +10,8 @@ from typing import Tuple, Optional
 
 from sqlalchemy import select
 
+from typing import Any, TYPE_CHECKING
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -20,14 +22,20 @@ try:
 except ImportError:
     _docker_available = False
 
-    class DockerException(Exception):
-        pass
+    if not TYPE_CHECKING:
+        class DockerException(Exception):
+            pass
 
-    class APIError(Exception):
-        pass
+        class APIError(Exception):
+            pass
 
-    class NotFound(Exception):
-        pass
+        class NotFound(Exception):
+            pass
+    else:
+        # Fallbacks for mypy when docker is not installed
+        DockerException = Exception  # type: ignore[misc, assignment]
+        APIError = Exception         # type: ignore[misc, assignment]
+        NotFound = Exception         # type: ignore[misc, assignment]
 
 
 from src.config import settings

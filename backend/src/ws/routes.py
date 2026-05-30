@@ -287,7 +287,7 @@ async def _handle_terminal_command(
         await db.refresh(cmd_row)
         cmd_log_id = cmd_row.id
 
-    generated_siem_events: list[dict] = []
+    generated_siem_events = []
     async with AsyncSessionLocal() as db:
         generated_siem_events = await create_command_siem_events(
             command,

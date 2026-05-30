@@ -9,11 +9,13 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
+from typing import Any, Dict
+
 from src.scenarios.scope_enforcer import check_scope
 
-SC01 = {"network": {"cidr": "172.20.1.0/24"}}
-SC02 = {"network": {"cidr": "172.20.2.0/24"}}
-NO_CIDR = {"network": {}}  # e.g. SC-03 phishing — no subnet declared
+SC01: Dict[str, Any] = {"network": {"cidr": "172.20.1.0/24"}}
+SC02: Dict[str, Any] = {"network": {"cidr": "172.20.2.0/24"}}
+NO_CIDR: Dict[str, Any] = {"network": {}}  # e.g. SC-03 phishing — no subnet declared
 
 
 # ── In-scope and ambiguous inputs are always allowed ─────────────────────────

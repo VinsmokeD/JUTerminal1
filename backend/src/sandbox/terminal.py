@@ -22,6 +22,8 @@ import select as _select
 import threading
 import logging
 
+from typing import Optional, Any, Dict, List, TYPE_CHECKING
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -32,14 +34,20 @@ try:
 except ImportError:
     _docker_available = False
 
-    class DockerException(Exception):
-        pass
+    if not TYPE_CHECKING:
+        class DockerException(Exception):
+            pass
 
-    class APIError(Exception):
-        pass
+        class APIError(Exception):
+            pass
 
-    class NotFound(Exception):
-        pass
+        class NotFound(Exception):
+            pass
+    else:
+        # Fallbacks for mypy when docker is not installed
+        DockerException = Exception  # type: ignore[misc, assignment]
+        APIError = Exception         # type: ignore[misc, assignment]
+        NotFound = Exception         # type: ignore[misc, assignment]
 
 
 import redis as sync_redis  # synchronous client, part of redis[hiredis] already installed
