@@ -28,11 +28,11 @@ from src.sandbox.container_cleanup import start_cleanup_loop
 async def _seed_admin() -> None:
     """Create the default instructor account if it doesn't exist."""
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.username == "admin"))
+        result = await db.execute(select(User).where(User.username == settings.ADMIN_USERNAME))
         if result.scalar_one_or_none() is None:
             admin = User(
-                username="admin",
-                password_hash=hash_password("CyberSimAdmin!"),
+                username=settings.ADMIN_USERNAME,
+                password_hash=hash_password(settings.ADMIN_PASSWORD),
                 role="instructor",
             )
             db.add(admin)

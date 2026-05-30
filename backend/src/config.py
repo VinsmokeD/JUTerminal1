@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     # Auth
     JWT_SECRET: str = "change-me-in-production"
     JWT_EXPIRY_HOURS: int = 8
+    # Default instructor account seeded on first boot. Override in any shared
+    # deployment; the default password is rejected in production (see below).
+    ADMIN_USERNAME: str = "admin"
+    ADMIN_PASSWORD: str = "CyberSimAdmin!"
 
     # Database
     POSTGRES_URL: str = "postgresql+asyncpg://cybersim:cybersim@postgres:5432/cybersim"
@@ -59,6 +63,20 @@ if settings.ENVIRONMENT == "production" and settings.JWT_SECRET == _INSECURE_SEC
     raise RuntimeError(
         "JWT_SECRET must be changed from the default before running in production. "
         "Generate one with: openssl rand -hex 32"
+    )
+
+_INSECURE_ADMIN_PASSWORD = "CyberSimAdmin!"
+if settings.ENVIRONMENT == "production" and settings.ADMIN_PASSWORD == _INSECURE_ADMIN_PASSWORD:
+    raise RuntimeError(
+        "ADMIN_PASSWORD must be changed from the default before running in production. "
+        "Set ADMIN_PASSWORD in the environment."
+    )
+elif settings.ENVIRONMENT != "test" and settings.ADMIN_PASSWORD == _INSECURE_ADMIN_PASSWORD:
+    import logging
+
+    logging.getLogger(__name__).warning(
+        "Default admin password in use (admin / CyberSimAdmin!). "
+        "Set ADMIN_PASSWORD for any shared deployment."
     )
 
 if settings.ENVIRONMENT != "test" and not settings.OPENROUTER_API_KEY:

@@ -460,3 +460,14 @@ pm run build and ran unit tests successfully.
 * **Where**: docs/final-report/evidence/LIVE_VERIFICATION_2026-05-29.md [NEW].
 * **What & How**: SIEM counts - SC-01 27ev/9tech, SC-02 25/11, SC-03 27/16. Live Red->Blue: create_command_siem_events for nmap/gobuster/sqlmap on a real SC-01 session -> 6 MITRE-tagged events (T1046, T1083), 6/6 persisted in Postgres, delivered to siem:{sid}:feed. Evidence doc captures health(all green), isolation(6/6), AI(live+adversarial-safe), scope gate(live), SIEM loop(live), scoring(fixed), tests(329)+CI.
 * **Verification**: live script output captured in the doc; no code changed (SIEM already solid). Suite remains 329.
+
+### [2026-05-29] - Claude Code (Phase 3: configurable admin credentials - C3/R2)
+* **Status**: Complete - Removed the hardcoded admin password; now env-configurable with a production guard + warning. Suite 329 -> 331.
+* **Why**: Baseline C3 / threat-model R2 - admin/CyberSimAdmin! was hardcoded in _seed_admin and worked out of the box on any deployment.
+* **Where**:
+  - backend/src/config.py - added ADMIN_USERNAME/ADMIN_PASSWORD settings; mirrored the existing JWT_SECRET pattern: raise in production if ADMIN_PASSWORD is the default, warn otherwise (non-test).
+  - backend/src/main.py - _seed_admin now uses settings.ADMIN_USERNAME/ADMIN_PASSWORD.
+  - .env.example - documented ADMIN_USERNAME/ADMIN_PASSWORD with a CHANGE-THESE note.
+  - backend/tests/test_config.py [NEW] - 2 tests (default + env override).
+  - Also confirmed: our code uses NO datetime.utcnow() (R6 deprecation is library-internal to python-jose); SC-04/SC-05 have ZERO dangling assets (F4 already clean).
+* **Verification**: 331 passed; black clean; backend rebuilt; LIVE - admin login still works with the default (token len 191) AND the warning "Default admin password in use ... Set ADMIN_PASSWORD" is emitted in backend logs. Production deploys with the default password will now fail-fast at startup.
