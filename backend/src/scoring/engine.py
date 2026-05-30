@@ -11,7 +11,8 @@ def compute_time_bonus(started_at: datetime, completed_at: datetime | None) -> i
         return 0
     elapsed_minutes = (completed_at - started_at).total_seconds() / 60
     if elapsed_minutes <= settings.TIME_BONUS_THRESHOLD_MINUTES:
-        # Linear bonus: up to +20 for finishing in half the threshold
+        # Linear bonus: +20 for instant completion, scaling down to +0 at the
+        # threshold (e.g. +10 at half the threshold).
         ratio = max(0.0, 1.0 - elapsed_minutes / settings.TIME_BONUS_THRESHOLD_MINUTES)
         return int(ratio * 20)
     return 0
@@ -35,9 +36,16 @@ def compute_hint_penalty(hints_used: list) -> int:
 
 
 def final_score(
-    base: int, hints_used: list[dict], started_at: datetime, completed_at: datetime | None
+    base: int, hints_used: list, started_at: datetime, completed_at: datetime | None
 ) -> int:
+    """Final score = the running score (`base`) plus a completion-time bonus,
+    clamped to [0, 100].
+
+    IMPORTANT: `base` is `session.score`, which ALREADY has every penalty
+    applied live during the session — hint penalties (ws/routes._send_hint and
+    scenarios/hint_engine) and gate/scope penalties. `hints_used` is accepted
+    for signature stability but is intentionally NOT re-penalised here: doing so
+    double-counted penalties already deducted from `base`.
+    """
     bonus = compute_time_bonus(started_at, completed_at)
-    penalty = compute_hint_penalty(hints_used)
-    total = base + bonus - penalty
-    return max(0, min(100, total))
+    return max(0, min(100, base + bonus))

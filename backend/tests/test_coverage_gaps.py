@@ -155,8 +155,10 @@ def test_scoring_applies_hint_deductions_and_time_bonus():
 
     assert compute_time_bonus(started, completed) == 15
     assert compute_hint_penalty([{"level": 1}, {"level": 2}, {"level": 3}, {"level": 99}]) == 40
-    assert final_score(90, [{"level": 1}, {"level": 3}], started, completed) == 80
-    assert final_score(4, [{"level": 3}], started, None) == 0
+    # final_score must NOT re-subtract hint penalties (they are already deducted
+    # from `base` live during the session); it only adds the time bonus + clamps.
+    assert final_score(90, [{"level": 1}, {"level": 3}], started, completed) == 100  # 90 + 15
+    assert final_score(4, [{"level": 3}], started, None) == 4  # base unchanged, no bonus
     assert final_score(99, [], started, completed) == 100
 
 
@@ -171,7 +173,7 @@ async def test_score_route_returns_deducted_final_score_and_completion_state():
     assert payload["base_score"] == 90
     assert payload["hints_used"] == 2
     assert payload["completed"] is True
-    assert payload["final_score"] == 85
+    assert payload["final_score"] == 100  # 90 + 10 bonus; hint penalties already in base
 
 
 @pytest.mark.asyncio
@@ -252,7 +254,7 @@ async def test_reports_consolidated_endpoint_returns_session_fields(monkeypatch)
 
     assert report["session"]["id"] == "sess-1"
     assert report["session"]["scenario_id"] == "SC-01"
-    assert report["score"]["final_score"] == 70
+    assert report["score"]["final_score"] == 95  # 85 + 10 bonus; hint penalties already in base
     assert report["notes"][0]["content"] == "Found exposed admin path"
     assert report["commands"][0]["command"].startswith("nmap")
     assert report["siem_events"][0]["mitre_technique"] == "T1190"

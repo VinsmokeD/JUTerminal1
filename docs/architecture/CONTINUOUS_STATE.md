@@ -443,3 +443,13 @@ pm run build and ran unit tests successfully.
 * **Why**: The project declares black ([tool.black] line-length 100, py311) and CI ran `black --check`, but the tree wasn't clean (58 files) so black couldn't be a real gate. Formatting is behavior-only, so it is safe to apply wholesale and then enforce.
 * **Where**: backend/src/** + backend/tests/** (formatting only); .github/workflows/ci.yml (black step -> blocking).
 * **Verification**: `black --check src/ tests/` exit 0 (clean); full suite `pytest --ignore=tests/e2e` => 318 passed (unchanged - behavior preserved); backend image rebuilt. mypy stays advisory (still has type findings).
+
+### [2026-05-29] - Claude Code (Phase 9: scoring double-count bug FIXED + rubric documented)
+* **Status**: Complete - Found and fixed a real scoring-correctness bug (hint penalties double-counted), added 11 deterministic tests, documented the rubric. Suite 318 -> 329.
+* **Why**: session.score is decremented LIVE per hint (ws/routes._send_hint, hint_engine) and per gate/scope block (-5). But final_score(base=session.score, hints_used, ...) ALSO subtracted compute_hint_penalty(hints_used) -> penalties counted twice. Students were over-penalised.
+* **Where**:
+  - backend/src/scoring/engine.py - final_score now returns clamp(base + time_bonus); hints_used kept for signature stability but NOT re-penalised (documented why). Fixed the misleading time-bonus comment (+20 at instant completion, +10 at half threshold, +0 at threshold - not "+20 at half").
+  - backend/tests/test_scoring_engine.py [NEW] - 11 tests incl. a named regression guard test_final_score_does_not_resubtract_hint_penalties.
+  - backend/tests/test_coverage_gaps.py - corrected 3 assertions that ENCODED the bug (route 85->100, reports 70->95, inline 80->100 & 0->4) with explanatory comments.
+  - docs/SCORING.md [NEW] - transparent rubric (start 100, live penalties, hint table by skill, linear time bonus, final = clamp(running + bonus)).
+* **Verification**: 11 scoring tests pass; full suite `pytest --ignore=tests/e2e` => 329 passed in 8.28s; black --check clean; backend image rebuilt. Callers (scoring/routes, reports/routes) now return correct, non-double-counted scores.
