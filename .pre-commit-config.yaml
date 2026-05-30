@@ -1,0 +1,23 @@
+# Local quality gates that mirror CI, so problems are caught before they are pushed.
+# Setup:  pip install pre-commit && pre-commit install
+# Run all: pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files   # block another stash.patch (3MB) slipping in
+        args: ['--maxkb=512']
+        exclude: '^docs/(history|final-report)/'   # rotated state archives may be large
+      - id: detect-private-key
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-yaml
+        args: ['--unsafe']            # allow GH Actions / compose custom tags & anchors
+        exclude: '^infrastructure/docker/siem/filebeat\.yml$'
+
+  - repo: https://github.com/psf/black
+    rev: 24.4.2                        # pinned to backend/requirements.txt
+    hooks:
+      - id: black
+        files: '^backend/(src|tests)/.*\.py$'
+        args: ['--line-length=100']

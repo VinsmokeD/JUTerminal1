@@ -476,3 +476,8 @@ pm run build and ran unit tests successfully.
 * **Status**: Complete - Added clickjacking/MIME/referrer/feature security headers to nginx; verified live. No code/tests affected.
 * **Where**: infrastructure/nginx/nginx.conf - server-level add_header (always) for X-Content-Type-Options nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy (geo/mic/cam off). CSP intentionally deferred (needs browser validation vs Vite SPA + xterm + WS). docs/SECURITY_THREAT_MODEL.md R5 updated.
 * **Verification**: `nginx -t` syntax ok; `nginx -s reload` clean (config is bind-mounted, no image rebuild); curl -I shows all 4 headers; frontend still 200 + /health ok.
+
+### [2026-05-29] - Claude Code (DX: pre-commit hooks mirroring CI)
+* **Status**: Complete - Added .pre-commit-config.yaml so quality issues are caught locally before CI. Verified all hooks pass.
+* **Where**: .pre-commit-config.yaml [NEW] - hooks: check-added-large-files(512kb, excl docs/history|final-report), detect-private-key, check-merge-conflict, check-json, check-yaml(--unsafe), black(backend src/tests, pinned 24.4.2 matching requirements).
+* **Verification**: `pre-commit validate-config` ok; `pre-commit run --all-files` => all 6 hooks Passed (large-files, private-key, merge-conflict, json, yaml, black). Setup: `pip install pre-commit && pre-commit install`.
