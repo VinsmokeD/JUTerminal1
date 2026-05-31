@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import Lenis from 'lenis'
 import { useReducedMotionSafe, MOTION } from '../lib/motion'
 import { usePerfTier } from '../components/ui/PerfTier'
 
@@ -22,19 +21,27 @@ export default function useLenis({ disabled = false } = {}) {
       : tier >= 2 ? MOTION.lenis.tier2
       : MOTION.lenis.tier1
 
-    const lenis = new Lenis({ lerp, smoothWheel: true })
-    lenisRef.current = lenis
+    let lenis = null
+    let raf = 0
+    let cancelled = false
 
-    let raf
-    function tick(time) {
-      lenis.raf(time)
+    // Lazy-load Lenis so the library never enters the main / workspace bundle —
+    // it only downloads when smooth scroll actually activates (public/shell, capable, non-reduced).
+    import('lenis').then(({ default: Lenis }) => {
+      if (cancelled) return
+      lenis = new Lenis({ lerp, smoothWheel: true })
+      lenisRef.current = lenis
+      const tick = (time) => {
+        lenis.raf(time)
+        raf = requestAnimationFrame(tick)
+      }
       raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
+    })
 
     return () => {
-      cancelAnimationFrame(raf)
-      lenis.destroy()
+      cancelled = true
+      if (raf) cancelAnimationFrame(raf)
+      if (lenis) lenis.destroy()
       lenisRef.current = null
     }
   }, [skip, tier])

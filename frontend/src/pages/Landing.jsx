@@ -69,10 +69,11 @@ export default function Landing() {
   )
 
   useEffect(() => {
+    if (reduced) return // skip the full-viewport spotlight repaint on weak/reduced
     const handleMove = (e) => { mouseX.set(e.clientX); mouseY.set(e.clientY) }
     window.addEventListener('mousemove', handleMove, { passive: true })
     return () => window.removeEventListener('mousemove', handleMove)
-  }, [mouseX, mouseY])
+  }, [mouseX, mouseY, reduced])
 
   const goToPlatform = () => navigate(token ? '/dashboard' : '/auth')
 
@@ -90,11 +91,13 @@ export default function Landing() {
 
   return (
     <div className="min-h-dvh bg-void text-txt-primary font-display relative">
-      {/* Global cursor spotlight overlay */}
-      <motion.div
-        className="pointer-events-none fixed inset-0 z-30 opacity-70"
-        style={{ background: spotlightBg }}
-      />
+      {/* Global cursor spotlight overlay (skipped on reduced/low-perf) */}
+      {!reduced && (
+        <motion.div
+          className="pointer-events-none fixed inset-0 z-30 opacity-70"
+          style={{ background: spotlightBg }}
+        />
+      )}
 
       {/* ── NAVIGATION ─────────────────────────────────────── */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-void/80 border-b border-cs-border backdrop-blur-md font-mono text-xs">

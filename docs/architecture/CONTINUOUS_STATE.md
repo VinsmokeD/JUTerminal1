@@ -13,6 +13,17 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-31] - Claude Opus 4.8 (Phase 8 — performance hardening: bundle split + spotlight gating)
+
+* **Status**: COMPLETE ✅ — main bundle **270 KB → 214 KB (−56 KB / −21%)** on first paint; build green, 47/47 tests, lint 0 problems; Playwright verified (lenis lazy-chunk loads, 0 errors, headline reveals).
+* **Why**: User asked to make performance good and "remove if necessary." Audit found three real costs: lenis shipped in the eager main chunk (downloaded on every route incl. workspaces), Dashboard+Onboarding were eagerly imported (public visitors paid for post-auth code), and the full-viewport mouse-spotlight repainted a large radial-gradient layer on every mousemove even on weak hardware.
+* **Where** (4 files):
+  - `frontend/src/App.jsx` — moved `Onboarding` + `Dashboard` from eager imports to `React.lazy` (+ `Suspense` fallbacks), matching the existing workspace-route pattern. They now split into their own chunks (`Dashboard` 22.7 KB, `Onboarding` 6.7 KB) loaded only post-auth.
+  - `frontend/src/hooks/useLenis.js` — **dynamic `import('lenis')`** inside the effect (with a `cancelled` guard) instead of a static top-level import. Lenis (18.4 KB) is now its own chunk that downloads only when smooth scroll actually activates — and **never on `/session/**`** (skip=true short-circuits before the import). Truly fulfills the plan's "lenis absent from workspace bundles."
+  - `frontend/src/pages/Landing.jsx` + `frontend/src/pages/Auth.jsx` — gated the full-viewport cursor-spotlight behind `useReducedMotionSafe()`: when reduced/`perfMode=low`, the `mousemove` listener isn't attached and the gradient overlay isn't rendered (the reticle already provides cursor feedback). Removes a per-frame large-layer repaint on weak machines.
+* **What & How**: All changes are bundle/runtime-cost reductions with no behavior change on capable machines. Net main-chunk drop comes from removing lenis (18 KB) + Dashboard (22 KB) + Onboarding (7 KB) from the eager path. Verified the lenis dynamic import didn't break smooth scroll (chunk requested + instantiated, 0 pageerrors). Considered but **kept**: three.js stays in the lazy hero chunk (unavoidable for the WebGL hero, already off the critical path); bloom postprocessing left in the hero chunk (tier-3 lazy already) — dynamic-splitting it was judged low-reward vs. added async risk.
+* **Verification**: `dist/assets/index-*.js` 214.4 KB (was ~270); `lenis-*.js` 18.4 KB / `Dashboard-*.js` 22.7 KB / `Onboarding-*.js` 6.7 KB as separate chunks; `npm run build` ✓; `vitest` 47/47; `eslint` 0 problems. Playwright on `/`: `lenisChunkLoaded=true`, headline `opacity:1`, **0 console/page errors**.
+
 ### [2026-05-31] - Claude Opus 4.8 (Phase 6 — workspace-safe motion verified; app live on dev server)
 
 * **Status**: COMPLETE ✅ (verification gate — no code change needed). Dev server live (HTTP 200, port 3001).

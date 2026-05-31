@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useAuthStore } from '../store/authStore'
 import useCursorIntent from '../hooks/useCursorIntent'
+import { useReducedMotionSafe } from '../lib/motion'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 
 const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
@@ -30,6 +31,7 @@ export default function Auth() {
   const { login, register } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
+  const reduced = useReducedMotionSafe()
 
   // Reticle intent on the submit CTA — tint/label follow the active mode
   const submitCursor = useCursorIntent({
@@ -50,13 +52,14 @@ export default function Auth() {
   )
 
   useEffect(() => {
+    if (reduced) return // skip full-viewport spotlight repaint on weak/reduced
     const handleMove = (e) => {
       mouseX.set(e.clientX)
       mouseY.set(e.clientY)
     }
     window.addEventListener('mousemove', handleMove)
     return () => window.removeEventListener('mousemove', handleMove)
-  }, [mouseX, mouseY])
+  }, [mouseX, mouseY, reduced])
 
   // Spring-lagged card 3D tilt
   const cardRef = useRef(null)
@@ -137,12 +140,12 @@ export default function Auth() {
 
   return (
     <div className="min-h-dvh bg-void flex relative">
-      <motion.div 
-        className="pointer-events-none fixed inset-0 z-30 opacity-70"
-        style={{
-          background: spotlightBg
-        }}
-      />
+      {!reduced && (
+        <motion.div
+          className="pointer-events-none fixed inset-0 z-30 opacity-70"
+          style={{ background: spotlightBg }}
+        />
+      )}
 
       <style>{`
         @keyframes authDriftA {

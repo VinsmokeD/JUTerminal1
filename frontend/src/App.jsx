@@ -4,8 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore } from './store/authStore'
 import Landing from './pages/Landing'
 import Auth from './pages/Auth'
-import Onboarding from './pages/Onboarding'
-import Dashboard from './pages/Dashboard'
 import CommandPalette from './components/palette/CommandPalette'
 import ToastContainer from './components/ui/Toast'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
@@ -15,7 +13,9 @@ import ReticleCursor from './components/motion/ReticleCursor'
 import BootHandshake from './components/shell/BootHandshake'
 import CurtainTransition from './components/motion/CurtainTransition'
 
-// Lazy-load heavy components with xterm and complex state
+// Lazy-load post-auth + heavy pages so the public entry (Landing/Auth) ships lean
+const Onboarding = lazy(() => import('./pages/Onboarding'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
 const RedWorkspace = lazy(() => import('./pages/RedWorkspace'))
 const BlueWorkspace = lazy(() => import('./pages/BlueWorkspace'))
 const Debrief = lazy(() => import('./pages/Debrief'))
@@ -118,8 +118,8 @@ function AppContent() {
           <Routes location={location} key={location.pathname}>
             <Route path="/"          element={<RouteGuard allowOnlyUnauth><RoutePage><Landing /></RoutePage></RouteGuard>} />
             <Route path="/auth"      element={<RouteGuard allowOnlyUnauth><RoutePage><Auth /></RoutePage></RouteGuard>} />
-            <Route path="/onboarding" element={<RouteGuard requireAuth><RoutePage><ErrorBoundary><Onboarding /></ErrorBoundary></RoutePage></RouteGuard>} />
-            <Route path="/dashboard"  element={<RouteGuard requireAuth requireOnboarding><RoutePage><ErrorBoundary><Dashboard /></ErrorBoundary></RoutePage></RouteGuard>} />
+            <Route path="/onboarding" element={<RouteGuard requireAuth><RoutePage><ErrorBoundary><Suspense fallback={<LoadingSpinner />}><Onboarding /></Suspense></ErrorBoundary></RoutePage></RouteGuard>} />
+            <Route path="/dashboard"  element={<RouteGuard requireAuth requireOnboarding><RoutePage><ErrorBoundary><Suspense fallback={<LoadingSpinner />}><Dashboard /></Suspense></ErrorBoundary></RoutePage></RouteGuard>} />
             <Route
               path="/session/:sessionId/red"
               element={
