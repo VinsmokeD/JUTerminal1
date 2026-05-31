@@ -712,15 +712,15 @@ def test_33_flags_capturable_and_required_flags_exist():
         flag_ids = {f.get("id") for f in flags}
 
         for f in flags:
-            assert f.get("value") or f.get("value_pattern"), (
-                f"{sid}: flag '{f.get('id')}' has neither value nor value_pattern (uncapturable)"
-            )
+            assert f.get("value") or f.get(
+                "value_pattern"
+            ), f"{sid}: flag '{f.get('id')}' has neither value nor value_pattern (uncapturable)"
 
         for phase_num, phase in _phase_items(spec):
             for fid in phase.get("completion_signals", {}).get("flags_captured", []):
-                assert fid in flag_ids, (
-                    f"{sid} phase {phase_num}: completion requires undefined flag '{fid}'"
-                )
+                assert (
+                    fid in flag_ids
+                ), f"{sid} phase {phase_num}: completion requires undefined flag '{fid}'"
 
 
 if __name__ == "__main__":

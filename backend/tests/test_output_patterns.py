@@ -101,6 +101,7 @@ async def test_global_cooldown_suppresses_second_insight_within_30_seconds():
 
 # ── scan_flag_candidates tests ─────────────────────────────────────────────────
 
+
 def _reset_flag_candidate_state():
     from src.cache import redis as redis_cache
     from src.scenarios import output_patterns
@@ -184,6 +185,7 @@ async def test_dedup_suppresses_repeat_nudge_same_session():
     # Buffer the second call; the flag_candidate dedup key is now set
     _reset_flag_candidate_state.__wrapped__ = None  # don't clear redis this time
     from src.scenarios import output_patterns
+
     output_patterns._buffers.clear()  # reset line buffer only
     second = await scan_flag_candidates(sess, "SC-01", chunk)
 

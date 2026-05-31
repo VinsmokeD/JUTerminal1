@@ -134,35 +134,42 @@ async def test_create_command_siem_events_uses_live_kali_ip_and_educational_brid
 
 # ── WS2: new event coverage tests ─────────────────────────────────────────────
 
-@pytest.mark.parametrize("cmd,expected_id", [
-    # SC-01 new events
-    ("redis-cli -h 172.20.1.20 CONFIG SET dir /root/.ssh", "sc01_redis_unauthenticated"),
-    ("curl http://172.20.1.20/.env.bak", "sc01_sensitive_artifact_access"),
-    ("curl http://172.20.1.20/backup.zip", "sc01_sensitive_artifact_access"),
-    # SC-02 new event
-    ("ls //172.20.2.10/sysvol/nexora.local/Policies", "sc02_gpp_credential_extraction"),
-    ("gpp-decrypt AQAAANCMnd8BFdERj", "sc02_gpp_credential_extraction"),
-    # SC-03 new events
-    ("theHarvester -d nexora.com -l 500 -b google", "sc03_osint_email_harvesting"),
-    ("nc -lvp 4444", "sc03_c2_reverse_shell_handler"),
-    ("msfconsole -q -x 'use multi/handler'", "sc03_c2_reverse_shell_handler"),
-    ("dig TXT nexora.com", "sc03_spf_dmarc_probe"),
-])
+
+@pytest.mark.parametrize(
+    "cmd,expected_id",
+    [
+        # SC-01 new events
+        ("redis-cli -h 172.20.1.20 CONFIG SET dir /root/.ssh", "sc01_redis_unauthenticated"),
+        ("curl http://172.20.1.20/.env.bak", "sc01_sensitive_artifact_access"),
+        ("curl http://172.20.1.20/backup.zip", "sc01_sensitive_artifact_access"),
+        # SC-02 new event
+        ("ls //172.20.2.10/sysvol/nexora.local/Policies", "sc02_gpp_credential_extraction"),
+        ("gpp-decrypt AQAAANCMnd8BFdERj", "sc02_gpp_credential_extraction"),
+        # SC-03 new events
+        ("theHarvester -d nexora.com -l 500 -b google", "sc03_osint_email_harvesting"),
+        ("nc -lvp 4444", "sc03_c2_reverse_shell_handler"),
+        ("msfconsole -q -x 'use multi/handler'", "sc03_c2_reverse_shell_handler"),
+        ("dig TXT nexora.com", "sc03_spf_dmarc_probe"),
+    ],
+)
 def test_new_siem_events_fire_on_expected_commands(cmd, expected_id):
     """Every new WS2 event ID fires when its representative command is submitted."""
     scenario = expected_id[:4].upper().replace("SC0", "SC-0")
     matches = match_command_events(cmd, scenario)
-    assert any(e["id"] == expected_id for e in matches), (
-        f"{cmd!r} did not produce event {expected_id!r}; got: {[e['id'] for e in matches]}"
-    )
+    assert any(
+        e["id"] == expected_id for e in matches
+    ), f"{cmd!r} did not produce event {expected_id!r}; got: {[e['id'] for e in matches]}"
 
 
-@pytest.mark.parametrize("cmd,scenario", [
-    ("whoami", "SC-01"),
-    ("id", "SC-01"),
-    ("ls -la", "SC-02"),
-    ("echo hello", "SC-03"),
-])
+@pytest.mark.parametrize(
+    "cmd,scenario",
+    [
+        ("whoami", "SC-01"),
+        ("id", "SC-01"),
+        ("ls -la", "SC-02"),
+        ("echo hello", "SC-03"),
+    ],
+)
 def test_benign_commands_produce_no_siem_events(cmd, scenario):
     """Generic shell commands that carry no attack signal must not emit events."""
     matches = match_command_events(cmd, scenario)
