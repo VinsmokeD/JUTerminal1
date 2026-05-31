@@ -994,6 +994,201 @@ pm run build and ran unit tests successfully.
 
 ---
 
+* **What & How**:
+  - Converted the raw score toast events and note saving/deleting actions to use a single singleton toast notification system.
+  - Implemented lightweight, pure-CSS confetti particle effects for the `achievement` toast type, gated by the performance tier.
+  - Unified empty states for lists (SIEM feed, notebook, AI chat panel, scenarios search list) under a single UI component (`EmptyState`).
+  - Added shimmer animation classes for skeleton loaders.
+  - Verified keyboard-safe modal focus traps, ESC closing, and low-perf fallback modes (no backdrop blurs on modal overlay).
+* **Verification**:
+  - `cd frontend && npm run build` → exit 0 (built in 6.07s)
+  - `npm test -- --run` → 27 passed (all tests green)
+  - `backend pytest` → 334 passed (all tests green)
+
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Aesthetic Modernization & Global Clean Redesign)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user requested a cleaner, more readable, and less cluttered interface globally across the entire platform. This required removing dated geometric clip-paths (chamfers), tactile corner ticks, bracket hover animations, and diagnostic scanlines, replacing them with a premium slate-dark design featuring standard rounded corners, subtle dark borders, and role-based top-border colored highlights on workspace panels.
+* **Files modified**:
+  - `frontend/src/styles/v3-design.css` — Replaced `clip-path` on `.btn-v3` with `border-radius: var(--radius-md)`. Removed brackets (`::before` / `::after` content) on hover. Removed `.card-v3` corner ticks and `.card-v3::after` scanlines. Set `border-radius: var(--radius-lg)` on `.card-v3` and disabled `hud-corner-ticks` globally. Added `text-shadow: none` on `.card-v3-header-glow` classes.
+  - `frontend/src/index.css` — Overhauled `.hud-glass-cyan` and `.hud-glass-crimson` to utilize a unified slate background (`rgba(15, 18, 29, 0.8)`) and subtle borders (`rgba(255, 255, 255, 0.08)`). Updated `.workspace-pane` layouts inside red/blue split workspaces to use standard rounded borders (`border-radius: var(--radius-lg)`) and unified border colors. Added pane top border highlight helper classes (`pane-hl-*`).
+  - `frontend/src/pages/RedWorkspace.jsx` — Updated container wrappers with `workspace-resizable-red` class and converted panes to use standard `workspace-pane` and role-based top highlight helpers (`pane-hl-red`, `pane-hl-amber`, `pane-hl-blue`, `pane-hl-green`). Replaced bright crimson drag-divider colors with subtle gray borders.
+  - `frontend/src/pages/BlueWorkspace.jsx` — Wrapped slots with role-based top border highlights (`pane-hl-blue`, `pane-hl-purple`, `pane-hl-green`).
+  - `frontend/src/components/siem/SiemFeed.jsx` — Improved message line contrast to `text-txt-primary` and timestamp to `text-txt-secondary/80` for better text readability.
+  - `frontend/src/components/hints/AiHintPanel.jsx` — Simplified AI tutor welcome and hint bubble backgrounds to use solid backgrounds (`bg-[#0f121d]` and `bg-[#1c2135]`) instead of glowing gradients, and added `tracking-wide` for wider letter-spacing.
+  - `frontend/src/pages/Dashboard.jsx` — Standardized methodology and role active backgrounds to use `bg-surface-3` with soft glows instead of custom crimson/cyan background templates. Removed redundant `clip-chamfer-sm` from the filter bar.
+  - `frontend/src/pages/Auth.jsx` — Replaced custom backgrounds on feature pills with standard `bg-surface-2`.
+* **What & How**:
+  - Overhauled global primitives (buttons, cards, badges, inputs) by removing geometric clip-paths and setting standard border-radius properties (`var(--radius-md)` / `var(--radius-lg)`).
+  - Cleaned up visual clutter (hovers, bracket transitions, scanlines, and diagnostic text glows) to ensure zero weird movement animations bleed through.
+  - Replaced duplicate panel-specific colorful outlines with clean, uniform dark-gray border wraps (`rgba(255, 255, 255, 0.08)`) and helper classes (`pane-hl-*`) indicating the pane active context.
+  - Tuned reading layouts: widened letter-spacing, set relax line-heights, and maximized font contrasts across SIEM logs and AI tutor chat streams.
+* **Verification**:
+  - Production build compiled successfully (`npm run build` completed in 8.62s).
+  - All 27 Vitest unit tests pass successfully.
+  - Docker Compose frontend rebuild run to mount static updates.
+
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Nimbus Console Retheme & Consolidation Sweep)
+
+* **Status**: COMPLETE ✅
+* **Why**: To fully implement the "Nimbus Console" design specification across the platform, retiring all obsolete scanlines, dot-grids, glitch-text, and raw uppercase lettering styles.
+* **Files modified**:
+  - `frontend/src/styles/v3-design.css` — Updated badge-v3 to full-radius pills in normal casing. Refined input-v3 styles with glass container properties and 2px focus rings. Deleted obsolete visual clutter classes (tilt-target, tiltIn keyframes, crt-container, glitch-text, card-v3-spotlight, and corner ticks).
+  - `frontend/src/index.css` — Removed duplicate `.btn-v3` styles. Re-implemented the global `.glass` class with nimbus colors and hairlines. Updated `.workspace-pane` panel backgrounds to use glass values and contextual Team highlights (`pane-hl-red` and `pane-hl-blue`).
+  - `frontend/src/hooks/useTilt.js` — Disabled 2.5D mouse tilt and spotlight variables when dynamic performance tier is low (`data-perf="low"`).
+  - `frontend/src/components/nav/CyberSimNav.jsx` — Updated logo brand wordmark to Outfit 700 + gradient styling and updated the Active Mission badge to normal casing.
+  - `frontend/src/components/workspace/WorkspaceTopBar.jsx` — Updated role indicators, AI mode toggles, and scoreboard eyebrows to use display fonts, normal casing, and correct tracking.
+  - `frontend/src/components/dashboard/ScenarioCard.jsx` — Replaced card-v3 class with glass class, and simplified title header glows and accent bottom bars.
+  - `frontend/src/pages/Dashboard.jsx` — Removed glitch-text titles, converting headers to standard title casing.
+  - `frontend/src/pages/Landing.jsx` — Replaced all uppercase, monospaced descriptions and headers with normal casing display font. Converted cards and boxes to glass panels.
+  - `frontend/src/pages/Onboarding.jsx` — Removed welcome glitch-text and shouting submit buttons, updating them to title casing.
+  - `frontend/src/pages/Auth.jsx` — Updated logo styling to brand text-gradient, input labels to clean eyebrows, and submit buttons to title casing.
+* **What & How**:
+  - Unified all token mappings and CSS variables (`--nb-bg`, `--nb-text`, etc.) across stylesheets.
+  - Replaced duplicate visual button rules, consolidating everything under the clean `.btn-v3` system.
+  - Converted the shouting UPPERCASE visual system of headings and button tags to clean, readable normal title/sentence casing.
+  - Gated heavy animation/tilt effects behind a single client-side performance check inside the general hook.
+* **Verification**:
+  - Production build compiled successfully (`npm run build` completed in 6.38s).
+  - All 27 Vitest unit tests pass successfully.
+  - All 334 backend python unit/integration tests pass successfully.
+
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Casing & Typography Sweep)
+
+* **Status**: COMPLETE ✅
+* **Why**: Completed the final casing and typography sweep for the "Nimbus Console" design system, ensuring all uppercase shouting is retired and Outfit font is mapped correctly, restricting monospace strictly to terminal, code, IP, score, and timestamps on remaining pages.
+* **Files modified**:
+  - `frontend/src/pages/Debrief.jsx` — Updated all section headings (Attack Timeline, Session Summary, Dual-Axis Kill Chain Timeline, Competency Radar, Metric Breakdown, Alignment Framework, Coach Analysis, Demonstrated Strengths, Areas for Improvement, Missed Detections / Logs, Recommended Practices, Socratic Operator Coach, Cause and Effect) from uppercase monospace to normal/title casing in Outfit (`font-display`). Capitalized Red/Blue team badge text.
+  - `frontend/src/pages/InstructorDashboard.jsx` — Replaced uppercase monospace tab buttons (Sessions, Users, Learning Analytics, Platform & AI) with Outfit normal case layout. Adjusted filter badge typography, table headers, and activity widget labels. Streamlined live inspector close labels and command/note subheadings.
+  - `frontend/src/pages/Profile.jsx` — Formatted ONLINE status badges, Operator ID joined blocks, average scores, completion rates, missionDeploymentLog and capabilitiesMap headers, and proficiency row labels to clean, normal casing.
+* **What & How**:
+  - Replaced remaining `font-mono uppercase` classes with `font-display normal-case` or equivalent Outfit classes on Debrief, Profile, and Instructor Dashboard pages.
+  - Updated status labels, buttons, and subheaders to follow sentence/title casing, removing uppercase shouting.
+  - Retained monospace font (`font-mono`) only for dates/timestamps, score percentages/numerics, and codes/session IDs.
+* **Verification**:
+  - Production build compiled successfully (`npm run build` completed in 14.60s).
+  - All 27 Vitest unit tests pass successfully.
+  - All 334 backend python unit/integration tests pass successfully.
+  - mypy checks pass successfully ("Success: no issues found in 58 source files").
+
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Body Fade Mask Layout Fix)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user reported that text content and titles at the bottom of pages were extremely dark, faded, and low-contrast. This was caused by the body element's `mask-image` property (which faded all content at the page edges to transparent).
+* **Files modified**:
+  - `frontend/src/index.css` — Removed the grid background and `mask-image` properties from the `body` styles, moving them to `body::before` with a negative z-index (`z-index: -2`). This isolates the fade mask effect strictly to the grid background lines, maintaining full 100% font opacity and readability for page copy, input labels, and layouts across all pages.
+* **Verification**:
+  - Production build compiled successfully in Nginx image build.
+  - Container rebuilt and restarted successfully.
+  - Changes pushed to github remote origin master branch.
+
+---
+
+### [2026-05-30] - Antigravity (Design V6 — Auth Redirection Handshake & 3D WebGL Spotlight Overlay)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user requested richer animations, an interactive transition flow when redirecting from the authentication page to the platform workspaces, and custom 3D light aesthetic features.
+* **Files modified**:
+  - `frontend/src/pages/Auth.jsx` — 
+    - Wired the 3D WebGL particle network (`HeroScene3D` with 2D `ParticleCanvas` fallback) to render inside the left branding panel, enabling interactive node rotation/dragging.
+    - Implemented a cursor-tracking spotlight shader overlay (`radial-gradient` tracking client X/Y coordinates) that casts smooth interactive lighting on the login forms and panel grid.
+    - Created the `BootOverlay` component to delay page routing on successful login, showing a retro console boot log sequence (Initializing connection, verifiying credentials, allocating scenario container namespace) accompanied by a glowing progress loader bar before navigating.
+* **Verification**:
+  - Production build completed successfully (`npm run build` completed in 5.80s).
+  - All 27 Vitest unit tests pass successfully.
+  - Rebuilt and restarted the frontend container successfully.
+  - All files committed and pushed to git origin master.
+
+---
+
+### [2026-05-30] - Antigravity (Design V7 — High-End Motion & 3D Interactive Lighting Upgrade)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user requested high-fidelity, fluid spring animations inspired by rzv.studio and brightedge.framer.website, completely removing the boot loading overlay screen on login redirection.
+* **Files modified**:
+  - `frontend/src/App.jsx` — Implemented page transitions using AnimatePresence. Extracted Routes to `AppContent` under `BrowserRouter` so useLocation transitions trigger correctly. Wrapped all Route elements in the spring-based `<RoutePage>` component which fires an entrance scale up/exit scale down and a glowing holographic scanline wipe (`RouteScannerWipe`).
+  - `frontend/src/pages/Auth.jsx` — Completely removed the console bootloader screen (`BootOverlay`), redirecting users directly on login. Replaced the mouse coordination listener with a spring-lagged cursor follow spotlight using useMotionValue and useSpring. Configured 3D card tilt tracking (`rotateX`/`rotateY`) and relative border light refract gradients (`cardHoverBg`) on hover to create interactive physical card depth.
+  - `frontend/src/pages/Landing.jsx` — Replaced client coordinate mouse listener with the shared spring-lagged spotlight. Wrapped hero cards, demo cards, stat cards, how-it-works cards, scenario cards, and CTA elements with scroll-triggered fade/scale up animations using framer-motion's whileInView/viewport parameters. Added hover relative edge lighting glow and scale translation hovers to scenario cards.
+* **What & How**:
+  - Replaced native mouse coordinate state updates with declarative, performance-optimized Framer Motion springs to simulate natural delayed spotlight drag on Auth and Landing pages.
+  - Set up AnimatePresence route swaps that scale down exiting layouts slightly (3D push-back) while sliding/fading in new layouts with a glowing scanline wipe.
+  - Wrapped card items in tilt and hover variables to make panels react dynamically to mouse coordinates.
+* **Verification**:
+  - Production build compiled successfully (`npm run build` completed in 10.00s).
+  - All 27 Vitest unit tests pass successfully.
+
+---
+
+### [2026-05-31] - Claude Sonnet 4.6 (MOTION_3D_MASTER_PLAN — Phases 0–3 implemented)
+
+* **Status**: COMPLETE ✅ — build green (965 modules, 7.22s), lint 0 errors, 27/27 tests pass.
+* **Why**: User instructed to start implementing `docs/architecture/MOTION_3D_MASTER_PLAN.md`. Phases 0–3 constitute the full motion-system foundation: deps, token layer, primitives, cinematic shell, and Landing redesign.
+* **Where** (17 files changed / created):
+  - `frontend/package.json` — added `lenis@1.3.23` runtime dep (smooth scroll, ~3 KB gzipped)
+  - `frontend/src/lib/motion.js` — **extended**: added `DUR`/`EASE` scroll/reveal/curtain variants (`wordRevealContainer`, `wordRevealItem`, `sectionReveal`, `curtainPanelLeft/Right`), `MOTION` constants (Lenis lerp per tier, magnetic strength/radius, marquee speed, parallax depth), `useReducedMotionSafe()` hook (framer `useReducedMotion` + `perfMode=low`), `useMotionEnabled()` hook (all-in-one gate: reduced + perfMode + PerfTier). Existing 6 presets and `t` util unchanged.
+  - `frontend/src/hooks/useLenis.js` — **NEW**: mounts Lenis smooth scroll per-tier lerp (0.08/0.10/0.12); auto-off under reduced-motion, perf=low, or `disabled` prop. Returns instance ref.
+  - `frontend/src/hooks/useSplitText.js` — **NEW**: ~25-line hand-rolled SSR-safe word-splitter; splits on `/\s+/`, defers to effect (no SSR flash).
+  - `frontend/src/hooks/useMagnetic.js` — **NEW**: spring-based magnetic pull (`useMotionValue` + `useSpring`); returns `{ ref, x, y, bind }` for motion.div style application; auto-disabled under reduced-motion.
+  - `frontend/src/hooks/useScrollScene.js` — **NEW**: generic `useScroll → useTransform` mapper; returns `{ ref, value, scrollYProgress }`.
+  - `frontend/src/hooks/useCursorIntent.js` — **NEW**: sets cursor store intent/label/mode on hover; returns `{ bind }` to spread onto any element.
+  - `frontend/src/store/cursorStore.js` — **NEW**: Zustand store for global cursor state (`intent`, `label`, `mode`, `x/y`).
+  - `frontend/src/components/motion/SmoothScrollProvider.jsx` — **NEW**: wraps public/shell routes with Lenis via `useLenis({ disabled: isWorkspace })`; hard-excludes `/session/**`; exposes `useLenisContext()`.
+  - `frontend/src/components/motion/RevealText.jsx` — **NEW**: word clip-path reveal, scroll-triggered `useInView`; stagger + delay props; uses correct `motion[Tag]` element for semantic HTML; falls back to plain tag under reduced-motion.
+  - `frontend/src/components/motion/ReticleCursor.jsx` — **NEW**: crosshair cursor (dot + lagged ring); red/blue/neutral tint via `cursorStore.mode`; contextual label via `AnimatePresence`; adds `data-cursor-hidden` on `<html>` to hide native pointer; self-disables in `/session/**` + reduced-motion.
+  - `frontend/src/components/motion/Marquee.jsx` — **NEW**: CSS `cs-marquee-scroll` keyframe infinite strip; falls back to static flex row; `pauseOnHover` via Tailwind hover:animation-play-state.
+  - `frontend/src/components/motion/CurtainTransition.jsx` — **NEW**: dual-panel red-left/blue-right wipe; replaces `RouteScannerWipe`; panels sweep in from both sides, meet at center seam, retreat — all within the 0.72s page-transition window.
+  - `frontend/src/components/shell/BootHandshake.jsx` — **NEW**: 0→100% connection-establish preloader + dual curtain split reveal. `sessionStorage` key `cs.boot.done` ensures once-per-session. Skipped instantly under reduced-motion. Progress bar is dual red/blue gradient.
+  - `frontend/src/App.jsx` — **updated**: imports `SmoothScrollProvider`, `ReticleCursor`, `BootHandshake`, `CurtainTransition`; wraps `<BrowserRouter>` in `<BootHandshake>`; wraps `AppContent` in `<SmoothScrollProvider>`; mounts `<ReticleCursor />` at shell level; `RouteScannerWipe` replaced with `<CurtainTransition />` inside `RoutePage`.
+  - `frontend/src/pages/Landing.jsx` — **rebuilt**: `RevealText` on hero headline with word-reveal stagger; magnetic CTAs (`useMagnetic`); pin-and-stack "How It Works" (CSS `position: sticky` with per-card `top` offset + z-index stacking); `Marquee` on the frameworks row (6 items, 28s loop); `useCursorIntent` `ENGAGE` intent on scenario cards; `sectionReveal` variants on section headings.
+  - `frontend/src/index.css` — added `@keyframes cs-marquee-scroll` (50% translate for seamless loop), `[data-cursor-hidden]` cursor:none rule, `[data-perf="low"]` Marquee pause rule.
+* **What & How**:
+  - All new effects plug into the existing `PerfTier` + `data-perf="low"` + `prefers-reduced-motion` switchboard established in V5 Phase 1.
+  - Workspace routes (`/session/**`) are explicitly excluded from Lenis scroll hijack and ReticleCursor takeover — terminal/SIEM retain native scroll and cursor precision.
+  - `BootHandshake` wraps the app outside `BrowserRouter` so it renders before any route logic; `AppContent` mounts inside it.
+  - `useReducedMotionSafe` composes framer-motion's `useReducedMotion` with `settingsStore.perfMode === 'low'` — no DOM reads, fully reactive.
+  - Net new lenis dep: ~3 KB gzipped. All other new code is pure JS/JSX. Total new runtime weight well within the <8 KB budget gate.
+* **Verification**: `npm run build` → ✓ 965 modules, 7.22s. `npm run lint` → 0 errors, 1 pre-existing warning (ScenarioCard.jsx:3 ACCENT_BAR, untouched). `npm test` → 27/27 pass. Phases 4–9 (3D elevation, inner pages, workspace-safe motion, Debrief, perf/a11y, docs) remain — see `MOTION_3D_MASTER_PLAN.md`.
+
+### [2026-05-31] - Antigravity (Codebase Knowledge Graph built via Graphify)
+
+* **Status**: Complete — Knowledge graph built (2008 nodes, 4007 edges, 212 communities); visual graph `graphify-out/graph.html` and audit report `graphify-out/GRAPH_REPORT.md` written successfully.
+* **Why**: The user requested that we continue the previous agent's execution to set up and run `graphify` on the entire codebase, completing the semantic document extraction chunks that hit rate limits, and displaying the full graph context.
+* **Where** (1 file changed, plus several generated artifacts under `graphify-out/` which is ignored by git):
+  - `docs/architecture/CONTINUOUS_STATE.md` — Appended this status log.
+* **What & How**:
+  - Resumed the document extraction process by identifying the remaining un-extracted document chunks (6, 7, and 8) from `.graphify_chunkplan.json`.
+  - Dispatched specialized extraction subagents in parallel to process the remaining document chunks.
+  - Wrote a python script to merge the 8 semantic document chunk outputs with the AST extraction graph (`.graphify_ast.json`).
+  - Clustered the merged graph using networkx/graphify libraries, resolving 212 communities, and auto-generated descriptive names for these communities based on folder paths and prominent nodes.
+  - Finalized `GRAPH_REPORT.md` and compiled `graphify-out/graph.html` visualizer.
+  - Pruned temporary files and updated the cumulative cost tracker.
+* **Verification**:
+  - Run benchmark command: `Reduction: 307.9x fewer tokens per query`.
+  - Visualizer check: `graphify-out/graph.html` written successfully.
+
+### [2026-05-31] - Antigravity (Claude Code Graphify Integration Installed)
+
+* **Status**: Complete — Installed Graphify CLI hooks and documentation integration for Claude Code.
+* **Why**: The user requested that the knowledge graph be accessible to the Claude Code project for full context and persistent memory.
+* **Where** (2 files modified):
+  - `CLAUDE.md` — Added `## graphify` guidelines instructing Claude Code how and when to query the knowledge graph.
+  - `.claude/settings.json` — Registered `PreToolUse` hook to remind Claude Code to query graphify before grepping or searching files.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Appended this status log.
+* **What & How**:
+  - Executed `graphify claude install` using the Python environment, which successfully populated `CLAUDE.md` guidelines and configured the JSON hook definitions inside `.claude/settings.json`.
+* **Verification**:
+  - Read `CLAUDE.md` and `.claude/settings.json` to verify proper file structure and hooks registration.
+
+---
+
 ### [2026-05-31] - Antigravity (Obsidian Vault Integration & Live Graph Access)
 
 * **Status**: Complete — Knowledge graph vault copied to the user's active Obsidian vault and launched successfully in the desktop app.
@@ -1009,3 +1204,24 @@ pm run build and ran unit tests successfully.
   - Verified that the target files copy completed successfully.
   - Verified that `graph.canvas` exists in the user's Obsidian Vault path.
   - Verified that the Obsidian process was triggered and remains active.
+
+---
+
+### [2026-05-31] - Antigravity (Graphify Clean & File-Level Pruning)
+
+* **Status**: Complete — Knowledge graph cleaned by removing internal symbol/heading nodes and consolidating relationships to the file-to-file level.
+* **Why**: The user requested that the graph be clean and keep the Obsidian vault integration, but remove unnecessary content (granular function, method, class, and section nodes) from the graph itself.
+* **Where** (1 file modified, graphify-out files updated, files copied to user's active Obsidian workspace):
+  - `docs/architecture/CONTINUOUS_STATE.md` — Appended this status log.
+  - `graphify-out/graph.json` — Filtered from 4,877 nodes to 363 file nodes and 330 file links.
+  - `graphify-out/graph.html` — Updated visualizer with the clean graph.
+  - `C:\Users\mmjal\OneDrive\Documents\Obsidian Vault\JUTerminal1-Graph\` — Recreated with clean files and canvas.
+* **What & How**:
+  - Wrote a python script `clean_graph.py` to identify file nodes (where `label == basename(source_file)`) and filter out all internal symbol and document heading nodes.
+  - Mapped granular containing-relations/calls to high-level file-to-file dependencies, reducing links from 6,797 to 330 unique file links.
+  - Regenerated the Obsidian canvas and markdown notes via `generate_obsidian.py` from the clean `graph.json`, yielding 641 clean file-based notes.
+  - Synced the updated folder structure to the user's active Obsidian Vault and reopened the canvas.
+* **Verification**:
+  - Verified file counts in the active Obsidian vault (643 items).
+  - Verified node/link counts in clean graph (363 nodes, 330 links).
+
