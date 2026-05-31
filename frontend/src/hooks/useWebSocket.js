@@ -131,6 +131,11 @@ export function useWebSocket(sessionId) {
               detail: { ...msg.data, sessionId },
             }))
             break
+          case 'flag_candidate':
+            window.dispatchEvent(new CustomEvent('terminal:flag_candidate', {
+              detail: { ...msg.data, sessionId },
+            }))
+            break
           case 'auto_evidence':
             addDiscoveries(msg.data.discoveries)
             if (Object.values(msg.data.discoveries).some(arr => arr.length > 0)) {

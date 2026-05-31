@@ -9,7 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from src.cache.redis import cache_set_if_absent
+from src.cache.redis import cache_set_if_absent, cache_get
 
 _PATTERN_DIR = Path(__file__).resolve().parent / "patterns"
 _ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
@@ -103,6 +103,115 @@ _BANNER_GUARD = re.compile(
     r"Type 'scope'|Tools(?: available)?:\s*(nmap|gobuster|sqlmap|smbclient|kerbrute)",
     re.IGNORECASE,
 )
+
+
+_FLAG_CANDIDATE_DEDUP_TTL_SECONDS = 600  # 10 min — re-nudge if still uncaptured
+
+
+@lru_cache(maxsize=8)
+def _compile_flag_patterns(scenario_id: str) -> list[dict[str, Any]]:
+    """Return compiled flag scan entries for a scenario (cached)."""
+    from src.scenarios.loader import get_flags
+
+    compiled: list[dict[str, Any]] = []
+    for flag in get_flags(scenario_id):
+        pattern_str: str = flag.get("value_pattern", "")
+        if not pattern_str:
+            # Fall back to a literal search on the exact value
+            raw_val: str = flag.get("value", "")
+            if raw_val:
+                pattern_str = re.escape(raw_val)
+        if not pattern_str:
+            continue
+        try:
+            compiled.append(
+                {
+                    "flag_id": flag["id"],
+                    "description": flag.get("description", ""),
+                    "_compiled": re.compile(pattern_str, re.IGNORECASE),
+                }
+            )
+        except re.error:
+            continue
+    return compiled
+
+
+async def scan_flag_candidates(
+    session_id: str,
+    scenario_id: str,
+    chunk: str,
+) -> list[dict[str, Any]]:
+    """Return flag_candidate nudges for flag-shaped strings seen in terminal output.
+
+    Only fires when the student's terminal actually produces a matching line.
+    Never volunteers the flag value — only flag_id, points available, and
+    whether already captured. The student must still submit via FlagSubmitWidget.
+    """
+    if not chunk:
+        return []
+
+    clean = _clean_output(chunk)
+    # Reuse the same line-complete buffer as scan_output_chunk (keyed differently
+    # to avoid cross-contamination between the two scanners).
+    buf_key = f"{session_id}:flagscan"
+    buffered = _buffers.get(buf_key, "") + clean
+    if "\n" not in buffered:
+        _buffers[buf_key] = buffered[-2000:]
+        return []
+
+    parts = buffered.split("\n")
+    complete_lines = parts[:-1]
+    _buffers[buf_key] = parts[-1][-2000:]
+    complete_lines = [ln for ln in complete_lines if not _BANNER_GUARD.search(ln)]
+    if not complete_lines:
+        return []
+
+    # Fetch already-captured flags once per call (Redis cache, fast)
+    cached_state: dict[str, Any] = await cache_get(f"session:{session_id}:state") or {}
+    captured_flags: list[str] = cached_state.get("flags_captured", [])
+
+    from src.scenarios.loader import get_scoring
+
+    flag_patterns = _compile_flag_patterns(scenario_id)
+    scoring = get_scoring(scenario_id, "red")
+    flag_bonuses: dict[str, int] = scoring.get("flag_bonuses", {})
+
+    candidates: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()  # one nudge per flag per call
+
+    for line in complete_lines[-30:]:
+        if not line.strip():
+            continue
+        for entry in flag_patterns:
+            flag_id: str = entry["flag_id"]
+            if flag_id in seen_ids:
+                continue
+            compiled: re.Pattern[str] = entry["_compiled"]
+            m = compiled.search(line)
+            if not m:
+                continue
+            # Dedup: suppress if already nudged recently for this (session, flag)
+            dedup_key = f"flagcandidate:{session_id}:{flag_id}"
+            already_nudged = not await cache_set_if_absent(
+                dedup_key, "1", ttl=_FLAG_CANDIDATE_DEDUP_TTL_SECONDS
+            )
+            if already_nudged and flag_id not in captured_flags:
+                # Still suppress — student was already nudged
+                seen_ids.add(flag_id)
+                continue
+            seen_ids.add(flag_id)
+            if flag_id in captured_flags:
+                continue
+            points = flag_bonuses.get(flag_id, 0)
+            candidates.append(
+                {
+                    "flag_id": flag_id,
+                    "description": entry["description"],
+                    "matched_text": m.group(0)[:200],
+                    "points": points,
+                }
+            )
+    return candidates
 
 
 async def scan_output_chunk(

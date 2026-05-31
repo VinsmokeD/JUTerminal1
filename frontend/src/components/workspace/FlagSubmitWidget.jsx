@@ -10,8 +10,10 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null) // { type: 'success' | 'error', text: string }
   const [shake, setShake] = useState(false)
+  const [glow, setGlow] = useState(false)
   const popoverRef = useRef(null)
 
+  // Close popover on outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (popoverRef.current && !popoverRef.current.contains(event.target)) {
@@ -26,43 +28,47 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
     }
   }, [isOpen])
 
+  // flag:prefill — dispatched by the Terminal nudge when the student clicks Capture
+  useEffect(() => {
+    const handler = (evt) => {
+      const val = evt.detail?.value || ''
+      if (!val) return
+      setFlagValue(val)
+      setMessage(null)
+      setIsOpen(true)
+      setGlow(true)
+      setTimeout(() => setGlow(false), 1800)
+    }
+    window.addEventListener('flag:prefill', handler)
+    return () => window.removeEventListener('flag:prefill', handler)
+  }, [])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     const val = flagValue.trim()
-    console.log('[FlagSubmitWidget] handleSubmit called with value:', val, 'sessionId:', sessionId)
-    if (!val) {
-      console.warn('[FlagSubmitWidget] empty flag value, skipping')
-      return
-    }
+    if (!val) return
 
     setLoading(true)
     setMessage(null)
 
     try {
-      // Calls POST /api/sessions/{sessionId}/flag with { flag_value: value }
-      const url = `/sessions/${sessionId}/flag`
-      console.log('[FlagSubmitWidget] making post request to:', url, 'with:', { flag_value: val })
-      const res = await api.post(url, { flag_value: val })
-      console.log('[FlagSubmitWidget] API response received:', res.data)
-      
+      const res = await api.post(`/sessions/${sessionId}/flag`, { flag_value: val })
+
       if (res.data?.valid) {
         if (res.data?.already_captured) {
-          console.log('[FlagSubmitWidget] flag already captured')
           setMessage({ type: 'error', text: 'This flag was already captured!' })
           toast.warning('This flag was already captured!')
         } else {
-          console.log('[FlagSubmitWidget] flag captured successfully!')
-          setMessage({ 
-            type: 'success', 
-            text: `FLAG CAPTURED +${res.data?.points_awarded || 0} pts` 
+          setMessage({
+            type: 'success',
+            text: `FLAG CAPTURED +${res.data?.points_awarded || 0} pts`,
           })
-          setFlagValue('') // Input clears after successful capture only
+          setFlagValue('')
           onFlagCaptured?.()
           toast.achievement(`Flag Captured! +${res.data?.points_awarded || 0} pts`)
         }
       } else {
         const guidance = res.data?.detail || res.data?.guidance || res.data?.hint || 'Incorrect flag value. Try again!'
-        console.log('[FlagSubmitWidget] flag invalid:', guidance)
         setMessage({ type: 'error', text: guidance })
         setShake(true)
         setTimeout(() => setShake(false), 500)
@@ -70,7 +76,6 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
       }
     } catch (err) {
       const errMsg = err.response?.data?.detail || err.response?.data?.guidance || 'Submission failed, try again'
-      console.error('[FlagSubmitWidget] API error:', err, 'message:', errMsg)
       setMessage({ type: 'error', text: errMsg })
       setShake(true)
       setTimeout(() => setShake(false), 500)
@@ -87,7 +92,9 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
           setIsOpen(!isOpen)
           setMessage(null)
         }}
-        className="btn-v3 btn-v3-sm font-mono text-[11px] bg-surface-3 border border-cs-border hover:bg-surface-4 text-txt-secondary hover:text-txt-primary flex items-center gap-2"
+        className={`btn-v3 btn-v3-sm font-mono text-[11px] bg-surface-3 border hover:bg-surface-4 text-txt-secondary hover:text-txt-primary flex items-center gap-2 transition-all ${
+          glow ? 'border-amber-warn/70 shadow-[0_0_8px_rgba(245,158,11,0.4)]' : 'border-cs-border'
+        }`}
       >
         <span>SUBMIT FLAG</span>
         <span className="text-[10px] text-txt-dim bg-surface-2 px-1.5 py-0.5 rounded-cs-sm border border-cs-border">
@@ -107,7 +114,7 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
                 value={flagValue}
                 onChange={(e) => { setFlagValue(e.target.value); setMessage(null) }}
                 disabled={loading}
-                placeholder="e.g. FLAG-SC01-1"
+                placeholder="e.g. root:x:0:0:root:/root:/bin/bash"
                 className={`w-full bg-surface-2 rounded-cs px-3 py-1.5 text-xs text-txt-primary placeholder:text-txt-dim focus:outline-none transition-colors disabled:opacity-40 font-mono border ${
                   !flagValue ? 'border-cs-border focus:border-cs-blue' :
                   FLAG_PATTERN.test(flagValue) ? 'border-green-signal/50 focus:border-green-signal' :
@@ -119,8 +126,8 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
 
             {message && (
               <div className={`p-2.5 rounded-cs border text-[11px] leading-relaxed font-mono ${
-                message.type === 'success' 
-                  ? 'border-green-signal/30 bg-green-signal/5 text-green-signal' 
+                message.type === 'success'
+                  ? 'border-green-signal/30 bg-green-signal/5 text-green-signal'
                   : 'border-critical/30 bg-critical/5 text-critical'
               }`}>
                 {message.text}

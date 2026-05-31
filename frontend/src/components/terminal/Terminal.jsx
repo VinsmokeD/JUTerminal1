@@ -22,6 +22,7 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
   const [menu, setMenu] = useState(null)
   const [insights, setInsights] = useState([])
   const [activeInsight, setActiveInsight] = useState(null)
+  const [flagCandidates, setFlagCandidates] = useState([])
 
   const currentSession = useSessionStore((state) => state.currentSession)
   const role = currentSession?.role || 'red'
@@ -88,6 +89,20 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
     }
     window.addEventListener('terminal:insight', handler)
     return () => window.removeEventListener('terminal:insight', handler)
+  }, [sessionId])
+
+  useEffect(() => {
+    const handler = (evt) => {
+      if (evt.detail?.sessionId && evt.detail.sessionId !== sessionId) return
+      const { flag_id, description, matched_text, points, already_captured } = evt.detail || {}
+      if (!flag_id || already_captured) return
+      setFlagCandidates((prev) => {
+        if (prev.some((c) => c.flag_id === flag_id)) return prev
+        return [...prev, { flag_id, description, matched_text, points }]
+      })
+    }
+    window.addEventListener('terminal:flag_candidate', handler)
+    return () => window.removeEventListener('terminal:flag_candidate', handler)
   }, [sessionId])
 
   useEffect(() => {
@@ -234,6 +249,43 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
           setActiveInsight((current) => current === active.id ? null : current)
         }}
       />
+      {flagCandidates.length > 0 && (
+        <div className="flex flex-col gap-1 px-2 py-1">
+          {flagCandidates.map((c) => (
+            <div
+              key={c.flag_id}
+              className="flex items-center gap-2 bg-amber-warn/10 border border-amber-warn/40 rounded-cs px-3 py-1.5 text-[11px] font-mono animate-pulse-once"
+              role="alert"
+              aria-live="polite"
+            >
+              <span className="text-amber-warn shrink-0">🚩</span>
+              <span className="text-amber-warn font-semibold shrink-0">Flag detected</span>
+              <span className="text-txt-secondary truncate flex-1">{c.description || c.flag_id}</span>
+              {c.points > 0 && (
+                <span className="text-green-signal shrink-0">+{c.points} pts</span>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('flag:prefill', { detail: { value: c.matched_text } }))
+                  setFlagCandidates((prev) => prev.filter((x) => x.flag_id !== c.flag_id))
+                }}
+                className="shrink-0 px-2 py-0.5 bg-amber-warn/20 hover:bg-amber-warn/30 border border-amber-warn/50 rounded-cs-sm text-amber-warn font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-warn"
+              >
+                Capture
+              </button>
+              <button
+                type="button"
+                onClick={() => setFlagCandidates((prev) => prev.filter((x) => x.flag_id !== c.flag_id))}
+                className="shrink-0 text-txt-dim hover:text-txt-secondary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cs-border rounded-cs-sm"
+                aria-label="Dismiss flag nudge"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
       <div
         ref={containerRef}
         className="min-h-0 flex-1 terminal"

@@ -33,7 +33,7 @@ from src.scenarios.loader import load_scenario
 from src.scenarios.scope_enforcer import check_scope
 from src.scenarios.hint_engine import _load_hints
 from src.scenarios.engine import try_advance_phase, check_gate, GateBlock
-from src.scenarios.output_patterns import scan_output_chunk
+from src.scenarios.output_patterns import scan_output_chunk, scan_flag_candidates
 from src.scenarios.branching import (
     infer_active_branch,
     get_active_branch,
@@ -594,6 +594,19 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                             "[WS] scan_output_chunk error session %s: %s",
                             session_id[:8],
                             _scan_exc,
+                        )
+                    try:
+                        for candidate in await scan_flag_candidates(
+                            session_id,
+                            session_state["scenario_id"],
+                            frame,
+                        ):
+                            await _send_json({"type": "flag_candidate", "data": candidate})
+                    except Exception as _flag_exc:
+                        logging.getLogger(__name__).warning(
+                            "[WS] scan_flag_candidates error session %s: %s",
+                            session_id[:8],
+                            _flag_exc,
                         )
             except Exception as _loop_exc:
                 logging.getLogger(__name__).warning(
