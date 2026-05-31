@@ -1315,3 +1315,18 @@ pm run build and ran unit tests successfully.
   - Ran `npm run lint` which completed successfully with zero errors or warnings.
   - Executed the full backend pytest suite (334 passed, 1 skipped) with 100% success.
 
+---
+
+### [2026-05-31] - Antigravity (Local Port Proxy Alignment Fix)
+
+* **Status**: Complete — Vite proxy port updated and lingering Node process terminated.
+* **Why**: The user reported that authentication failed when trying to sign in. The backend Docker container exposed port was mapped to port 8001 on the host, whereas the frontend Vite dev configuration had the API proxy hardcoded to port 8000. Additionally, a lingering node process was running the dev server on port 3001 with the old configuration.
+* **Where** (2 files modified/updated):
+  - `frontend/vite.config.js` — Changed the proxy target for `/api` and `/ws` from port 8000 to port 8001.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Appended this status log.
+* **What & How**:
+  - Updating the Vite config target to `http://localhost:8001` allows API calls made via Axios in the local development server (port 3001) to correctly reach the backend Docker container host port.
+  - Process PID 6124 (the lingering node server on port 3001) was terminated to ensure the updated Vite proxy configuration is served.
+* **Verification**:
+  - The restarted dev server successfully bound to http://localhost:3001/ and routed API requests to the Docker container.
+
