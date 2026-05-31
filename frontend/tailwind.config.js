@@ -44,7 +44,7 @@ export default {
         /* Text (AA-contrast tuned) */
         'txt-primary': '#E9EDF6',
         'txt-secondary': '#AAB4C8',
-        'txt-dim': '#6E798E',
+        'txt-dim': '#8E9CB5',
         'txt-ghost': '#3f495a',
 
         /* Semantic accents */
