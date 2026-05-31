@@ -278,45 +278,47 @@ export default function Dashboard() {
         )}
 
         {/* Scenario filter bar */}
-        <div className="mb-6 flex flex-col gap-4 rounded-cs border border-cs-border bg-surface-2/30 p-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-1 flex-wrap items-center gap-2">
-            <span className="text-[10px] font-mono text-txt-dim uppercase tracking-wider mr-2 select-none">Filters:</span>
+        <div className="mb-6 rounded-cs border border-cs-border bg-surface-2/30 p-4 space-y-3">
+          {/* Row 1: label + search */}
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[10px] font-mono text-txt-dim uppercase tracking-wider select-none shrink-0">
+              Filters
+            </span>
+            <div className="relative w-full max-w-[260px]">
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                className="w-full text-xs font-mono pl-8 input-v3"
+                placeholder="SEARCH PROTOCOLS / LOGS..."
+              />
+              <svg className="absolute left-2.5 top-3.5 w-3.5 h-3.5 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          {/* Row 2: category chips | divider | difficulty chips */}
+          <div className="flex flex-wrap items-center gap-2">
             {FILTER_CHIPS.map((chip) => (
               <button
                 key={chip.id}
                 type="button"
                 onClick={() => setFilterChip(chip.id)}
-                className={`btn-v3 btn-v3-sm ${
-                  filterChip === chip.id ? 'btn-v3-blue' : 'btn-v3-subtle'
-                }`}
+                className={`btn-v3 btn-v3-sm ${filterChip === chip.id ? 'btn-v3-blue' : 'btn-v3-subtle'}`}
               >
                 {chip.label}
               </button>
             ))}
-            <div className="h-4 w-[1px] bg-cs-border mx-1 hidden md:block" />
+            <div className="h-4 w-px bg-cs-border mx-1" />
             {DIFFICULTY_CHIPS.map((chip) => (
               <button
                 key={chip}
                 type="button"
                 onClick={() => setDifficultyChip(chip)}
-                className={`btn-v3 btn-v3-sm ${
-                  difficultyChip === chip ? 'btn-v3-red' : 'btn-v3-subtle'
-                }`}
+                className={`btn-v3 btn-v3-sm ${difficultyChip === chip ? 'btn-v3-red' : 'btn-v3-subtle'}`}
               >
                 {chip}
               </button>
             ))}
-          </div>
-          <div className="relative w-full md:max-w-[260px]">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              className="w-full text-xs font-mono pl-8 input-v3"
-              placeholder="SEARCH PROTOCOLS / LOGS..."
-            />
-            <svg className="absolute left-2.5 top-3.5 w-3.5 h-3.5 text-txt-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
           </div>
         </div>
 

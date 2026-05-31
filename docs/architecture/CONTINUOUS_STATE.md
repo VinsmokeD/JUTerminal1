@@ -1725,3 +1725,25 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - `frontend/src/pages/BlueWorkspace.jsx` — same as RedWorkspace.
 * **What & How**: The many `font-display` usages on Debrief's internal h3/h4 sub-headings (text-sm/text-xs) are intentionally left — they now resolve to Inter, which is correct for data-dense report UI. Only the outer wrapper and the page-level h1 needed changing. Workspace native scroll is unaffected (no ScrollScene, no scroll lock).
 * **Verification**: `npm run build` → ✓ 9.23s, 0 errors.
+
+### [2026-05-31] - Claude Sonnet 4.6 (Dev server fix — host binding + port alignment)
+
+* **Status**: COMPLETE ✅ — Vite running on port 4201 (4200 was taken by preview tool internal lock).
+* **Why**: Zen browser couldn't reach localhost:5173 — launch.json had wrong port (5173) vs vite.config.js (3000), and Vite wasn't bound to all interfaces.
+* **Where**:
+  - `frontend/vite.config.js` — added `host: true`; port changed 3000→4200 (Vite auto-incremented to 4201).
+  - `.claude/launch.json` — port updated to 4200 to match.
+* **What & How**: `host: true` binds to 0.0.0.0 so network IPs work in addition to localhost. Vite dev server started via `npm run dev -- --port 4200 --host`; accessible at http://localhost:4201 and http://192.168.1.26:4201.
+
+### [2026-05-31] - Claude Sonnet 4.6 (Bug fixes: Loop scroll-lock, hero flash, dashboard filter bar)
+
+* **Status**: COMPLETE ✅ — build passes (✓ 6.79s, 0 errors).
+* **Why**: Three user-reported bugs from live preview: (1) hero blank on load, (2) Loop section scrolled past before animation finished, (3) Dashboard filter chips overlapping search bar.
+* **Where** (2 files):
+  - `frontend/src/pages/Landing.jsx`:
+    - **Hero delays reduced**: label 0.4→0.15s, h1 0.55→0.25s, paragraph 0.85→0.45s, buttons 1.0→0.6s, main FloatingMark 0.1→0s. Hero is visible within 0.25s of load.
+    - **Loop section rewritten** — scroll-driven (`useScroll`/`useTransform`) replaced with time-driven phase state (0=idle→1=red→2=blue→3=ai→4=done). On `useInView` trigger: transparent overlay div with `preventDefault` on wheel/touch locks scroll; `setTimeout` advances phases at 0s/1.9s/3.8s/5.4s; overlay removed on phase 4. `motion.path` uses `animate={{ pathLength, opacity }}` driven by phase booleans. `NodeDot` updated to accept `lit` prop — animates opacity 0.12→1 and strokeOpacity 0.08→0.35 via `motion.circle`/`motion.text`. Section is now `padding: 140px 0 120px` (no more sticky/300vh — section is normal flow, plays once on enter).
+    - Added violet dashed return arc `M 400 290 Q 600 370 800 290` for the AI phase.
+  - `frontend/src/pages/Dashboard.jsx`:
+    - **Filter bar restructured** — was single flex row causing chip+search overlap. Now two rows: Row 1 = "Filters" label left + search right (max-w-260px); Row 2 = category chips | divider | difficulty chips (flex-wrap). No more `md:flex-row` conflict.
+* **Verification**: `npm run build` → ✓ 6.79s. Dev server on :4201 for live testing.

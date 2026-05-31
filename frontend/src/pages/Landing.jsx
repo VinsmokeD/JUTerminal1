@@ -433,27 +433,27 @@ function Hero({ go, reduced, tier }) {
         {tier > 0 && <AmbientGlows />}
 
         <motion.div style={markStyle}>
-          <FloatingMark size={420} x="50%" y="50%" delay={0.1} opacity={1} />
-          <FloatingMark size={120} x="22%" y="30%" delay={0.3} opacity={0.35} />
-          <FloatingMark size={80} x="78%" y="74%" delay={0.45} opacity={0.3} />
-          <FloatingMark size={48} x="86%" y="22%" delay={0.6} opacity={0.5} />
-          <FloatingMark size={40} x="14%" y="78%" delay={0.7} opacity={0.5} />
+          <FloatingMark size={420} x="50%" y="50%" delay={0} opacity={1} />
+          <FloatingMark size={120} x="22%" y="30%" delay={0.15} opacity={0.35} />
+          <FloatingMark size={80} x="78%" y="74%" delay={0.25} opacity={0.3} />
+          <FloatingMark size={48} x="86%" y="22%" delay={0.35} opacity={0.5} />
+          <FloatingMark size={40} x="14%" y="78%" delay={0.4} opacity={0.5} />
         </motion.div>
 
         <motion.div style={headlineStyle}>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
             style={{ marginBottom: 28 }}
           >
             <Label color={C.dim}>// Cybersecurity training, rewritten</Label>
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
             style={{
               fontFamily: display,
               fontWeight: 800,
@@ -481,9 +481,9 @@ function Hero({ go, reduced, tier }) {
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.85 }}
+            transition={{ duration: 0.7, delay: 0.45 }}
             style={{
               fontFamily: body,
               fontSize: 'clamp(15px, 1.3vw, 20px)',
@@ -499,9 +499,9 @@ function Hero({ go, reduced, tier }) {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1 }}
+            transition={{ duration: 0.7, delay: 0.6 }}
             style={{ display: 'flex', gap: 14, marginTop: 44 }}
           >
             <button
@@ -866,162 +866,190 @@ function PillarCard({ pillar, index, reduced }) {
   )
 }
 
-/* ─────────────────── LOOP / STICKY SCROLL STAGE ─────────────────── */
+/* ─────────────────── LOOP / CINEMATIC SCROLL-LOCK ─────────────────── */
 
 function Loop({ reduced }) {
   const ref = useRef(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  const inView = useInView(ref, { once: true, margin: '-10%' })
+  const [phase, setPhase] = useState(0) // 0=idle 1=red 2=blue 3=ai 4=done
+  const overlayRef = useRef(null)
 
-  const redOpacity = useTransform(scrollYProgress, [0, 0.25, 0.5], [0, 1, 0.4])
-  const blueOpacity = useTransform(scrollYProgress, [0.35, 0.6, 0.85], [0, 1, 0.4])
-  const aiOpacity = useTransform(scrollYProgress, [0.7, 0.9, 1], [0, 1, 1])
+  useEffect(() => {
+    if (!inView || phase !== 0) return
 
-  const lineProgress = useTransform(scrollYProgress, [0.05, 0.9], [0, 1])
+    // Lock scroll — transparent overlay captures wheel/touch events
+    if (!reduced) {
+      const el = document.createElement('div')
+      el.style.cssText = 'position:fixed;inset:0;z-index:9998;cursor:default;'
+      el.addEventListener('wheel', (e) => e.preventDefault(), { passive: false })
+      el.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false })
+      document.body.appendChild(el)
+      overlayRef.current = el
+    }
 
-  const markRotate = useTransform(scrollYProgress, [0, 1], [0, 180])
-  const markScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1.2, 1])
-
-  const markStyle = reduced
-    ? { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }
-    : {
-        position: 'absolute',
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
-        rotate: markRotate,
-        scale: markScale,
+    const unlock = () => {
+      if (overlayRef.current && document.body.contains(overlayRef.current)) {
+        document.body.removeChild(overlayRef.current)
+        overlayRef.current = null
       }
+    }
+
+    setPhase(1)
+    const t1 = setTimeout(() => setPhase(2), 1900)
+    const t2 = setTimeout(() => setPhase(3), 3800)
+    const t3 = setTimeout(() => { setPhase(4); unlock() }, 5400)
+
+    return () => {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
+      unlock()
+    }
+  }, [inView, phase, reduced])
+
+  const isRed  = reduced || phase >= 1
+  const isBlue = reduced || phase >= 2
+  const isAI   = reduced || phase >= 3
 
   return (
     <section
       id="loop"
       ref={ref}
-      style={{ position: 'relative', minHeight: '300vh', background: C.bg, padding: '120px 0 0' }}
+      style={{ position: 'relative', background: C.bg, padding: '140px 0 120px' }}
     >
-      <div
-        style={{ position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center' }}
-      >
-        <div style={{ width: '100%', maxWidth: 1280, margin: '0 auto', padding: '0 32px' }}>
-          <SectionHead
-            index="02"
-            kicker="The loop"
-            title={
-              <>
-                <span style={{ color: C.red }}>One keystroke</span> →{' '}
-                <span style={{ color: C.blue }}>one alert.</span>
-              </>
-            }
-          />
+      <div style={{ width: '100%', maxWidth: 1280, margin: '0 auto', padding: '0 32px' }}>
+        <SectionHead
+          index="02"
+          kicker="The loop"
+          title={
+            <>
+              <span style={{ color: C.red }}>One keystroke</span> →{' '}
+              <span style={{ color: C.blue }}>one alert.</span>
+            </>
+          }
+        />
 
-          <div style={{ marginTop: 80, position: 'relative', height: 320 }}>
-            <svg viewBox="0 0 1200 320" width="100%" height="100%" style={{ display: 'block' }}>
-              <defs>
-                <linearGradient id="loopGrad" x1="0" x2="1">
-                  <stop offset="0" stopColor={C.red} />
-                  <stop offset="0.5" stopColor={C.violet} />
-                  <stop offset="1" stopColor={C.blue} />
-                </linearGradient>
-              </defs>
+        <div style={{ marginTop: 72, position: 'relative', height: 340 }}>
+          <svg viewBox="0 0 1200 340" width="100%" height="100%" style={{ display: 'block', overflow: 'visible' }}>
+            {/* Red attack arc */}
+            <motion.path
+              d="M 120 170 Q 600 -60 1080 170"
+              stroke={C.red}
+              strokeWidth="1.5"
+              fill="none"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: isRed ? 1 : 0, opacity: isRed ? 1 : 0 }}
+              transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
+            />
+            {/* Blue defend arc */}
+            <motion.path
+              d="M 1080 170 Q 600 400 120 170"
+              stroke={C.blue}
+              strokeWidth="1.5"
+              fill="none"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: isBlue ? 1 : 0, opacity: isBlue ? 1 : 0 }}
+              transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
+            />
+            {/* Violet return arc */}
+            <motion.path
+              d="M 400 290 Q 600 370 800 290"
+              stroke={C.violet}
+              strokeWidth="1"
+              strokeDasharray="4 6"
+              fill="none"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: isAI ? 1 : 0, opacity: isAI ? 0.6 : 0 }}
+              transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
+            />
 
-              <motion.path
-                d="M 120 160 Q 600 -80 1080 160"
-                stroke={C.red}
-                strokeWidth="1.5"
-                fill="none"
-                style={{
-                  pathLength: reduced ? 1 : lineProgress,
-                  opacity: reduced ? 1 : redOpacity,
-                }}
-              />
-              <motion.path
-                d="M 1080 160 Q 600 400 120 160"
-                stroke={C.blue}
-                strokeWidth="1.5"
-                fill="none"
-                style={{
-                  pathLength: reduced ? 1 : lineProgress,
-                  opacity: reduced ? 1 : blueOpacity,
-                }}
-              />
+            <NodeDot cx={120}  cy={170} color={C.red}    label="KALI"     lit={isRed} />
+            <NodeDot cx={400}  cy={60}  color={C.red}    label="EXPLOIT"  lit={isRed} />
+            <NodeDot cx={800}  cy={60}  color={C.red}    label="PAYLOAD"  lit={isRed} />
+            <NodeDot cx={1080} cy={170} color={C.blue}   label="SURICATA" lit={isBlue} />
+            <NodeDot cx={800}  cy={290} color={C.blue}   label="ELASTIC"  lit={isBlue} />
+            <NodeDot cx={400}  cy={290} color={C.blue}   label="SIEM"     lit={isBlue} />
+          </svg>
 
-              <NodeDot cx={120} cy={160} color={C.red} label="KALI" />
-              <NodeDot cx={400} cy={50} color={C.red} label="EXPLOIT" />
-              <NodeDot cx={800} cy={50} color={C.red} label="PAYLOAD" />
-              <NodeDot cx={1080} cy={160} color={C.blue} label="SURICATA" />
-              <NodeDot cx={800} cy={270} color={C.blue} label="ELASTIC" />
-              <NodeDot cx={400} cy={270} color={C.blue} label="SIEM" />
-            </svg>
-
-            <motion.div style={markStyle}>
-              <ParallaxMark size={72} />
-            </motion.div>
-          </div>
-
-          <div
-            style={{ marginTop: 60, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}
+          {/* Centre mark */}
+          <motion.div
+            style={{ position: 'absolute', left: '50%', top: '50%', x: '-50%', y: '-50%' }}
+            animate={{ rotate: isAI ? 180 : 0, scale: isAI ? 1.15 : 1 }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            <motion.div
-              style={{
-                opacity: reduced ? 1 : redOpacity,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-            >
-              <Label color={C.red}>01 · Attack</Label>
-              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text }}>
-                Student executes against an isolated container
-              </div>
-            </motion.div>
-            <motion.div
-              style={{
-                opacity: reduced ? 1 : blueOpacity,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-            >
-              <Label color={C.blue}>02 · Detect</Label>
-              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text }}>
-                Telemetry surfaces as a SIEM signal in {'<'}2s
-              </div>
-            </motion.div>
-            <motion.div
-              style={{
-                opacity: reduced ? 1 : aiOpacity,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-            >
-              <Label color={C.violet}>03 · Learn</Label>
-              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text }}>
-                Socratic AI nudges, never solves
-              </div>
-            </motion.div>
-          </div>
+            <ParallaxMark size={76} />
+          </motion.div>
+        </div>
+
+        {/* Phase captions */}
+        <div style={{ marginTop: 56, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: isRed ? 1 : 0, y: isRed ? 0 : 12 }}
+            transition={{ duration: 0.7 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+          >
+            <Label color={C.red}>01 · Attack</Label>
+            <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
+              Student executes against an isolated container
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: isBlue ? 1 : 0, y: isBlue ? 0 : 12 }}
+            transition={{ duration: 0.7 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+          >
+            <Label color={C.blue}>02 · Detect</Label>
+            <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
+              Telemetry surfaces as a SIEM signal in {'<'}2s
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: isAI ? 1 : 0, y: isAI ? 0 : 12 }}
+            transition={{ duration: 0.7 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+          >
+            <Label color={C.violet}>03 · Learn</Label>
+            <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
+              Socratic AI nudges, never solves
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
   )
 }
 
-function NodeDot({ cx, cy, color, label }) {
+function NodeDot({ cx, cy, color, label, lit }) {
   return (
     <g>
-      <circle cx={cx} cy={cy} r="6" fill={color} />
-      <circle cx={cx} cy={cy} r="14" fill="none" stroke={color} strokeOpacity="0.3" />
-      <text
-        x={cx}
-        y={cy - 24}
+      <motion.circle
+        cx={cx} cy={cy} r="7"
+        fill={color}
+        initial={{ opacity: 0.12 }}
+        animate={{ opacity: lit ? 1 : 0.12 }}
+        transition={{ duration: 0.7 }}
+      />
+      <motion.circle
+        cx={cx} cy={cy} r="16"
+        fill="none" stroke={color}
+        initial={{ strokeOpacity: 0.08 }}
+        animate={{ strokeOpacity: lit ? 0.35 : 0.08 }}
+        transition={{ duration: 0.7 }}
+      />
+      <motion.text
+        x={cx} y={cy - 27}
         fill={color}
         fontFamily={mono}
         fontSize="11"
         textAnchor="middle"
         letterSpacing="3"
+        initial={{ opacity: 0.15 }}
+        animate={{ opacity: lit ? 1 : 0.15 }}
+        transition={{ duration: 0.7 }}
       >
         {label}
-      </text>
+      </motion.text>
     </g>
   )
 }
