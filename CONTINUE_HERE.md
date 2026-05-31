@@ -1,10 +1,12 @@
 # CyberSim — CONTINUE HERE (project state + next-phase prompts)
 
-**Updated:** 2026-05-31 — WS3–WS9 complete (Agent 2). Awaiting WS10 final verification gate.  
-**Active plan:** [`docs/architecture/MASTER_FINALIZATION_PLAN.md`](docs/architecture/MASTER_FINALIZATION_PLAN.md) — this supersedes the phase prompts below.  
-**Branch:** all work is on `master` (pushed to `origin/master`, GitHub `VinsmokeD/JUTerminal1`).
+**Updated:** 2026-05-31 — **WS10 COMPLETE. All WS0–WS10 done. Tagged `v1.0.0-rc1`.**  
+**Active plan:** [`docs/architecture/MASTER_FINALIZATION_PLAN.md`](docs/architecture/MASTER_FINALIZATION_PLAN.md) — all 10 workstreams complete.  
+**Branch:** all work is on `master`. Tagged `v1.0.0-rc1` at commit `c663c8e`.
 
-**To resume:** read `MASTER_FINALIZATION_PLAN.md` §1 execution map. WS0–WS9 are done. Next: **WS10** (final verification gate — both Agent 1 and Agent 2 must signal done first).
+**Project status:** GRADUATION-READY. All Definition-of-Done items satisfied (see MASTER_FINALIZATION_PLAN §3). Post-defense deferables: WS6 coverage/refactor depth, browser-use visual regression harness, real-hardware 60fps validation.
+
+**To resume after defense:** address deferred items or begin SC-04 if scope expands (requires owner approval per MASTER_BLUEPRINT invariants).
 
 **Original written:** 2026-05-29 by Claude Code, after 24 verified commits.  
 **You start cold** (a fresh chat has no memory of prior sessions). Read this file fully before doing anything.
