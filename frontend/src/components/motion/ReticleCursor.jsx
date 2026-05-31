@@ -18,7 +18,12 @@ const COLOR = { red: '#ff3b3b', blue: '#4CC2FF', neutral: '#9B7DFF' }
 export default function ReticleCursor() {
   const { pathname } = useLocation()
   const reduced = useReducedMotionSafe()
-  const { intent, label, mode, setPosition, resetCursor } = useCursorStore()
+  // Selector subscriptions — component re-renders only on intent/label/mode
+  // changes, never on position (position lives in motion values, not the store).
+  const intent = useCursorStore((s) => s.intent)
+  const label  = useCursorStore((s) => s.label)
+  const mode   = useCursorStore((s) => s.mode)
+  const resetCursor = useCursorStore((s) => s.resetCursor)
 
   const px = useMotionValue(-200)
   const py = useMotionValue(-200)
@@ -29,7 +34,8 @@ export default function ReticleCursor() {
   const isTouch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
   const disabled = reduced || isWorkspace || isTouch
 
-  // Track mouse + manage native cursor visibility
+  // Single document-level mousemove — position drives motion values only,
+  // no store writes, no React re-renders per frame.
   useEffect(() => {
     const html = document.documentElement
     if (disabled) {
@@ -40,14 +46,13 @@ export default function ReticleCursor() {
     const move = (e) => {
       px.set(e.clientX)
       py.set(e.clientY)
-      setPosition(e.clientX, e.clientY)
     }
     window.addEventListener('mousemove', move, { passive: true })
     return () => {
       window.removeEventListener('mousemove', move)
       html.removeAttribute('data-cursor-hidden')
     }
-  }, [disabled, px, py, setPosition])
+  }, [disabled, px, py])
 
   // Reset intent on route change so a hovered card/button label never sticks
   // across pages when navigation fires before onMouseLeave.

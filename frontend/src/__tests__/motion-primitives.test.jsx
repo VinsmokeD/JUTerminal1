@@ -82,12 +82,7 @@ describe('cursorStore', () => {
     expect(mode).toBe('neutral')
   })
 
-  it('setPosition updates x and y', () => {
-    useCursorStore.getState().setPosition(120, 340)
-    const { x, y } = useCursorStore.getState()
-    expect(x).toBe(120)
-    expect(y).toBe(340)
-  })
+
 })
 
 // ── Marquee ───────────────────────────────────────────────────────────────────

@@ -11,13 +11,10 @@ export const useCursorStore = create((set) => ({
   intent: 'default',
   label:  '',
   mode:   'neutral',
-  x: -200,
-  y: -200,
 
   setIntent: (intent) => set({ intent }),
   setLabel:  (label)  => set({ label }),
   setMode:   (mode)   => set({ mode }),
-  setPosition: (x, y) => set({ x, y }),
 
   setCursor: (intent, label = '', mode = 'neutral') => set({ intent, label, mode }),
   resetCursor: () => set({ intent: 'default', label: '', mode: 'neutral' }),
