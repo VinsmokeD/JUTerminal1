@@ -475,7 +475,7 @@ export default function Debrief() {
   ]
 
   return (
-    <div className="min-h-dvh bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary">
       <ParallaxNav />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
@@ -498,7 +498,7 @@ export default function Debrief() {
                 <span className="text-txt-dim text-xs font-mono">{session.scenario_id}</span>
                 <span className="text-txt-dim text-xs font-display">{session.methodology?.toUpperCase()}</span>
               </div>
-              <h1 className="text-2xl font-extrabold text-txt-primary mb-2 font-display">Mission Debrief</h1>
+              <h1 className="text-2xl font-extrabold text-txt-primary mb-2 font-hud">Mission Debrief</h1>
               <p className="text-txt-secondary text-sm max-w-md leading-relaxed">
                 {session.role === 'red'
                   ? `Completed ${session.methodology?.toUpperCase()} pentest of ${session.scenario_id} through Phase ${session.phase}. ${findings.length} findings documented with ${evidence.length} evidence items.`

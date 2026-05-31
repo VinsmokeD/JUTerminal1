@@ -1714,3 +1714,14 @@ evidence stats, gradient CTA, JU/KASIT footer.
 * **What & How**: Typography strategy: `font-display` (Tailwind utility) now resolves to Inter — the 116+ existing usages across the platform already render correctly with no sweep needed. `font-hud` (Orbitron) is applied deliberately per-page on large hero/page-title headings only. Onboarding cards use inline `backdropFilter: blur(20px)` glass treatment + `C.accent + '0d'` tint on selection to match the Landing card style.
 * **Verification**: `npm run build` → ✓ 9.41s, 0 errors. All files on branch `feat/premium-theme-convergence`.
 * **Next**: Phase 4 (Debrief — 1266 lines), Phase 5 (Instructor h2 heads + nav), Phase 6 (RedWorkspace/BlueWorkspace token polish).
+
+### [2026-05-31] - Claude Sonnet 4.6 (Phase 4–6: Debrief, workspaces typography polish)
+
+* **Status**: COMPLETE ✅ — build passes (✓ built in 9.23s).
+* **Why**: Complete the font-display wrapper cleanup and font-hud upgrade for remaining pages.
+* **Where** (4 files):
+  - `frontend/src/pages/Debrief.jsx` — outer `font-display` wrapper removed; h1 "Mission Debrief" → `font-hud`.
+  - `frontend/src/pages/RedWorkspace.jsx` — `workspace-shell font-display` → `workspace-shell` (workspace-shell already sets font via CSS; Inter body default applies).
+  - `frontend/src/pages/BlueWorkspace.jsx` — same as RedWorkspace.
+* **What & How**: The many `font-display` usages on Debrief's internal h3/h4 sub-headings (text-sm/text-xs) are intentionally left — they now resolve to Inter, which is correct for data-dense report UI. Only the outer wrapper and the page-level h1 needed changing. Workspace native scroll is unaffected (no ScrollScene, no scroll lock).
+* **Verification**: `npm run build` → ✓ 9.23s, 0 errors.
