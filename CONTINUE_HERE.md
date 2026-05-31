@@ -1,8 +1,13 @@
 # CyberSim — CONTINUE HERE (project state + next-phase prompts)
 
-**Written:** 2026-05-29 by Claude Code, after 24 verified commits. **Single source of truth for resuming work.**
-**You start cold** (a fresh chat has no memory of prior sessions). Read this file fully before doing anything.
+**Updated:** 2026-05-31 — WS3–WS9 complete (Agent 2). Awaiting WS10 final verification gate.  
+**Active plan:** [`docs/architecture/MASTER_FINALIZATION_PLAN.md`](docs/architecture/MASTER_FINALIZATION_PLAN.md) — this supersedes the phase prompts below.  
 **Branch:** all work is on `master` (pushed to `origin/master`, GitHub `VinsmokeD/JUTerminal1`).
+
+**To resume:** read `MASTER_FINALIZATION_PLAN.md` §1 execution map. WS0–WS9 are done. Next: **WS10** (final verification gate — both Agent 1 and Agent 2 must signal done first).
+
+**Original written:** 2026-05-29 by Claude Code, after 24 verified commits.  
+**You start cold** (a fresh chat has no memory of prior sessions). Read this file fully before doing anything.
 
 **To resume in a new chat:** say *"Read CONTINUE_HERE.md, then continue from Phase &lt;X&gt;"* (next unstarted phase is **E**). Then follow the Operating Protocol (§4) for every change. Also read the files in §1.
 

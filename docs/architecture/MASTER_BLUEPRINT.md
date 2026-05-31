@@ -18,8 +18,8 @@ CyberSim is a dual-perspective cybersecurity training platform designed to bridg
 
 ## 2. The Strict Scope (MVP Boundary)
 
-> ⚠️ **Hard Limit**: The MVP is **Three High-Fidelity Scenarios only**.  
-> Do NOT scaffold, reference, or build SC-04 or SC-05 until SC-01 through SC-03 pass full end-to-end tests.
+> ⚠️ **Hard Limit**: The MVP is **Three High-Fidelity Scenarios only** (SC-01, SC-02, SC-03).  
+> SC-04 and SC-05 were removed by the project owner and will never be added.
 
 ### SC-01: NovaMed Healthcare (Web Application Pentest)
 - **Focus**: OWASP Top 10 — SQLi, LFI, IDOR, File Upload exploitation
@@ -198,7 +198,7 @@ All agents enforce these on every change. No STATE_SAVE is valid if any guardrai
 
 | Item | v1.0 | v2.0 |
 |------|------|------|
-| Scenarios in MVP | 5 (SC-01 through SC-05) | **3 only** (SC-01, SC-02, SC-03) |
+| Scenarios in MVP | 5 (planned) | **3 only** (SC-01, SC-02, SC-03) |
 | Background traffic | Not specified | **Required** — `daemon-noise.py` per scenario |
 | Methodology enforcement | Soft guidance via AI | **Hard phase locks** — `scope_enforcer.py` blocks commands |
 | Debrief | Score + notes summary | **Dual-axis Kill Chain Timeline** (SVG, attack vs detection timestamps) |
