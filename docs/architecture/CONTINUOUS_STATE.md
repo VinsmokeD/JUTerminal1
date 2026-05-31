@@ -1474,3 +1474,23 @@ pm run build and ran unit tests successfully.
   - Frontend uses the same `CustomEvent` bus pattern as all other WS-to-component communication in this codebase.
 * **Verification**: `python -m pytest tests/test_output_patterns.py -v` → 13/13 ✅. Full suite → 340 passed ✅. `npm --prefix frontend run verify` → build ✓ (6.69s), 46/46 ✅.
 
+---
+
+### [2026-05-31] - Claude Sonnet 4.6 (WS2 — SIEM coverage: 5 missing event rules + 13 new tests)
+
+* **Status**: COMPLETE ✅ — Committed ea8c700. 62/62 on modified tests.
+* **Why**: WS2 of MASTER_FINALIZATION_PLAN.md — "siem feed and logs to capture all and real." Audit revealed `ws/routes.py` uses `create_command_siem_events` (JSON event maps via `command_bridge.py`) exclusively — NOT `process_command_for_siem` (YAML `soc_detection`). Six YAML `trigger_regex` rules had no corresponding JSON event map entry, so those attack techniques produced no SIEM telemetry.
+* **Where** (4 files, commit ea8c700):
+  - `backend/src/siem/events/sc01_events.json` — 2 new categories: `redis_abuse` (`sc01_redis_unauthenticated`: redis-cli|CONFIG SET|authorized_keys → HIGH/T1552/auditd log); `sensitive_artifact` (`sc01_sensitive_artifact_access`: .env.bak|backup.zip|swagger.json → MEDIUM/T1083/ModSecurity log).
+  - `backend/src/siem/events/sc02_events.json` — 1 new event in `credential_access`: `sc02_gpp_credential_extraction` (sysvol|gpp-decrypt|cpassword → HIGH/T1552.006/Winlogbeat SYSVOL access log).
+  - `backend/src/siem/events/sc03_events.json` — 3 new events: `sc03_osint_email_harvesting` (theHarvester|hunter.io → MEDIUM/T1589/Suricata); `sc03_c2_reverse_shell_handler` (nc -lvp|msfconsole handler → HIGH/T1105/auditd); `sc03_spf_dmarc_probe` (dig TXT|spf|dmarc → MEDIUM/T1598/Zeek DNS).
+  - `backend/tests/test_command_siem_bridge.py` — 13 new tests (9 parametrized new-event-fires + 4 parametrized benign-commands-produce-no-events). Fixed duplicate `import pytest`. Total: 49 tests, 49/49 passing.
+* **What & How**:
+  - All new events include realistic `raw_log` JSON (format matching existing events: Suricata/auditd/Zeek/Winlogbeat), `source_ip` `{src_ip}` placeholder, `mitre_technique`, `cwe`, `category`.
+  - Architecture clarification: `process_command_for_siem` in `scenarios/engine.py` is never called from `ws/routes.py` — it's a secondary path. The JSON event maps (`command_bridge.py`) are the live path for all terminal-command SIEM events.
+  - `SiemFeed.jsx` already has `aria-live="polite"` + `aria-atomic` + `role="log"` + severity filter + null-field guards. No frontend changes needed for WS2 a11y.
+  - `score_breakdown` confirmed already present in `reports/routes.py` lines 103-110.
+  - WS connection counters (`_WS_CONNECTIONS_KEY`, `_increment_ws_counter`, `_decrement_ws_counter`) added to `ws/routes.py` by linter — wired into endpoint connect/disconnect. Useful for WS6 metrics endpoint.
+  - Rate-limit 429 flakiness in `test_ws_integration.py` + `integration_test.py` is pre-existing (auth endpoints share in-memory rate-limit state across test runs); not caused by WS2. Fresh run: 353 passed.
+* **Verification**: `python -m pytest tests/test_output_patterns.py tests/test_command_siem_bridge.py -q` → 62/62 ✅. `git status` clean after commit.
+
