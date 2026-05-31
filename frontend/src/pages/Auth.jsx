@@ -4,6 +4,8 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useAuthStore } from '../store/authStore'
 import useCursorIntent from '../hooks/useCursorIntent'
 import { useReducedMotionSafe } from '../lib/motion'
+import { usePerfTier } from '../components/ui/PerfTier'
+import { useSettingsStore } from '../store/settingsStore'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 
 const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
@@ -28,10 +30,24 @@ export default function Auth() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [typedWords, setTypedWords] = useState([])
+  // Only mount HeroScene3D at the lg breakpoint — prevents a 0-size WebGL
+  // context (camera.aspect = NaN) inside the hidden lg:flex panel on mobile.
+  const [isLg, setIsLg] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width:1024px)').matches
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width:1024px)')
+    const handler = (e) => setIsLg(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
   const { login, register } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
   const reduced = useReducedMotionSafe()
+  const tier = usePerfTier()
+  const perfMode = useSettingsStore((s) => s.perfMode)
+  const setPerfMode = useSettingsStore((s) => s.setPerfMode)
 
   // Reticle intent on the submit CTA — tint/label follow the active mode
   const submitCursor = useCursorIntent({
@@ -52,14 +68,14 @@ export default function Auth() {
   )
 
   useEffect(() => {
-    if (reduced) return // skip full-viewport spotlight repaint on weak/reduced
+    if (reduced || tier < 2) return // skip spotlight on reduced-motion or weak tiers
     const handleMove = (e) => {
       mouseX.set(e.clientX)
       mouseY.set(e.clientY)
     }
-    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mousemove', handleMove, { passive: true })
     return () => window.removeEventListener('mousemove', handleMove)
-  }, [mouseX, mouseY, reduced])
+  }, [mouseX, mouseY, reduced, tier])
 
   // Spring-lagged card 3D tilt
   const cardRef = useRef(null)
@@ -140,7 +156,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-dvh bg-void flex relative">
-      {!reduced && (
+      {!reduced && tier >= 2 && (
         <motion.div
           className="pointer-events-none fixed inset-0 z-30 opacity-70"
           style={{ background: spotlightBg }}
@@ -180,9 +196,11 @@ export default function Auth() {
         <div className="pointer-events-none absolute -left-24 top-10 h-[420px] w-[420px] rounded-full bg-cs-red/[0.06] blur-3xl auth-gradient-a" />
         <div className="pointer-events-none absolute bottom-8 right-0 h-[480px] w-[480px] rounded-full bg-cs-blue/[0.06] blur-3xl auth-gradient-b" />
         
-        <Suspense fallback={<ParticleCanvas className="opacity-40" />}>
-          <HeroScene3D className="opacity-50 scale-90" />
-        </Suspense>
+        {isLg && (
+          <Suspense fallback={<ParticleCanvas className="opacity-40" />}>
+            <HeroScene3D className="opacity-50 scale-90" />
+          </Suspense>
+        )}
 
         <div className="relative z-10">
           <div className="inline-flex items-center gap-4 mb-8">
@@ -315,6 +333,17 @@ export default function Auth() {
             </div>
           </motion.div>
           <p className="text-center text-txt-dim text-xs mt-4 font-mono">University of Jordan</p>
+          <div className="flex justify-center mt-3">
+            <button
+              onClick={() => setPerfMode(perfMode === 'low' ? 'auto' : 'low')}
+              className="font-mono text-[10px] text-txt-dim hover:text-txt-secondary transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cs-blue rounded-cs px-2 py-1"
+              aria-pressed={perfMode === 'low'}
+              title="Toggle reduced-motion / low performance mode"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${perfMode === 'low' ? 'bg-amber-warn' : 'bg-txt-dim'}`} />
+              {perfMode === 'low' ? 'Perf: Low' : 'Reduce Motion'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

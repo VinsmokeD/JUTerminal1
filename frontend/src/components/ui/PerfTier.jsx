@@ -65,7 +65,9 @@ export function PerfTier({ children }) {
         const fps = (frames * 1000) / dt
         frames = 0
         last = now
-        if (fps < 38) {
+        // Downgrade if sustained FPS falls below 50 for 2 consecutive seconds.
+        // 50fps chosen to catch borderline GPUs before they stutter visibly.
+        if (fps < 50) {
           stalls++
           if (stalls >= 2) {
             setTier((t) => Math.max(0, t - 1))

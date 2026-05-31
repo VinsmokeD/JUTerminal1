@@ -9,6 +9,7 @@ import Marquee from '../components/motion/Marquee'
 import useMagnetic from '../hooks/useMagnetic'
 import useCursorIntent from '../hooks/useCursorIntent'
 import { sectionReveal, useReducedMotionSafe } from '../lib/motion'
+import { useSettingsStore } from '../store/settingsStore'
 
 const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
 
@@ -34,12 +35,13 @@ function StackCard({ step, title, desc, color, offset }) {
     <div
       className="sticky glass p-8 transition-all relative overflow-hidden bg-[#0d0f14]/85"
       style={{
-        top: `calc(88px + ${offset * 24}px)`,
-        marginBottom: '1.5rem',
+        top: `calc(96px + ${offset * 32}px)`,
+        marginBottom: '2rem',
         zIndex: 10 + offset,
-        transform: `scale(${1 - offset * 0.018})`,
+        transform: `scale(${1 - offset * 0.032})`,
         transformOrigin: 'top center',
         transition: 'transform 0.3s',
+        opacity: 1 - offset * 0.12,
       }}
     >
       <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-mono text-xs font-bold mb-5 border ${color}`}>
@@ -57,6 +59,8 @@ export default function Landing() {
   const { token } = useAuthStore()
   const tier = usePerfTier()
   const reduced = useReducedMotionSafe()
+  const perfMode = useSettingsStore((s) => s.perfMode)
+  const setPerfMode = useSettingsStore((s) => s.setPerfMode)
 
   // Global cursor spotlight (spring-lagged)
   const mouseX = useMotionValue(0)
@@ -69,11 +73,11 @@ export default function Landing() {
   )
 
   useEffect(() => {
-    if (reduced) return // skip the full-viewport spotlight repaint on weak/reduced
+    if (reduced || tier < 2) return // skip spotlight on reduced-motion or weak tiers
     const handleMove = (e) => { mouseX.set(e.clientX); mouseY.set(e.clientY) }
     window.addEventListener('mousemove', handleMove, { passive: true })
     return () => window.removeEventListener('mousemove', handleMove)
-  }, [mouseX, mouseY, reduced])
+  }, [mouseX, mouseY, reduced, tier])
 
   const goToPlatform = () => navigate(token ? '/dashboard' : '/auth')
 
@@ -91,8 +95,8 @@ export default function Landing() {
 
   return (
     <div className="min-h-dvh bg-void text-txt-primary font-display relative">
-      {/* Global cursor spotlight overlay (skipped on reduced/low-perf) */}
-      {!reduced && (
+      {/* Global cursor spotlight overlay (tier ≥ 2 + !reduced only) */}
+      {!reduced && tier >= 2 && (
         <motion.div
           className="pointer-events-none fixed inset-0 z-30 opacity-70"
           style={{ background: spotlightBg }}
@@ -222,7 +226,8 @@ export default function Landing() {
       </section>
 
       {/* ── LIVE DEMO ──────────────────────────────────────── */}
-      <section className="relative px-6 md:px-12 pb-24 z-10">
+      {/* aria-hidden: decorative mock terminal/SIEM — not real data */}
+      <section className="relative px-6 md:px-12 pb-24 z-10" aria-hidden="true">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -552,10 +557,19 @@ export default function Landing() {
         <div className="font-mono text-xs text-txt-dim">
           CyberSim © 2026 — Built for cybersecurity students. $0 infrastructure cost.
         </div>
-        <div className="flex gap-6">
+        <div className="flex items-center gap-6">
           <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors">GitHub</a>
           <a href="#" className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors">Documentation</a>
           <a href="#" className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors">Architecture</a>
+          <button
+            onClick={() => setPerfMode(perfMode === 'low' ? 'auto' : 'low')}
+            className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cs-blue rounded-cs"
+            aria-pressed={perfMode === 'low'}
+            title="Toggle reduced-motion / low performance mode"
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${perfMode === 'low' ? 'bg-amber-warn' : 'bg-txt-dim'}`} />
+            {perfMode === 'low' ? 'Perf: Low' : 'Reduce Motion'}
+          </button>
         </div>
       </footer>
     </div>

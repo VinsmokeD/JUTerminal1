@@ -121,8 +121,19 @@ function ShareModal({ session, score, gradeLabel, onClose }) {
         }}
       />
 
+      {/* Scoped print stylesheet — only the dossier card prints */}
+      <style>{`
+        @media print {
+          body > *:not(#cs-print-dossier-root) { display: none !important; }
+          #cs-print-dossier-root { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: white; }
+          #cs-print-dossier { color: black; border: 2px solid #333; padding: 2rem; max-width: 480px; margin: auto; font-family: monospace; }
+        }
+      `}</style>
+      <div id="cs-print-dossier-root" style={{ display: 'contents' }}>
+
       {/* Main certificate card */}
       <motion.div
+        id="cs-print-dossier"
         initial={reduced ? { scale: 1, opacity: 1 } : { scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={reduced ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
@@ -163,6 +174,7 @@ function ShareModal({ session, score, gradeLabel, onClose }) {
           <Button onClick={() => window.print()} variant="blue" size="sm">Print Dossier</Button>
         </div>
       </motion.div>
+      </div>
     </div>
   )
 }
@@ -503,11 +515,15 @@ export default function Debrief() {
                 <Stat label="Duration" value={sessionDuration ? `${sessionDuration}m` : '--'} accent="neutral" />
               </div>
 
-              <ScoreBreakdown 
-                baseScore={score?.base_score ?? session.score}
-                hintPenalty={hintsUsed.length > 0 ? (hints_l1 * 5 + hints_l2 * 10 + hints_l3 * 20) : 0}
-                gatePenalty={Math.max(0, 100 - (score?.base_score ?? session.score) - (hints_l1 * 5 + hints_l2 * 10 + hints_l3 * 20))}
-                timeBonus={Math.max(0, finalScore - (score?.base_score ?? session.score))}
+              {/* Prefer structured backend breakdown; fall back to client-side math
+                  for older sessions that predate the score_breakdown field. */}
+              <ScoreBreakdown
+                hintPenalty={score?.score_breakdown?.hint_penalty
+                  ?? (hintsUsed.length > 0 ? hints_l1 * 5 + hints_l2 * 10 + hints_l3 * 20 : 0)}
+                gatePenalty={score?.score_breakdown?.gate_penalty
+                  ?? Math.max(0, 100 - (score?.base_score ?? session.score) - (hints_l1 * 5 + hints_l2 * 10 + hints_l3 * 20))}
+                timeBonus={score?.score_breakdown?.time_bonus
+                  ?? Math.max(0, finalScore - (score?.base_score ?? session.score))}
                 finalScore={finalScore}
               />
             </div>
@@ -685,7 +701,9 @@ export default function Debrief() {
                     <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case self-start">Competency Radar</h3>
                     
                     <div className="relative w-[300px] h-[300px] flex items-center justify-center">
-                      <svg width="300" height="300" className="overflow-visible">
+                      <svg width="300" height="300" className="overflow-visible"
+                        role="img"
+                        aria-label={`Competency radar: ${metrics.map(m => `${m.name} ${m.value}%`).join(', ')}`}>
                         {/* Background grids */}
                         {gridLevels.map((level) => (
                           <polygon
@@ -1012,9 +1030,12 @@ function DebriefLoading() {
 }
 
 function useCountUp(target, duration = 1000) {
-  const [display, setDisplay] = useState(0)
+  const reduced = useReducedMotionSafe()
+  const clamped = Math.max(0, Math.min(100, Number(target) || 0))
+  const [display, setDisplay] = useState(reduced ? clamped : 0)
+
   useEffect(() => {
-    const clamped = Math.max(0, Math.min(100, Number(target) || 0))
+    if (reduced) { setDisplay(clamped); return }
     const steps = clamped
     if (steps === 0) return
     const interval = duration / steps
@@ -1025,12 +1046,14 @@ function useCountUp(target, duration = 1000) {
       if (step >= steps) clearInterval(id)
     }, interval)
     return () => clearInterval(id)
-  }, [target, duration])
+  }, [target, duration, reduced, clamped])
   return display
 }
 
 function ScoreRing({ score, gradeColor, gradeLabel }) {
-  const [ready, setReady] = useState(false)
+  const reduced = useReducedMotionSafe()
+  // Under reduced-motion start ready immediately so no transition plays
+  const [ready, setReady] = useState(reduced)
   const radius = 48
   const circumference = 2 * Math.PI * radius
   const clamped = Math.max(0, Math.min(100, Number(score) || 0))
@@ -1039,14 +1062,16 @@ function ScoreRing({ score, gradeColor, gradeLabel }) {
   const displayScore = useCountUp(ready ? clamped : 0, 1200)
 
   useEffect(() => {
+    if (reduced) return
     const timer = requestAnimationFrame(() => setReady(true))
     return () => cancelAnimationFrame(timer)
-  }, [score])
+  }, [score, reduced])
 
   return (
     <div className="flex-shrink-0 text-center">
       <div className="relative h-32 w-32">
-        <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full -rotate-90">
+        <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full -rotate-90"
+          role="img" aria-label={`Score ring: ${clamped} out of 100`}>
           <circle cx="60" cy="60" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
           <circle
             cx="60"
@@ -1059,7 +1084,7 @@ function ScoreRing({ score, gradeColor, gradeLabel }) {
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             style={{
-              transition: 'stroke-dashoffset 1.2s ease-out',
+              transition: reduced ? 'none' : 'stroke-dashoffset 1.2s ease-out',
               filter: `drop-shadow(0 0 5px ${stroke}a0)`
             }}
           />
