@@ -13,6 +13,14 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-31] - Claude Opus 4.8 (MOTION_SYSTEM.md authored — backfills skipped Phase 0/9 spec)
+
+* **Status**: Doc complete — `docs/architecture/MOTION_SYSTEM.md` created.
+* **Why**: The Phases 0–3 implementation jumped to code and skipped Phase 0/9's grounding spec, leaving the motion system as tribal knowledge. Authored the living reference so later phases build against a verified contract, not guesses.
+* **Where**: `docs/architecture/MOTION_SYSTEM.md` (new). Written from the *actual* source (verified during the review), not invented.
+* **What & How**: Documents the single gating switchboard (`useReducedMotionSafe`/`useMotionEnabled` composing prefers-reduced-motion + `perfMode=low` + PerfTier), the `lib/motion.js` token layer, a per-primitive API table (hooks + components with their gating), the perf-tier×effect matrix, hard rules (workspace exclusion; gate framer JS in JS, not via the CSS reduced-motion query), decisions on record (vanilla three not R3F; lenis eager-bundle; Stop verify gate), jsdom testing gotchas (framer matchMedia cache → use perfMode=low to test reduced paths), and the outstanding list (browser-use capture, Playwright visual regression, TDD deviation, memory-MCP, Phases 4–9).
+* **Verification**: Content cross-checked against the committed primitives (`5417bf2`). No code changed.
+
 ### [2026-05-31] - Claude Opus 4.8 (Motion Phases 0–3 review + fix/hooks/commit completion)
 
 * **Status**: COMPLETE ✅ — `npm run verify` (build + test) green, lint 0 errors, **47/47 tests pass** (was 27 → +20 primitive tests). Work committed (was left staged-but-uncommitted by the prior session that hit its limit mid-commit).
