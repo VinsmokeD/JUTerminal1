@@ -992,4 +992,20 @@ pm run build and ran unit tests successfully.
 * **Verification**:
   - Read `CLAUDE.md` and `.claude/settings.json` to verify proper file structure and hooks registration.
 
+---
 
+### [2026-05-31] - Antigravity (Obsidian Vault Integration & Live Graph Access)
+
+* **Status**: Complete — Knowledge graph vault copied to the user's active Obsidian vault and launched successfully in the desktop app.
+* **Why**: The user requested that the generated Graphify Obsidian vault be accessible from their local Obsidian desktop application, which was active with their primary vault.
+* **Where** (1 file modified, plus files copied to the user's active Obsidian workspace):
+  - `docs/architecture/CONTINUOUS_STATE.md` — Appended this status log.
+  - `C:\Users\mmjal\OneDrive\Documents\Obsidian Vault\JUTerminal1-Graph\` — Created folder containing all 2,220 markdown files and `graph.canvas`.
+* **What & How**:
+  - Read the active Obsidian configuration at `C:\Users\mmjal\AppData\Roaming\obsidian\obsidian.json` to identify the user's current open vault path.
+  - Copied the generated Obsidian markdown files and canvas directory structure from `c:\Users\mmjal\Documents\JUTerminal1\graphify-out\obsidian\` into the user's active vault under the subdirectory `JUTerminal1-Graph\`.
+  - Triggered the Obsidian custom protocol handler `obsidian://open?path=...` to open `graph.canvas` directly within the active vault workspace.
+* **Verification**:
+  - Verified that the target files copy completed successfully.
+  - Verified that `graph.canvas` exists in the user's Obsidian Vault path.
+  - Verified that the Obsidian process was triggered and remains active.
