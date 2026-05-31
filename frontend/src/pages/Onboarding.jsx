@@ -112,10 +112,7 @@ export default function Onboarding() {
     >
       <div className="w-full max-w-[900px] mx-auto">
         <div className={`mb-8 text-center transition-all duration-300 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
-          <div className="mx-auto mb-4 h-12 w-12 relative">
-            <div className="absolute left-0 top-0 h-5 w-5 rounded bg-cs-red shadow-red-glow" />
-            <div className="absolute bottom-0 right-0 h-5 w-5 rounded bg-cs-blue shadow-blue-glow" />
-          </div>
+          <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="mx-auto mb-4 w-12 h-12" />
           <h1 className="text-2xl font-extrabold font-display text-txt-primary">
             Welcome to Parallax
           </h1>

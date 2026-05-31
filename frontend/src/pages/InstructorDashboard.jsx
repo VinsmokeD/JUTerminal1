@@ -199,10 +199,7 @@ export default function InstructorDashboard() {
     <div className="min-h-dvh bg-void text-txt-primary font-display">
       <header className="sticky top-0 z-40 h-14 bg-surface-1 border-b border-cs-border px-6 flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <div className="relative h-[22px] w-[22px]">
-            <div className="absolute left-0 top-0 h-[9px] w-[9px] rounded-[2px] bg-cs-red shadow-red-glow" />
-            <div className="absolute bottom-0 right-0 h-[9px] w-[9px] rounded-[2px] bg-cs-blue shadow-blue-glow" />
-          </div>
+          <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-[22px] h-[22px] flex-shrink-0" />
           <span className="font-display font-bold text-txt-primary">Parallax</span>
         </div>
         <div className="h-5 w-px bg-cs-border" />
@@ -778,15 +775,11 @@ function InstructorLoading() {
   return (
     <div className="min-h-dvh bg-void flex items-center justify-center">
       <style>{`
-        @keyframes instructorLogoA { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.9); } }
-        @keyframes instructorLogoB { 0%, 100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } }
+        @keyframes instructorLogoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.92); } }
         @keyframes instructorDot { 0%, 80%, 100% { transform: translateY(0); opacity: 0.45; } 40% { transform: translateY(-5px); opacity: 1; } }
       `}</style>
       <div className="flex flex-col items-center gap-4">
-        <div className="relative h-12 w-12">
-          <div className="absolute left-0 top-0 h-6 w-6 rounded bg-cs-red shadow-red-glow" style={{ animation: 'instructorLogoA 1.4s ease-in-out infinite' }} />
-          <div className="absolute bottom-0 right-0 h-6 w-6 rounded bg-cs-blue shadow-blue-glow" style={{ animation: 'instructorLogoB 1.4s ease-in-out infinite' }} />
-        </div>
+        <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-12 h-12" style={{ animation: 'instructorLogoPulse 1.4s ease-in-out infinite' }} />
         <div className="flex gap-1">
           {[0, 1, 2].map((index) => (
             <span

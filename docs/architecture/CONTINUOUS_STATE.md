@@ -13,6 +13,21 @@
 
 ## Recent entries (rolling tail â€” see archive for older history)
 
+### [2026-05-31] - Claude Sonnet 4.6 (Logo rollout complete — all CSS placeholders replaced, og-image created)
+
+* **Status**: COMPLETE -- zero CSS placeholder logo instances remain in frontend/src.
+* **Why**: User requested full platform logo rollout. Prior commit replaced 4 instances; this pass catches the remaining 6 and adds the missing social meta image.
+* **Where** (9 files changed):
+  - rontend/src/App.jsx:33 -- BootLogo: two-span CSS squares -> <img src="/brand/parallax-icon.svg" class="w-8 h-8">
+  - rontend/src/pages/Onboarding.jsx:115 -- welcome header: h-12 w-12 CSS square div -> <img class="w-12 h-12">
+  - rontend/src/pages/InstructorDashboard.jsx:202 -- header logo: 9px CSS squares -> <img class="w-[22px] h-[22px]">
+  - rontend/src/pages/InstructorDashboard.jsx:786 -- InstructorLoading: two animated divs -> single <img> with instructorLogoPulse animation; removed unused instructorLogoB keyframe
+  - rontend/src/pages/Debrief.jsx:144 -- verdict card header: 2x2 CSS spans -> <img class="w-5 h-5">
+  - rontend/src/pages/Debrief.jsx:1022 -- DebriefLoading: two animated divs -> single <img> with debriefLogoPulse animation; removed unused debriefPulseB keyframe
+  - rontend/public/og-image.svg -- CREATED: 1200x630 brand social card (logo mark + PARALLAX wordmark + tagline + Red/Blue/AI pills + UJ footer + grid/glow FX)
+  - rontend/index.html:14,19 -- og-image reference updated from /og-image.png (missing) -> /og-image.svg (exists)
+* **Verification**: Grep bsolute.*bg-cs-red|absolute.*bg-cs-blue in frontend/src -> only Auth.jsx blur gradients + Landing.jsx 1%-opacity tints (both legitimate). No logo placeholders remain.
+
 ### [2026-05-31] - Claude Sonnet 4.6 (Brand assets integrated — real logo replacing CSS placeholders)
 
 * **Status**: COMPLETE

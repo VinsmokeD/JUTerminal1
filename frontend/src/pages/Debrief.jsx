@@ -141,10 +141,7 @@ function ShareModal({ session, score, gradeLabel, onClose }) {
         className="relative z-10 max-w-md w-full glass p-8 border border-cs-border text-center space-y-6 bg-surface-1/90"
       >
         <div className="flex items-center justify-center gap-3">
-          <div className="w-5 h-5 relative">
-            <span className="absolute top-0 left-0 w-2 h-2 bg-cs-red shadow-red-glow" />
-            <span className="absolute bottom-0 right-0 w-2 h-2 bg-cs-blue shadow-blue-glow" />
-          </div>
+          <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-5 h-5 flex-shrink-0" />
           <span className="font-mono text-[9px] tracking-[0.25em] text-txt-dim">PARALLAX OPERATOR DOSSIER</span>
         </div>
 
@@ -1015,14 +1012,10 @@ function DebriefLoading() {
   return (
     <div className="min-h-dvh bg-void flex items-center justify-center">
       <style>{`
-        @keyframes debriefPulseA { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.9); } }
-        @keyframes debriefPulseB { 0%, 100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } }
+        @keyframes debriefLogoPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.92); } }
       `}</style>
       <div className="flex flex-col items-center gap-4">
-        <div className="relative h-12 w-12">
-          <div className="absolute left-0 top-0 h-6 w-6 rounded bg-cs-red shadow-red-glow" style={{ animation: 'debriefPulseA 1.4s ease-in-out infinite' }} />
-          <div className="absolute bottom-0 right-0 h-6 w-6 rounded bg-cs-blue shadow-blue-glow" style={{ animation: 'debriefPulseB 1.4s ease-in-out infinite' }} />
-        </div>
+        <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-12 h-12" style={{ animation: 'debriefLogoPulse 1.4s ease-in-out infinite' }} />
         <span className="text-sm text-txt-secondary font-mono">Loading debrief...</span>
       </div>
     </div>
