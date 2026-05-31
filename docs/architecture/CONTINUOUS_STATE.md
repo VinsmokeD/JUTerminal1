@@ -1476,6 +1476,28 @@ pm run build and ran unit tests successfully.
 
 ---
 
+---
+## AGENT 2 DONE — WS3–WS9 complete
+
+**Signal timestamp:** 2026-05-31  
+**Agent:** Claude Sonnet 4.6 (Agent 2)  
+**Branch:** master  
+**Final commit:** 7a1db2b (docs(state): WS8+WS9 complete)
+
+**Workstreams completed:**
+- WS3 ✅ AI tutor: pending_flag_candidates context, calibration notes, latency tracking
+- WS4 ✅ Debrief truth: score_breakdown in backend report endpoint
+- WS5 ✅ UI/UX: workspace mobile notices, routing verified
+- WS6 ✅ Backend: /api/metrics, WS counter, SIEM lag, AI latency, 5 degradation tests, coverage floor
+- WS7 ✅ Docker: sc03-mailrelay/victim hardened, sc02 fail-open documented, 3 walkthrough templates
+- WS8 ✅ Docs: 9 plan docs archived, blueprint cleaned, index refreshed
+- WS9 ✅ Presentation: 22 diagrams re-rendered (dark theme), defense deck built (12 slides)
+
+**Test counts:** 358 backend (316 unit + 42 integration) | 46 frontend Vitest  
+**Ready for WS10:** yes — awaiting Agent 1 signal
+
+---
+
 ### [2026-05-31] - Claude Sonnet 4.6 (WS8+WS9 — Doc consolidation + 22 diagrams + defense deck)
 
 * **Status**: COMPLETE ✅ — WS8 docs consolidated; WS9 diagrams 22/22 re-rendered + .pptx built.
