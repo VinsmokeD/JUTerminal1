@@ -23,13 +23,13 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-dvh bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary">
       <ParallaxNav />
       <main className="mx-auto max-w-5xl px-6 py-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-mono uppercase tracking-[0.12em] text-txt-dim">Operator preferences</p>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight">Settings</h1>
+            <h1 className="mt-2 text-3xl font-extrabold tracking-tight font-hud">Settings</h1>
           </div>
           <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>Back to dashboard</Button>
         </div>

@@ -196,7 +196,7 @@ export default function InstructorDashboard() {
   if (loading) return <InstructorLoading />
 
   return (
-    <div className="min-h-dvh bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary">
       <header className="sticky top-0 z-40 h-14 bg-surface-1 border-b border-cs-border px-6 flex items-center gap-4">
         <div className="flex items-center gap-2">
           <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-[22px] h-[22px] flex-shrink-0" />

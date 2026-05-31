@@ -1693,3 +1693,24 @@ evidence stats, gradient CTA, JU/KASIT footer.
 - Reduced motion (`useReducedMotionSafe`): hero scroll-zoom→static mark, loop SVG paths→fully drawn (pathLength 1), marquee→static row, pillar 3D tilt→disabled; in-view reveals retained.
 - Perf tier (`usePerfTier`): tier 0 skips AmbientGlows and the marquee.
 - Removed the old `HeroScene3D` lazy import (not in this design).
+
+### [2026-05-31] - Claude Sonnet 4.6 (Phase 0–3: Global theme convergence + page reskins)
+
+* **Status**: COMPLETE ✅ — build passes (✓ built in 9.41s), all changes on branch `feat/premium-theme-convergence`.
+* **Why**: Converge the premium Landing Figma Make palette/typography across the entire platform so every page inherits the same token system instead of the old Outfit + ad-hoc skin.
+* **Where** (10 files changed):
+  - `frontend/src/index.css` — `--font-hud: 'Orbitron'` (large display heads only); `--font-display: 'Inter'` (all UI headings/labels); `--font-body: 'Inter'` (body/controls); `body { font-family: var(--font-body) }` (was font-display/Outfit). Added `.font-body` utility.
+  - `frontend/tailwind.config.js` — `fontFamily.hud = Orbitron`, `fontFamily.display = fontFamily.body = Inter`.
+  - `frontend/src/components/brand/ParallaxLogo.jsx` (NEW) — `ParallaxMark` (dual-square SVG, tone-aware: color/mono-light/mono-dark) + `ParallaxWordmark` (Orbitron letter-spaced, accent A's in red/blue).
+  - `frontend/src/components/brand/primitives.jsx` (NEW) — `C` palette object, `display/body/mono` font consts, `Label`, `GhostGrid`, `AmbientGlows`, `SectionHead`, `GlassCard` — single source of truth lifted from Landing.
+  - `frontend/src/components/motion/ScrollScene.jsx` (NEW) — pinned scroll-driven scene wrapper; `useScroll` + sticky inner stage; flat/static fallback under `useReducedMotionSafe` or perf tier 0.
+  - `frontend/src/components/motion/Reveal.jsx` (NEW) — in-view `useInView` fade/translate wrapper using `lib/motion` presets; reduced-motion safe.
+  - `frontend/src/pages/Auth.jsx` — imported `ParallaxMark`/`ParallaxWordmark`; mobile header and desktop panel both use brand components (single source of truth, no more raw `<img src="/brand/...">`).
+  - `frontend/src/pages/Onboarding.jsx` — full reskin: `ParallaxMark` header, framer-motion stagger reveals (hidden→visible), GlassCard treatment on level cards with accent tint on selection, ambient glow + ghost grid background, `font-hud` on main title.
+  - `frontend/src/pages/Dashboard.jsx` — outer `font-display` wrapper removed (body default is Inter); main h1 upgraded to `font-hud`.
+  - `frontend/src/pages/Settings.jsx` — outer `font-display` removed; h1 → `font-hud`.
+  - `frontend/src/pages/Profile.jsx` — outer `font-display` removed; username h1 → `font-hud`.
+  - `frontend/src/pages/InstructorDashboard.jsx` — outer `font-display` removed.
+* **What & How**: Typography strategy: `font-display` (Tailwind utility) now resolves to Inter — the 116+ existing usages across the platform already render correctly with no sweep needed. `font-hud` (Orbitron) is applied deliberately per-page on large hero/page-title headings only. Onboarding cards use inline `backdropFilter: blur(20px)` glass treatment + `C.accent + '0d'` tint on selection to match the Landing card style.
+* **Verification**: `npm run build` → ✓ 9.41s, 0 errors. All files on branch `feat/premium-theme-convergence`.
+* **Next**: Phase 4 (Debrief — 1266 lines), Phase 5 (Instructor h2 heads + nav), Phase 6 (RedWorkspace/BlueWorkspace token polish).

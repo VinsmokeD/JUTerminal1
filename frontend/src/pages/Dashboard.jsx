@@ -168,7 +168,7 @@ export default function Dashboard() {
   }) : []
 
   return (
-    <div className="min-h-dvh bg-void text-txt-primary font-display">
+    <div className="min-h-dvh bg-void text-txt-primary">
       {/* Nav */}
       <ParallaxNav
         rightContent={
@@ -194,7 +194,7 @@ export default function Dashboard() {
                 <span className="live-indicator">Briefing Terminal</span>
                 <span className="text-[10px] font-mono text-txt-dim tracking-widest">// SEC_LEVEL: CLASSIFIED //</span>
               </div>
-              <h1 className="text-4xl font-extrabold text-txt-primary tracking-tight font-display card-v3-header-glow">
+              <h1 className="text-4xl font-extrabold text-txt-primary tracking-tight font-hud card-v3-header-glow">
                 Tactical Briefing Center
               </h1>
               <p className="text-txt-secondary text-xs font-mono mt-2 max-w-lg">

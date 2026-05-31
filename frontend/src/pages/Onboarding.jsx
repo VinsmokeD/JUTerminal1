@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useAuthStore } from '../store/authStore'
 import useTilt from '../hooks/useTilt'
 import useCursorIntent from '../hooks/useCursorIntent'
 import { Badge } from '../components/ui'
+import { ParallaxMark } from '../components/brand/ParallaxLogo'
+import { C } from '../components/brand/primitives'
 
 const LEVELS = [
   {
@@ -15,6 +18,7 @@ const LEVELS = [
     accentText: 'text-cs-red',
     dot: 'bg-cs-red',
     iconBg: 'bg-cs-red/10',
+    accent: C.red,
     selected: 'border-cs-red shadow-[inset_0_0_24px_rgba(255,59,59,0.12)]',
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -32,6 +36,7 @@ const LEVELS = [
     accentText: 'text-cs-blue',
     dot: 'bg-cs-blue',
     iconBg: 'bg-cs-blue/10',
+    accent: C.blue,
     selected: 'border-cs-blue shadow-[inset_0_0_24px_rgba(59,139,255,0.12)]',
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -49,6 +54,7 @@ const LEVELS = [
     accentText: 'text-green-signal',
     dot: 'bg-green-signal',
     iconBg: 'bg-green-signal/10',
+    accent: C.green,
     selected: 'border-green-signal shadow-[inset_0_0_24px_rgba(0,255,136,0.1)]',
     icon: (
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -61,7 +67,6 @@ const LEVELS = [
 
 export default function Onboarding() {
   const [selected, setSelected] = useState(null)
-  const [mounted, setMounted] = useState(false)
   const { setSkillLevel, completeOnboarding } = useAuthStore()
   const navigate = useNavigate()
   const beginnerTilt = useTilt()
@@ -72,7 +77,6 @@ export default function Onboarding() {
     intermediate: intermediateTilt.bind,
     experienced: experiencedTilt.bind,
   }
-  // Reticle intent per profile (red/blue/neutral tint)
   const beginnerCursor = useCursorIntent({ intent: 'inspect', label: 'SELECT', mode: 'red' })
   const intermediateCursor = useCursorIntent({ intent: 'inspect', label: 'SELECT', mode: 'blue' })
   const experiencedCursor = useCursorIntent({ intent: 'inspect', label: 'SELECT', mode: 'neutral' })
@@ -83,10 +87,6 @@ export default function Onboarding() {
   }
   const continueCursor = useCursorIntent({ intent: 'launch', label: 'INITIALIZE', mode: 'blue' })
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
   const handleContinue = async () => {
     if (!selected) return
     try {
@@ -94,56 +94,90 @@ export default function Onboarding() {
       await completeOnboarding()
       navigate('/dashboard')
     } catch (e) {
-      console.error("Onboarding error:", e)
-      window.alert("Failed to save selection. Please try again.")
+      console.error('Onboarding error:', e)
+      window.alert('Failed to save selection. Please try again.')
     }
   }
 
   return (
-    <div
-      className="min-h-dvh bg-void px-6 py-10 flex items-center justify-center"
-      style={{
-        backgroundImage: `
-          linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
-        `,
-        backgroundSize: '40px 40px',
-      }}
-    >
-      <div className="w-full max-w-[900px] mx-auto">
-        <div className={`mb-8 text-center transition-all duration-300 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'}`}>
-          <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="mx-auto mb-4 w-12 h-12" />
-          <h1 className="text-2xl font-extrabold font-display text-txt-primary">
-            Welcome to Parallax
+    <div className="min-h-dvh bg-void px-6 py-10 flex items-center justify-center relative overflow-hidden">
+      {/* Ambient glows */}
+      <div className="pointer-events-none absolute -top-48 -left-48 w-[700px] h-[700px] rounded-full"
+        style={{ background: `radial-gradient(circle, ${C.red}12, transparent 60%)` }} />
+      <div className="pointer-events-none absolute -bottom-48 -right-48 w-[800px] h-[800px] rounded-full"
+        style={{ background: `radial-gradient(circle, ${C.blue}12, transparent 60%)` }} />
+      {/* Ghost grid */}
+      <div className="pointer-events-none absolute inset-0" style={{
+        backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+        backgroundSize: '64px 64px',
+        maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
+        WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
+      }} />
+
+      <div className="w-full max-w-[960px] mx-auto relative z-10">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-10 text-center"
+        >
+          <div className="flex justify-center mb-5">
+            <ParallaxMark size={52} tone="color" />
+          </div>
+          <span className="font-mono text-[10px] tracking-[0.28em] uppercase text-txt-dim mb-3 block">
+            // SELECT OPERATOR COGNITIVE PROFILE //
+          </span>
+          <h1 className="text-3xl font-extrabold font-hud text-txt-primary tracking-tight mb-3">
+            Welcome to <span style={{ color: C.red }}>Par</span><span style={{ color: C.blue }}>al</span><span className="text-txt-primary">lax</span>
           </h1>
-          <p className="mt-2 text-[11px] font-mono uppercase tracking-[0.08em] text-txt-dim">// SELECT OPERATOR COGNITIVE PROFILE //</p>
+          <p className="text-txt-secondary text-sm max-w-md mx-auto leading-relaxed">
+            Choose the skill level that matches your current experience. You can change this anytime in settings.
+          </p>
           <div className="mt-4">
             <Badge tone="neutral">Step 1 of 1</Badge>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {LEVELS.map((level, index) => {
+        {/* Level cards */}
+        <motion.div
+          className="grid gap-4 md:grid-cols-3"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.1, delayChildren: 0.25 } },
+          }}
+        >
+          {LEVELS.map((level) => {
             const isSelected = selected === level.id
-            const bind = tiltByLevel[level.id] || { ref: null, onMouseMove: () => {}, onMouseLeave: () => {} }
-            const cBind = cursorByLevel[level.id] || { onMouseEnter: () => {}, onMouseLeave: () => {} }
+            const bind = tiltByLevel[level.id] || {}
+            const cBind = cursorByLevel[level.id] || {}
             return (
-              <button
+              <motion.button
                 key={level.id}
                 ref={bind.ref}
                 onMouseMove={bind.onMouseMove}
                 onMouseEnter={cBind.onMouseEnter}
-                onMouseLeave={() => { bind.onMouseLeave(); cBind.onMouseLeave() }}
+                onMouseLeave={() => { bind.onMouseLeave?.(); cBind.onMouseLeave?.() }}
                 onClick={() => setSelected(level.id)}
-                style={{ transitionDelay: mounted ? `${160 + index * 80}ms` : '0ms' }}
-                className={`card-v3 tilt-target text-left p-5 min-h-[296px] border-2 transition-all duration-300 ${
-                  mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
-                } ${
+                variants={{
+                  hidden: { opacity: 0, y: 28 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+                }}
+                className={`relative text-left p-5 min-h-[300px] rounded-2xl border-2 transition-all duration-300 tilt-target ${
                   isSelected ? level.selected : 'border-cs-border hover:border-cs-border/60'
                 }`}
+                style={{
+                  background: isSelected
+                    ? `linear-gradient(180deg, ${level.accent}0d, transparent), rgba(16,24,43,0.55)`
+                    : 'rgba(16,24,43,0.55)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                }}
               >
                 {isSelected && (
-                  <span className="absolute right-4 top-4 translate-y-0 opacity-100 transition-all duration-200">
+                  <span className="absolute right-4 top-4">
                     <Badge tone={level.tone}>Selected</Badge>
                   </span>
                 )}
@@ -158,27 +192,33 @@ export default function Onboarding() {
                 <div className="mt-5 space-y-2">
                   {level.features.map((feature) => (
                     <div key={feature} className="flex items-center gap-2">
-                      <span className={`h-[3px] w-[3px] rounded-full ${level.dot}`} />
+                      <span className={`h-[3px] w-[3px] rounded-full flex-shrink-0 ${level.dot}`} />
                       <span className="text-xs text-txt-dim font-mono">{feature}</span>
                     </div>
                   ))}
                 </div>
-              </button>
+              </motion.button>
             )
           })}
-        </div>
+        </motion.div>
 
-        <div className="mt-8 flex justify-center">
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-8 flex justify-center"
+        >
           <button
             type="button"
             disabled={!selected}
             onClick={handleContinue}
             {...(selected ? continueCursor.bind : {})}
-            className={`w-full max-w-xs btn-v3 ${selected ? 'btn-v3-blue animate-pulse' : 'opacity-40 cursor-not-allowed'}`}
+            className={`w-full max-w-xs btn-v3 ${selected ? 'btn-v3-blue' : 'opacity-40 cursor-not-allowed'}`}
           >
-            Initialize Neural Link -&gt;
+            Initialize Neural Link →
           </button>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

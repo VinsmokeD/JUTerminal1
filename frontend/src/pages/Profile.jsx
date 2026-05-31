@@ -23,7 +23,7 @@ export default function Profile() {
   const completionRate = summary.total_missions ? Math.round((summary.completed_missions / summary.total_missions) * 100) : 0
 
   return (
-    <div className="min-h-dvh bg-void text-txt-primary font-display pb-12">
+    <div className="min-h-dvh bg-void text-txt-primary pb-12">
       <ParallaxNav />
       
       <main className="max-w-6xl mx-auto px-6 pt-10">
@@ -42,7 +42,7 @@ export default function Profile() {
           
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-extrabold tracking-tight">{stats.username}</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight font-hud">{stats.username}</h1>
               <Badge tone={stats.skill_level === 'experienced' ? 'red' : 'blue'}>
                 {stats.skill_level.charAt(0).toUpperCase() + stats.skill_level.slice(1)}
               </Badge>
