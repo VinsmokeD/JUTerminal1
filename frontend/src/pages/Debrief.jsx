@@ -1,8 +1,10 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import api from '../lib/api'
 import CyberSimNav from '../components/nav/CyberSimNav'
 import { Badge, Button, Stat } from '../components/ui'
+import { useReducedMotionSafe, staggerItem } from '../lib/motion'
 
 const KillChainView = lazy(() => import('../components/killchain/KillChainView'))
 
@@ -13,6 +15,156 @@ const TAG_STYLES = {
   remediation: { cls: 'text-green-signal border-green-signal/30 bg-green-signal/5', dot: 'bg-green-signal' },
   todo:        { cls: 'text-amber-warn border-amber-warn/30 bg-amber-warn/5', dot: 'bg-amber-warn' },
   note:        { cls: 'text-txt-secondary border-cs-border bg-surface-2/50', dot: 'bg-txt-dim' },
+}
+
+function ScoreBreakdown({ hintPenalty, gatePenalty, timeBonus, finalScore }) {
+  const reduced = useReducedMotionSafe()
+
+  const items = [
+    { label: 'Starting Score', value: 100, color: 'bg-txt-dim/50' },
+    { label: 'Hint Penalties', value: hintPenalty > 0 ? -hintPenalty : 0, color: 'bg-critical' },
+    { label: 'Gate & ROE Penalties', value: gatePenalty > 0 ? -gatePenalty : 0, color: 'bg-cs-red' },
+    { label: 'Time / Speed Bonus', value: timeBonus > 0 ? `+${timeBonus}` : 0, color: 'bg-green-signal' },
+    { label: 'Final Score', value: finalScore, color: 'bg-cs-blue', isFinal: true },
+  ].filter(item => item.value !== 0)
+
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const barVariants = {
+    hidden: { scaleX: 0, originX: 0 },
+    visible: {
+      scaleX: 1,
+      transition: {
+        duration: 0.45,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  }
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial={reduced ? 'visible' : 'hidden'}
+      animate="visible"
+      className="space-y-3 mt-6 border-t border-cs-border/30 pt-4"
+    >
+      <h4 className="text-xs font-mono text-txt-dim uppercase tracking-wider mb-2">Score Breakdown</h4>
+      <div className="space-y-2 max-w-md">
+        {items.map((item, idx) => {
+          const valNum = typeof item.value === 'string' ? parseInt(item.value, 10) : item.value
+          const absVal = Math.abs(valNum)
+          const pct = Math.max(2, Math.min(100, absVal))
+
+          return (
+            <motion.div
+              key={idx}
+              variants={staggerItem}
+              className="space-y-1"
+            >
+              <div className="flex justify-between text-[11px] font-mono">
+                <span className={item.isFinal ? 'text-txt-primary font-bold' : 'text-txt-secondary'}>
+                  {item.label}
+                </span>
+                <span className={item.isFinal ? 'text-cs-blue font-bold' : valNum < 0 ? 'text-cs-red' : valNum > 0 && !item.isFinal ? 'text-green-signal' : 'text-txt-primary'}>
+                  {item.value}
+                </span>
+              </div>
+              <div className="h-1 w-full bg-surface-3 rounded-full overflow-hidden relative">
+                <motion.div
+                  variants={barVariants}
+                  className={`h-full rounded-full ${item.color}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </motion.div>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+}
+
+function ShareModal({ session, score, gradeLabel, onClose }) {
+  const reduced = useReducedMotionSafe()
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-void/80 backdrop-blur-md">
+      {/* Left curtain panel */}
+      <motion.div
+        className="absolute left-0 top-0 bottom-0 w-1/2"
+        initial={{ x: '-100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '-100%' }}
+        transition={reduced ? { duration: 0 } : { duration: 0.45, ease: 'easeOut' }}
+        style={{
+          background: 'linear-gradient(90deg, #070408, #0d060b)',
+          borderRight: '1px solid rgba(255,59,59,0.18)',
+        }}
+      />
+      {/* Right curtain panel */}
+      <motion.div
+        className="absolute right-0 top-0 bottom-0 w-1/2"
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={reduced ? { duration: 0 } : { duration: 0.45, ease: 'easeOut' }}
+        style={{
+          background: 'linear-gradient(270deg, #040710, #060b16)',
+          borderLeft: '1px solid rgba(76,194,255,0.18)',
+        }}
+      />
+
+      {/* Main certificate card */}
+      <motion.div
+        initial={reduced ? { scale: 1, opacity: 1 } : { scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={reduced ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="relative z-10 max-w-md w-full glass p-8 border border-cs-border text-center space-y-6 bg-surface-1/90"
+      >
+        <div className="flex items-center justify-center gap-3">
+          <div className="w-5 h-5 relative">
+            <span className="absolute top-0 left-0 w-2 h-2 bg-cs-red shadow-red-glow" />
+            <span className="absolute bottom-0 right-0 w-2 h-2 bg-cs-blue shadow-blue-glow" />
+          </div>
+          <span className="font-mono text-[9px] tracking-[0.25em] text-txt-dim">CYBERSIM OPERATOR DOSSIER</span>
+        </div>
+
+        <div className="space-y-1">
+          <h3 className="text-lg font-extrabold tracking-tight text-txt-primary">COMMISSION VERDICT</h3>
+          <p className="text-[10px] text-txt-secondary uppercase tracking-widest font-mono">
+            {session.scenario_id} // {session.role === 'red' ? 'RED TEAM' : 'BLUE TEAM'}
+          </p>
+        </div>
+
+        <div className="py-5 border-y border-cs-border/40 space-y-1.5">
+          <div className="text-4xl font-mono font-extrabold text-cs-blue tracking-tighter">
+            {score}/100
+          </div>
+          <div className="text-xs font-semibold tracking-wider text-green-signal uppercase">
+            {gradeLabel}
+          </div>
+        </div>
+
+        <p className="text-xs text-txt-secondary leading-relaxed max-w-xs mx-auto font-display">
+          This dossier records the successful completion of training under CyberSim's sandboxed environment.
+          All simulated operations adhered to methodology parameters.
+        </p>
+
+        <div className="pt-2 flex justify-center gap-3">
+          <Button onClick={onClose} variant="ghost" size="sm">Dismiss</Button>
+          <Button onClick={() => window.print()} variant="blue" size="sm">Print Dossier</Button>
+        </div>
+      </motion.div>
+    </div>
+  )
 }
 
 export default function Debrief() {
@@ -37,6 +189,7 @@ export default function Debrief() {
   const [questionInput, setQuestionInput] = useState('')
   const [hoveredMetric, setHoveredMetric] = useState(null)
   const [retrying, setRetrying] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   const retryScenario = async () => {
     if (!window.confirm('This will reset your progress to Phase 1. Your previous debrief report will be saved. Continue?')) return
@@ -197,6 +350,13 @@ export default function Debrief() {
   const hints_l3 = hintsUsed.filter(h => h.level === 3).length
   const resourcefulness = Math.max(0, 100 - (hints_l1 * 5 + hints_l2 * 10 + hints_l3 * 20))
 
+  const highAlertsCount = siemEvents ? siemEvents.filter(e => e.severity === 'high' || e.severity === 'critical').length : 0
+  const triagedHighCount = triage && siemEvents ? triage.filter(t => {
+    const ev = siemEvents.find(e => e.id === t.event_id)
+    return ev && (ev.severity === 'high' || ev.severity === 'critical')
+  }).length : 0
+  const triageCoverage = highAlertsCount > 0 ? Math.round((triagedHighCount / highAlertsCount) * 100) : 100
+
   const metrics = [
     { name: 'Offensive Speed', value: Math.round(offensive_speed), label: 'Offensive Speed', framework: 'MITRE ATT&CK Execution', link: 'https://attack.mitre.org/', desc: `Based on a 30m benchmark. Your time: ${Math.round(sessionDurationSec / 60)}m.` },
     { name: 'Defensive Response', value: Math.round(defensive_response), label: 'Defensive Response', framework: 'NIST SP 800-61 / D3FEND', link: 'https://d3fend.mitre.org/', desc: `Triaged ${triagedCount} out of ${totalSiem} SIEM events.` },
@@ -342,6 +502,14 @@ export default function Debrief() {
                 <Stat label="Evidence" value={`${evidence.length}`} accent="blue" />
                 <Stat label="Duration" value={sessionDuration ? `${sessionDuration}m` : '--'} accent="neutral" />
               </div>
+
+              <ScoreBreakdown 
+                baseScore={score?.base_score ?? session.score}
+                hintPenalty={hintsUsed.length > 0 ? (hints_l1 * 5 + hints_l2 * 10 + hints_l3 * 20) : 0}
+                gatePenalty={Math.max(0, 100 - (score?.base_score ?? session.score) - (hints_l1 * 5 + hints_l2 * 10 + hints_l3 * 20))}
+                timeBonus={Math.max(0, finalScore - (score?.base_score ?? session.score))}
+                finalScore={finalScore}
+              />
             </div>
 
             <ScoreRing score={finalScore} gradeColor={gradeColor} gradeLabel={gradeLabel} />
@@ -350,6 +518,7 @@ export default function Debrief() {
           <div className="relative z-10 flex gap-3 mt-6 pt-6 border-t border-cs-border/30">
             <Button onClick={downloadReport} variant="blue" size="sm">Export report (.md)</Button>
             <Button onClick={downloadPdf} variant="ghost" size="sm">Export PDF</Button>
+            <Button onClick={() => setShowShareModal(true)} variant="ghost" size="sm">Share Dossier</Button>
             <Button onClick={retryScenario} disabled={retrying} variant="ghost" size="sm">
               {retrying ? 'Retrying...' : 'Retry this scenario'}
             </Button>
@@ -395,6 +564,67 @@ export default function Debrief() {
                   ? `Executed a structured ${session.methodology?.toUpperCase()} penetration test against ${session.scenario_id}, progressing through ${session.phase} phases. Identified ${findings.length} vulnerabilities and collected ${evidence.length} pieces of supporting evidence. Final score: ${finalScore}/100.`
                   : `Performed incident response for ${session.scenario_id} using the NIST 800-61 framework, completing ${session.phase} of 6 phases. Extracted ${iocs.length} indicators of compromise and documented ${findings.length} analytical findings. Final score: ${finalScore}/100.`}
               </p>
+            </div>
+
+            <div className="card-v3 p-5">
+              <h3 className="text-sm font-semibold text-txt-secondary mb-4 font-display normal-case">Operations Comparison</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 divide-y md:divide-y-0 md:divide-x divide-cs-border/30">
+                {/* Red Team Column */}
+                <div className="pb-4 md:pb-0 md:pr-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="w-2.5 h-2.5 rounded-full bg-cs-red shadow-red-glow" />
+                    <h4 className="text-xs font-bold font-mono tracking-wider text-txt-secondary uppercase">Red Team (Offensive)</h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-surface-2/30 border border-cs-border/40 rounded-cs p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-cs-red">{findings.length}</div>
+                      <div className="text-[10px] text-txt-dim uppercase tracking-wider font-mono">Vulnerabilities</div>
+                    </div>
+                    <div className="bg-surface-2/30 border border-cs-border/40 rounded-cs p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-txt-primary">{evidence.length}</div>
+                      <div className="text-[10px] text-txt-dim uppercase tracking-wider font-mono">Evidence Collects</div>
+                    </div>
+                    <div className="bg-surface-2/30 border border-cs-border/40 rounded-cs p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-txt-primary">{commands.length}</div>
+                      <div className="text-[10px] text-txt-dim uppercase tracking-wider font-mono">Commands Run</div>
+                    </div>
+                    <div className="bg-surface-2/30 border border-cs-border/40 rounded-cs p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-amber-warn">{gate_blocks}</div>
+                      <div className="text-[10px] text-txt-dim uppercase tracking-wider font-mono">Gate Blocks</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Blue Team Column */}
+                <div className="pt-4 md:pt-0 md:pl-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="w-2.5 h-2.5 rounded-full bg-cs-blue shadow-blue-glow" />
+                    <h4 className="text-xs font-bold font-mono tracking-wider text-txt-secondary uppercase">Blue Team (Defensive)</h4>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-surface-2/30 border border-cs-border/40 rounded-cs p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-cs-blue">{triage.length}</div>
+                      <div className="text-[10px] text-txt-dim uppercase tracking-wider font-mono">Triaged Alerts</div>
+                    </div>
+                    <div className="bg-surface-2/30 border border-cs-border/40 rounded-cs p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-txt-primary">
+                        {highAlertsCount > 0 ? `${triageCoverage}%` : '100%'}
+                      </div>
+                      <div className="text-[10px] text-txt-dim uppercase tracking-wider font-mono">Triage Coverage</div>
+                    </div>
+                    <div className="bg-surface-2/30 border border-cs-border/40 rounded-cs p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-txt-primary">
+                        {insights?.summary?.mean_detection_latency_seconds != null ? `${insights.summary.mean_detection_latency_seconds}s` : '--'}
+                      </div>
+                      <div className="text-[10px] text-txt-dim uppercase tracking-wider font-mono">Mean Latency</div>
+                    </div>
+                    <div className="bg-surface-2/30 border border-cs-border/40 rounded-cs p-3 text-center">
+                      <div className="text-2xl font-mono font-bold text-txt-primary">{iocs.length}</div>
+                      <div className="text-[10px] text-txt-dim uppercase tracking-wider font-mono">IOCs Extracted</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {remediations.length > 0 && (
@@ -748,6 +978,17 @@ export default function Debrief() {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {showShareModal && (
+          <ShareModal
+            session={session}
+            score={finalScore}
+            gradeLabel={gradeLabel}
+            onClose={() => setShowShareModal(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

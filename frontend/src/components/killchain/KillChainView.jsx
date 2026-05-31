@@ -1,6 +1,8 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
+import { motion } from 'framer-motion'
 import api from '../../lib/api'
 import { Badge } from '../ui'
+import { useReducedMotionSafe } from '../../lib/motion'
 
 const LANE_HEIGHT = 120
 const PADDING_X = 50
@@ -11,6 +13,7 @@ export default function KillChainView({ sessionId, role: _role }) {
   const [selectedNode, setSelectedNode] = useState(null)
   const [loading, setLoading] = useState(true)
   const containerRef = useRef(null)
+  const reduced = useReducedMotionSafe()
 
   useEffect(() => {
     if (!sessionId) return
@@ -97,12 +100,15 @@ export default function KillChainView({ sessionId, role: _role }) {
             const isSelected = selectedNode && (selectedNode.id === m.source.id || selectedNode.id === m.target.id)
             const path = `M ${x1} ${y1} C ${x1} ${(y1+y2)/2}, ${x2} ${(y1+y2)/2}, ${x2} ${y2}`
             return (
-              <path 
+              <motion.path 
                 key={`arc-${i}`} 
                 d={path} 
                 fill="none" 
                 stroke={isSelected ? '#fff' : 'rgba(255,255,255,0.15)'} 
                 strokeWidth={isSelected ? 2 : 1} 
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={reduced ? { duration: 0 } : { duration: 0.6, delay: i * 0.03 + 0.1, ease: 'easeInOut' }}
               />
             )
           })}
@@ -117,7 +123,14 @@ export default function KillChainView({ sessionId, role: _role }) {
             const hasAiHint = item.kind === 'command' && data.ai_interactions?.some(ai => ai.command_context === item.command && ai.kind === 'hint_request')
             
             return (
-              <g key={item.id} className="cursor-pointer" onClick={() => setSelectedNode(item)}>
+              <motion.g 
+                key={item.id} 
+                className="cursor-pointer" 
+                onClick={() => setSelectedNode(item)}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 200, damping: 15, delay: (item.ms - minTime) / durationMs * 0.8 + 0.1 }}
+              >
                 {isSelected && (
                   <circle cx={x} cy={y} r={r + 6} fill="none" stroke={color} strokeWidth={2} className="animate-pulse" />
                 )}
@@ -132,7 +145,7 @@ export default function KillChainView({ sessionId, role: _role }) {
                 {hasAiHint && (
                   <circle cx={x+r} cy={y-r} r={4} fill="#ffaa00" />
                 )}
-              </g>
+              </motion.g>
             )
           })}
         </svg>
