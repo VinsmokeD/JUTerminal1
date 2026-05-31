@@ -34,7 +34,9 @@ export default function RevealText({
 }) {
   const reduced = useReducedMotionSafe()
   const ref = useRef(null)
-  const isInView = useInView(ref, { once, margin: '-8% 0px' })
+  // amount-based trigger (fraction visible). NOTE: a percentage `margin`
+  // rootMargin here silently failed to ever fire → words stuck hidden.
+  const isInView = useInView(ref, { once, amount: 0.15 })
   const text = typeof children === 'string' ? children : ''
   const { words } = useSplitText(text)
 

@@ -13,6 +13,19 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-31] - Claude Opus 4.8 (Empirical visual verification — found & fixed hero RevealText freeze)
+
+* **Status**: COMPLETE ✅ — Playwright visual capture of all Landing surfaces; **1 user-visible bug found and fixed**; `npm run verify` green, lint 0 errors, 47/47 tests.
+* **Why**: CI green ≠ visually correct (the earlier U+2212 curtain bug proved it). Ran the real browser pass the plan mandated but the implementation skipped. Installed Playwright chromium, drove the live dev server (port 3001), screenshotted boot/hero/sections/curtain/auth/reduced at 1440×900, and read the pixels.
+* **What was verified working (with screenshots):** boot handshake (0→100 dual red/blue gradient + center seam + step label); hero WebGL particle field renders in headless; dual-panel **curtain transition** caught mid-retreat with red tint + **ReticleCursor** crosshair visible (no red-stuck regression); **reduced-motion** fallback renders the full static hero; pin-and-stack "How It Works" (red/amber/blue badges); SC-01/02/03 scenario cards; frameworks **Marquee** row; Lenis confirmed active (it hijacked programmatic scroll — a test artifact, not a bug); **0 console/page errors** across all passes.
+* **Bug found (HIGH, user-visible):** the hero headline "Attack. Defend. Simultaneously." was **invisible in full-motion mode** — DOM probe showed the words frozen at the `hidden` variant (`opacity:0`, `clipPath:inset(…100%)`, `y:43.2px`). Worked only in reduced-motion (which renders the plain fallback).
+* **Root cause:** `useSplitText` deferred its split to a `useEffect`, returning `words:null` on the **first** render → `RevealText` rendered its plain-`<Tag>` fallback first → the `ref` was **not attached** when `useInView` set up its IntersectionObserver → `isInView` stayed false forever → words never advanced to `visible`. (`margin` vs `amount` was a red herring; the observer was never bound.)
+* **Where (fix, 3 files):**
+  - `frontend/src/hooks/useSplitText.js` — split **synchronously** via `useState(() => splitWords(text))` (Vite SPA, no SSR), so the `MotionTag`+`ref` exist on frame one. Effect still re-splits on `text` change.
+  - `frontend/src/components/motion/RevealText.jsx` — `useInView` margin→`amount:0.15` (cleaner trigger; kept).
+  - `frontend/src/test-setup.js` — added an `IntersectionObserver` mock (jsdom lacks it; making the split synchronous now exercises RevealText's animated path in tests, which calls `useInView`). Mock reports immediately in-view so reveals complete deterministically.
+* **Verification**: re-ran the DOM probe post-fix → headline now `opacity:1, clipPath:inset(…0%), transform:none` in both boot and skip-boot; re-screenshotted all sections (correct); `npm run verify` → build + **47/47**; lint 0 errors. Ad-hoc capture scripts under `tests/e2e/` were removed after use (a permanent visual-regression harness is a Phase 8 item).
+
 ### [2026-05-31] - Claude Opus 4.8 (MOTION_SYSTEM.md authored — backfills skipped Phase 0/9 spec)
 
 * **Status**: Doc complete — `docs/architecture/MOTION_SYSTEM.md` created.

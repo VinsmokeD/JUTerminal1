@@ -27,3 +27,17 @@ if (!window.ResizeObserver) {
     disconnect() {}
   }
 }
+
+// jsdom does not implement IntersectionObserver — framer-motion's useInView
+// (RevealText and any scroll-reveal) needs it. Mock reports the element as
+// immediately in view so the reveal completes deterministically in tests.
+if (!window.IntersectionObserver) {
+  window.IntersectionObserver = class IntersectionObserver {
+    constructor(cb) { this._cb = cb }
+    observe(el) { this._cb([{ isIntersecting: true, target: el, intersectionRatio: 1 }], this) }
+    unobserve() {}
+    disconnect() {}
+    takeRecords() { return [] }
+  }
+  globalThis.IntersectionObserver = window.IntersectionObserver
+}
