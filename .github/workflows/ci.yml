@@ -7,9 +7,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, main, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [master, main, develop]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -151,6 +151,19 @@ jobs:
       - name: Build frontend image
         run: docker build -t cybersim-frontend:ci ./frontend
         # Frontend Dockerfile provides ARG defaults for VITE_* values.
+
+  # ── ADVISORY: network isolation verification (reports, never blocks) ────────
+  network-isolation:
+    name: Network — scenario isolation (advisory)
+    runs-on: ubuntu-latest
+    needs: [compose-validate]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify scenario container isolation
+        run: |
+          chmod +x scripts/verify-network-isolation.sh
+          bash scripts/verify-network-isolation.sh || echo "::warning::Isolation check failed — review docker network config"
 
   # ── ADVISORY: dependency + secret scanning (reports, never blocks) ─────────
   security-scan:
