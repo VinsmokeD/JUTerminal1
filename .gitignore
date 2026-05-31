@@ -28,7 +28,8 @@ postgres_data/
 redis_data/
 
 # IDE
-.claude/
+.claude/settings.local.json
+.claude/launch.json
 .vscode/
 .idea/
 *.swp

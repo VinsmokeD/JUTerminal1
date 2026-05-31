@@ -26,7 +26,7 @@ export default function useFocusTrap(containerRef, active) {
       const el = containerRef.current
       if (!el) return
       const focusable = [...el.querySelectorAll(FOCUSABLE)].filter(
-        (n) => !n.closest('[hidden]') && getComputedStyle(n).display !== 'none',
+        (n) => !n.closest('[hidden]') && window.getComputedStyle(n).display !== 'none',
       )
       if (!focusable.length) { e.preventDefault(); return }
       const first = focusable[0]

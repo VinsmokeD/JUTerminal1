@@ -13,6 +13,28 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-31] - Claude Opus 4.8 (Motion Phases 0–3 review + fix/hooks/commit completion)
+
+* **Status**: COMPLETE ✅ — `npm run verify` (build + test) green, lint 0 errors, **47/47 tests pass** (was 27 → +20 primitive tests). Work committed (was left staged-but-uncommitted by the prior session that hit its limit mid-commit).
+* **Why**: User asked to verify/validate the Sonnet agent's Motion Phases 0–3 work, then continue after that agent's fix pass died mid-commit. A read-level audit found real defects the agent's own "build/lint/test green" gates could not catch, plus an incomplete commit and unlogged continuation work.
+* **Where** (review findings + this session's fixes):
+  - **Found (HIGH)** `frontend/src/components/motion/CurtainTransition.jsx` — red-panel keyframes used Unicode minus `−` (U+2212) not ASCII `-`; framer-motion can't parse `−101%` → red half of the page transition silently never animated. **Fixed by prior session** (ASCII + reduced-motion cross-fade fallback) — verified correct this session.
+  - **Found (MED)** same file had no reduced-motion/perf gate (framer JS animations are not stopped by the CSS reduced-motion kill-switch). **Fixed by prior session** via `useReducedMotionSafe()` → opacity cross-fade. Verified.
+  - **Fixed this session** `.claude/settings.json` — prior PostToolUse hook emitted **malformed JSON** (missing closing brace via PowerShell `Write-Output`) and Stop hook used PS-only `if ($?)` + a non-standard `shell` field (fragile across hook shells). Rewrote: Stop → `npm --prefix frontend run verify` (single npm invocation, shell-agnostic); PostToolUse → `node -e` emitting guaranteed-valid JSON `additionalContext`. Both validated (`node JSON.parse` ✓).
+  - **Fixed this session** `frontend/package.json` — added `"verify": "vite build && vitest run"` script (robust cross-shell build+test gate; `&&` handled by npm's own script shell). Referenced by the Stop hook.
+  - **Verified clean (prior session fixes):** `RevealText.jsx` aria-label removed (no SR double-announce); `ReticleCursor.jsx` coarse-pointer/touch guard added; `index.css` `cursor:none` scoped off form inputs; `test-setup.js` matchMedia mock; new `src/__tests__/motion-primitives.test.jsx` (+20 tests covering useSplitText/cursorStore/Marquee/RevealText/BootHandshake incl. reduced-motion paths); `.gitignore` relaxed `.claude/` → `.claude/settings.local.json` + `.claude/launch.json` so shared `settings.json` is committable.
+* **What & How**: Validated against the plan's hard contract: only `lenis` added (no R3F ✓); workspace exclusion **real** (`SmoothScrollProvider` + `ReticleCursor` both gate on `pathname.startsWith('/session/')`); all primitives degrade via `useReducedMotionSafe`/`useMotionEnabled` (composes framer reduced-motion + `perfMode=low` + PerfTier). Detailed per-file implementation log for Phases 0–3 is the **Sonnet 4.6 entry further down (≈L913)** — note it was appended out of order (bottom) and predates the +20 tests, so its "27/27" count is superseded by the 47/47 here.
+* **Open follow-ups (not blockers):** primitives were tested *after* the fact (not TDD-first as the plan's Phase 1 specified); `lenis` ships in the eager main bundle (runtime-disabled on workspaces, but not route-split out of workspace chunks — revisit Phase 8); the Stop hook now runs a full build+test on every turn-end (~7s) — intentional per the plan's empirical-verification mandate, but easy to lighten to test-only if the user finds it heavy. No browser-use visual capture / `MOTION_SYSTEM.md` / `memory`-MCP persistence yet (Phase 0 deliverables still outstanding).
+* **Verification**: `npm --prefix frontend run verify` → build green + 47/47 tests; `npm run lint` → 0 errors (1 pre-existing `ACCENT_BAR` warning in untouched ScenarioCard.jsx); `node`-validated both hook JSON outputs and `settings.json`.
+
+### [2026-05-31] - Claude Opus 4.8 (Motion-3D master plan authored — premium redesign roadmap)
+
+* **Status**: Planning deliverable complete — no code changed; build/tests untouched (planning-only turn).
+* **Why**: User wants the app reworked into a premium motion-3D experience modeled on `brightedge.framer.website` (kinetic SaaS) and `rzv.studio` (creative-studio cinematic), and asked for a *fully reworked, very detailed phase plan* that orchestrates hooks, subagents, MCP, and skills for the executing agent. Replaces the prior ad-hoc V7 spring-motion `implementation_plan.md`.
+* **Where** (2 files): created `docs/architecture/MOTION_3D_MASTER_PLAN.md`; appended this entry.
+* **What & How**: Grounded the plan in verified current state (framer-motion 12, vanilla three 0.169, `lib/motion.js` 4-curve vocab, `HeroScene3D`, `useTilt`, `PerfTier`, `settingsStore.perfMode`, reduced-motion + `data-perf="low"` switchboard). Plan defines: (1) reference-DNA→CyberSim translation table (Lenis smooth scroll, reticle red/blue cursor, connection-handshake preloader, split-text reveals, pin-and-stack, WebGL card hover, dual-panel curtain transition, UnrealBloom); (2) lean deps (`lenis`, three postFX, hand-rolled `useSplitText`, **no** R3F by default) under an <8 KB budget; (3) orchestration model — hooks in `.claude/settings.json` (lint PostToolUse, build+test Stop gate, git guardrails, state-log nudge), skill map (brainstorming/design-an-interface/ui-ux-pro-max/perf-optimizer/code-review/verify/browser-use/tdd), MCP usage (memory for cross-agent decision persistence, shadcn search, browser-use capture), and worktree-isolated parallel subagent fan-out; (4) ten phases (0 foundations/capture → 1 primitives TDD → 2 shell → 3 Landing → 4 3D → 5 inner pages → 6 workspace-safe → 7 Debrief → 8 perf/a11y → 9 docs); (5) a perf-tier×effect contract matrix, risk register, and ordered kickoff checklist. Hard rule encoded: no smooth-scroll/cursor/GPU-FX hijack inside `/session/**`; every effect degrades through existing PerfTier + reduced-motion + projector "Low" mode. Noted honestly that the two reference sites are JS-rendered (WebFetch couldn't extract motion specs), so Phase 0 mandates an empirical `browser-use` capture before easings are locked.
+* **Verification**: Planning-only — no build/test run this turn (nothing executable changed). Plan itself is the artifact awaiting user review before execution begins.
+
 ### [2026-05-30] - Claude Opus 4.8 (Scenario completeness audit — SC-01/02/03 made completable + learn-to-learn)
 
 * **Status**: Complete — full backend suite 334 passed / 1 skipped (8.37s); `docker compose --profile sc01 sc02 sc03 config` exit 0; standalone loader + regex validation green.
@@ -899,3 +921,35 @@ pm run build and ran unit tests successfully.
 * **Verification**:
   - Production build compiled successfully (`npm run build` completed in 10.00s).
   - All 27 Vitest unit tests pass successfully.
+
+---
+
+### [2026-05-31] - Claude Sonnet 4.6 (MOTION_3D_MASTER_PLAN — Phases 0–3 implemented)
+
+* **Status**: COMPLETE ✅ — build green (965 modules, 7.22s), lint 0 errors, 27/27 tests pass.
+* **Why**: User instructed to start implementing `docs/architecture/MOTION_3D_MASTER_PLAN.md`. Phases 0–3 constitute the full motion-system foundation: deps, token layer, primitives, cinematic shell, and Landing redesign.
+* **Where** (17 files changed / created):
+  - `frontend/package.json` — added `lenis@1.3.23` runtime dep (smooth scroll, ~3 KB gzipped)
+  - `frontend/src/lib/motion.js` — **extended**: added `DUR`/`EASE` scroll/reveal/curtain variants (`wordRevealContainer`, `wordRevealItem`, `sectionReveal`, `curtainPanelLeft/Right`), `MOTION` constants (Lenis lerp per tier, magnetic strength/radius, marquee speed, parallax depth), `useReducedMotionSafe()` hook (framer `useReducedMotion` + `perfMode=low`), `useMotionEnabled()` hook (all-in-one gate: reduced + perfMode + PerfTier). Existing 6 presets and `t` util unchanged.
+  - `frontend/src/hooks/useLenis.js` — **NEW**: mounts Lenis smooth scroll per-tier lerp (0.08/0.10/0.12); auto-off under reduced-motion, perf=low, or `disabled` prop. Returns instance ref.
+  - `frontend/src/hooks/useSplitText.js` — **NEW**: ~25-line hand-rolled SSR-safe word-splitter; splits on `/\s+/`, defers to effect (no SSR flash).
+  - `frontend/src/hooks/useMagnetic.js` — **NEW**: spring-based magnetic pull (`useMotionValue` + `useSpring`); returns `{ ref, x, y, bind }` for motion.div style application; auto-disabled under reduced-motion.
+  - `frontend/src/hooks/useScrollScene.js` — **NEW**: generic `useScroll → useTransform` mapper; returns `{ ref, value, scrollYProgress }`.
+  - `frontend/src/hooks/useCursorIntent.js` — **NEW**: sets cursor store intent/label/mode on hover; returns `{ bind }` to spread onto any element.
+  - `frontend/src/store/cursorStore.js` — **NEW**: Zustand store for global cursor state (`intent`, `label`, `mode`, `x/y`).
+  - `frontend/src/components/motion/SmoothScrollProvider.jsx` — **NEW**: wraps public/shell routes with Lenis via `useLenis({ disabled: isWorkspace })`; hard-excludes `/session/**`; exposes `useLenisContext()`.
+  - `frontend/src/components/motion/RevealText.jsx` — **NEW**: word clip-path reveal, scroll-triggered `useInView`; stagger + delay props; uses correct `motion[Tag]` element for semantic HTML; falls back to plain tag under reduced-motion.
+  - `frontend/src/components/motion/ReticleCursor.jsx` — **NEW**: crosshair cursor (dot + lagged ring); red/blue/neutral tint via `cursorStore.mode`; contextual label via `AnimatePresence`; adds `data-cursor-hidden` on `<html>` to hide native pointer; self-disables in `/session/**` + reduced-motion.
+  - `frontend/src/components/motion/Marquee.jsx` — **NEW**: CSS `cs-marquee-scroll` keyframe infinite strip; falls back to static flex row; `pauseOnHover` via Tailwind hover:animation-play-state.
+  - `frontend/src/components/motion/CurtainTransition.jsx` — **NEW**: dual-panel red-left/blue-right wipe; replaces `RouteScannerWipe`; panels sweep in from both sides, meet at center seam, retreat — all within the 0.72s page-transition window.
+  - `frontend/src/components/shell/BootHandshake.jsx` — **NEW**: 0→100% connection-establish preloader + dual curtain split reveal. `sessionStorage` key `cs.boot.done` ensures once-per-session. Skipped instantly under reduced-motion. Progress bar is dual red/blue gradient.
+  - `frontend/src/App.jsx` — **updated**: imports `SmoothScrollProvider`, `ReticleCursor`, `BootHandshake`, `CurtainTransition`; wraps `<BrowserRouter>` in `<BootHandshake>`; wraps `AppContent` in `<SmoothScrollProvider>`; mounts `<ReticleCursor />` at shell level; `RouteScannerWipe` replaced with `<CurtainTransition />` inside `RoutePage`.
+  - `frontend/src/pages/Landing.jsx` — **rebuilt**: `RevealText` on hero headline with word-reveal stagger; magnetic CTAs (`useMagnetic`); pin-and-stack "How It Works" (CSS `position: sticky` with per-card `top` offset + z-index stacking); `Marquee` on the frameworks row (6 items, 28s loop); `useCursorIntent` `ENGAGE` intent on scenario cards; `sectionReveal` variants on section headings.
+  - `frontend/src/index.css` — added `@keyframes cs-marquee-scroll` (50% translate for seamless loop), `[data-cursor-hidden]` cursor:none rule, `[data-perf="low"]` Marquee pause rule.
+* **What & How**:
+  - All new effects plug into the existing `PerfTier` + `data-perf="low"` + `prefers-reduced-motion` switchboard established in V5 Phase 1.
+  - Workspace routes (`/session/**`) are explicitly excluded from Lenis scroll hijack and ReticleCursor takeover — terminal/SIEM retain native scroll and cursor precision.
+  - `BootHandshake` wraps the app outside `BrowserRouter` so it renders before any route logic; `AppContent` mounts inside it.
+  - `useReducedMotionSafe` composes framer-motion's `useReducedMotion` with `settingsStore.perfMode === 'low'` — no DOM reads, fully reactive.
+  - Net new lenis dep: ~3 KB gzipped. All other new code is pure JS/JSX. Total new runtime weight well within the <8 KB budget gate.
+* **Verification**: `npm run build` → ✓ 965 modules, 7.22s. `npm run lint` → 0 errors, 1 pre-existing warning (ScenarioCard.jsx:3 ACCENT_BAR, untouched). `npm test` → 27/27 pass. Phases 4–9 (3D elevation, inner pages, workspace-safe motion, Debrief, perf/a11y, docs) remain — see `MOTION_3D_MASTER_PLAN.md`.

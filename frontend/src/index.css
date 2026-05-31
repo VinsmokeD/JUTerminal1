@@ -1661,3 +1661,30 @@
   pointer-events: none;
   animation: confetti-fly 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 }
+
+/* ── Motion system additions (Phase 1) ──────────────────────────── */
+
+/* Marquee infinite scroll */
+@keyframes cs-marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Native cursor hidden when ReticleCursor is active.
+   Preserve text I-beam on inputs/textareas so usability is intact. */
+[data-cursor-hidden] *:not(input):not(textarea):not([contenteditable]),
+[data-cursor-hidden]:not(input):not(textarea):not([contenteditable]) {
+  cursor: none !important;
+}
+
+/* Reduced-motion kill-switch for Marquee (already handled in component, belt+suspenders) */
+@media (prefers-reduced-motion: reduce) {
+  [style*="cs-marquee-scroll"] {
+    animation: none !important;
+  }
+}
+
+/* data-perf=low: pause Marquee looping animation */
+[data-perf="low"] .cs-marquee-track {
+  animation-play-state: paused;
+}

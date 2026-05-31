@@ -9,12 +9,14 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify": "vite build && vitest run"
   },
   "dependencies": {
     "axios": "^1.7.2",
     "framer-motion": "^12.40.0",
     "jspdf": "^4.2.1",
+    "lenis": "^1.3.23",
     "lucide-react": "^1.16.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
