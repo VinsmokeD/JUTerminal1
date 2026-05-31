@@ -1476,6 +1476,48 @@ pm run build and ran unit tests successfully.
 
 ---
 
+### [2026-05-31] - Claude Sonnet 4.6 (WS3–WS7 — AI tutor, Debrief truth, UI/UX, backend metrics/degradation, Docker hardening)
+
+* **Status**: COMPLETE ✅ — 358 tests passing (316 unit + 42 integration); `npm run verify` build ✓ 46/46; `docker compose config --quiet` ✅.
+* **Why**: Agent 2 WS3–WS7 of MASTER_FINALIZATION_PLAN.md. WS1 confirmed in git log (c57b96a).
+
+* **WS3 — AI tutor quality, latency & safety**
+  - `backend/src/ai/context_builder.py` — added `pending_flag_candidates` list (flag IDs emitted by WS1 scan but not yet submitted by student, read from `flagcandidate:{session_id}:{flag_id}` Redis dedup keys). Included in returned context dict.
+  - `backend/src/ai/monitor.py` — included `pending_flag_candidates` in the OpenRouter envelope; added AI latency sampling: each successful API call pushes ms latency to `metrics:ai_latency_ms` Redis list (capped at 50) for the `/api/metrics` endpoint.
+  - `docs/decisions/ai-tutor-calibration.md` — appended "2026-05-31 WS3 Measured hint quality notes": latency architecture verified, flag candidate wiring documented, Socratic constraint levels confirmed, token budget noted.
+  - Confirmed: `on_wrong_attempt_hint` already wired via `validate_flag` → `FlagSubmitWidget` (`res.data?.hint`). No additional change needed.
+  - Confirmed: "tutor thinking…" 3-dot bounce state already present in `AiHintPanel.jsx`. Graceful fallback `_get_fallback_hint` returns static Socratic prompts on timeout/no-key/budget-exceeded.
+
+* **WS4 — Debrief truth (score_breakdown)**
+  - `backend/src/reports/routes.py` — imported `compute_hint_penalty`, `compute_time_bonus` from scoring engine; added `score_breakdown {starting:100, hint_penalty, gate_penalty, time_bonus, flag_bonuses, final}` to `score_data` in `get_consolidated_report`. Frontend `Debrief.jsx` already prefers `score.score_breakdown.*` fields (WS0 Phase D wiring) with fallback for older sessions.
+
+* **WS5 — UI/UX, routing, usability**
+  - Routing: verified `RedWorkspace` / `BlueWorkspace` already redirect to `/dashboard` on API 404/error (line 101-103 in RedWorkspace). `RouteGuard` handles unauth→Auth, authed→Dashboard. `ScrollToTop` on every route. ErrorBoundaries on all lazy routes. ✅
+  - `frontend/src/pages/RedWorkspace.jsx` — added `md:hidden` mobile banner: "This workspace is best experienced on a desktop browser with a physical keyboard." role="status", amber styling.
+  - `frontend/src/pages/BlueWorkspace.jsx` — same mobile banner.
+
+* **WS6 — Backend coverage, degradation, observability**
+  - `backend/src/ws/routes.py` — added `_WS_CONNECTIONS_KEY`, `_increment_ws_counter`, `_decrement_ws_counter`; wired to `websocket_endpoint` accept (increment) and finally-block cleanup (decrement). Fail-silent (catches all exceptions).
+  - `backend/src/main.py` — added `/api/metrics` GET endpoint: returns `{active_sessions, ws_connections, ai_latency_p50_ms, siem_lag_seconds, timestamp}`. Reads Redis atomically; returns zeros on Redis down (never 500).
+  - `backend/src/siem/engine.py` — `queue_event` now writes `metrics:siem_last_event_ts` (float timestamp, TTL 1h) for lag computation. Fail-silent.
+  - `backend/tests/test_degradation.py` — 5 new tests: (1) `/api/metrics` returns 200 with zeros when Redis down; (2) `get_ai_hint` returns fallback (not raises) when Redis down; (3) `queue_event` does not propagate metrics Redis failure; (4) `/api/health/readiness` returns 503 when Elasticsearch down; (5) budget-exceeded path returns fallback. All 5 pass.
+  - `backend/pyproject.toml` — added `[tool.coverage.report]` with `fail_under = 55`, `show_missing = true`, standard exclude_lines. Honest floor; will raise as coverage improves.
+
+* **WS7 — Scenarios / Docker / SC machines + kill-chain evidence**
+  - `docker-compose.yml`:
+    - `sc03-mailrelay`: added `no-new-privileges:true` + `cap_drop: ALL` + `cap_add: [NET_BIND_SERVICE, SETUID, SETGID, CHOWN, DAC_OVERRIDE]` (Postfix needs these for master→worker privilege drop and port 25 bind).
+    - `sc03-victim`: added `no-new-privileges:true` + `cap_drop: ALL` (pure Python HTTP server on port 8080, no special caps needed).
+    - `sc02-dc`: added rationale comment documenting why it remains fail-open (Samba needs SYS_PTRACE, NET_BIND_SERVICE, SETUID/SETGID/CHOWN, SYS_ADMIN for SYSVOL mount; no-new-privileges conflicts with Samba's internal cap management).
+    - `sc02-fileserver`: same fail-open rationale comment.
+  - `docs/final-report/scenarios/sc01-walkthrough.md` — kill-chain evidence template for SC-01 NovaMed (6 phases, flag progression, SIEM events, isolation check).
+  - `docs/final-report/scenarios/sc02-walkthrough.md` — kill-chain evidence template for SC-02 Nexora AD.
+  - `docs/final-report/scenarios/sc03-walkthrough.md` — kill-chain evidence template for SC-03 Orion phishing.
+  - `docker compose config --quiet` → exit 0 ✅.
+
+* **Verification**: `python -m pytest --ignore=tests/e2e --ignore=tests/integration_test.py -q` → 316/316 ✅. `python -m pytest tests/integration_test.py -q` → 42/42 ✅. Total: 358. `npm --prefix frontend run verify` → build ✓ (7.40s), 46/46 ✅. `python -m black --check src/ tests/` → 0 reformats ✅.
+
+---
+
 ### [2026-05-31] - Claude Sonnet 4.6 (WS2 — SIEM coverage: 5 missing event rules + 13 new tests)
 
 * **Status**: COMPLETE ✅ — Committed ea8c700. 62/62 on modified tests.
