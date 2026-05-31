@@ -1,32 +1,29 @@
-# Diagram Catalog — CyberSim Final Report (Phase 9A — Premium Redesign)
+# Diagram Catalog — CyberSim Final Report
 
-This catalog registers all architecture diagrams for the CyberSim graduation report.
-All diagrams use the CyberSim brand palette (Navy #0D1B2A + Cyan #00B4D8) for visual consistency.
+> **Updated 2026-05-31 (WS9):** All 22 diagrams re-rendered with updated CyberSim dark theme.
+
+This catalog registers all 22 architecture diagrams for the CyberSim graduation report.
 
 ## Rendering Setup
 
 | Item | Value |
 | --- | --- |
-| Mermaid CLI | `@mermaid-js/mermaid-cli` (npm global) |
+| Mermaid CLI | `@mermaid-js/mermaid-cli` v11.15.0 (npx cache) |
 | Render Script | `scripts/render-diagrams.ps1` |
 | Theme config | `docs/final-report/diagrams/mermaid-theme.json` |
-| CLI Theme Flag | `default` (inline `%%{init}%%` handles brand overrides) |
-| PNG Resolution | 2400 × 1600 px, scale 2.5 (high-DPI print quality) |
-| SVG export path | `docs/final-report/diagrams/export/svg/` |
-| PNG export path | `docs/final-report/diagrams/export/png/` |
-| Background | White (KASIT print compliance) |
+| PNG Resolution | 2400 px width, scale 2.5 (high-DPI print quality) |
+| SVG export path | `docs/final-report/diagrams/export/svg/` (22 files) |
+| PNG export path | `docs/final-report/diagrams/export/png/` (22 files) |
+| Last rendered | 2026-05-31 — all 22/22 OK |
 
-## Design Principles (Phase 9A Redesign)
+## CyberSim Dark Theme Palette (WS9 update)
 
-- **All diagrams** use `%%{init: {...}}%%` inline theme blocks with CyberSim brand colors
-- **Primary fill**: `#0D1B2A` (deep navy) with `#FFFFFF` text
-- **Accent borders**: `#00B4D8` (cyan) throughout
-- **Secondary fill**: `#17324E` (mid-navy)
-- **Data stores**: `#1A5276` (steel blue)
-- **Alerts/danger**: `#78281F` (deep red)
-- **Success/targets**: `#145A32` (forest green)
-- **AI/hints**: `#784212` (amber-brown)
-- **Font**: Segoe UI / Arial
+- **Background**: `#0A0F1C` (void navy)
+- **Primary fill**: `#0D1423` with `#EAF1FB` text
+- **Cyan accent**: `#00F0FF` (borders, lines)
+- **Gold accent**: `#C8A94A` (secondary nodes, notes)
+- **Green highlight**: `#1FA268` (success states)
+- **Font**: Rajdhani / Segoe UI
 
 ---
 
