@@ -43,6 +43,17 @@
       "mitre_id": "T1046",
       "cwe": "CWE-200",
       "category": "osint"
+    },
+    {
+      "id": "sc03_osint_email_harvesting",
+      "trigger_pattern": "theHarvester|hunter\\.io|email.*harvest|emailharvester",
+      "severity": "MEDIUM",
+      "message": "OSINT email harvesting against Nexora by {src_ip} — credential enumeration precursor",
+      "raw_log": "{\"@timestamp\": \"LIVE\", \"event.dataset\": \"suricata.alert\", \"event.category\": \"intrusion_detection\", \"alert.signature\": \"ET POLICY theHarvester User-Agent\", \"alert.severity\": 2, \"source.ip\": \"{src_ip}\", \"destination.ip\": \"8.8.8.8\", \"destination.port\": 443, \"network.transport\": \"tcp\", \"observer.product\": \"Suricata\", \"log.level\": \"info\"}",
+      "mitre_technique": "T1589",
+      "mitre_id": "T1589",
+      "cwe": "CWE-200",
+      "category": "osint"
     }
   ],
   "phishing_prep": [
@@ -312,6 +323,32 @@
       "mitre_id": "T1041",
       "cwe": "CWE-200",
       "category": "exfiltration"
+    }
+  ],
+  "c2": [
+    {
+      "id": "sc03_c2_reverse_shell_handler",
+      "trigger_pattern": "nc\\s+.*-[lLvVp]|-lvp\\s|msfconsole.*handler|use.*multi/handler|reverse.*shell.*listen",
+      "severity": "HIGH",
+      "message": "C2 reverse shell handler started by {src_ip} — awaiting victim callback",
+      "raw_log": "{\"@timestamp\": \"LIVE\", \"event.dataset\": \"auditd\", \"event.category\": \"network\", \"event.type\": \"start\", \"process.name\": \"nc\", \"process.args\": \"-lvp 4444\", \"network.transport\": \"tcp\", \"destination.port\": 4444, \"source.ip\": \"{src_ip}\", \"host.hostname\": \"attacker-kali\", \"alert.signature\": \"Netcat listener started — C2 channel preparation\", \"observer.product\": \"Auditd\", \"log.level\": \"warning\"}",
+      "mitre_technique": "T1105",
+      "mitre_id": "T1105",
+      "cwe": "CWE-668",
+      "category": "c2"
+    }
+  ],
+  "domain_recon": [
+    {
+      "id": "sc03_spf_dmarc_probe",
+      "trigger_pattern": "dig.*txt|nslookup.*txt|host.*txt|dnsx|spf|dmarc|_dmarc|smtp.*probe",
+      "severity": "MEDIUM",
+      "message": "Domain spoofing reconnaissance by {src_ip} — SPF/DMARC records probed",
+      "raw_log": "{\"@timestamp\": \"LIVE\", \"event.dataset\": \"zeek.dns\", \"event.category\": \"network\", \"dns.type\": \"query\", \"dns.question.type\": \"TXT\", \"dns.question.name\": \"nexora.com\", \"dns.resolved_ip\": \"n/a\", \"source.ip\": \"{src_ip}\", \"observer.product\": \"Zeek\", \"note\": \"SPF ~all or missing DMARC enables domain spoofing\", \"log.level\": \"info\"}",
+      "mitre_technique": "T1598",
+      "mitre_id": "T1598",
+      "cwe": "CWE-346",
+      "category": "domain_recon"
     }
   ]
 }

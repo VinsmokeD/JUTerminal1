@@ -313,5 +313,31 @@
       "cwe": "CWE-94",
       "category": "shell"
     }
+  ],
+  "redis_abuse": [
+    {
+      "id": "sc01_redis_unauthenticated",
+      "trigger_pattern": "redis-cli|CONFIG\\s+SET|authorized_keys",
+      "severity": "HIGH",
+      "message": "Unauthenticated Redis configuration activity from {src_ip} — potential persistence via authorized_keys",
+      "raw_log": "{\"@timestamp\": \"LIVE\", \"event.dataset\": \"auditd\", \"event.category\": \"database\", \"process.name\": \"redis-cli\", \"process.args\": \"CONFIG SET dir /root/.ssh\", \"source.ip\": \"{src_ip}\", \"destination.ip\": \"172.20.1.20\", \"destination.port\": 6379, \"host.hostname\": \"novamed-webapp\", \"alert.signature\": \"Unauthenticated Redis CONFIG SET command\", \"observer.product\": \"Filebeat\", \"log.level\": \"warning\"}",
+      "mitre_technique": "T1552",
+      "mitre_id": "T1552",
+      "cwe": "CWE-306",
+      "category": "redis_abuse"
+    }
+  ],
+  "sensitive_artifact": [
+    {
+      "id": "sc01_sensitive_artifact_access",
+      "trigger_pattern": "\\.env\\.bak|backup\\.zip|server-status|phpmyadmin|swagger\\.json",
+      "severity": "MEDIUM",
+      "message": "Sensitive NovaMed artifact accessed by {src_ip} — backup or admin resource exposed",
+      "raw_log": "{\"@timestamp\": \"LIVE\", \"event.dataset\": \"apache.access\", \"event.category\": \"web\", \"http.request.method\": \"GET\", \"url.path\": \"/.env.bak\", \"http.response.status_code\": 200, \"source.ip\": \"{src_ip}\", \"destination.ip\": \"172.20.1.20\", \"host.hostname\": \"novamed-waf\", \"alert.signature\": \"Sensitive path disclosure — backup/config artifact\", \"observer.product\": \"ModSecurity\", \"log.level\": \"warning\"}",
+      "mitre_technique": "T1083",
+      "mitre_id": "T1083",
+      "cwe": "CWE-538",
+      "category": "sensitive_artifact"
+    }
   ]
 }

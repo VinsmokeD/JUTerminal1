@@ -289,5 +289,18 @@
       "cwe": "CWE-307",
       "category": "authentication"
     }
+  ],
+  "credential_access": [
+    {
+      "id": "sc02_gpp_credential_extraction",
+      "trigger_pattern": "sysvol|gpp-decrypt|cpassword|Get-GPPPassword",
+      "severity": "HIGH",
+      "message": "GPP credential extraction from SYSVOL by {src_ip} — cpassword discovered",
+      "raw_log": "{\"@timestamp\": \"LIVE\", \"event.dataset\": \"winlogbeat\", \"event.category\": \"authentication\", \"event.code\": \"4663\", \"winlog.event_data.ObjectName\": \"\\NEXORA\\SYSVOL\nexora.local\\Policies\\Groups.xml\", \"winlog.event_data.SubjectUserName\": \"student\", \"source.ip\": \"{src_ip}\", \"destination.ip\": \"172.20.2.10\", \"host.hostname\": \"NEXORA-DC\", \"alert.signature\": \"SYSVOL Groups.xml accessed — GPP cpassword readable\", \"observer.product\": \"Winlogbeat\", \"log.level\": \"warning\"}",
+      "mitre_technique": "T1552.006",
+      "mitre_id": "T1552.006",
+      "cwe": "CWE-312",
+      "category": "credential_access"
+    }
   ]
 }
