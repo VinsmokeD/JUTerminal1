@@ -4,6 +4,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { usePerfTier } from '../ui/PerfTier'
+import { useCursorStore } from '../../store/cursorStore'
 
 /**
  * HeroScene3D — WebGL particle network for the Landing hero.
@@ -63,6 +64,7 @@ export default function HeroScene3D({ className = '' }) {
 
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = container
+      if (!w || !h) return
       renderer.setSize(w, h, false)
       if (composer) composer.setSize(w, h)
       camera.aspect = w / h
@@ -181,11 +183,17 @@ export default function HeroScene3D({ className = '' }) {
       dragStart.rotY = groupRotY
     }
     const onUp = () => { dragging = false }
-    const onLeave = () => { target.x = 0; target.y = 0; dragging = false }
+    // Teach the reticle that this canvas is draggable — visible under cursor:none
+    const onEnter = () => useCursorStore.getState().setCursor('inspect', 'DRAG', 'neutral')
+    const onLeave = () => {
+      target.x = 0; target.y = 0; dragging = false
+      useCursorStore.getState().resetCursor()
+    }
 
     container.addEventListener('pointermove', onMove)
     container.addEventListener('pointerdown', onDown)
     window.addEventListener('pointerup', onUp)
+    container.addEventListener('pointerenter', onEnter)
     container.addEventListener('pointerleave', onLeave)
 
     const ro = new ResizeObserver(resize)
@@ -210,6 +218,7 @@ export default function HeroScene3D({ className = '' }) {
     const tick = (now) => {
       raf = requestAnimationFrame(tick)
       if (document.visibilityState === 'hidden') return
+      if (!container.clientWidth || !container.clientHeight) return
       if (minFrameInterval && now - last < minFrameInterval) return
       const dt = Math.min(64, now - last)
       last = now
@@ -313,6 +322,7 @@ export default function HeroScene3D({ className = '' }) {
       container.removeEventListener('pointermove', onMove)
       container.removeEventListener('pointerdown', onDown)
       window.removeEventListener('pointerup', onUp)
+      container.removeEventListener('pointerenter', onEnter)
       container.removeEventListener('pointerleave', onLeave)
       pointGeo.dispose()
       lineGeo.dispose()
@@ -321,6 +331,7 @@ export default function HeroScene3D({ className = '' }) {
       lineMat.dispose()
       traceMat.dispose()
       if (composer) composer.dispose()
+      renderer.forceContextLoss()
       renderer.dispose()
       if (renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement)
