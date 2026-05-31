@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -1688,3 +1690,8 @@
 [data-perf="low"] .cs-marquee-track {
   animation-play-state: paused;
 }
+
+/* ── GPU hints for animated surfaces (Figma Make landing port) ── */
+.glass, [data-framer-component] { will-change: transform; transform: translateZ(0); }
+html { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+.fixed { contain: layout style; }

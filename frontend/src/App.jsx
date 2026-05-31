@@ -65,18 +65,18 @@ function GlobalPalette() {
 }
 
 const pageVariants = {
-  initial: { opacity: 0, scale: 0.97, filter: 'blur(3px)' },
+  initial: { opacity: 0, y: 16, filter: 'blur(6px)' },
   animate: {
     opacity: 1,
-    scale: 1,
+    y: 0,
     filter: 'blur(0px)',
-    transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
   },
   exit: {
     opacity: 0,
-    scale: 0.97,
-    filter: 'blur(3px)',
-    transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
+    y: -8,
+    filter: 'blur(4px)',
+    transition: { duration: 0.28, ease: [0.4, 0, 1, 1] },
   },
 }
 
@@ -87,6 +87,7 @@ function RoutePage({ children }) {
       initial="initial"
       animate="animate"
       exit="exit"
+      style={{ willChange: 'opacity, transform' }}
       className="w-full min-h-dvh flex flex-col origin-center"
     >
       <CurtainTransition />

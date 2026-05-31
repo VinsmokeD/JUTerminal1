@@ -1,574 +1,1707 @@
-import { Suspense, lazy, useEffect, useRef } from 'react'
-import { motion, useMotionValue, useSpring, useTransform, useScroll } from 'framer-motion'
-import ParticleCanvas from '../components/canvas/ParticleCanvas'
+import { useEffect, useRef, useState } from 'react'
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useInView,
+  useMotionValue,
+} from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { usePerfTier } from '../components/ui/PerfTier'
-import RevealText from '../components/motion/RevealText'
-import Marquee from '../components/motion/Marquee'
-import useMagnetic from '../hooks/useMagnetic'
-import useCursorIntent from '../hooks/useCursorIntent'
-import { sectionReveal, useReducedMotionSafe } from '../lib/motion'
-import { useSettingsStore } from '../store/settingsStore'
+import { useReducedMotionSafe } from '../lib/motion'
 
-const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
+/* ─────────────────── palette ─────────────────── */
 
-// â”€â”€ Magnetic CTA button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function MagneticButton({ onClick, className, children }) {
-  const { ref, x, y, bind } = useMagnetic({ strength: 0.35 })
+const C = {
+  bg: '#06090F',
+  bg2: '#0A0E17',
+  surface: 'rgba(16,24,43,0.55)',
+  surfaceHi: 'rgba(20,28,48,0.85)',
+  line: 'rgba(255,255,255,0.07)',
+  lineStrong: 'rgba(255,255,255,0.14)',
+  red: '#FF6B7A',
+  blue: '#4CC2FF',
+  violet: '#9B7DFF',
+  green: '#3DD68C',
+  amber: '#F4B740',
+  text: '#F0F4FF',
+  text2: '#A9B4C7',
+  dim: '#5B6679',
+}
+
+const display = "'Orbitron', sans-serif"
+const body = "'Inter', sans-serif"
+const mono = "'JetBrains Mono', ui-monospace, monospace"
+
+const RED = '#FF6B7A'
+const BLUE = '#4CC2FF'
+const VIOLET = '#9B7DFF'
+const NAVY = '#0A0E17'
+const WHITE = '#F0F4FF'
+
+/* ─────────────────── logo atoms (inline SVG — tone aware) ─────────────────── */
+
+function ParallaxMark({ size = 96, tone = 'color' }) {
+  const sq = 60
+  const offset = 24
+  const x1 = 8
+  const y1 = 8
+  const x2 = x1 + offset
+  const y2 = y1 + offset
+
+  const redFill = tone === 'color' ? RED : tone === 'mono-light' ? WHITE : NAVY
+  const blueFill = tone === 'color' ? BLUE : tone === 'mono-light' ? WHITE : NAVY
+  const overlapFill = tone === 'color' ? VIOLET : tone === 'mono-light' ? WHITE : NAVY
+
+  const overlapX = x2
+  const overlapY = y2
+  const overlapW = x1 + sq - x2
+  const overlapH = y1 + sq - y2
+
   return (
-    <motion.button
-      ref={ref}
-      {...bind}
-      onClick={onClick}
-      className={className}
-      style={{ x, y }}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: 'block' }}
     >
-      {children}
-    </motion.button>
+      <defs>
+        <filter id="glowRed" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="2.2" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <filter id="glowBlue" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="2.2" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      <rect
+        x={x1}
+        y={y1}
+        width={sq}
+        height={sq}
+        fill={redFill}
+        opacity={tone === 'color' ? 0.95 : 1}
+        filter={tone === 'color' ? 'url(#glowRed)' : undefined}
+      />
+      <rect
+        x={x2}
+        y={y2}
+        width={sq}
+        height={sq}
+        fill={blueFill}
+        opacity={tone === 'color' ? 0.95 : 1}
+        filter={tone === 'color' ? 'url(#glowBlue)' : undefined}
+      />
+      {tone === 'color' && (
+        <rect x={overlapX} y={overlapY} width={overlapW} height={overlapH} fill={overlapFill} />
+      )}
+    </svg>
   )
 }
 
-// â”€â”€ Pin-and-stack card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function StackCard({ step, title, desc, color, offset }) {
+function ParallaxWordmark({ size = 32, tone = 'color', bg = 'dark' }) {
+  const baseColor =
+    tone === 'color'
+      ? bg === 'dark'
+        ? WHITE
+        : NAVY
+      : tone === 'mono-light'
+      ? WHITE
+      : NAVY
+
+  const firstA = tone === 'color' ? RED : baseColor
+  const secondA = tone === 'color' ? BLUE : baseColor
+
+  const letterStyle = {
+    fontFamily: "'Orbitron', sans-serif",
+    fontWeight: 800,
+    fontSize: size,
+    letterSpacing: '0.15em',
+    lineHeight: 1,
+    color: baseColor,
+    display: 'inline-flex',
+  }
+
+  return (
+    <span style={letterStyle}>
+      <span>P</span>
+      <span style={{ color: firstA }}>A</span>
+      <span>R</span>
+      <span>A</span>
+      <span>LL</span>
+      <span style={{ color: secondA }}>A</span>
+      <span>X</span>
+    </span>
+  )
+}
+
+/* ─────────────────── university lockup ─────────────────── */
+
+function LogoChip({ src, alt, height }) {
   return (
     <div
-      className="sticky glass p-8 transition-all relative overflow-hidden bg-[#0d0f14]/85"
       style={{
-        top: `calc(96px + ${offset * 32}px)`,
-        marginBottom: '2rem',
-        zIndex: 10 + offset,
-        transform: `scale(${1 - offset * 0.032})`,
-        transformOrigin: 'top center',
-        transition: 'transform 0.3s',
-        opacity: 1 - offset * 0.12,
+        background: '#FFFFFF',
+        borderRadius: Math.round(height * 0.18),
+        padding: `${Math.round(height * 0.16)}px ${Math.round(height * 0.22)}px`,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 6px 18px rgba(0,0,0,0.35)',
+        border: '1px solid rgba(255,255,255,0.08)',
       }}
     >
-      <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-mono text-xs font-bold mb-5 border ${color}`}>
-        {step}
-      </div>
-      <h3 className="text-lg font-bold tracking-tight mb-3 font-display text-txt-primary">{title}</h3>
-      <p className="text-xs text-txt-secondary leading-relaxed font-display">{desc}</p>
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-surface-3/10 pointer-events-none" />
+      <img
+        src={src}
+        alt={alt}
+        style={{ height, width: 'auto', display: 'block', objectFit: 'contain' }}
+      />
     </div>
   )
 }
 
+function UniLogos({ height = 56, gap = 16 }) {
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap }}>
+      <LogoChip src="/brand/uj-logo.png" alt="University of Jordan" height={height} />
+      <LogoChip
+        src="/brand/kasit-logo.png"
+        alt="King Abdullah II School of Information Technology"
+        height={height}
+      />
+    </div>
+  )
+}
+
+/* ─────────────────── shared atoms ─────────────────── */
+
+function Label({ children, color = C.text2, size = 11 }) {
+  return (
+    <span
+      style={{
+        fontFamily: mono,
+        fontSize: size,
+        color,
+        letterSpacing: '0.28em',
+        textTransform: 'uppercase',
+        fontWeight: 500,
+      }}
+    >
+      {children}
+    </span>
+  )
+}
+
+function GhostGrid() {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage:
+          'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+        backgroundSize: '64px 64px',
+        maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 80%)',
+        pointerEvents: 'none',
+      }}
+    />
+  )
+}
+
+function AmbientGlows() {
+  return (
+    <>
+      <div
+        style={{
+          position: 'absolute',
+          top: -200,
+          left: -200,
+          width: 900,
+          height: 900,
+          background: `radial-gradient(circle, ${C.red}1a, transparent 60%)`,
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: -300,
+          right: -200,
+          width: 1000,
+          height: 1000,
+          background: `radial-gradient(circle, ${C.blue}1a, transparent 60%)`,
+          pointerEvents: 'none',
+        }}
+      />
+    </>
+  )
+}
+
+/* ─────────────────── NAV ─────────────────── */
+
+function Nav({ go }) {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 32)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  return (
+    <motion.nav
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        position: 'fixed',
+        top: 16,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 50,
+        padding: scrolled ? '10px 20px' : '12px 24px',
+        background: scrolled ? 'rgba(10,14,23,0.78)' : 'rgba(10,14,23,0.4)',
+        backdropFilter: 'blur(18px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+        border: `1px solid ${C.line}`,
+        borderRadius: 999,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 24,
+        transition: 'padding 0.3s ease, background 0.3s ease',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <ParallaxMark size={22} />
+        <span
+          style={{
+            fontFamily: display,
+            fontWeight: 800,
+            fontSize: 13,
+            color: C.text,
+            letterSpacing: '0.2em',
+          }}
+        >
+          PARALLAX
+        </span>
+      </div>
+      <span style={{ width: 1, height: 16, background: C.line }} />
+      <div style={{ display: 'flex', gap: 4 }}>
+        {[
+          ['Platform', '#platform'],
+          ['Loop', '#loop'],
+          ['Scenarios', '#scenarios'],
+          ['Mentor', '#mentor'],
+          ['Evidence', '#evidence'],
+        ].map(([label, href]) => (
+          <a
+            key={label}
+            href={href}
+            style={{
+              fontFamily: body,
+              fontSize: 13,
+              color: C.text2,
+              textDecoration: 'none',
+              padding: '6px 12px',
+              borderRadius: 999,
+              transition: 'color 0.2s, background 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = C.text
+              e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = C.text2
+              e.currentTarget.style.background = 'transparent'
+            }}
+          >
+            {label}
+          </a>
+        ))}
+      </div>
+      <span style={{ width: 1, height: 16, background: C.line }} />
+      <button
+        onClick={go}
+        style={{
+          fontFamily: mono,
+          fontSize: 11,
+          color: C.bg,
+          background: C.text,
+          padding: '8px 16px',
+          borderRadius: 999,
+          border: 'none',
+          cursor: 'pointer',
+          letterSpacing: '0.15em',
+          textTransform: 'uppercase',
+          fontWeight: 600,
+        }}
+      >
+        Launch
+      </button>
+    </motion.nav>
+  )
+}
+
+/* ─────────────────── HERO with scroll-zoom ─────────────────── */
+
+function FloatingMark({ size, x, y, delay = 0, opacity = 1 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.6 }}
+      animate={{ opacity, scale: 1 }}
+      transition={{ duration: 1.4, delay, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        position: 'absolute',
+        left: x,
+        top: y,
+        transform: 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+      }}
+    >
+      <ParallaxMark size={size} />
+    </motion.div>
+  )
+}
+
+function Hero({ go, reduced, tier }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 6])
+  const opacity = useTransform(scrollYProgress, [0, 0.6, 1], [1, 0.5, 0])
+  const blur = useTransform(scrollYProgress, [0, 1], [0, 12])
+  const blurFilter = useTransform(blur, (b) => `blur(${b}px)`)
+  const yText = useTransform(scrollYProgress, [0, 1], [0, -120])
+
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+  const sx = useSpring(mouseX, { stiffness: 60, damping: 20 })
+  const sy = useSpring(mouseY, { stiffness: 60, damping: 20 })
+
+  useEffect(() => {
+    if (reduced) return
+    const onMove = (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 30
+      const y = (e.clientY / window.innerHeight - 0.5) * 30
+      mouseX.set(x)
+      mouseY.set(y)
+    }
+    window.addEventListener('mousemove', onMove)
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [mouseX, mouseY, reduced])
+
+  // Reduced-motion: static mark cluster + static headline (skip scroll-zoom / parallax)
+  const markStyle = reduced
+    ? { position: 'absolute', inset: 0 }
+    : { position: 'absolute', inset: 0, scale, opacity, filter: blurFilter, x: sx, y: sy }
+
+  const headlineLayout = {
+    position: 'relative',
+    zIndex: 2,
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+    padding: '0 24px',
+  }
+  const headlineStyle = reduced ? headlineLayout : { ...headlineLayout, y: yText, opacity }
+
+  return (
+    <section ref={ref} style={{ position: 'relative', minHeight: '200vh', background: C.bg }}>
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          width: '100%',
+          overflow: 'hidden',
+        }}
+      >
+        <GhostGrid />
+        {tier > 0 && <AmbientGlows />}
+
+        <motion.div style={markStyle}>
+          <FloatingMark size={420} x="50%" y="50%" delay={0.1} opacity={1} />
+          <FloatingMark size={120} x="22%" y="30%" delay={0.3} opacity={0.35} />
+          <FloatingMark size={80} x="78%" y="74%" delay={0.45} opacity={0.3} />
+          <FloatingMark size={48} x="86%" y="22%" delay={0.6} opacity={0.5} />
+          <FloatingMark size={40} x="14%" y="78%" delay={0.7} opacity={0.5} />
+        </motion.div>
+
+        <motion.div style={headlineStyle}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            style={{ marginBottom: 28 }}
+          >
+            <Label color={C.dim}>// Cybersecurity training, rewritten</Label>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              fontFamily: display,
+              fontWeight: 800,
+              fontSize: 'clamp(56px, 9vw, 144px)',
+              lineHeight: 0.95,
+              letterSpacing: '-0.035em',
+              margin: 0,
+              maxWidth: 1200,
+              color: C.text,
+            }}
+          >
+            <span style={{ color: C.red, textShadow: `0 0 60px ${C.red}50` }}>Attack.</span>{' '}
+            <span style={{ color: C.blue, textShadow: `0 0 60px ${C.blue}50` }}>Defend.</span>
+            <br />
+            <span
+              style={{
+                background: `linear-gradient(180deg, ${C.text} 30%, ${C.text2})`,
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+              }}
+            >
+              Simultaneously.
+            </span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.85 }}
+            style={{
+              fontFamily: body,
+              fontSize: 'clamp(15px, 1.3vw, 20px)',
+              color: C.text2,
+              maxWidth: 620,
+              marginTop: 36,
+              lineHeight: 1.55,
+            }}
+          >
+            A dual-perspective cybersecurity training platform. Real tools on the red side, real
+            telemetry on the blue side, one Socratic AI mentor between them — all inside a sandbox
+            that resets in eight seconds.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
+            style={{ display: 'flex', gap: 14, marginTop: 44 }}
+          >
+            <button
+              onClick={go}
+              style={{
+                fontFamily: body,
+                fontWeight: 600,
+                fontSize: 14,
+                color: C.bg,
+                background: C.text,
+                padding: '14px 28px',
+                borderRadius: 999,
+                border: 'none',
+                cursor: 'pointer',
+                letterSpacing: '0.02em',
+              }}
+            >
+              Launch the demo →
+            </button>
+            <a
+              href="#loop"
+              style={{
+                fontFamily: body,
+                fontWeight: 500,
+                fontSize: 14,
+                color: C.text,
+                background: 'transparent',
+                border: `1px solid ${C.lineStrong}`,
+                padding: '13px 28px',
+                borderRadius: 999,
+                textDecoration: 'none',
+              }}
+            >
+              See how it works
+            </a>
+          </motion.div>
+
+          <motion.div
+            animate={reduced ? {} : { y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              position: 'absolute',
+              bottom: 32,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Label color={C.dim} size={9}>
+              Scroll
+            </Label>
+            <div
+              style={{
+                width: 1,
+                height: 28,
+                background: `linear-gradient(180deg, ${C.dim}, transparent)`,
+              }}
+            />
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────── MARQUEE STRIP ─────────────────── */
+
+function Marquee({ reduced, tier }) {
+  const items = [
+    'PTES Methodology',
+    'MITRE ATT&CK',
+    'OWASP Top 10',
+    'NIST CSF 2.0',
+    'Suricata · Filebeat',
+    'Elasticsearch',
+    'ModSecurity WAF',
+    'Active Directory',
+    'Docker · Isolated',
+    'Socratic AI',
+  ]
+
+  // perf tier 0 → skip the marquee entirely
+  if (tier === 0) return null
+
+  const animate = reduced ? {} : { x: ['0%', '-50%'] }
+  const transition = reduced ? {} : { duration: 38, repeat: Infinity, ease: 'linear' }
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        padding: '40px 0',
+        borderTop: `1px solid ${C.line}`,
+        borderBottom: `1px solid ${C.line}`,
+        background: C.bg2,
+        overflow: 'hidden',
+      }}
+    >
+      <motion.div
+        animate={animate}
+        transition={transition}
+        style={{ display: 'flex', gap: 64, whiteSpace: 'nowrap', width: 'max-content' }}
+      >
+        {[...items, ...items, ...items].map((t, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 64 }}>
+            <span
+              style={{
+                fontFamily: mono,
+                fontSize: 14,
+                color: C.text2,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {t}
+            </span>
+            <span style={{ color: C.violet, fontFamily: mono, fontSize: 14 }}>✦</span>
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  )
+}
+
+/* ─────────────────── SECTION HEAD ─────────────────── */
+
+function SectionHead({ index, kicker, title, body: bodyText }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-100px' })
+  return (
+    <div
+      ref={ref}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 20,
+        maxWidth: 880,
+        margin: '0 auto',
+        textAlign: 'center',
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7 }}
+        style={{ display: 'flex', justifyContent: 'center', gap: 12, alignItems: 'center' }}
+      >
+        <Label color={C.violet} size={11}>
+          {index}
+        </Label>
+        <span style={{ width: 32, height: 1, background: C.lineStrong }} />
+        <Label color={C.text2} size={11}>
+          {kicker}
+        </Label>
+      </motion.div>
+      <motion.h2
+        initial={{ opacity: 0, y: 30 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, delay: 0.1 }}
+        style={{
+          fontFamily: body,
+          fontWeight: 700,
+          fontSize: 'clamp(40px, 5vw, 64px)',
+          lineHeight: 1.05,
+          letterSpacing: '-0.025em',
+          margin: 0,
+          color: C.text,
+        }}
+      >
+        {title}
+      </motion.h2>
+      {bodyText && (
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          style={{ fontFamily: body, fontSize: 18, color: C.text2, lineHeight: 1.6, margin: 0 }}
+        >
+          {bodyText}
+        </motion.p>
+      )}
+    </div>
+  )
+}
+
+/* ─────────────────── PLATFORM PILLARS ─────────────────── */
+
+function Platform({ reduced, tier }) {
+  const pillars = [
+    {
+      label: 'RED',
+      color: C.red,
+      title: 'Attacker workspace',
+      body: 'Full Kali terminal in the browser via xterm.js. PTES methodology gating prevents skipping recon. Pentest notes auto-save per target.',
+      tags: ['xterm.js', 'Kali', 'PTES gating'],
+    },
+    {
+      label: 'BLUE',
+      color: C.blue,
+      title: 'Defender SIEM',
+      body: 'Live event feed driven by Suricata and Filebeat. Severity triage, MITRE ATT&CK tags, forensic markers — under two seconds of latency.',
+      tags: ['Elastic', 'Suricata', 'MITRE'],
+    },
+    {
+      label: 'AI',
+      color: C.violet,
+      title: 'Socratic mentor',
+      body: 'Nudges, concepts, worked examples. Context-aware, PII-redacted, capped to 150 tokens. Never generates exploit payloads.',
+      tags: ['OpenRouter', 'DeepSeek', 'Guardrailed'],
+    },
+  ]
+  return (
+    <section
+      id="platform"
+      style={{ padding: '180px 24px 120px', position: 'relative', background: C.bg }}
+    >
+      {tier > 0 && <AmbientGlows />}
+      <div style={{ position: 'relative' }}>
+        <SectionHead
+          index="01"
+          kicker="The platform"
+          title={
+            <>
+              Three surfaces. <span style={{ color: C.violet }}>One causal loop.</span>
+            </>
+          }
+          body="Most curricula teach attack and defense in separate rooms. PARALLAX puts them in the same one — and adds a mentor who watches."
+        />
+
+        <div
+          style={{
+            maxWidth: 1280,
+            margin: '96px auto 0',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 18,
+          }}
+        >
+          {pillars.map((p, i) => (
+            <PillarCard key={p.label} pillar={p} index={i} reduced={reduced} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function PillarCard({ pillar, index, reduced }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-100px' })
+  const cardRef = useRef(null)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.8, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
+      onMouseMove={
+        reduced
+          ? undefined
+          : (e) => {
+              const r = cardRef.current.getBoundingClientRect()
+              const x = (e.clientX - r.left) / r.width - 0.5
+              const y = (e.clientY - r.top) / r.height - 0.5
+              setTilt({ x: x * 6, y: y * -6 })
+            }
+      }
+      onMouseLeave={reduced ? undefined : () => setTilt({ x: 0, y: 0 })}
+      style={{ perspective: 1200 }}
+    >
+      <motion.div
+        ref={cardRef}
+        animate={{ rotateY: tilt.x, rotateX: tilt.y }}
+        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+        style={{
+          position: 'relative',
+          padding: 36,
+          background: `linear-gradient(180deg, ${pillar.color}10, transparent), ${C.surface}`,
+          border: `1px solid ${C.line}`,
+          borderRadius: 18,
+          backdropFilter: 'blur(20px)',
+          overflow: 'hidden',
+          minHeight: 380,
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: -100,
+            right: -100,
+            width: 300,
+            height: 300,
+            background: `radial-gradient(circle, ${pillar.color}28, transparent 60%)`,
+            pointerEvents: 'none',
+          }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, height: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 99,
+                background: pillar.color,
+                boxShadow: `0 0 16px ${pillar.color}`,
+              }}
+            />
+            <Label color={pillar.color}>{pillar.label}</Label>
+          </div>
+          <h3
+            style={{
+              fontFamily: body,
+              fontWeight: 700,
+              fontSize: 30,
+              color: C.text,
+              margin: 0,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {pillar.title}
+          </h3>
+          <p
+            style={{
+              fontFamily: body,
+              fontSize: 15,
+              color: C.text2,
+              lineHeight: 1.6,
+              margin: 0,
+              flex: 1,
+            }}
+          >
+            {pillar.body}
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {pillar.tags.map((t) => (
+              <span
+                key={t}
+                style={{
+                  fontFamily: mono,
+                  fontSize: 10,
+                  color: C.text2,
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  padding: '5px 10px',
+                  border: `1px solid ${C.line}`,
+                  borderRadius: 6,
+                }}
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+/* ─────────────────── LOOP / STICKY SCROLL STAGE ─────────────────── */
+
+function Loop({ reduced }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+
+  const redOpacity = useTransform(scrollYProgress, [0, 0.25, 0.5], [0, 1, 0.4])
+  const blueOpacity = useTransform(scrollYProgress, [0.35, 0.6, 0.85], [0, 1, 0.4])
+  const aiOpacity = useTransform(scrollYProgress, [0.7, 0.9, 1], [0, 1, 1])
+
+  const lineProgress = useTransform(scrollYProgress, [0.05, 0.9], [0, 1])
+
+  const markRotate = useTransform(scrollYProgress, [0, 1], [0, 180])
+  const markScale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1.2, 1])
+
+  const markStyle = reduced
+    ? { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }
+    : {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        rotate: markRotate,
+        scale: markScale,
+      }
+
+  return (
+    <section
+      id="loop"
+      ref={ref}
+      style={{ position: 'relative', minHeight: '300vh', background: C.bg, padding: '120px 0 0' }}
+    >
+      <div
+        style={{ position: 'sticky', top: 0, height: '100vh', display: 'flex', alignItems: 'center' }}
+      >
+        <div style={{ width: '100%', maxWidth: 1280, margin: '0 auto', padding: '0 32px' }}>
+          <SectionHead
+            index="02"
+            kicker="The loop"
+            title={
+              <>
+                <span style={{ color: C.red }}>One keystroke</span> →{' '}
+                <span style={{ color: C.blue }}>one alert.</span>
+              </>
+            }
+          />
+
+          <div style={{ marginTop: 80, position: 'relative', height: 320 }}>
+            <svg viewBox="0 0 1200 320" width="100%" height="100%" style={{ display: 'block' }}>
+              <defs>
+                <linearGradient id="loopGrad" x1="0" x2="1">
+                  <stop offset="0" stopColor={C.red} />
+                  <stop offset="0.5" stopColor={C.violet} />
+                  <stop offset="1" stopColor={C.blue} />
+                </linearGradient>
+              </defs>
+
+              <motion.path
+                d="M 120 160 Q 600 -80 1080 160"
+                stroke={C.red}
+                strokeWidth="1.5"
+                fill="none"
+                style={{
+                  pathLength: reduced ? 1 : lineProgress,
+                  opacity: reduced ? 1 : redOpacity,
+                }}
+              />
+              <motion.path
+                d="M 1080 160 Q 600 400 120 160"
+                stroke={C.blue}
+                strokeWidth="1.5"
+                fill="none"
+                style={{
+                  pathLength: reduced ? 1 : lineProgress,
+                  opacity: reduced ? 1 : blueOpacity,
+                }}
+              />
+
+              <NodeDot cx={120} cy={160} color={C.red} label="KALI" />
+              <NodeDot cx={400} cy={50} color={C.red} label="EXPLOIT" />
+              <NodeDot cx={800} cy={50} color={C.red} label="PAYLOAD" />
+              <NodeDot cx={1080} cy={160} color={C.blue} label="SURICATA" />
+              <NodeDot cx={800} cy={270} color={C.blue} label="ELASTIC" />
+              <NodeDot cx={400} cy={270} color={C.blue} label="SIEM" />
+            </svg>
+
+            <motion.div style={markStyle}>
+              <ParallaxMark size={72} />
+            </motion.div>
+          </div>
+
+          <div
+            style={{ marginTop: 60, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}
+          >
+            <motion.div
+              style={{
+                opacity: reduced ? 1 : redOpacity,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+              }}
+            >
+              <Label color={C.red}>01 · Attack</Label>
+              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text }}>
+                Student executes against an isolated container
+              </div>
+            </motion.div>
+            <motion.div
+              style={{
+                opacity: reduced ? 1 : blueOpacity,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+              }}
+            >
+              <Label color={C.blue}>02 · Detect</Label>
+              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text }}>
+                Telemetry surfaces as a SIEM signal in {'<'}2s
+              </div>
+            </motion.div>
+            <motion.div
+              style={{
+                opacity: reduced ? 1 : aiOpacity,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+              }}
+            >
+              <Label color={C.violet}>03 · Learn</Label>
+              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text }}>
+                Socratic AI nudges, never solves
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function NodeDot({ cx, cy, color, label }) {
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r="6" fill={color} />
+      <circle cx={cx} cy={cy} r="14" fill="none" stroke={color} strokeOpacity="0.3" />
+      <text
+        x={cx}
+        y={cy - 24}
+        fill={color}
+        fontFamily={mono}
+        fontSize="11"
+        textAnchor="middle"
+        letterSpacing="3"
+      >
+        {label}
+      </text>
+    </g>
+  )
+}
+
+/* ─────────────────── SCENARIOS ─────────────────── */
+
+function Scenarios({ tier }) {
+  const data = [
+    {
+      id: 'SC.01',
+      name: 'NovaMed',
+      sub: 'Healthcare Portal',
+      level: 'Intermediate',
+      levelColor: C.amber,
+      accent: C.amber,
+      red: ['nmap', 'sqlmap', 'gobuster', 'curl'],
+      blue: ['ModSecurity', 'Apache logs', 'FIM'],
+      mitre: 'T1190 · T1083 · T1059',
+      net: '172.20.1.0/24',
+    },
+    {
+      id: 'SC.02',
+      name: 'Nexora',
+      sub: 'Active Directory',
+      level: 'Advanced',
+      levelColor: C.red,
+      accent: C.red,
+      red: ['Impacket', 'Hashcat', 'BloodHound'],
+      blue: ['Evt 4768/4769', 'Kerberos anomaly'],
+      mitre: 'T1558.003 · T1075 · T1003',
+      net: '172.20.2.0/24',
+    },
+    {
+      id: 'SC.03',
+      name: 'Orion',
+      sub: 'Phishing Campaign',
+      level: 'Intermediate',
+      levelColor: C.amber,
+      accent: C.amber,
+      red: ['GoPhish', 'OSINT', 'Payload delivery'],
+      blue: ['SPF/DMARC', 'MX alerts', 'EDR'],
+      mitre: 'T1566 · T1598 · T1078',
+      net: '172.20.3.0/24',
+    },
+  ]
+  return (
+    <section
+      id="scenarios"
+      style={{
+        padding: '180px 24px 120px',
+        background: C.bg2,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {tier > 0 && <AmbientGlows />}
+      <div style={{ position: 'relative' }}>
+        <SectionHead
+          index="03"
+          kicker="Scenarios"
+          title="Three production environments."
+          body="Each scenario is a self-contained Docker network with attack surfaces, defender telemetry, and curated MITRE techniques to discover."
+        />
+        <div
+          style={{
+            maxWidth: 1280,
+            margin: '96px auto 0',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 20,
+          }}
+        >
+          {data.map((s, i) => (
+            <ScenarioCard key={s.id} s={s} index={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ScenarioCard({ s, index }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-80px' })
+  const [hovered, setHovered] = useState(false)
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.8, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative',
+        background: C.surface,
+        borderStyle: 'solid',
+        borderWidth: 1,
+        borderColor: hovered ? s.accent + '55' : C.line,
+        borderRadius: 18,
+        overflow: 'hidden',
+        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
+        transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1), border-color 0.3s',
+      }}
+    >
+      <div
+        style={{
+          padding: '28px 28px 0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Label color={C.dim}>{s.id}</Label>
+        <span
+          style={{
+            fontFamily: mono,
+            fontSize: 10,
+            color: s.levelColor,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            padding: '4px 10px',
+            border: `1px solid ${s.levelColor}55`,
+            borderRadius: 999,
+            background: `${s.levelColor}10`,
+          }}
+        >
+          {s.level}
+        </span>
+      </div>
+
+      <div style={{ padding: '16px 28px 24px' }}>
+        <div
+          style={{
+            fontFamily: body,
+            fontWeight: 700,
+            fontSize: 28,
+            color: C.text,
+            letterSpacing: '-0.01em',
+          }}
+        >
+          {s.name}
+        </div>
+        <div style={{ fontFamily: body, fontSize: 14, color: C.text2, marginTop: 4 }}>{s.sub}</div>
+      </div>
+
+      <div
+        style={{
+          margin: '0 28px',
+          borderTop: `1px solid ${C.line}`,
+          paddingTop: 24,
+          paddingBottom: 24,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 20,
+        }}
+      >
+        <div>
+          <Label color={C.red} size={9}>
+            RED
+          </Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10 }}>
+            {s.red.map((t) => (
+              <span
+                key={t}
+                style={{ fontFamily: mono, fontSize: 11, color: C.text2, letterSpacing: '0.06em' }}
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div>
+          <Label color={C.blue} size={9}>
+            BLUE
+          </Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10 }}>
+            {s.blue.map((t) => (
+              <span
+                key={t}
+                style={{ fontFamily: mono, fontSize: 11, color: C.text2, letterSpacing: '0.06em' }}
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          padding: '20px 28px',
+          borderTop: `1px solid ${C.line}`,
+          background: 'rgba(0,0,0,0.2)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <div>
+          <div style={{ fontFamily: mono, fontSize: 10, color: C.violet, letterSpacing: '0.18em' }}>
+            MITRE
+          </div>
+          <div style={{ fontFamily: mono, fontSize: 11, color: C.text, marginTop: 4 }}>
+            {s.mitre}
+          </div>
+        </div>
+        <div style={{ fontFamily: mono, fontSize: 10, color: C.dim, letterSpacing: '0.15em' }}>
+          {s.net}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+/* ─────────────────── MENTOR ─────────────────── */
+
+function Mentor({ tier }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-100px' })
+  return (
+    <section id="mentor" style={{ padding: '180px 24px', background: C.bg, position: 'relative' }}>
+      {tier > 0 && <AmbientGlows />}
+      <div style={{ position: 'relative', maxWidth: 1280, margin: '0 auto' }}>
+        <SectionHead
+          index="04"
+          kicker="Socratic mentor"
+          title={
+            <>
+              Hints. <span style={{ color: C.violet }}>Never answers.</span>
+            </>
+          }
+          body="Every command flows through a context builder, a PII redaction filter, and a token cap before reaching the model. The mentor produces nudges, concepts, or worked examples — never working exploits."
+        />
+
+        <div
+          ref={ref}
+          style={{
+            marginTop: 96,
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 56,
+            alignItems: 'center',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              { label: 'Command Submitted', color: C.text2, ms: '0ms' },
+              { label: 'Context Builder', color: C.violet, ms: '+12ms' },
+              { label: 'PII Redaction', color: C.amber, ms: '+4ms' },
+              { label: 'DeepSeek · OpenRouter', color: C.blue, ms: '+820ms' },
+              { label: '≤150 Token Response', color: C.green, ms: '+8ms' },
+            ].map((step, i) => (
+              <motion.div
+                key={step.label}
+                initial={{ opacity: 0, x: -30 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  padding: '16px 20px',
+                  background: `${step.color}10`,
+                  border: `1px solid ${step.color}33`,
+                  borderRadius: 10,
+                  position: 'relative',
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 99,
+                    background: step.color,
+                    boxShadow: `0 0 12px ${step.color}`,
+                  }}
+                />
+                <span
+                  style={{ fontFamily: body, fontWeight: 600, fontSize: 14, color: C.text, flex: 1 }}
+                >
+                  {step.label}
+                </span>
+                <span
+                  style={{
+                    fontFamily: mono,
+                    fontSize: 10,
+                    color: step.color,
+                    letterSpacing: '0.15em',
+                  }}
+                >
+                  {step.ms}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={inView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            style={{
+              background: C.surface,
+              border: `1px solid ${C.line}`,
+              borderRadius: 16,
+              padding: 28,
+              backdropFilter: 'blur(20px)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+              <ParallaxMark size={20} />
+              <Label color={C.violet} size={10}>
+                Hint · Concept
+              </Label>
+            </div>
+            <div
+              style={{
+                fontFamily: mono,
+                fontSize: 12,
+                color: C.dim,
+                marginBottom: 12,
+                letterSpacing: '0.05em',
+              }}
+            >
+              $ sqlmap --batch -u "http://172.20.1.10/login.php"
+            </div>
+            <div
+              style={{
+                fontFamily: body,
+                fontSize: 16,
+                color: C.text,
+                lineHeight: 1.55,
+                marginBottom: 18,
+              }}
+            >
+              The target appears protected by a Web Application Firewall. Consider what categories of
+              payloads typically evade signature-based filters — encoding, comments, or alternate
+              vectors like IDOR.
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {['NUDGE', 'CONCEPT', 'EXAMPLE'].map((t, i) => (
+                <span
+                  key={t}
+                  style={{
+                    fontFamily: mono,
+                    fontSize: 9,
+                    color: i === 1 ? C.violet : C.dim,
+                    letterSpacing: '0.2em',
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    border: `1px solid ${i === 1 ? C.violet : C.line}`,
+                    background: i === 1 ? `${C.violet}14` : 'transparent',
+                  }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────── EVIDENCE / STATS ─────────────────── */
+
+function Evidence() {
+  const stats = [
+    { v: '358', l: 'Pytest cases · passing', c: C.text },
+    { v: '<2s', l: 'Attack → SIEM latency', c: C.violet },
+    { v: '100%', l: 'Network isolation', c: C.green },
+    { v: '3', l: 'Production scenarios', c: C.text },
+    { v: '91', l: 'Lighthouse · perf', c: C.text },
+    { v: '100', l: 'Lighthouse · a11y', c: C.text },
+  ]
+  return (
+    <section
+      id="evidence"
+      style={{
+        padding: '180px 24px 120px',
+        background: C.bg2,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ position: 'relative', maxWidth: 1280, margin: '0 auto' }}>
+        <SectionHead
+          index="05"
+          kicker="Evidence"
+          title={
+            <>
+              Verified. <span style={{ color: C.green }}>Not assumed.</span>
+            </>
+          }
+        />
+        <div
+          style={{
+            marginTop: 96,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridAutoRows: '1fr',
+            gap: 18,
+          }}
+        >
+          {stats.map((s, i) => (
+            <StatTile key={i} s={s} i={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function StatTile({ s, i }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true })
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, delay: i * 0.08 }}
+      style={{
+        padding: '40px 32px',
+        background: C.surface,
+        border: `1px solid ${C.line}`,
+        borderRadius: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        minHeight: 200,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: display,
+          fontWeight: 800,
+          fontSize: 88,
+          color: s.c,
+          lineHeight: 0.95,
+          letterSpacing: '-0.02em',
+          textShadow: s.c !== C.text ? `0 0 40px ${s.c}40` : 'none',
+        }}
+      >
+        {s.v}
+      </div>
+      <Label color={C.text2}>{s.l}</Label>
+    </motion.div>
+  )
+}
+
+/* ─────────────────── CTA ─────────────────── */
+
+function CTA({ go }) {
+  return (
+    <section
+      id="cta"
+      style={{ padding: '200px 24px', background: C.bg, position: 'relative', overflow: 'hidden' }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) scale(8)',
+          opacity: 0.05,
+          pointerEvents: 'none',
+        }}
+      >
+        <ParallaxMark size={180} />
+      </div>
+      <div style={{ position: 'relative', maxWidth: 880, margin: '0 auto', textAlign: 'center' }}>
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          style={{
+            fontFamily: display,
+            fontWeight: 800,
+            fontSize: 'clamp(48px, 7vw, 96px)',
+            lineHeight: 1,
+            letterSpacing: '-0.03em',
+            margin: 0,
+            color: C.text,
+          }}
+        >
+          Train both sides.
+          <br />
+          <span
+            style={{
+              background: `linear-gradient(90deg, ${C.red}, ${C.violet}, ${C.blue})`,
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+            }}
+          >
+            One platform.
+          </span>
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.15 }}
+          style={{
+            fontFamily: body,
+            fontSize: 19,
+            color: C.text2,
+            margin: '32px auto 0',
+            maxWidth: 580,
+            lineHeight: 1.6,
+          }}
+        >
+          v1.0.0-rc1 is tagged and ready for evaluation. Single-node Docker Compose, no external
+          dependencies, eight-second container reset.
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.25 }}
+          style={{ display: 'flex', gap: 14, justifyContent: 'center', marginTop: 44 }}
+        >
+          <button
+            onClick={go}
+            style={{
+              fontFamily: body,
+              fontWeight: 600,
+              fontSize: 15,
+              color: C.bg,
+              background: C.text,
+              padding: '16px 32px',
+              borderRadius: 999,
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Launch the demo →
+          </button>
+          <a
+            href="#"
+            style={{
+              fontFamily: body,
+              fontWeight: 500,
+              fontSize: 15,
+              color: C.text,
+              border: `1px solid ${C.lineStrong}`,
+              padding: '15px 32px',
+              borderRadius: 999,
+              textDecoration: 'none',
+            }}
+          >
+            Read the paper
+          </a>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────────────── FOOTER ─────────────────── */
+
+function FooterCol({ title, items }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <Label color={C.dim} size={10}>
+        {title}
+      </Label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {items.map((i) => (
+          <a
+            key={i}
+            href="#"
+            style={{ fontFamily: body, fontSize: 13, color: C.text2, textDecoration: 'none' }}
+          >
+            {i}
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Footer() {
+  return (
+    <footer
+      style={{ background: '#04060B', borderTop: `1px solid ${C.line}`, padding: '80px 24px 40px' }}
+    >
+      <div
+        style={{
+          maxWidth: 1280,
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr 1fr 1fr',
+          gap: 56,
+          alignItems: 'flex-start',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <ParallaxMark size={40} />
+            <ParallaxWordmark size={26} tone="color" bg="dark" />
+          </div>
+          <p
+            style={{
+              fontFamily: body,
+              fontSize: 13,
+              color: C.text2,
+              maxWidth: 360,
+              lineHeight: 1.6,
+              margin: 0,
+            }}
+          >
+            A dual-perspective cybersecurity training platform built at the University of Jordan,
+            KASIT — May 2026.
+          </p>
+          <UniLogos height={36} gap={10} />
+        </div>
+
+        <FooterCol
+          title="Platform"
+          items={['Red Workspace', 'Blue Workspace', 'Scenarios', 'AI Mentor']}
+        />
+        <FooterCol
+          title="Evidence"
+          items={['Test Reports', 'Lighthouse', 'Isolation Audit', 'Changelog']}
+        />
+        <FooterCol
+          title="Team"
+          items={['Mahmoud Allabadi', 'Rashed Alkurdi', 'Repository', 'Contact']}
+        />
+      </div>
+
+      <div
+        style={{
+          maxWidth: 1280,
+          margin: '60px auto 0',
+          paddingTop: 28,
+          borderTop: `1px solid ${C.line}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontFamily: mono,
+          fontSize: 11,
+          color: C.dim,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+        }}
+      >
+        <span>PARALLAX · v1.0.0-rc1</span>
+        <span>© 2026 · University of Jordan · KASIT</span>
+      </div>
+    </footer>
+  )
+}
+
+/* ─────────────────── ROOT ─────────────────── */
+
 export default function Landing() {
   const navigate = useNavigate()
   const { token } = useAuthStore()
-  const tier = usePerfTier()
   const reduced = useReducedMotionSafe()
-  const perfMode = useSettingsStore((s) => s.perfMode)
-  const setPerfMode = useSettingsStore((s) => s.setPerfMode)
+  const tier = usePerfTier()
 
-  // Global cursor spotlight (spring-lagged)
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-  const springX = useSpring(mouseX, { damping: 45, stiffness: 180 })
-  const springY = useSpring(mouseY, { damping: 45, stiffness: 180 })
-  const spotlightBg = useTransform(
-    [springX, springY],
-    ([x, y]) => `radial-gradient(900px circle at ${x}px ${y}px, rgba(76,194,255,0.05) 0%, rgba(155,125,255,0.03) 40%, transparent 80%)`,
-  )
-
-  useEffect(() => {
-    if (reduced || tier < 2) return // skip spotlight on reduced-motion or weak tiers
-    const handleMove = (e) => { mouseX.set(e.clientX); mouseY.set(e.clientY) }
-    window.addEventListener('mousemove', handleMove, { passive: true })
-    return () => window.removeEventListener('mousemove', handleMove)
-  }, [mouseX, mouseY, reduced, tier])
-
-  const goToPlatform = () => navigate(token ? '/dashboard' : '/auth')
-
-  // Hero parallax
-  const heroRef = useRef(null)
-  const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
-  const heroY = useTransform(heroScroll, [0, 1], [0, reduced ? 0 : -60])
-
-  // Cursor intents for scenario cards
-  const engageCursor = useCursorIntent({ intent: 'engage', label: 'ENGAGE', mode: 'red' })
-
-  // Red/Blue CTA cursor intents
-  const redCursor = useCursorIntent({ intent: 'launch', label: 'LAUNCH', mode: 'red' })
-  const blueCursor = useCursorIntent({ intent: 'launch', label: 'LAUNCH', mode: 'blue' })
+  const go = () => navigate(token ? '/dashboard' : '/auth')
 
   return (
-    <div className="min-h-dvh bg-void text-txt-primary font-display relative">
-      {/* Global cursor spotlight overlay (tier â‰¥ 2 + !reduced only) */}
-      {!reduced && tier >= 2 && (
-        <motion.div
-          className="pointer-events-none fixed inset-0 z-30 opacity-70"
-          style={{ background: spotlightBg }}
-        />
-      )}
-
-      {/* â”€â”€ NAVIGATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-void/80 border-b border-cs-border backdrop-blur-md font-mono text-xs">
-        <button onClick={() => navigate('/')} className="flex items-center gap-3">
-          <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-7 h-7 flex-shrink-0" />
-          <div className="text-sm font-bold text-txt-primary tracking-widest uppercase">
-            Parallax<span className="text-txt-dim font-normal">.io</span>
-          </div>
-        </button>
-        <ul className="hidden md:flex items-center gap-8 list-none m-0 p-0">
-          <li><a href="#scenarios" className="text-txt-secondary hover:text-txt-primary transition-colors tracking-wider uppercase">Scenarios</a></li>
-          <li><a href="#how" className="text-txt-secondary hover:text-txt-primary transition-colors tracking-wider uppercase">How It Works</a></li>
-          <li><a href="#frameworks" className="text-txt-secondary hover:text-txt-primary transition-colors tracking-wider uppercase">Frameworks</a></li>
-          <li>
-            <MagneticButton onClick={goToPlatform} className="btn-v3 btn-v3-blue btn-v3-sm">
-              Launch Platform
-            </MagneticButton>
-          </li>
-        </ul>
-      </nav>
-
-      {/* â”€â”€ HERO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-32 pb-20 overflow-hidden">
-        {tier >= 1 ? (
-          <Suspense fallback={<ParticleCanvas />}>
-            <HeroScene3D />
-          </Suspense>
-        ) : (
-          <ParticleCanvas />
-        )}
-
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1], delay: 0.12 }}
-          style={{ y: heroY }}
-          className="relative z-10 text-center w-full max-w-[900px] border border-cs-border/30 bg-void/60 backdrop-blur-md p-6 sm:p-10 md:p-16 rounded-cs shadow-2xl"
-        >
-          {/* Online badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.35 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-2 border border-cs-border/60 rounded-cs font-mono text-[10px] text-txt-secondary mb-8 uppercase tracking-widest"
-          >
-            <span className="w-2 h-2 rounded-full bg-green-signal animate-pulse shadow-green-glow" />
-            Platform Online â€” 3 Scenarios Active
-          </motion.div>
-
-          {/* Hero headline â€” word reveal */}
-          <div className="text-[1.75rem] sm:text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[1.12] tracking-tighter mb-6 font-display" role="heading" aria-level="1">
-            <RevealText
-              as="div"
-              stagger={0.09}
-              delay={0.5}
-              className="block"
-            >
-              Attack. Defend.
-            </RevealText>
-            <RevealText
-              as="div"
-              stagger={0.09}
-              delay={0.82}
-              className="block text-txt-dim tracking-tight"
-            >
-              Simultaneously.
-            </RevealText>
-          </div>
-
-          {/* Sub-headline */}
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1], delay: 1.1 }}
-            className="text-sm md:text-base text-txt-secondary leading-relaxed max-w-[580px] mx-auto mb-10 font-display"
-          >
-            The first training platform where every attacker command triggers real-time
-            SIEM alerts on the defender's screen. Learn both sides of cybersecurity
-            in one environment.
-          </motion.p>
-
-          {/* CTA row */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <motion.button
-              {...redCursor.bind}
-              onClick={goToPlatform}
-              className="btn-v3 btn-v3-red text-xs"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.15 }}
-            >
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="mr-1">
-                <path d="M8 1v14M1 8h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              Start Red Team
-            </motion.button>
-            <motion.button
-              {...blueCursor.bind}
-              onClick={goToPlatform}
-              className="btn-v3 btn-v3-blue text-xs"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.15 }}
-            >
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="mr-1">
-                <path d="M2 8a6 6 0 1112 0A6 6 0 012 8z" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M8 5v3l2 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              Start Blue Team
-            </motion.button>
-            <a href="#how" className="btn-v3 btn-v3-subtle text-xs">Learn More</a>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* â”€â”€ LIVE DEMO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      {/* aria-hidden: decorative mock terminal/SIEM â€” not real data */}
-      <section className="relative px-6 md:px-12 pb-24 z-10" aria-hidden="true">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
-          className="max-w-[1200px] mx-auto glass p-0 overflow-hidden"
-        >
-          <div className="flex items-center justify-between px-5 py-3 bg-surface-2/80 border-b border-cs-border font-mono text-[10px]">
-            <div className="flex gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-critical shadow-red-glow" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-warn" />
-              <span className="w-2.5 h-2.5 rounded-full bg-green-signal" />
-            </div>
-            <div className="text-txt-dim tracking-wider uppercase">PARALLAX COMMAND CENTER // SESSION: ACTIVE</div>
-            <div className="flex gap-1.5">
-              <span className="px-2 py-0.5 rounded-cs-sm font-mono text-[9px] font-bold text-cs-red bg-cs-red/10 border border-cs-red/20">RED TEAM</span>
-              <span className="px-2 py-0.5 rounded-cs-sm font-mono text-[9px] font-bold text-cs-blue bg-cs-blue/10 border border-cs-blue/20">BLUE TEAM</span>
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 min-h-[420px]">
-            <div className="relative border-r border-cs-border overflow-hidden bg-void/60">
-              <div className="absolute inset-0 bg-cs-red/[0.01]" />
-              <div className="flex items-center justify-between px-4 py-2 border-b border-cs-border bg-surface-1/40 font-mono text-[9px] text-cs-red tracking-wider">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cs-red animate-pulse" />
-                  KALI TERMINAL â€” ENFORCED METHODOLOGY GATES
-                </div>
-                <div>METHODOLOGY: PTES</div>
-              </div>
-              <div className="p-4 font-mono text-xs leading-[1.8] text-txt-secondary">
-                <div><span className="text-cs-red">student@kali:~$ </span><span className="text-txt-primary">nmap -sV -p 80,443,3306 172.20.1.20</span></div>
-                <div className="text-txt-dim">Starting Nmap 7.94 ( https://nmap.org )</div>
-                <div className="text-txt-dim">PORT     STATE SERVICE VERSION</div>
-                <div className="text-green-signal">80/tcp   open  http    Apache httpd 2.4.49 (NovaMed Web Portal)</div>
-                <div className="text-green-signal">443/tcp  open  ssl     OpenSSL 1.1.1</div>
-                <div className="text-green-signal">3306/tcp open  mysql   MySQL 5.7.38 (Patient DB)</div>
-                <div>&nbsp;</div>
-                <div><span className="text-cs-red">student@kali:~$ </span><span className="text-txt-primary">gobuster dir -u http://172.20.1.20 -w /usr/share/wordlists/common.txt</span></div>
-                <div className="text-amber-warn">/backup/ (Status: 200) [Size: 3842]</div>
-                <div><span className="text-cs-red">student@kali:~$ </span><span className="inline-block w-1.5 h-3 bg-cs-red animate-pulse" /></div>
-              </div>
-            </div>
-            <div className="relative overflow-hidden bg-void/60">
-              <div className="absolute inset-0 bg-cs-blue/[0.01]" />
-              <div className="flex items-center justify-between px-4 py-2 border-b border-cs-border bg-surface-1/40 font-mono text-[9px] text-cs-blue tracking-wider">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cs-blue animate-pulse" />
-                  SURICATA / EVENT METADATA PARSER
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="radar-scanner inline-block" /> TELEMETRY STREAM
-                </div>
-              </div>
-              <div className="p-3 space-y-1">
-                {[
-                  { time: '14:03:44', sev: 'MED',  msg: 'Port scan detected â€” SYN packets to 1024+ ports', mitre: 'T1046' },
-                  { time: '14:03:52', sev: 'INFO', msg: 'Service version probe â€” nmap fingerprinting', mitre: 'T1046' },
-                  { time: '14:04:01', sev: 'INFO', msg: 'Routine health check â€” GET /api/health [noise]', noise: true },
-                  { time: '14:06:11', sev: 'MED',  msg: 'Directory brute-force â€” 400+ 404s in 30s', mitre: 'T1083' },
-                  { time: '14:06:44', sev: 'HIGH', msg: 'Sensitive path probed â€” /backup/ returned 200', mitre: 'T1083' },
-                ].map((ev, i) => (
-                  <div key={i} className={`flex items-center gap-3 p-1.5 font-mono text-[10px] rounded-cs border border-transparent ${
-                    ev.noise ? 'opacity-40 hover:opacity-75' : 'bg-surface-2/40 border-cs-border/40 hover:border-cs-border'
-                  } transition-all`}>
-                    <span className="text-txt-dim">{ev.time}</span>
-                    <span className={`px-1.5 py-0.5 rounded-cs-sm font-bold text-[8px] tracking-wide ${
-                      ev.sev === 'HIGH' ? 'bg-critical/10 text-critical border border-critical/20' :
-                      ev.sev === 'MED'  ? 'bg-amber-warn/10 text-amber-warn border border-amber-warn/20' :
-                      'bg-cs-blue/10 text-cs-blue border border-cs-blue/20'
-                    }`}>{ev.sev}</span>
-                    <span className={`flex-1 truncate ${ev.noise ? 'text-txt-dim' : 'text-txt-secondary'}`}>{ev.msg}</span>
-                    {ev.mitre && !ev.noise && (
-                      <span className="text-[8px] bg-void border border-cs-border px-1 py-0.5 text-txt-dim rounded-cs-sm font-bold tracking-widest">{ev.mitre}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* â”€â”€ STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <section className="relative px-6 md:px-12 pb-24 z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-[1200px] mx-auto">
-          {[
-            { value: '3',    label: 'Attack Scenarios',          color: 'text-cs-red' },
-            { value: '80+',  label: 'SIEM Event Templates',      color: 'text-cs-blue' },
-            { value: '100%', label: 'Real Tools â€” No Simulation', color: 'text-green-signal' },
-            { value: '$0',   label: 'Free Tier Stack',            color: 'text-amber-warn' },
-          ].map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="glass text-center p-6 bg-[#0d0f14]/80 cursor-pointer"
-            >
-              <div className={`text-4xl font-extrabold font-mono tracking-tighter mb-2 ${s.color}`}>{s.value}</div>
-              <div className="text-[10px] font-mono uppercase tracking-wider text-txt-secondary">{s.label}</div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* â”€â”€ HOW IT WORKS â€” pin-and-stack â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <section className="relative px-6 md:px-12 py-24 z-10" id="how">
-        <div className="text-center mb-16">
-          <motion.div
-            variants={sectionReveal}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4"
-          >
-            // EXECUTION CHECKLIST //
-          </motion.div>
-          <RevealText
-            as="h2"
-            className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary"
-            stagger={0.07}
-          >
-            One Platform. Both Perspectives.
-          </RevealText>
-          <motion.p
-            variants={sectionReveal}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-display"
-          >
-            Parallax bridges the gap between isolated tool training and
-            real-world security operations by connecting both sides of every engagement.
-          </motion.p>
-        </div>
-
-        {/* Stack cards â€” CSS sticky, each offset by ~24px */}
-        <div className="max-w-[680px] mx-auto" style={{ paddingBottom: '6rem' }}>
-          {[
-            {
-              step: '1', offset: 0,
-              title: 'Attack the target',
-              desc: 'Launch a real Kali terminal. Run actual tools â€” nmap, sqlmap, Impacket, Hashcat â€” against containerized targets with genuine vulnerabilities. No simulations, no mock outputs.',
-              color: 'text-cs-red border-cs-red/20 bg-cs-red/5',
-            },
-            {
-              step: '2', offset: 1,
-              title: 'Follow methodology',
-              desc: 'Parallax enforces PTES phases. Skip reconnaissance and jump to exploitation? Blocked. Document your findings before advancing. Methodology gating teaches professional discipline.',
-              color: 'text-amber-warn border-amber-warn/20 bg-amber-warn/5',
-            },
-            {
-              step: '3', offset: 2,
-              title: 'Detect in real time',
-              desc: "Every attacker command triggers corresponding SIEM alerts within 2 seconds. Blue team sees the same attack from the defender's perspective â€” WAF alerts, event logs, network anomalies.",
-              color: 'text-cs-blue border-cs-blue/20 bg-cs-blue/5',
-            },
-          ].map((c) => (
-            <StackCard key={c.step} {...c} />
-          ))}
-        </div>
-      </section>
-
-      {/* â”€â”€ SCENARIOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <section className="relative px-6 md:px-12 py-24 z-10" id="scenarios">
-        <div className="text-center mb-16">
-          <motion.div
-            variants={sectionReveal}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4"
-          >
-            // SCENARIO NODES ACTIVE //
-          </motion.div>
-          <RevealText
-            as="h2"
-            className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary"
-            stagger={0.07}
-          >
-            Real Targets. Real Vulnerabilities.
-          </RevealText>
-          <motion.p
-            variants={sectionReveal}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-display"
-          >
-            Each scenario is a fully containerized environment running actual
-            services with intentional security weaknesses.
-          </motion.p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-5 max-w-[1200px] mx-auto">
-          {[
-            { id: 'SC-01', title: 'NovaMed Healthcare Portal',   diff: 'Intermediate', diffCls: 'border-amber-warn/20 text-amber-warn bg-amber-warn/5', tags: ['OWASP Top 10', 'SQLi / LFI / IDOR'],       desc: 'A PHP/Apache web application with patient records. Discover SQL injection, IDOR vulnerabilities, unrestricted file upload, and local file inclusion in a realistic hospital IT environment.' },
-            { id: 'SC-02', title: 'Nexora Financial AD',         diff: 'Advanced',     diffCls: 'border-critical/20 text-critical bg-critical/5',         tags: ['Active Directory', 'Kerberos / SMB'],      desc: 'A Samba4 Active Directory environment with a domain controller and file server. Perform Kerberoasting, crack service account hashes, move laterally, and attempt DCSync.' },
-            { id: 'SC-03', title: 'Orion Logistics Phishing',   diff: 'Intermediate', diffCls: 'border-amber-warn/20 text-amber-warn bg-amber-warn/5', tags: ['Social Engineering', 'OSINT / Email'],       desc: 'Conduct OSINT, craft a phishing campaign with GoPhish, deliver a payload through social engineering, and achieve initial access on a simulated corporate endpoint.' },
-          ].map((sc, i) => (
-            <motion.div
-              key={sc.id}
-              {...engageCursor.bind}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
-              whileHover={{ y: -10, scale: 1.025, boxShadow: '0 20px 40px rgba(0,243,255,0.06)' }}
-              className="glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer group hover:border-[#4CC2FF]/30 transition-all duration-300 relative overflow-hidden"
-              onClick={goToPlatform}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#4CC2FF]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-              <div className="relative z-10">
-                <div className="font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-cs-sm w-fit mb-4 transition-colors group-hover:bg-[#4CC2FF]/10 group-hover:text-[#4CC2FF]">{sc.id}</div>
-                <h3 className="text-lg font-bold tracking-tight mb-2 font-display text-txt-primary group-hover:text-[#4CC2FF] transition-colors">{sc.title}</h3>
-                <p className="text-xs text-txt-secondary leading-relaxed mb-6 font-display group-hover:text-txt-primary transition-colors">{sc.desc}</p>
-              </div>
-              <div className="flex gap-2 flex-wrap relative z-10">
-                <span className={`px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border ${sc.diffCls}`}>{sc.diff}</span>
-                {sc.tags.map((tag) => (
-                  <span key={tag} className="px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border-cs-border text-txt-dim bg-surface-2/40 group-hover:border-cs-border/60 transition-colors">{tag}</span>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* â”€â”€ FRAMEWORKS â€” infinite marquee â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <section className="relative px-6 md:px-12 py-24 z-10" id="frameworks">
-        <div className="text-center mb-12">
-          <motion.div
-            variants={sectionReveal}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4"
-          >
-            // COMPLIANCE MATRICES //
-          </motion.div>
-          <RevealText
-            as="h2"
-            className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary"
-            stagger={0.06}
-          >
-            Industry-Standard Methodology
-          </RevealText>
-          <motion.p
-            variants={sectionReveal}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-display"
-          >
-            Every action, hint, and score maps to recognized professional frameworks.
-          </motion.p>
-        </div>
-
-        <Marquee duration={28} gap="2.5rem" className="py-2 max-w-[1200px] mx-auto">
-          {[
-            { name: 'MITRE ATT&CK',           dot: 'bg-cs-red shadow-red-glow' },
-            { name: 'PTES',                    dot: 'bg-amber-warn' },
-            { name: 'NIST CSF / 800-61',       dot: 'bg-cs-blue shadow-blue-glow' },
-            { name: 'OWASP Testing Guide v4.2', dot: 'bg-green-signal' },
-            { name: 'CVSS v3.1',               dot: 'bg-critical' },
-            { name: 'Kill Chain Model',         dot: 'bg-[#9B7DFF]' },
-          ].map((f) => (
-            <div
-              key={f.name}
-              className="flex items-center gap-2.5 px-4 py-2 rounded-cs border border-cs-border bg-[#0d0f14]/90 font-display text-xs text-txt-secondary whitespace-nowrap flex-shrink-0 hover:border-cs-border/80 transition-colors"
-            >
-              <span className={`w-2 h-2 rounded-sm flex-shrink-0 ${f.dot}`} />
-              {f.name}
-            </div>
-          ))}
-        </Marquee>
-      </section>
-
-      {/* â”€â”€ CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <section className="relative px-6 md:px-12 py-24 text-center z-10 max-w-[1200px] mx-auto">
-        <div
-          className="absolute inset-0 z-0 opacity-40"
-          style={{ background: 'radial-gradient(ellipse 60% 40% at 30% 50%, rgba(255,59,59,0.04), transparent), radial-gradient(ellipse 60% 40% at 70% 50%, rgba(59,139,255,0.04), transparent)' }}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98, y: 30 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
-          className="relative z-10 glass p-12 bg-void/70 overflow-hidden group"
-        >
-          {/* Dual accent lines */}
-          <div className="absolute top-0 inset-x-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-            style={{ background: 'linear-gradient(90deg, transparent, #ff3b3b 30%, #4CC2FF 70%, transparent)' }}
-          />
-          <div className="font-mono text-xs font-semibold uppercase tracking-[3px] text-txt-dim mb-4">// RET-5 SYSTEMS READY //</div>
-          <RevealText
-            as="h2"
-            className="text-3xl md:text-4xl font-extrabold tracking-tighter mb-5 font-display text-txt-primary"
-            stagger={0.06}
-          >
-            Stop learning tools in isolation.
-          </RevealText>
-          <motion.p
-            variants={sectionReveal}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="text-sm text-txt-secondary max-w-[500px] mx-auto mb-10 leading-relaxed font-display"
-          >
-            Every attacker action has a defensive consequence.
-            Parallax makes that connection visible.
-          </motion.p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <MagneticButton onClick={goToPlatform} className="btn-v3 btn-v3-red text-xs">
-              Begin SC-01: Web App Pentest
-            </MagneticButton>
-            <a href="#how" className="btn-v3 btn-v3-subtle text-xs">View Demo</a>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <footer className="px-6 md:px-12 py-12 border-t border-cs-border flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
-        <div className="font-mono text-xs text-txt-dim">
-          Parallax Â© 2026 â€” Built for cybersecurity students. $0 infrastructure cost.
-        </div>
-        <div className="flex items-center gap-6">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors">GitHub</a>
-          <a href="#" className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors">Documentation</a>
-          <a href="#" className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors">Architecture</a>
-          <button
-            onClick={() => setPerfMode(perfMode === 'low' ? 'auto' : 'low')}
-            className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cs-blue rounded-cs"
-            aria-pressed={perfMode === 'low'}
-            title="Toggle reduced-motion / low performance mode"
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${perfMode === 'low' ? 'bg-amber-warn' : 'bg-txt-dim'}`} />
-            {perfMode === 'low' ? 'Perf: Low' : 'Reduce Motion'}
-          </button>
-        </div>
-      </footer>
+    <div style={{ background: C.bg, color: C.text, minHeight: '100vh', position: 'relative' }}>
+      <Nav go={go} />
+      <Hero go={go} reduced={reduced} tier={tier} />
+      <Marquee reduced={reduced} tier={tier} />
+      <Platform reduced={reduced} tier={tier} />
+      <Loop reduced={reduced} />
+      <Scenarios tier={tier} />
+      <Mentor tier={tier} />
+      <Evidence />
+      <CTA go={go} />
+      <Footer />
     </div>
   )
 }
