@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { usePerfTier } from '../ui/PerfTier'
 
 /**
@@ -47,14 +50,21 @@ export default function HeroScene3D({ className = '' }) {
       alpha: true,
       powerPreference: 'high-performance',
     })
-    renderer.setClearColor(0x000000, 0)
+    // Tier-3 bloom composites over an opaque void clear (avoids alpha+bloom
+    // fringing); lower tiers keep the transparent canvas.
+    const useBloom = tier === 3
+    renderer.setClearColor(useBloom ? 0x08090c : 0x000000, useBloom ? 1 : 0)
     const dpr = Math.min(window.devicePixelRatio || 1, tier === 3 ? 2 : 1.5)
     renderer.setPixelRatio(dpr)
     container.appendChild(renderer.domElement)
 
+    // Post-processing composer (bloom) — instantiated after meshes exist, below.
+    let composer = null
+
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = container
       renderer.setSize(w, h, false)
+      if (composer) composer.setSize(w, h)
       camera.aspect = w / h
       camera.updateProjectionMatrix()
     }
@@ -181,6 +191,17 @@ export default function HeroScene3D({ className = '' }) {
     const ro = new ResizeObserver(resize)
     ro.observe(container)
 
+    // ── Bloom composer (tier 3 only) ─────────────────────────────
+    if (useBloom) {
+      const { clientWidth: w, clientHeight: h } = container
+      composer = new EffectComposer(renderer)
+      composer.addPass(new RenderPass(scene, camera))
+      // strength, radius, threshold — only the brightest additive points bloom
+      const bloom = new UnrealBloomPass(new THREE.Vector2(w || 1, h || 1), 0.85, 0.45, 0.82)
+      composer.addPass(bloom)
+      composer.setSize(w, h)
+    }
+
     // ── Animation loop ──────────────────────────────────────────
     let raf
     let last = performance.now()
@@ -272,7 +293,17 @@ export default function HeroScene3D({ className = '' }) {
       trace.rotation.y  = rotY
       trace.rotation.x  = rotX
 
-      renderer.render(scene, camera)
+      // Scroll-coupled dolly + fade (tier ≥ 2): the formation recedes and dims
+      // as the hero scrolls away so it never competes with the content below.
+      if (tier >= 2) {
+        const sp = Math.min(1, (window.scrollY || 0) / (window.innerHeight || 800))
+        camera.position.z = 60 + sp * 22
+        pointMat.opacity = 0.85 * (1 - sp * 0.55)
+        lineMat.opacity  = 0.18 * (1 - sp * 0.7)
+      }
+
+      if (composer) composer.render()
+      else renderer.render(scene, camera)
     }
     raf = requestAnimationFrame(tick)
 
@@ -289,6 +320,7 @@ export default function HeroScene3D({ className = '' }) {
       pointMat.dispose()
       lineMat.dispose()
       traceMat.dispose()
+      if (composer) composer.dispose()
       renderer.dispose()
       if (renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement)

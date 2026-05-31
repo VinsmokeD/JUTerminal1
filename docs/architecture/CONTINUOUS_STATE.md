@@ -13,6 +13,17 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-31] - Claude Opus 4.8 (Phase 4 — 3D elevation: UnrealBloom + scroll dolly/fade on HeroScene3D)
+
+* **Status**: COMPLETE ✅ (core) — build green, 47/47 tests, lint 0 errors; tier-3 bloom verified rendering in headless with **0 WebGL/console errors**.
+* **Why**: Plan Phase 4 — give the hero the premium glow + scroll-coupled motion of the reference sites, strictly tier-gated so it never regresses weak hardware / projector mode.
+* **Where** (1 file): `frontend/src/components/canvas/HeroScene3D.jsx` — vanilla three.js (no R3F, per recorded decision).
+  - Imports `EffectComposer`/`RenderPass`/`UnrealBloomPass` from `three/examples/jsm/postprocessing/` (ships with three; lazy-loaded with the hero chunk).
+  - **Bloom (tier 3 only):** when `tier===3`, build an `EffectComposer` (RenderPass + UnrealBloomPass strength 0.85 / radius 0.45 / threshold 0.82 — only the brightest additive points bloom). Render via `composer.render()`; tiers ≤2 keep the raw `renderer.render`. To avoid alpha+bloom fringing, the bloom path clears to opaque void `#08090c` (matches `bg-void`); lower tiers keep the transparent canvas. `resize()` updates `composer.setSize`; cleanup calls `composer.dispose()`.
+  - **Scroll dolly + fade (tier ≥2):** in the rAF loop, read `window.scrollY` (Lenis updates native scroll) → `sp = min(1, scrollY/innerHeight)`; dolly `camera.position.z = 60 + sp*22` and fade `pointMat.opacity`/`lineMat.opacity` so the formation recedes/dims as the hero scrolls away and never competes with content below. Continuous (restores at top). Off at tier 1.
+* **What & How**: All additions are tier-gated and additive — tiers 0–1 and reduced-motion paths are byte-for-byte unchanged (tier 0 still returns the static SVG). Bundle: HeroScene3D chunk 470→486 KB (+16 KB raw / +4 KB gzip), lazy-loaded only with the Landing hero (never in workspace bundles). Decision held: **stayed vanilla three** (no R3F spike); route-reactive red/blue accent deferred.
+* **Verification**: `npm run build` ✓ (5.46s, bloom imports resolve); `npm test` 47/47; lint 0 errors. Playwright tier-3 capture (16 cores → classifyAuto=3): hero bloom glow visible on red/blue particles, **0 pageerror/console errors**. Scroll dolly/fade not screenshot-captured (Lenis hijacks Playwright programmatic scroll — test limitation, not a bug); logic is a plain scrollY read, build green. MOTION_SYSTEM.md matrix + outstanding list updated.
+
 ### [2026-05-31] - Claude Opus 4.8 (Empirical visual verification — found & fixed hero RevealText freeze)
 
 * **Status**: COMPLETE ✅ — Playwright visual capture of all Landing surfaces; **1 user-visible bug found and fixed**; `npm run verify` green, lint 0 errors, 47/47 tests.

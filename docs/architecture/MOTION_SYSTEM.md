@@ -94,8 +94,8 @@ Single source of truth, mirrors the CSS vars in `v3-design.css :root`. **Extend,
 | Sticky pin-stack | ✅ | ✅ | ✅ | ⚠️ static |
 | Marquee | ✅ | ✅ | ✅ | ❌ static row |
 | WebGL card hover | ✅ shader | ✅ tilt+glow | tilt | ❌ |
-| Hero bloom (postFX) *(Phase 4)* | ✅ | ❌ | ❌ | ❌ |
-| Camera scroll-dolly *(Phase 4)* | ✅ | ✅ | ❌ | ❌ |
+| Hero bloom (UnrealBloom postFX) | ✅ | ❌ | ❌ | ❌ |
+| Camera scroll-dolly + fade | ✅ | ✅ | ❌ | ❌ |
 | Curtain transition | ✅ | ✅ | ✅ | ❌ cross-fade |
 
 ---
@@ -131,9 +131,11 @@ Single source of truth, mirrors the CSS vars in `v3-design.css :root`. **Extend,
 - Current suite: `src/__tests__/motion-primitives.test.jsx` (+20 tests). Total **47/47**.
 
 ## 10. Outstanding (from the plan, not yet done)
+- [x] Visual verification (Playwright) of Landing — **done**; found & fixed the hero RevealText freeze.
+- [x] Phase 4 core — UnrealBloom (tier 3) + scroll camera-dolly/fade (tier ≥2) on `HeroScene3D`, 0 WebGL errors headless.
 - [ ] Empirical `browser-use` capture of the reference sites' real easings/choreography.
-- [ ] Visual regression (Playwright screenshots) of Landing at tiers 3/1/low — **no motion code has
-      been visually verified yet**; CI green ≠ visually correct (see the curtain bug).
+- [ ] Permanent Playwright visual-regression harness (scratch scripts were removed after use) — Phase 8.
 - [ ] Primitive tests were written after the fact, not TDD-first (Phase 1 deviation).
 - [ ] `memory`-MCP persistence of locked motion decisions.
-- [ ] Phases 4–9 (3D bloom, inner pages, workspace-safe motion, Debrief, perf/a11y hardening).
+- [ ] Phase 4 extras deferred: route-reactive 3D accent (red/blue weighting near CTAs), R3F spike (default = stay vanilla).
+- [ ] Phases 5–9 (inner pages, workspace-safe motion, Debrief, perf/a11y hardening).
