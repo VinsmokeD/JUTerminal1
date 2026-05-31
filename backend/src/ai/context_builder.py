@@ -460,9 +460,25 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
         )
         notes_summary.append(wrapped_title)
 
-    # ── Flags captured ──────────────────────────────────────────────────
+    # ── Flags captured + pending candidates (flag_candidate WS1 nudges) ─
     cached_state = await cache_get(f"session:{session_id}:state") or {}
     flags_captured = cached_state.get("flags_captured", [])
+
+    # Pending candidates: flags the terminal has revealed but student hasn't submitted
+    # Checked via the same dedup keys used by scan_flag_candidates
+    from src.scenarios.loader import get_flags as _get_flags
+
+    pending_candidates: list[str] = []
+    try:
+        for _f in _get_flags(session.scenario_id):
+            _fid = _f.get("id", "")
+            if not _fid or _fid in flags_captured:
+                continue
+            _dedup = await cache_get(f"flagcandidate:{session_id}:{_fid}")
+            if _dedup:
+                pending_candidates.append(_fid)
+    except Exception:
+        pass
 
     # ── Compute minutes since last progress ─────────────────────────────
     last_progress_time = session.started_at
@@ -536,6 +552,7 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
         "last_command_output_summary": last_command_output_summary,
         "notes_summary": notes_summary,
         "flags_captured": flags_captured,
+        "pending_flag_candidates": pending_candidates,
         "minutes_since_last_progress": minutes_since_last_progress,
         "siem_events_recent": siem_events_recent,
         # Internal metadata keys (needed by monitor.py and other parts)

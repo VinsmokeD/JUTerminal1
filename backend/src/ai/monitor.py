@@ -109,6 +109,7 @@ def _format_context_for_ai(context: dict, command: str | None, hint_level: int |
         "last_command_output_summary": context.get("last_command_output_summary"),
         "notes_summary": context.get("notes_summary"),
         "flags_captured": context.get("flags_captured"),
+        "pending_flag_candidates": context.get("pending_flag_candidates"),
         "minutes_since_last_progress": context.get("minutes_since_last_progress"),
         "siem_events_recent": context.get("siem_events_recent"),
         "target_reachable": context.get("target_reachable"),
@@ -335,6 +336,7 @@ async def get_ai_hint(
             "X-Title": settings.AI_X_TITLE,
         }
 
+        _t0 = time.time()
         try:
             async with httpx.AsyncClient(timeout=20.0) as client:
                 resp = await client.post(
@@ -344,6 +346,15 @@ async def get_ai_hint(
                 )
                 resp.raise_for_status()
                 data = resp.json()
+            _latency_ms = round((time.time() - _t0) * 1000, 1)
+            try:
+                from src.cache.redis import _get as _get_redis_for_metrics
+
+                _r = _get_redis_for_metrics()
+                await _r.lpush("metrics:ai_latency_ms", str(_latency_ms))
+                await _r.ltrim("metrics:ai_latency_ms", 0, 49)
+            except Exception:
+                pass
         except httpx.HTTPStatusError as e:
             logger.error(
                 f"[AI Monitor] session_id={session_id[:8]} exit=api_http_error({e.response.status_code}) error={e.response.text}"

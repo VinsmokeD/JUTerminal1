@@ -9,7 +9,7 @@ from src.auth.routes import get_current_user
 from src.db.database import get_db, Session, User, CommandLog, SiemEvent, Note, SiemTriage
 from src.reports.generator import generate_report
 from src.reports.learning_insights import build_learning_insights
-from src.scoring.engine import final_score
+from src.scoring.engine import final_score, compute_hint_penalty, compute_time_bonus
 from src.ai.debrief_coach import generate_debrief_coaching, handle_debrief_qa
 
 router = APIRouter()
@@ -90,12 +90,24 @@ async def get_consolidated_report(
         started_at=session.started_at,
         completed_at=session.completed_at,
     )
+    hint_penalty = compute_hint_penalty(session.hints_used or [])
+    time_bonus = compute_time_bonus(session.started_at, session.completed_at)
+    # gate_penalty: difference between starting (100) and base minus hint penalties
+    gate_penalty = max(0, 100 - hint_penalty - session.score)
     score_data = {
         "session_id": session_id,
         "base_score": session.score,
         "final_score": computed_score,
         "hints_used": len(session.hints_used or []),
         "completed": session.completed_at is not None,
+        "score_breakdown": {
+            "starting": 100,
+            "hint_penalty": hint_penalty,
+            "gate_penalty": gate_penalty,
+            "time_bonus": time_bonus,
+            "flag_bonuses": max(0, session.score - (100 - hint_penalty - gate_penalty)),
+            "final": computed_score,
+        },
     }
 
     # 3. Notes

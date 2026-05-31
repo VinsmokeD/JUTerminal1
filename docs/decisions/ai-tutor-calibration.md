@@ -70,6 +70,29 @@ LFI lets attackers read files like /etc/passwd.
 
 Layer 2 should still block payload shapes, command-flag shapes, literal credentials, hashes, and flag values.
 
+## 2026-05-31 — WS3 Measured hint quality notes
+
+### Latency
+- OpenRouter calls are `async` (httpx.AsyncClient, timeout=20s). Rate-limited: 1 tutor call / 10 s per session, 1 nudge / 60 s. These limits prevent per-keystroke calls. ✅
+- `AiHintPanel.jsx` shows a 3-dot bounce "AI Tutor is thinking…" state while `loading=true`, cleared on `ai:hint` event. ✅
+- Graceful fallback: `_get_fallback_hint()` returns static Socratic prompts on timeout / API error / no key. ✅
+
+### Flag candidate wiring (WS1 integration)
+- `scan_flag_candidates` emits `flag_candidate` WS frames only on completed PTY lines that match a flag pattern. Dedup TTL = 10 min.
+- `FlagSubmitWidget` shows `on_wrong_attempt_hint` from `validate_flag` response on wrong submissions.
+- `context_builder.build_ai_context` now includes `pending_flag_candidates` (flag IDs emitted but not yet submitted). This lets the AI tutor reference nearby flags contextually without revealing values.
+
+### Socratic constraint verification
+- Level 1 → conceptual questions about evidence/methodology gap.
+- Level 2 → hypothesis formation / next-step reasoning.
+- Level 3 → procedural: requires student to write down artifact before continuing.
+- System prompt enforces `NEVER reveal passwords, hashes, or flags` + `CRITICAL SECURITY INSTRUCTION` injection-barrier.
+- OWASP-LLM regression tests (adversarial-safety) confirmed green across WS1 push.
+
+### Token budget
+- max_tokens: 150 for challenge mode, 300 for learn mode, 400 for L3 hints.
+- Prompt pruned at 12,000 token estimate; earlier captures show typical prompts ~2,000–4,000 tokens.
+
 ## Viva sound bite
 
 During testing we discovered that overly strict refusal criteria degrade pedagogical quality. Forbidding the topic name `/etc/passwd` would hide the canonical LFI example used in every textbook; forbidding all declarative framing produces refusal patterns that sound condescending. We tuned the filter to target payload syntax, such as traversal sequences, command-flag combinations, and literal credential strings, rather than topic names or sentence moods. Two recalibrations happened during integration testing and are documented as part of the engineering process.
