@@ -65,8 +65,9 @@
    * font-display = Outfit    â†’ headings, labels, all UI text
    * font-mono    = JetBrains Mono â†’ terminal, SIEM, scores, IPs, code
    */
-  --font-hud: 'Outfit', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-hud: 'Orbitron', sans-serif;       /* large display headings (premium) */
+  --font-display: 'Inter', sans-serif;      /* general UI: headings, labels, body */
+  --font-body: 'Inter', sans-serif;         /* body / UI copy / controls */
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Spatial */
@@ -91,7 +92,7 @@
   body {
     background-color: var(--nb-bg);
     color: var(--text-primary);
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -1695,3 +1696,9 @@
 .glass, [data-framer-component] { will-change: transform; transform: translateZ(0); }
 html { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
 .fixed { contain: layout style; }
+
+/* ── Typography convergence ──
+   Inter is the platform UI/body face (font-display + font-body both resolve to it).
+   Orbitron (font-hud / --font-hud) is reserved for large display headings and is
+   applied deliberately per-section during the redesign. */
+.font-body { font-family: var(--font-body); }

@@ -7,6 +7,7 @@ import { useReducedMotionSafe } from '../lib/motion'
 import { usePerfTier } from '../components/ui/PerfTier'
 import { useSettingsStore } from '../store/settingsStore'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
+import { ParallaxMark, ParallaxWordmark } from '../components/brand/ParallaxLogo'
 
 const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
 
@@ -204,11 +205,11 @@ export default function Auth() {
 
         <div className="relative z-10">
           <div className="inline-flex items-center gap-4 mb-8">
-            <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-[52px] h-[52px] flex-shrink-0" />
-            <span className="text-3xl font-extrabold text-txt-primary font-display">Parallax</span>
+            <ParallaxMark size={48} />
+            <ParallaxWordmark size={30} tone="color" bg="dark" />
           </div>
 
-          <h1 className="text-4xl font-extrabold text-txt-primary mb-4 leading-tight font-display">
+          <h1 className="text-5xl font-extrabold text-txt-primary mb-4 leading-tight font-hud tracking-tight">
             {TAGLINE.map((word, index) => (
               <span key={word.text}>
                 <span
@@ -239,10 +240,10 @@ export default function Auth() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-10 h-10 flex-shrink-0" />
+            <ParallaxMark size={40} />
             <div>
-              <div className="text-gradient-nimbus font-bold text-xl font-display">Parallax</div>
-              <div className="text-txt-dim text-xs font-mono">Cybersecurity Training Platform</div>
+              <ParallaxWordmark size={22} tone="color" bg="dark" />
+              <div className="text-txt-dim text-xs font-mono mt-1">Cybersecurity Training Platform</div>
             </div>
           </div>
 

@@ -56,8 +56,10 @@ export default {
       fontFamily: {
         /* hud     â€” Orbitron: hero wordmark + large HUD numerals ONLY */
         hud:     ['"Orbitron"', 'sans-serif'],
-        /* display â€” Outfit: all headings, labels, UI text */
-        display: ['"Outfit"', 'sans-serif'],
+        /* display â€” Inter: all headings, labels, UI text (premium convergence) */
+        display: ['"Inter"', 'sans-serif'],
+        /* body    â€” Inter: paragraphs / controls (alias of display) */
+        body:    ['"Inter"', 'sans-serif'],
         /* mono    â€” JetBrains Mono: terminal, SIEM, IPs, scores, code */
         mono:    ['"JetBrains Mono"', '"Cascadia Code"', '"Fira Code"', 'monospace'],
       },
