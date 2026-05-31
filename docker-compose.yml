@@ -364,6 +364,13 @@ services:
     build:
       context: ./infrastructure/docker/scenarios/sc02
       dockerfile: Dockerfile.dc
+    # WS7 hardening note (R3 — fail-open, documented):
+    # Samba AD DC requires SYS_PTRACE (winbindd↔smbd IPC), NET_BIND_SERVICE
+    # (port 88/389/445/636), SETUID/SETGID/CHOWN (Samba internal privilege drops),
+    # SYS_ADMIN (mount for SYSVOL), and DAC_OVERRIDE. Specifying no-new-privileges
+    # conflicts with Samba's internal capability management and breaks kerberos.
+    # Left without security_opt/cap_drop until Samba-in-container privilege model
+    # is fully mapped. See docs/SECURITY_THREAT_MODEL.md R3.
     environment:
       - DOMAIN=nexora.local
       - REALM=NEXORA.LOCAL
@@ -397,6 +404,11 @@ services:
     build:
       context: ./infrastructure/docker/scenarios/sc02
       dockerfile: Dockerfile.fileserver
+    # WS7 hardening note (R3 — fail-open, documented):
+    # Samba member server requires NET_BIND_SERVICE (445), SETUID/SETGID/CHOWN
+    # for Samba's winbind/smbd privilege model, and DAC_OVERRIDE for SYSVOL
+    # NTACL traversal. Left without security_opt/cap_drop for same reasons as
+    # sc02-dc. See docs/SECURITY_THREAT_MODEL.md R3.
     environment:
       - DC_IP=172.20.2.20
       - DOMAIN=nexora.local
@@ -429,6 +441,19 @@ services:
     build:
       context: ./infrastructure/docker/scenarios/sc03
       dockerfile: Dockerfile.mailrelay
+    # WS7 hardening: Postfix uses master(8) to launch workers as postfix/mail users,
+    # so it needs SETUID/SETGID/CHOWN for privilege drop. NET_BIND_SERVICE for port 25.
+    # no-new-privileges is safe because master already holds required caps before exec.
+    security_opt:
+      - "no-new-privileges:true"
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - SETUID
+      - SETGID
+      - CHOWN
+      - DAC_OVERRIDE
     networks:
       sc03-net:
         ipv4_address: 172.20.3.20
@@ -485,6 +510,13 @@ services:
     build:
       context: ./infrastructure/docker/scenarios/sc03
       dockerfile: Dockerfile.victim
+    # WS7 hardening: victim-simulator is a pure Python HTTP server on port 8080
+    # (>1024) — no setuid binaries, no privilege-drop exec, no raw sockets.
+    # Full cap_drop ALL is safe; no cap_add required.
+    security_opt:
+      - "no-new-privileges:true"
+    cap_drop:
+      - ALL
     networks:
       sc03-net:
         ipv4_address: 172.20.3.30
