@@ -13,6 +13,14 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-31] - Claude Opus 4.8 (Phase 6 — workspace-safe motion verified; app live on dev server)
+
+* **Status**: COMPLETE ✅ (verification gate — no code change needed). Dev server live (HTTP 200, port 3001).
+* **Why**: Plan Phase 6 is a *gate*, not an additions phase: the hard rule is **no smooth-scroll / reticle / looping GPU-FX inside `/session/**`**. Verified the invariant holds by architecture rather than adding risky motion to perf-critical terminal/SIEM code (which also can't be live-tested without the backend).
+* **Where**: no files changed (verification only) + this log.
+* **What & How**: Grepped all workspace surfaces — `pages/RedWorkspace.jsx`, `pages/BlueWorkspace.jsx`, `components/terminal/*`, `components/siem/*` — for `lenis|ReticleCursor|RevealText|useCursorIntent|useLenis|Marquee|three|HeroScene3D`: **zero matches**. The workspace bundles never import three or the new primitives. The only new motion code that reaches `/session/**` is the App-shell Lenis (`SmoothScrollProvider`) and `ReticleCursor`, both of which **self-disable** on `pathname.startsWith('/session/')` — so the terminal keeps native scroll + native cursor. Workspace-specific motion (`MissionReadinessOverlay` boot-in, `SiemFeed` event entrance) already exists from V5 Phase 3 and is unchanged. Deferred (accepted): lenis still ships in the eager main chunk (downloads on workspace routes but runtime-disabled) → route-split is a Phase 8 item.
+* **Verification**: grep invariant clean; `curl localhost:3001` → 200. Live workspace 60fps/perf check requires the FastAPI backend (not running this session) — structural exclusion confirmed instead. **App is viewable now** at http://localhost:3001 (Landing + Auth motion fully functional without backend; Dashboard/workspaces need the backend + auth).
+
 ### [2026-05-31] - Claude Opus 4.8 (Phase 5 — carry reticle cursor inward: Auth · Dashboard · Onboarding)
 
 * **Status**: COMPLETE ✅ — build green, 47/47 tests, **lint 0 problems** (removed the long-standing `ACCENT_BAR` warning); Auth page re-verified rendering with 0 console errors.
