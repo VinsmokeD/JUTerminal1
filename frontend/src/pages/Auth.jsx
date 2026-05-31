@@ -2,6 +2,7 @@ import { useEffect, useState, Suspense, lazy, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useAuthStore } from '../store/authStore'
+import useCursorIntent from '../hooks/useCursorIntent'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 
 const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
@@ -29,6 +30,13 @@ export default function Auth() {
   const { login, register } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Reticle intent on the submit CTA — tint/label follow the active mode
+  const submitCursor = useCursorIntent({
+    intent: 'launch',
+    label: mode === 'login' ? 'INITIALIZE' : 'REGISTER',
+    mode: mode === 'login' ? 'blue' : 'red',
+  })
 
   // Spring-lagged global cursor spotlight
   const mouseX = useMotionValue(0)
@@ -295,6 +303,7 @@ export default function Auth() {
                 <button
                   type="submit"
                   disabled={loading}
+                  {...submitCursor.bind}
                   className={`w-full btn-v3 ${mode === 'login' ? 'btn-v3-blue' : 'btn-v3-red'}`}
                 >
                   {loading ? 'Establishing handshake...' : mode === 'login' ? 'Initialize Interface' : 'Register Secure Node'}

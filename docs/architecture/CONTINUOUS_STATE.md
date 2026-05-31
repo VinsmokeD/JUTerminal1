@@ -13,6 +13,18 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-31] - Claude Opus 4.8 (Phase 5 — carry reticle cursor inward: Auth · Dashboard · Onboarding)
+
+* **Status**: COMPLETE ✅ — build green, 47/47 tests, **lint 0 problems** (removed the long-standing `ACCENT_BAR` warning); Auth page re-verified rendering with 0 console errors.
+* **Why**: Plan Phase 5 — extend the motion language to the inner pages. Audit found these surfaces were *already* motion-rich from prior design passes (Dashboard has `staggerContainer`/`staggerItem` grid reveal + animated active-mission banner + pulsing RESUME badge; Onboarding has `mounted`+`transitionDelay` sequenced reveals + tilt; Auth has 3D tilt + spotlight + typewriter tagline + drifting gradients; curtain-on-success is already handled globally by `CurtainTransition` on navigate). The real gap was the **ReticleCursor** (built Phase 1, only wired on Landing) — so Phase 5 = carry it inward + a safeguard.
+* **Where** (4 files):
+  - `frontend/src/components/dashboard/ScenarioCard.jsx` — added `useCursorIntent({intent:'engage',label:'ENGAGE',mode:'red'})`; replaced the `{...bind}` tilt spread with explicit `ref`/`onMouseMove`/`onMouseEnter` + a composed `onMouseLeave` that resets both tilt and cursor. **Removed the unused `ACCENT_BAR` const** (clears the repo's only lint warning).
+  - `frontend/src/pages/Onboarding.jsx` — per-profile reticle intent (beginner→red, intermediate→blue, experienced→neutral, label 'SELECT') composed with the existing tilt handlers; continue button → `launch`/'INITIALIZE'/blue when a level is selected.
+  - `frontend/src/pages/Auth.jsx` — submit CTA reticle intent, mode-reactive: login→blue/'INITIALIZE', register→red/'REGISTER'.
+  - `frontend/src/components/motion/ReticleCursor.jsx` — **safeguard**: `useEffect(resetCursor, [pathname])` so a hovered card/button label never sticks across pages when navigation fires before `onMouseLeave`.
+* **What & How**: All additions are hover-only store updates (`cursorStore`) read by the global `ReticleCursor`; reticle remains disabled on `/session/**` + reduced-motion + touch, so workspaces are untouched. Where an element already had tilt mouse handlers, `onMouseLeave` is composed (tilt-reset + cursor-reset) rather than overwritten. No layout/logic/API changes. Deferred (noted): Lenis-stop-on-modal/command-palette open (background scrolls behind fixed overlays) → Phase 8 a11y/polish; magnetic-on-cards skipped (would conflict with the existing CSS-var tilt transform).
+* **Verification**: `npm run verify` → build + **47/47**; `npm run lint` → **0 problems** (was 1 warning). Playwright: `/auth` renders clean, submit hover fires the intent, **0 pageerror/console errors**. Dashboard/Onboarding reticle not screenshot-verified (both behind `requireAuth`; backend not running this session) — identical hook pattern, build+lint green.
+
 ### [2026-05-31] - Claude Opus 4.8 (Phase 4 — 3D elevation: UnrealBloom + scroll dolly/fade on HeroScene3D)
 
 * **Status**: COMPLETE ✅ (core) — build green, 47/47 tests, lint 0 errors; tier-3 bloom verified rendering in headless with **0 WebGL/console errors**.

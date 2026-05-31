@@ -18,7 +18,7 @@ const COLOR = { red: '#ff3b3b', blue: '#4CC2FF', neutral: '#9B7DFF' }
 export default function ReticleCursor() {
   const { pathname } = useLocation()
   const reduced = useReducedMotionSafe()
-  const { intent, label, mode, setPosition } = useCursorStore()
+  const { intent, label, mode, setPosition, resetCursor } = useCursorStore()
 
   const px = useMotionValue(-200)
   const py = useMotionValue(-200)
@@ -48,6 +48,10 @@ export default function ReticleCursor() {
       html.removeAttribute('data-cursor-hidden')
     }
   }, [disabled, px, py, setPosition])
+
+  // Reset intent on route change so a hovered card/button label never sticks
+  // across pages when navigation fires before onMouseLeave.
+  useEffect(() => { resetCursor() }, [pathname, resetCursor])
 
   if (disabled) return null
 

@@ -1,10 +1,5 @@
 import useTilt from '../../hooks/useTilt'
-
-const ACCENT_BAR = {
-  'SC-01': 'linear-gradient(90deg, #ff3b3b, #ffaa00)',
-  'SC-02': 'linear-gradient(90deg, #ffaa00, #ff3b3b)',
-  'SC-03': 'linear-gradient(90deg, #3b8bff, #ff2244)',
-}
+import useCursorIntent from '../../hooks/useCursorIntent'
 
 const DIFFICULTY_TONE = {
   Beginner:     'badge-v3-green',
@@ -26,12 +21,16 @@ export default function ScenarioCard({
   onLaunch,
 }) {
   const { bind } = useTilt({ maxTilt: 5, spotlight: true })
+  const cursor = useCursorIntent({ intent: 'engage', label: 'ENGAGE', mode: 'red' })
   const diffCls = DIFFICULTY_TONE[scenario.difficulty] || DIFFICULTY_TONE.Intermediate
   const accentBg = 'var(--nb-accent-grad)'
 
   return (
     <div
-      {...bind}
+      ref={bind.ref}
+      onMouseMove={bind.onMouseMove}
+      onMouseEnter={cursor.bind.onMouseEnter}
+      onMouseLeave={() => { bind.onMouseLeave(); cursor.bind.onMouseLeave() }}
       role="button"
       tabIndex={0}
       onClick={onClick}

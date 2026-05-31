@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import useTilt from '../hooks/useTilt'
+import useCursorIntent from '../hooks/useCursorIntent'
 import { Badge } from '../components/ui'
 
 const LEVELS = [
@@ -71,6 +72,16 @@ export default function Onboarding() {
     intermediate: intermediateTilt.bind,
     experienced: experiencedTilt.bind,
   }
+  // Reticle intent per profile (red/blue/neutral tint)
+  const beginnerCursor = useCursorIntent({ intent: 'inspect', label: 'SELECT', mode: 'red' })
+  const intermediateCursor = useCursorIntent({ intent: 'inspect', label: 'SELECT', mode: 'blue' })
+  const experiencedCursor = useCursorIntent({ intent: 'inspect', label: 'SELECT', mode: 'neutral' })
+  const cursorByLevel = {
+    beginner: beginnerCursor.bind,
+    intermediate: intermediateCursor.bind,
+    experienced: experiencedCursor.bind,
+  }
+  const continueCursor = useCursorIntent({ intent: 'launch', label: 'INITIALIZE', mode: 'blue' })
 
   useEffect(() => {
     setMounted(true)
@@ -118,12 +129,14 @@ export default function Onboarding() {
           {LEVELS.map((level, index) => {
             const isSelected = selected === level.id
             const bind = tiltByLevel[level.id] || { ref: null, onMouseMove: () => {}, onMouseLeave: () => {} }
+            const cBind = cursorByLevel[level.id] || { onMouseEnter: () => {}, onMouseLeave: () => {} }
             return (
               <button
                 key={level.id}
                 ref={bind.ref}
                 onMouseMove={bind.onMouseMove}
-                onMouseLeave={bind.onMouseLeave}
+                onMouseEnter={cBind.onMouseEnter}
+                onMouseLeave={() => { bind.onMouseLeave(); cBind.onMouseLeave() }}
                 onClick={() => setSelected(level.id)}
                 style={{ transitionDelay: mounted ? `${160 + index * 80}ms` : '0ms' }}
                 className={`card-v3 tilt-target text-left p-5 min-h-[296px] border-2 transition-all duration-300 ${
@@ -163,6 +176,7 @@ export default function Onboarding() {
             type="button"
             disabled={!selected}
             onClick={handleContinue}
+            {...(selected ? continueCursor.bind : {})}
             className={`w-full max-w-xs btn-v3 ${selected ? 'btn-v3-blue animate-pulse' : 'opacity-40 cursor-not-allowed'}`}
           >
             Initialize Neural Link -&gt;
