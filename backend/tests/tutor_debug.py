@@ -10,7 +10,7 @@ from src.config import settings
 
 # Override URLs for host-to-container local access
 settings.REDIS_URL = "redis://127.0.0.1:6379/0"
-settings.POSTGRES_URL = "postgresql+asyncpg://cybersim:change_this_password@127.0.0.1:5432/cybersim"
+settings.POSTGRES_URL = "postgresql+asyncpg://parallax:change_this_password@127.0.0.1:5432/parallax"
 
 from src.cache.redis import init_redis, close_redis
 from src.ai.monitor import get_ai_hint

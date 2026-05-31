@@ -2,11 +2,11 @@
 
 ## 6.1 Chapter Purpose
 
-This chapter documents how CyberSim is installed, verified, and operated for a university lab or graduation defense. The goal is to show that the platform is not only designed and implemented, but also testable, repeatable, and recoverable.
+This chapter documents how Parallax is installed, verified, and operated for a university lab or graduation defense. The goal is to show that the platform is not only designed and implemented, but also testable, repeatable, and recoverable.
 
 ## 6.2 Testing Strategy
 
-CyberSim uses layered verification:
+Parallax uses layered verification:
 
 | Layer | Verification method | Purpose |
 | --- | --- | --- |
@@ -46,11 +46,11 @@ cp .env.example .env
 docker compose up -d
 ```
 
-After `.env` is created, set a real `JWT_SECRET`. Set `OPENROUTER_API_KEY` only if live AI Tutor responses are required. Without a provider key, CyberSim should still provide fallback guidance.
+After `.env` is created, set a real `JWT_SECRET`. Set `OPENROUTER_API_KEY` only if live AI Tutor responses are required. Without a provider key, Parallax should still provide fallback guidance.
 
 ## 6.5 Starting Scenario Profiles
 
-CyberSim keeps scenario services behind Compose profiles so that the operator can start only what is needed:
+Parallax keeps scenario services behind Compose profiles so that the operator can start only what is needed:
 
 ```bash
 docker compose --profile sc01 up -d
@@ -64,7 +64,7 @@ This is important for local machines with limited RAM. Elasticsearch and directo
 
 | Service | Local URL | Purpose |
 | --- | --- | --- |
-| Frontend | `http://localhost:3000` | Main CyberSim user interface |
+| Frontend | `http://localhost:3000` | Main Parallax user interface |
 | Backend API docs | `http://localhost:8001/api/docs` | FastAPI documentation and route inspection |
 | Backend health | `http://localhost:8001/health` | Basic service status |
 | Readiness endpoint | `http://localhost:8001/api/health/readiness` | Postgres, Redis, and Elasticsearch readiness |
@@ -138,8 +138,8 @@ Security checks before final export:
 - Confirm report screenshots do not expose API keys or tokens.
 - Confirm scenario documentation excludes full solution chains and lab-only secrets.
 - Confirm AI prompt and AI validation preserve Socratic guidance.
-- Confirm public-facing documentation says CyberSim is lab-only.
+- Confirm public-facing documentation says Parallax is lab-only.
 
 ## 6.12 Chapter Summary
 
-CyberSim is installed and operated through repeatable Docker Compose commands, scenario profiles, readiness scripts, and browser smoke tests. The testing approach combines automated checks with manual UX verification so that the final defense package can show both technical correctness and operational readiness.
+Parallax is installed and operated through repeatable Docker Compose commands, scenario profiles, readiness scripts, and browser smoke tests. The testing approach combines automated checks with manual UX verification so that the final defense package can show both technical correctness and operational readiness.

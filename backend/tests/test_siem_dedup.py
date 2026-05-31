@@ -16,7 +16,7 @@ def mock_redis():
 
     async def fake_set(key, value, ex=None, nx=False):
         if nx and key in _store:
-            return None  # NX failed — already exists
+            return None  # NX failed â€” already exists
         _store[key] = value
         return True
 
@@ -76,13 +76,13 @@ async def test_same_doc_emitted_once(mock_redis):
         scenario_id = "SC-02"
         active = {session_id: scenario_id}
 
-        # First call — should emit
-        dedup_key = f"cybersim:siem:emitted:{session_id}:{rule['id']}:{doc_id}"
+        # First call â€” should emit
+        dedup_key = f"parallax:siem:emitted:{session_id}:{rule['id']}:{doc_id}"
         already1 = await redis_mock.set(dedup_key, "1", ex=3600, nx=True)
         if already1:
             await fake_queue(session_id, {"rule_id": rule["id"]})
 
-        # Second call — same key, should NOT emit
+        # Second call â€” same key, should NOT emit
         already2 = await redis_mock.set(dedup_key, "1", ex=3600, nx=True)
         if already2:
             await fake_queue(session_id, {"rule_id": rule["id"]})
@@ -101,7 +101,7 @@ async def test_different_docs_both_emitted(mock_redis):
     rule_id = "sc02.kerberoast"
 
     for doc_id in ("doc-111", "doc-222"):
-        dedup_key = f"cybersim:siem:emitted:{session_id}:{rule_id}:{doc_id}"
+        dedup_key = f"parallax:siem:emitted:{session_id}:{rule_id}:{doc_id}"
         result = await redis_mock.set(dedup_key, "1", ex=3600, nx=True)
         if result:
             emitted_count += 1
@@ -119,7 +119,7 @@ async def test_different_sessions_both_emitted(mock_redis):
     rule_id = "sc02.kerberoast"
 
     for session_id in ("sess-A", "sess-B"):
-        dedup_key = f"cybersim:siem:emitted:{session_id}:{rule_id}:{doc_id}"
+        dedup_key = f"parallax:siem:emitted:{session_id}:{rule_id}:{doc_id}"
         result = await redis_mock.set(dedup_key, "1", ex=3600, nx=True)
         if result:
             emitted_count += 1

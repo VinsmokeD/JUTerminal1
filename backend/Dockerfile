@@ -23,9 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 
 # Non-root user for security
-RUN adduser --system --no-create-home --group cybersim \
-    && chown -R cybersim:cybersim /app
-USER cybersim
+RUN adduser --system --no-create-home --group parallax \
+    && chown -R parallax:parallax /app
+USER parallax
 
 EXPOSE 8000
 

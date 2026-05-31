@@ -1,9 +1,9 @@
 """
-Phase 28 — Scenario Depth, Randomization & Dynamic Security.
+Phase 28 â€” Scenario Depth, Randomization & Dynamic Security.
 
 Deterministic session-level randomization seeded from MD5(session_id).
 
-Default CyberSim sessions now use the static YAML flag values because instructor
+Default Parallax sessions now use the static YAML flag values because instructor
 demos, docs, and the AI tutor all teach from the published scenario artifacts.
 Randomization remains available only when the session start API explicitly asks
 for it. This keeps viva/demo runs reproducible while preserving the production
@@ -27,7 +27,7 @@ from src.scenarios.loader import load_scenario
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Bypass IDs — never randomized
+# Bypass IDs â€” never randomized
 # ---------------------------------------------------------------------------
 _BYPASS_EXACT: set[str] = {"demo"}
 _BYPASS_PREFIX: str = "test"
@@ -85,13 +85,13 @@ _SC03_SUBJECTS: list[str] = [
     "Urgent: IT Security Policy Update Required",
     "Action Required: Employee Benefits Review",
     "Important: System Maintenance Notification",
-    "Quarterly Compliance Training — Mandatory",
+    "Quarterly Compliance Training â€” Mandatory",
 ]
 _SC03_PRETEXTS: list[str] = [
-    "HR Department — benefits enrollment window closing soon",
-    "IT Helpdesk — password expiry in 24 hours",
-    "Finance Department — payroll update required",
-    "Compliance Team — mandatory policy acknowledgment",
+    "HR Department â€” benefits enrollment window closing soon",
+    "IT Helpdesk â€” password expiry in 24 hours",
+    "Finance Department â€” payroll update required",
+    "Compliance Team â€” mandatory policy acknowledgment",
 ]
 _SC03_RELAY_ROUTES: list[str] = [
     "mail.orion-logistics.sim",
@@ -198,7 +198,7 @@ def generate_randomized_session_metadata(
         )
         return {
             "seed": get_seed(session_id),
-            "scenario_variant": pretext.split("—")[0].strip(),
+            "scenario_variant": pretext.split("â€”")[0].strip(),
             "target_ip": target_ip,
             "phish_subject": subject,
             "victim_pretext": pretext,
@@ -246,7 +246,7 @@ def build_iptables_rules(
     return [
         # Add loopback alias for the virtual IP
         f"ip addr add {virtual_ip}/32 dev lo 2>/dev/null || true",
-        # DNAT: traffic to virtual_ip → real_ip
+        # DNAT: traffic to virtual_ip â†’ real_ip
         f"iptables -t nat -A OUTPUT -d {virtual_ip} -j DNAT --to-destination {real_ip} 2>/dev/null || true",
         f"iptables -t nat -A PREROUTING -d {virtual_ip} -j DNAT --to-destination {real_ip} 2>/dev/null || true",
     ]
@@ -292,7 +292,7 @@ async def apply_randomization(
     try:
         import docker  # type: ignore[import]
     except ImportError:
-        logger.warning("[randomizer] docker SDK not available — skipping apply_randomization")
+        logger.warning("[randomizer] docker SDK not available â€” skipping apply_randomization")
         return
 
     try:
@@ -301,7 +301,7 @@ async def apply_randomization(
         logger.warning("[randomizer] Docker unavailable: %s", exc)
         return
 
-    # ── 1. iptables NAT alias inside Kali ──────────────────────────────────
+    # â”€â”€ 1. iptables NAT alias inside Kali â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     rules = build_iptables_rules(session_id, scenario_id, metadata)
     if rules:
         try:
@@ -316,7 +316,7 @@ async def apply_randomization(
         except Exception as exc:
             logger.warning("[randomizer] iptables injection failed: %s", exc)
 
-    # ── 2. Flag file injection into scenario target containers ──────────────
+    # â”€â”€ 2. Flag file injection into scenario target containers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     scid = scenario_id.upper()
     flag_path: str = metadata.get("flag_path", "")
     flags: dict[str, Any] = metadata.get("flags", {})
@@ -325,20 +325,20 @@ async def apply_randomization(
         flag_entry = flags.get("FLAG-SC01-1", {})
         flag_value: str = flag_entry.get("value", "")
         if flag_value:
-            _inject_flag_file(client, "cybersim-sc01-webapp-1", flag_path, flag_value)
+            _inject_flag_file(client, "parallax-sc01-webapp-1", flag_path, flag_value)
 
     elif scid == "SC-02" and flags:
         flag_entry = flags.get("FLAG-SC02-1", {})
         flag_value = flag_entry.get("value", "")
         if flag_value:
-            _inject_flag_file(client, "cybersim-sc02-dc-1", "/root/flag.txt", flag_value)
+            _inject_flag_file(client, "parallax-sc02-dc-1", "/root/flag.txt", flag_value)
 
     elif scid == "SC-03" and flags:
         flag_entry = flags.get("FLAG-SC03-1", {})
         flag_value = flag_entry.get("value", "")
         if flag_value:
             _inject_flag_file(
-                client, "cybersim-sc03-victim-1", "/tmp/flag.txt", flag_value
+                client, "parallax-sc03-victim-1", "/tmp/flag.txt", flag_value
             )  # noqa: S108
 
 
@@ -356,7 +356,7 @@ def _inject_flag_file(
         # Ensure parent dir exists
         container.exec_run(["mkdir", "-p", dest_dir], user="root")
         container.put_archive(dest_dir, tar_bytes)
-        logger.info("[randomizer] Flag injected → %s:%s", container_name, flag_path)
+        logger.info("[randomizer] Flag injected â†’ %s:%s", container_name, flag_path)
     except Exception as exc:
         logger.warning(
             "[randomizer] Flag injection failed for %s@%s: %s",

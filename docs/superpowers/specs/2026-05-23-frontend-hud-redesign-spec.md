@@ -1,4 +1,4 @@
-# CyberSim Immersive HUD Design Spec (Approved)
+# Parallax Immersive HUD Design Spec (Approved)
 
 **Date:** 2026-05-23
 **Status:** Approved

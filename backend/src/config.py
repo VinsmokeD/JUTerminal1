@@ -13,10 +13,10 @@ class Settings(BaseSettings):
     # Default instructor account seeded on first boot. Override in any shared
     # deployment; the default password is rejected in production (see below).
     ADMIN_USERNAME: str = "admin"
-    ADMIN_PASSWORD: str = "CyberSimAdmin!"
+    ADMIN_PASSWORD: str = "ParallaxAdmin!"
 
     # Database
-    POSTGRES_URL: str = "postgresql+asyncpg://cybersim:cybersim@postgres:5432/cybersim"
+    POSTGRES_URL: str = "postgresql+asyncpg://parallax:parallax@postgres:5432/parallax"
 
     # Redis
     REDIS_URL: str = "redis://redis:6379/0"
@@ -31,10 +31,10 @@ class Settings(BaseSettings):
     # OpenRouter AI (OpenAI-compatible)
     OPENROUTER_API_KEY: str = ""
     # Smarter model choices (set in .env to override):
-    #   google/gemini-2.0-flash-001       — fast, smart, affordable (default)
-    #   anthropic/claude-3-5-haiku-20241022 — best Socratic quality
-    #   anthropic/claude-3-5-sonnet-20241022 — maximum quality, higher cost
-    #   deepseek/deepseek-chat-v3-0324    — previous default, still good
+    #   google/gemini-2.0-flash-001       â€” fast, smart, affordable (default)
+    #   anthropic/claude-3-5-haiku-20241022 â€” best Socratic quality
+    #   anthropic/claude-3-5-sonnet-20241022 â€” maximum quality, higher cost
+    #   deepseek/deepseek-chat-v3-0324    â€” previous default, still good
     OPENROUTER_MODEL: str = "google/gemini-2.0-flash-001"
     OPENROUTER_MAX_TOKENS: int = 500
     AI_CALL_COOLDOWN_SECONDS: int = 10
@@ -43,13 +43,13 @@ class Settings(BaseSettings):
     AI_USER_DAILY_TOKEN_BUDGET: int = 100000
     AI_USER_HOURLY_CALL_LIMIT: int = 50
     AI_GLOBAL_DAILY_TOKEN_BUDGET: int = 2000000
-    AI_HTTP_REFERER: str = "https://cybersim.local"
-    AI_X_TITLE: str = "CyberSim AI Tutor"
+    AI_HTTP_REFERER: str = "https://parallax.local"
+    AI_X_TITLE: str = "Parallax AI Tutor"
 
     # Docker / Sandbox
     DOCKER_SOCKET: str = "/var/run/docker.sock"
     SCENARIO_NETWORK_PREFIX: str = "172.20"
-    KALI_IMAGE: str = "cybersim-kali:latest"
+    KALI_IMAGE: str = "parallax-kali:latest"
     MAX_CONCURRENT_SESSIONS: int = 10
     CONTAINER_CPU_LIMIT: float = 1.0
     CONTAINER_MEMORY_LIMIT: str = "512m"
@@ -70,7 +70,7 @@ if settings.ENVIRONMENT == "production" and settings.JWT_SECRET == _INSECURE_SEC
         "Generate one with: openssl rand -hex 32"
     )
 
-_INSECURE_ADMIN_PASSWORD = "CyberSimAdmin!"
+_INSECURE_ADMIN_PASSWORD = "ParallaxAdmin!"
 if settings.ENVIRONMENT == "production" and settings.ADMIN_PASSWORD == _INSECURE_ADMIN_PASSWORD:
     raise RuntimeError(
         "ADMIN_PASSWORD must be changed from the default before running in production. "
@@ -80,7 +80,7 @@ elif settings.ENVIRONMENT != "test" and settings.ADMIN_PASSWORD == _INSECURE_ADM
     import logging
 
     logging.getLogger(__name__).warning(
-        "Default admin password in use (admin / CyberSimAdmin!). "
+        "Default admin password in use (admin / ParallaxAdmin!). "
         "Set ADMIN_PASSWORD for any shared deployment."
     )
 

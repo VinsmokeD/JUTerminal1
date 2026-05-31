@@ -1,24 +1,24 @@
-# CyberSim Documentation Index
+# Parallax Documentation Index
 
-> **Updated 2026-05-31** — WS3–WS9 complete. See [MASTER_FINALIZATION_PLAN](architecture/MASTER_FINALIZATION_PLAN.md) for the active plan.
+> **Updated 2026-05-31** â€” WS3â€“WS9 complete. See [MASTER_FINALIZATION_PLAN](architecture/MASTER_FINALIZATION_PLAN.md) for the active plan.
 
 ## Core Docs (start here)
 
-- [Project README](../README.md) — project overview, 98/100 self-assessment
-- [Architecture](ARCHITECTURE.md) — system architecture overview
-- [Master Finalization Plan](architecture/MASTER_FINALIZATION_PLAN.md) — **active plan** (supersedes all older plan docs)
-- [Continuous State Log](architecture/CONTINUOUS_STATE.md) — rolling change log (all agents)
-- [CONTINUE_HERE](../CONTINUE_HERE.md) — cold-start resumption guide
+- [Project README](../README.md) â€” project overview, 98/100 self-assessment
+- [Architecture](ARCHITECTURE.md) â€” system architecture overview
+- [Master Finalization Plan](architecture/MASTER_FINALIZATION_PLAN.md) â€” **active plan** (supersedes all older plan docs)
+- [Continuous State Log](architecture/CONTINUOUS_STATE.md) â€” rolling change log (all agents)
+- [CONTINUE_HERE](../CONTINUE_HERE.md) â€” cold-start resumption guide
 
 ## Subsystem Docs
 
-- [AI System](AI_SYSTEM.md) — OpenRouter/DeepSeek tutor architecture
-- [Scoring](SCORING.md) — scoring engine + breakdown
-- [Security Threat Model](SECURITY_THREAT_MODEL.md) — STRIDE, R1–R6
-- [Terminal Proxy](architecture/terminal-proxy.md) — xterm.js ↔ Docker exec
-- [Scenario Provisioning](architecture/scenario-provisioning.md) — container lifecycle
-- [Network & Environment](architecture/network-and-environment.md) — isolation model
-- [Motion System](architecture/MOTION_SYSTEM.md) — frontend 3D/motion
+- [AI System](AI_SYSTEM.md) â€” OpenRouter/DeepSeek tutor architecture
+- [Scoring](SCORING.md) â€” scoring engine + breakdown
+- [Security Threat Model](SECURITY_THREAT_MODEL.md) â€” STRIDE, R1â€“R6
+- [Terminal Proxy](architecture/terminal-proxy.md) â€” xterm.js â†” Docker exec
+- [Scenario Provisioning](architecture/scenario-provisioning.md) â€” container lifecycle
+- [Network & Environment](architecture/network-and-environment.md) â€” isolation model
+- [Motion System](architecture/MOTION_SYSTEM.md) â€” frontend 3D/motion
 
 ## Scenario Content
 
@@ -31,13 +31,13 @@
 
 ## Operations
 
-- [Demo Runbook](CYBERSIM_DEMO_RUNBOOK.md)
+- [Demo Runbook](PARALLAX_DEMO_RUNBOOK.md)
 - [Getting Started](GETTING_STARTED.md)
 - [Deployment](DEPLOYMENT.md)
 
 ## Historical / Archived
 
-- [docs/history/](history/) — archived plan docs (MASTER_ENHANCEMENT_PLAN, EXECUTION_ROADMAP_V2, etc.)
+- [docs/history/](history/) â€” archived plan docs (MASTER_ENHANCEMENT_PLAN, EXECUTION_ROADMAP_V2, etc.)
 - [Continuous State Archive](history/CONTINUOUS_STATE_ARCHIVE_2026-05-29.md)
 
 ## Current MVP Scope

@@ -2,7 +2,7 @@
 
 ## 3.1 Feasibility Study
 
-CyberSim is feasible as a university graduation project because its runtime architecture uses widely available open-source technologies and a single-node Docker deployment model. The platform avoids expensive cloud-only dependencies by running the frontend, backend, database, cache, SIEM services, and scenario containers on one Docker host.
+Parallax is feasible as a university graduation project because its runtime architecture uses widely available open-source technologies and a single-node Docker deployment model. The platform avoids expensive cloud-only dependencies by running the frontend, backend, database, cache, SIEM services, and scenario containers on one Docker host.
 
 Technical feasibility is supported by:
 
@@ -76,7 +76,7 @@ The requirements were derived from:
 
 ## 3.6 Security and Safety Requirements
 
-CyberSim is an educational platform. Its safety requirements are mandatory:
+Parallax is an educational platform. Its safety requirements are mandatory:
 
 - All scenario activity must remain inside Docker-isolated networks.
 - The platform must not be used against real external systems.
@@ -98,7 +98,7 @@ CyberSim is an educational platform. Its safety requirements are mandatory:
 
 ## 3.8 Educational Requirements
 
-CyberSim should teach:
+Parallax should teach:
 
 - Structured methodology such as PTES and incident response reasoning.
 - OWASP-style web application testing through SC-01.
@@ -126,7 +126,7 @@ Each scenario must define:
 
 ## 3.10 Data Requirements
 
-CyberSim must persist:
+Parallax must persist:
 
 - Users and roles.
 - Sessions and lifecycle state.
@@ -139,7 +139,7 @@ CyberSim must persist:
 - Simulated containment actions.
 - Report/debrief source data.
 
-CyberSim must avoid persisting:
+Parallax must avoid persisting:
 
 - Real secrets.
 - Unbounded raw terminal output.

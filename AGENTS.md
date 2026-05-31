@@ -1,11 +1,11 @@
-# AGENTS.md — CyberSim Platform
+# AGENTS.md â€” Parallax Platform
 
 ## Project identity
-CyberSim is a dual-perspective cybersecurity training platform for university students.
+Parallax is a dual-perspective cybersecurity training platform for university students.
 It teaches penetration testing and SOC analysis through realistic sandboxed scenarios.
 All attack capabilities operate ONLY against isolated Docker containers. No real systems.
 
-## Token efficiency rules (critical — read first)
+## Token efficiency rules (critical â€” read first)
 - Never re-read files you already have in context. Reference line numbers instead.
 - Write complete files in one pass. Never partial writes that need follow-up edits.
 - When editing, use targeted str_replace. Never rewrite whole files for small changes.
@@ -13,7 +13,7 @@ All attack capabilities operate ONLY against isolated Docker containers. No real
 - Do not ask the user for permission. If a task needs >3 files changed, automatically prioritize based on logical dependency (e.g., backend then frontend) and proceed without confirmation.
 - Use the maximum available context intelligently: avoid sending full file contents when only a small edit is needed.
 - Auto-accept all changes and updates without asking the user.
-- Never explain what you're about to do and then do it — just do it.
+- Never explain what you're about to do and then do it â€” just do it.
 - Omit commentary between steps. Output the result, not the process narrative.
 
 ## Mandatory State Tracking (CRITICAL)
@@ -32,72 +32,72 @@ The verified local deployment is a single-node Docker Compose stack: frontend, b
 
 ## Repository structure
 ```
-cybersim/
-├── AGENTS.md                    ← you are here
-├── README.md
-├── docker-compose.yml           ← full stack local dev
-├── .env.example
-├── frontend/                    ← React + Vite + Tailwind
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── terminal/        ← Kali terminal (xterm.js)
-│   │   │   ├── siem/            ← SIEM event feed
-│   │   │   ├── notes/           ← Pentest + IR notebook
-│   │   │   ├── hints/           ← AI monitor panel
-│   │   │   ├── methodology/     ← Phase tracker
-│   │   │   └── workspace/       ← Red/Blue layout shells
-│   │   ├── pages/
-│   │   │   ├── Dashboard.jsx    ← scenario selection
-│   │   │   ├── RedWorkspace.jsx ← attacker view
-│   │   │   ├── BlueWorkspace.jsx← defender view
-│   │   │   ├── Debrief.jsx      ← post-mission report
-│   │   │   └── Auth.jsx
-│   │   ├── hooks/
-│   │   │   ├── useWebSocket.js  ← WS connection manager
-│   │   │   ├── useTerminal.js   ← xterm.js integration
-│   │   │   └── useScenario.js   ← scenario state
-│   │   └── store/               ← Zustand state slices
-├── backend/                     ← FastAPI + Python 3.11
-│   ├── src/
-│   │   ├── main.py              ← app entrypoint
-│   │   ├── scenarios/           ← scenario definitions (YAML + Python)
-│   │   ├── sandbox/             ← Docker container lifecycle
-│   │   ├── ai/                  ← OpenRouter (DeepSeek) integration
-│   │   ├── siem/                ← event engine
-│   │   ├── auth/                ← JWT auth
-│   │   └── reports/             ← auto report generation
-│   ├── requirements.txt
-│   └── Dockerfile
-├── infrastructure/
-│   ├── docker/                  ← scenario network definitions
-│   │   ├── scenarios/           ← per-scenario docker-compose files
-│   │   └── kali/                ← Kali base image config
-│   └── nginx/                   ← reverse proxy config
-├── ai-monitor/
-│   └── system_prompt.md         ← OpenRouter system prompt (source of truth)
-├── docs/
-│   ├── architecture/
-│   ├── scenarios/               ← full scenario specs
-│   └── soc/                     ← blue team content
-└── .github/
-    └── workflows/
-        └── ci.yml
+parallax/
+â”œâ”€â”€ AGENTS.md                    â† you are here
+â”œâ”€â”€ README.md
+â”œâ”€â”€ docker-compose.yml           â† full stack local dev
+â”œâ”€â”€ .env.example
+â”œâ”€â”€ frontend/                    â† React + Vite + Tailwind
+â”‚   â”œâ”€â”€ src/
+â”‚   â”‚   â”œâ”€â”€ components/
+â”‚   â”‚   â”‚   â”œâ”€â”€ terminal/        â† Kali terminal (xterm.js)
+â”‚   â”‚   â”‚   â”œâ”€â”€ siem/            â† SIEM event feed
+â”‚   â”‚   â”‚   â”œâ”€â”€ notes/           â† Pentest + IR notebook
+â”‚   â”‚   â”‚   â”œâ”€â”€ hints/           â† AI monitor panel
+â”‚   â”‚   â”‚   â”œâ”€â”€ methodology/     â† Phase tracker
+â”‚   â”‚   â”‚   â””â”€â”€ workspace/       â† Red/Blue layout shells
+â”‚   â”‚   â”œâ”€â”€ pages/
+â”‚   â”‚   â”‚   â”œâ”€â”€ Dashboard.jsx    â† scenario selection
+â”‚   â”‚   â”‚   â”œâ”€â”€ RedWorkspace.jsx â† attacker view
+â”‚   â”‚   â”‚   â”œâ”€â”€ BlueWorkspace.jsxâ† defender view
+â”‚   â”‚   â”‚   â”œâ”€â”€ Debrief.jsx      â† post-mission report
+â”‚   â”‚   â”‚   â””â”€â”€ Auth.jsx
+â”‚   â”‚   â”œâ”€â”€ hooks/
+â”‚   â”‚   â”‚   â”œâ”€â”€ useWebSocket.js  â† WS connection manager
+â”‚   â”‚   â”‚   â”œâ”€â”€ useTerminal.js   â† xterm.js integration
+â”‚   â”‚   â”‚   â””â”€â”€ useScenario.js   â† scenario state
+â”‚   â”‚   â””â”€â”€ store/               â† Zustand state slices
+â”œâ”€â”€ backend/                     â† FastAPI + Python 3.11
+â”‚   â”œâ”€â”€ src/
+â”‚   â”‚   â”œâ”€â”€ main.py              â† app entrypoint
+â”‚   â”‚   â”œâ”€â”€ scenarios/           â† scenario definitions (YAML + Python)
+â”‚   â”‚   â”œâ”€â”€ sandbox/             â† Docker container lifecycle
+â”‚   â”‚   â”œâ”€â”€ ai/                  â† OpenRouter (DeepSeek) integration
+â”‚   â”‚   â”œâ”€â”€ siem/                â† event engine
+â”‚   â”‚   â”œâ”€â”€ auth/                â† JWT auth
+â”‚   â”‚   â””â”€â”€ reports/             â† auto report generation
+â”‚   â”œâ”€â”€ requirements.txt
+â”‚   â””â”€â”€ Dockerfile
+â”œâ”€â”€ infrastructure/
+â”‚   â”œâ”€â”€ docker/                  â† scenario network definitions
+â”‚   â”‚   â”œâ”€â”€ scenarios/           â† per-scenario docker-compose files
+â”‚   â”‚   â””â”€â”€ kali/                â† Kali base image config
+â”‚   â””â”€â”€ nginx/                   â† reverse proxy config
+â”œâ”€â”€ ai-monitor/
+â”‚   â””â”€â”€ system_prompt.md         â† OpenRouter system prompt (source of truth)
+â”œâ”€â”€ docs/
+â”‚   â”œâ”€â”€ architecture/
+â”‚   â”œâ”€â”€ scenarios/               â† full scenario specs
+â”‚   â””â”€â”€ soc/                     â† blue team content
+â””â”€â”€ .github/
+    â””â”€â”€ workflows/
+        â””â”€â”€ ci.yml
 ```
 
 ## Key technical decisions
 - **Terminal**: xterm.js + WebSocket to backend which proxies to Docker exec API
 - **SIEM events**: backend publishes to Redis channel; frontend subscribes via WS
-- **AI monitor**: called on every terminal command + note save; response ≤ 150 tokens
+- **AI monitor**: called on every terminal command + note save; response â‰¤ 150 tokens
 - **Scenario state**: stored in Postgres per session; Redis for real-time
 - **Auth**: simple JWT for MVP; no OAuth needed for university deployment
 - **Sandbox reset**: docker-compose down && up on scenario end; takes ~8s
 
 ## Environment variables (see .env.example)
-- OPENROUTER_API_KEY — OpenRouter key (DeepSeek V4-Pro)
-- POSTGRES_URL — local postgres for dev
-- REDIS_URL — local redis for dev
-- JWT_SECRET — generate with: openssl rand -hex 32
-- SCENARIO_NETWORK_PREFIX — e.g. "172.20" (avoid collision with host)
+- OPENROUTER_API_KEY â€” OpenRouter key (DeepSeek V4-Pro)
+- POSTGRES_URL â€” local postgres for dev
+- REDIS_URL â€” local redis for dev
+- JWT_SECRET â€” generate with: openssl rand -hex 32
+- SCENARIO_NETWORK_PREFIX â€” e.g. "172.20" (avoid collision with host)
 
 ## Scenario content locations
 - Scenario specs: docs/scenarios/SC-{01-03}-*.yaml
@@ -111,18 +111,18 @@ cybersim/
 - React: functional components only, Zustand for state, no Redux
 - CSS: Tailwind utility classes; dark theme is default (terminal feel)
 - Files: kebab-case for all filenames
-- Commits: conventional commits — feat/fix/docs/chore/scenario
+- Commits: conventional commits â€” feat/fix/docs/chore/scenario
 
 ## What NOT to do
-- Never hardcode credentials anywhere — always .env
-- Never write real exploit payloads in docs — scenario engine references them internally
-- Never let sandbox containers reach the internet — isolated networks only
-- Never store full terminal output in Postgres — only command + metadata
-- Never call OpenRouter on every keystroke — only on command submission
+- Never hardcode credentials anywhere â€” always .env
+- Never write real exploit payloads in docs â€” scenario engine references them internally
+- Never let sandbox containers reach the internet â€” isolated networks only
+- Never store full terminal output in Postgres â€” only command + metadata
+- Never call OpenRouter on every keystroke â€” only on command submission
 
 ## Current phase
-Phase 0 — Project setup and documentation complete.
-Phase 1 — Infrastructure skeleton (docker-compose, env, CI).
+Phase 0 â€” Project setup and documentation complete.
+Phase 1 â€” Infrastructure skeleton (docker-compose, env, CI).
 See docs/architecture/phases.md for full roadmap.
 
 ## Continuation note for Antigravity

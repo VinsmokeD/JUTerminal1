@@ -1,4 +1,4 @@
-"""Config tests — admin credentials are configurable (security: no hardcoded default)."""
+"""Config tests â€” admin credentials are configurable (security: no hardcoded default)."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from src.config import Settings
 def test_admin_credentials_default():
     s = Settings()
     assert s.ADMIN_USERNAME == "admin"
-    assert s.ADMIN_PASSWORD == "CyberSimAdmin!"
+    assert s.ADMIN_PASSWORD == "ParallaxAdmin!"
 
 
 def test_admin_password_is_env_overridable(monkeypatch):

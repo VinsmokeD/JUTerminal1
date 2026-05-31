@@ -6,16 +6,16 @@ import { useSessionStore } from '../../store/sessionStore'
 import useFocusTrap from '../../hooks/useFocusTrap'
 
 /**
- * CommandPalette — global ⌘K (Ctrl+K) command launcher.
+ * CommandPalette â€” global âŒ˜K (Ctrl+K) command launcher.
  *
  * Behaviour:
- *   - ⌘K / Ctrl+K toggles the palette globally
+ *   - âŒ˜K / Ctrl+K toggles the palette globally
  *   - / focuses the search when palette is open
  *   - Arrow keys navigate items; Enter executes; Escape closes
  *   - Items have a `where` (route or function) and `tone` for the leading icon
  *
  * Performance: portal-mounted, render-on-demand, list virtualization not
- * needed (≤20 items). Single keydown listener on window.
+ * needed (â‰¤20 items). Single keydown listener on window.
  */
 
 const ITEM_TONE = {
@@ -31,10 +31,10 @@ const TIP_ITEMS = [
   { id: 'dashboard',   section: 'Navigate', label: 'Dashboard',          hint: 'Choose a scenario to launch',    tone: 'blue',    kbd: 'G D', to: '/dashboard' },
   { id: 'onboard',     section: 'Navigate', label: 'Onboarding',         hint: 'Walkthrough for new operators',  tone: 'amber',   to: '/onboarding' },
   { id: 'settings',    section: 'Navigate', label: 'Settings',           hint: 'Preferences, terminal defaults, learning mode', tone: 'neutral', kbd: 'G S', to: '/settings' },
-  { id: 'sc01',        section: 'Scenarios', label: 'SC-01 — NovaMed Healthcare', hint: 'Web app pentest (OWASP)',  tone: 'red',  kbd: '1', scenarioId: 'SC-01' },
-  { id: 'sc02',        section: 'Scenarios', label: 'SC-02 — Nexora Financial',   hint: 'Active Directory (Kerberoasting)', tone: 'red', kbd: '2', scenarioId: 'SC-02' },
-  { id: 'sc03',        section: 'Scenarios', label: 'SC-03 — Orion Logistics',    hint: 'Phishing campaign (GoPhish)', tone: 'red', kbd: '3', scenarioId: 'SC-03' },
-  { id: 'logout',      section: 'Account',  label: 'Sign out',           hint: 'End your CyberSim session',       tone: 'neutral', action: 'logout' },
+  { id: 'sc01',        section: 'Scenarios', label: 'SC-01 â€” NovaMed Healthcare', hint: 'Web app pentest (OWASP)',  tone: 'red',  kbd: '1', scenarioId: 'SC-01' },
+  { id: 'sc02',        section: 'Scenarios', label: 'SC-02 â€” Nexora Financial',   hint: 'Active Directory (Kerberoasting)', tone: 'red', kbd: '2', scenarioId: 'SC-02' },
+  { id: 'sc03',        section: 'Scenarios', label: 'SC-03 â€” Orion Logistics',    hint: 'Phishing campaign (GoPhish)', tone: 'red', kbd: '3', scenarioId: 'SC-03' },
+  { id: 'logout',      section: 'Account',  label: 'Sign out',           hint: 'End your Parallax session',       tone: 'neutral', action: 'logout' },
 ]
 
 const TARGET_IPS = {
@@ -120,7 +120,7 @@ export default function CommandPalette() {
     return [...TIP_ITEMS, ...dynamic]
   }, [currentSession, aiMode])
 
-  // ── Global ⌘K / Ctrl+K trigger ────────────────────────────────
+  // â”€â”€ Global âŒ˜K / Ctrl+K trigger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const onKey = (e) => {
       const mod = e.metaKey || e.ctrlKey
@@ -140,7 +140,7 @@ export default function CommandPalette() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  // ── Lock scroll when open + focus search ──────────────────────
+  // â”€â”€ Lock scroll when open + focus search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
@@ -279,7 +279,7 @@ export default function CommandPalette() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search routes, scenarios, actions…"
+              placeholder="Search routes, scenarios, actionsâ€¦"
               className="flex-1 bg-transparent outline-none text-txt-primary text-sm font-display placeholder:text-txt-dim"
             />
             <kbd className="font-mono text-[10.5px] text-txt-dim border border-cs-border rounded px-1.5 py-0.5">ESC</kbd>
@@ -289,7 +289,7 @@ export default function CommandPalette() {
           <div ref={listRef} className="flex-1 overflow-y-auto py-2">
             {grouped.length === 0 ? (
               <div className="px-4 py-8 text-center text-txt-dim text-sm font-mono">
-                No matches for “{query}”
+                No matches for â€œ{query}â€
               </div>
             ) : grouped.map((g) => (
               <div key={g.section} className="py-1.5">
@@ -330,16 +330,16 @@ export default function CommandPalette() {
           {/* Footer hint */}
           <div className="flex items-center justify-between px-4 py-2.5 border-t border-cs-border text-[10.5px] font-mono text-txt-dim">
             <span className="flex items-center gap-2">
-              <kbd className="border border-cs-border rounded px-1 py-px">↑</kbd>
-              <kbd className="border border-cs-border rounded px-1 py-px">↓</kbd>
+              <kbd className="border border-cs-border rounded px-1 py-px">â†‘</kbd>
+              <kbd className="border border-cs-border rounded px-1 py-px">â†“</kbd>
               Navigate
             </span>
             <span className="flex items-center gap-2">
-              <kbd className="border border-cs-border rounded px-1.5 py-px">↵</kbd>
+              <kbd className="border border-cs-border rounded px-1.5 py-px">â†µ</kbd>
               Open
             </span>
             <span className="flex items-center gap-2">
-              <kbd className="border border-cs-border rounded px-1 py-px">⌘</kbd>
+              <kbd className="border border-cs-border rounded px-1 py-px">âŒ˜</kbd>
               <kbd className="border border-cs-border rounded px-1 py-px">K</kbd>
               Toggle
             </span>

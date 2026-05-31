@@ -1,6 +1,6 @@
-# CyberSim 10-Minute Academic Demo Runbook
+# Parallax 10-Minute Academic Demo Runbook
 
-**Goal**: Demonstrate CyberSim as a dual-perspective cybersecurity training platform: one student acts as Red Team in a real Kali-backed terminal while the Blue Team observes matching telemetry, notes, scoring, and report output.
+**Goal**: Demonstrate Parallax as a dual-perspective cybersecurity training platform: one student acts as Red Team in a real Kali-backed terminal while the Blue Team observes matching telemetry, notes, scoring, and report output.
 
 ## Pre-Demo Setup
 
@@ -34,7 +34,7 @@ Run this 5 to 10 minutes before presenting.
 
 ## 0:00 - 2:00: Concept And Scope
 
-Explain that CyberSim connects offensive and defensive learning in one safe local lab. Red Team actions happen only inside Docker-isolated scenario networks. Blue Team telemetry is generated from those same actions, so students see cause and effect rather than a disconnected lecture.
+Explain that Parallax connects offensive and defensive learning in one safe local lab. Red Team actions happen only inside Docker-isolated scenario networks. Blue Team telemetry is generated from those same actions, so students see cause and effect rather than a disconnected lecture.
 
 Show the dashboard and point out the three MVP scenarios:
 

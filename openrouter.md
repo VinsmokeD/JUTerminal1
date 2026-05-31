@@ -1,9 +1,9 @@
-# OPENROUTER.md — The Project Law & Data Schema
+# OPENROUTER.md â€” The Project Law & Data Schema
 
-## 🟢 Data-First Standard (Mandatory)
+## ðŸŸ¢ Data-First Standard (Mandatory)
 All processing begins with a defined schema. No coding in `tools/` until the "Payload" shape is defined here.
 
-## 🟢 Behavioral Rules
+## ðŸŸ¢ Behavioral Rules
 - **Layered Architecture (A.N.T.)**:
   - Layer 1: SOPs in `architecture/`.
   - Layer 2: Navigation (LLM decision routing).
@@ -14,7 +14,7 @@ All processing begins with a defined schema. No coding in `tools/` until the "Pa
 - **Mandatory Pre-Flight Read**: Before planning or editing logic, you MUST read `PROJECT_UNDERSTANDING.md`, `.antigravity-rules.md`, `claude.md`, `docs/architecture/MASTER_BLUEPRINT.md`, and `docs/architecture/CONTINUOUS_STATE.md` to ensure your context is synchronized.
 - **Mandatory State Tracking**: You MUST synchronously append every change, planning output, or significant finding to `docs/architecture/CONTINUOUS_STATE.md` using the exact format specified in that file before concluding your processing.
 - **No Conceptual Drift**: All theoretical planning must firmly align with existing infrastructure (`docker-compose.yml` and `.env.example`). Never invent new ports, env variables, or services without formally updating those core foundation files first.
-- **CyberSim Compliance**:
+- **Parallax Compliance**:
   - Isolated Docker containers ONLY. No internet access from within containers.
   - No real exploit payloads in filenames or source code (use reference IDs).
   - Every Python file must pass `black .` and `mypy .`.
@@ -22,7 +22,7 @@ All processing begins with a defined schema. No coding in `tools/` until the "Pa
   - Use `.tmp/` for all intermediate file operations.
   - No placeholders. All images/assets must be generated or provided.
 
-## 🟢 Data Schema (Input/Output shapes)
+## ðŸŸ¢ Data Schema (Input/Output shapes)
 
 ### 1. Terminal Stream (WebSocket)
 **Input (Frontend -> Backend):**
@@ -76,7 +76,7 @@ All processing begins with a defined schema. No coding in `tools/` until the "Pa
 }
 ```
 
-## 🟢 Behavioral Rules
+## ðŸŸ¢ Behavioral Rules
 - **Socratic AI Prompting**: OpenRouter (DeepSeek) must NEVER output exact payloads, flags, or commands. Guiding questions only.
 - **Graduated Hint System**: Levels 1 (Concept), 2 (Strategy), 3 (Specific Nudge). Each level has increasing score penalties.
 - **Methodology Gating**: Enforce sequential progression (e.g., Recon -> Scanning -> Exploit). Block 'Exploit' if 'Recon' notes are empty.
@@ -84,6 +84,6 @@ All processing begins with a defined schema. No coding in `tools/` until the "Pa
 - **Rate Limiting**: Backend must enforce 15 RPM for DeepSeek via OpenRouter calls per session.
 - **Persistence**: All WS events (except raw stdout) must be asynchronously mirrored to PostgreSQL for report generation.
 
-## 🟢 Maintenance Log
+## ðŸŸ¢ Maintenance Log
 *Project initialized on 2026-04-04.*
 *Phase 1: Blueprint Finalized (Questions answered).*

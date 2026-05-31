@@ -1,6 +1,6 @@
-# CyberSim Final Report Workspace
+# Parallax Final Report Workspace
 
-This folder is the production workspace for the CyberSim graduation documentation package. It turns the master documentation plan into concrete report sources, diagram sources, references, and visual-design guidance.
+This folder is the production workspace for the Parallax graduation documentation package. It turns the master documentation plan into concrete report sources, diagram sources, references, and visual-design guidance.
 
 ## Selected Canva Direction
 
@@ -9,7 +9,7 @@ Candidate 2 was selected and converted into an editable Canva design.
 | Item | Value |
 | --- | --- |
 | Canva design id | `DAHKeHjt8IY` |
-| Title | `Report - CyberSim Project Report` |
+| Title | `Report - Parallax Project Report` |
 | Pages | 17 |
 | Edit URL | https://www.canva.com/d/HiO92F8_1b90Umj |
 | View URL | https://www.canva.com/d/AWvF-sEqVnIMkdU |
@@ -30,7 +30,7 @@ Use the Canva design as the visual companion direction, not as the official form
 | Requirements matrix | Requirements, implementation, tests, and evidence mapping | Started |
 | Diagram catalog | Source, export, and caption registry for figures | Six diagrams rendered |
 | Evidence bundle | Test output, screenshots, Docker/API evidence | Started |
-| Canva rewrite brief | Page-by-page CyberSim replacement plan for the selected Canva design | Started |
+| Canva rewrite brief | Page-by-page Parallax replacement plan for the selected Canva design | Started |
 | Tooling and skill log | Record of useful MCP, plugin, and skill usage | Started |
 | Documentation master prompt pack | Detailed context, phase prompts, tool plans, and remaining-roadmap prompts | Added |
 | Scenario dossiers | SC-01, SC-02, and SC-03 report-safe scenario summaries | Drafted |

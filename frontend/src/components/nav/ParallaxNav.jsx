@@ -4,14 +4,14 @@ import { useAuthStore } from '../../store/authStore'
 import { useSessionStore } from '../../store/sessionStore'
 
 /**
- * CyberSimNav - Shared navigation bar with dual-square logo
+ * ParallaxNav - Shared navigation bar with dual-square logo
  * Used across all authenticated pages (Dashboard, Debrief, Instructor, etc.)
  *
  * Props:
  *  - showUser: boolean (show username/logout, default true)
  *  - rightContent: ReactNode (custom right-side content)
  */
-export default function CyberSimNav({ showUser = true, rightContent }) {
+export default function ParallaxNav({ showUser = true, rightContent }) {
   const { username, logout, skillLevel } = useAuthStore()
   const { activeSession, fetchActiveSession, lastVisitedRole } = useSessionStore()
   const navigate = useNavigate()
@@ -26,9 +26,9 @@ export default function CyberSimNav({ showUser = true, rightContent }) {
     <nav className="nav-bar">
       {/* Logo */}
       <button onClick={() => navigate(username ? '/dashboard' : '/')} className="flex items-center gap-3 group">
-        <div className="nav-logo-icon" />
+        <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-8 h-8 flex-shrink-0" />
         <div className="font-display text-lg font-bold text-gradient-nimbus tracking-tight">
-          CyberSim<span className="text-txt-dim font-normal">.io</span>
+          Parallax<span className="text-txt-dim font-normal">.io</span>
         </div>
       </button>
 

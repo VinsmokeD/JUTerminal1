@@ -1,8 +1,8 @@
-# CyberSim Maintainer and Operations Manual
+# Parallax Maintainer and Operations Manual
 
 ## 1. Purpose
 
-This manual gives the demo operator, teaching assistant, or system maintainer a practical checklist for installing, verifying, running, and recovering CyberSim. It supports Chapter 6 of the formal report and should be included as an appendix in the final documentation package.
+This manual gives the demo operator, teaching assistant, or system maintainer a practical checklist for installing, verifying, running, and recovering Parallax. It supports Chapter 6 of the formal report and should be included as an appendix in the final documentation package.
 
 ## 2. Supported Deployment Model
 
@@ -25,7 +25,7 @@ The local stack is intended for university labs and defense demonstrations. Larg
 | --- | --- |
 | Docker Desktop or Docker Engine with Compose v2 | Runs the full stack and scenario networks |
 | Git | Clones and updates the repository |
-| Modern browser | Opens the CyberSim frontend |
+| Modern browser | Opens the Parallax frontend |
 | Python 3.11 or compatible development environment | Runs local scripts and backend tests when needed |
 | Node.js 18 or newer | Runs frontend lint/build commands outside Docker when needed |
 
@@ -134,5 +134,5 @@ Before publishing documentation:
 - Confirm scenario networks are `internal: true`.
 - Confirm screenshots do not expose `.env`, API keys, tokens, hashes, or lab-only secrets.
 - Confirm report prose does not include exact offensive solution chains.
-- Confirm generated evidence refers only to CyberSim lab targets.
+- Confirm generated evidence refers only to Parallax lab targets.
 - Confirm the final Canva visual report no longer contains generic placeholder business text.

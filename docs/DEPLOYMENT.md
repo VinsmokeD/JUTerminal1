@@ -32,8 +32,8 @@ See [DEPLOYMENT_CHECKLIST.md](../DEPLOYMENT_CHECKLIST.md) for full requirements.
 ```bash
 # Using Let's Encrypt (certbot)
 sudo apt update && sudo apt install -y certbot python3-certbot-nginx
-sudo certbot certonly --standalone -d cybersim.example.com
-# Certificates stored in /etc/letsencrypt/live/cybersim.example.com/
+sudo certbot certonly --standalone -d parallax.example.com
+# Certificates stored in /etc/letsencrypt/live/parallax.example.com/
 ```
 
 ### 2. Environment Configuration
@@ -45,7 +45,7 @@ cp .env.example .env.production
 
 # Edit with production values:
 ENVIRONMENT=production
-CORS_ORIGINS=https://cybersim.example.com
+CORS_ORIGINS=https://parallax.example.com
 JWT_SECRET=$(openssl rand -hex 32)
 POSTGRES_PASSWORD=$(openssl rand -hex 16)
 OPENROUTER_API_KEY=your_production_key  # From OpenRouter
@@ -53,9 +53,9 @@ JWT_EXPIRY_HOURS=8
 MAX_CONCURRENT_SESSIONS=50
 
 # Database
-POSTGRES_USER=cybersim_prod
-POSTGRES_DB=cybersim_prod
-POSTGRES_URL=postgresql://cybersim_prod:${POSTGRES_PASSWORD}@postgres:5432/cybersim_prod
+POSTGRES_USER=parallax_prod
+POSTGRES_DB=parallax_prod
+POSTGRES_URL=postgresql://parallax_prod:${POSTGRES_PASSWORD}@postgres:5432/parallax_prod
 
 # Redis
 REDIS_URL=redis://redis:6379/0
@@ -71,29 +71,29 @@ LOG_LEVEL=WARNING
 #### Build Production Images
 ```bash
 # Build backend
-docker build -f backend/Dockerfile -t cybersim-backend:1.0.0 ./backend
-docker build -f backend/Dockerfile -t cybersim-backend:latest ./backend
+docker build -f backend/Dockerfile -t parallax-backend:1.0.0 ./backend
+docker build -f backend/Dockerfile -t parallax-backend:latest ./backend
 
 # Build frontend
-docker build -f frontend/Dockerfile -t cybersim-frontend:1.0.0 ./frontend
-docker build -f frontend/Dockerfile -t cybersim-frontend:latest ./frontend
+docker build -f frontend/Dockerfile -t parallax-frontend:1.0.0 ./frontend
+docker build -f frontend/Dockerfile -t parallax-frontend:latest ./frontend
 
 # Build Kali
 docker build -f infrastructure/docker/kali/Dockerfile \
-  -t cybersim-kali:1.0.0 \
+  -t parallax-kali:1.0.0 \
   infrastructure/docker/kali/
 ```
 
 #### Push to Registry
 ```bash
 # Docker Hub example
-docker tag cybersim-backend:1.0.0 yourusername/cybersim-backend:1.0.0
-docker push yourusername/cybersim-backend:1.0.0
+docker tag parallax-backend:1.0.0 yourusername/parallax-backend:1.0.0
+docker push yourusername/parallax-backend:1.0.0
 
 # Or use private registry (AWS ECR, GCP, etc.)
 aws ecr get-login-password | docker login --username AWS --password-stdin 123456789.dkr.ecr.us-east-1.amazonaws.com
-docker tag cybersim-backend:1.0.0 123456789.dkr.ecr.us-east-1.amazonaws.com/cybersim-backend:1.0.0
-docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/cybersim-backend:1.0.0
+docker tag parallax-backend:1.0.0 123456789.dkr.ecr.us-east-1.amazonaws.com/parallax-backend:1.0.0
+docker push 123456789.dkr.ecr.us-east-1.amazonaws.com/parallax-backend:1.0.0
 ```
 
 ### 4. Docker Compose for Production
@@ -141,7 +141,7 @@ services:
       - "6379"
 
   backend:
-    image: cybersim-backend:1.0.0
+    image: parallax-backend:1.0.0
     restart: always
     environment:
       - ENVIRONMENT=production
@@ -167,7 +167,7 @@ services:
       retries: 3
 
   frontend:
-    image: cybersim-frontend:1.0.0
+    image: parallax-frontend:1.0.0
     restart: always
     networks:
       - internal
@@ -182,7 +182,7 @@ services:
       - "443:443"
     volumes:
       - ./infrastructure/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt/live/cybersim.example.com:/etc/nginx/certs:ro
+      - /etc/letsencrypt/live/parallax.example.com:/etc/nginx/certs:ro
       - ./infrastructure/nginx/dhparam.pem:/etc/nginx/dhparam.pem:ro
     depends_on:
       - backend
@@ -291,14 +291,14 @@ http {
     # HTTP -> HTTPS redirect
     server {
         listen 80;
-        server_name cybersim.example.com www.cybersim.example.com;
+        server_name parallax.example.com www.parallax.example.com;
         return 301 https://$server_name$request_uri;
     }
 
     # HTTPS server
     server {
         listen 443 ssl http2;
-        server_name cybersim.example.com www.cybersim.example.com;
+        server_name parallax.example.com www.parallax.example.com;
 
         # SSL
         ssl_certificate /etc/nginx/certs/fullchain.pem;
@@ -374,7 +374,7 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'cybersim-backend'
+  - job_name: 'parallax-backend'
     static_configs:
       - targets: ['localhost:8000']
     metrics_path: '/metrics'
@@ -397,14 +397,14 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 mkdir -p $BACKUP_DIR
 
-docker-compose exec postgres pg_dump -U cybersim_prod cybersim_prod | \
+docker-compose exec postgres pg_dump -U parallax_prod parallax_prod | \
   gzip > $BACKUP_DIR/db_$TIMESTAMP.sql.gz
 
 # Keep only last 30 days
 find $BACKUP_DIR -name "db_*.sql.gz" -mtime +30 -delete
 
 # Upload to S3 (optional)
-aws s3 cp $BACKUP_DIR/db_$TIMESTAMP.sql.gz s3://backups/cybersim/
+aws s3 cp $BACKUP_DIR/db_$TIMESTAMP.sql.gz s3://backups/parallax/
 ```
 
 ```bash
@@ -417,7 +417,7 @@ aws s3 cp $BACKUP_DIR/db_$TIMESTAMP.sql.gz s3://backups/cybersim/
 #### Horizontal Scaling
 ```bash
 # Use Docker Swarm or Kubernetes for multiple backend instances
-docker stack deploy -c docker-compose.yml cybersim
+docker stack deploy -c docker-compose.yml parallax
 
 # Load balance with Nginx upstream
 upstream backend {
@@ -431,7 +431,7 @@ upstream backend {
 #### Database Scaling
 ```bash
 # Read replicas for PostgreSQL
-Primary → Replica 1, Replica 2
+Primary â†’ Replica 1, Replica 2
 # Use pgBouncerfor connection pooling
 
 # Redis Cluster for horizontal scaling
@@ -534,19 +534,19 @@ docker-compose logs -f
 
 1. **Verify all services running**
    ```bash
-   curl -I https://cybersim.example.com
-   curl -I https://cybersim.example.com/api/health
+   curl -I https://parallax.example.com
+   curl -I https://parallax.example.com/api/health
    ```
 
 2. **Load test** (using k6 or Apache Bench)
    ```bash
-   ab -n 1000 -c 10 https://cybersim.example.com/
+   ab -n 1000 -c 10 https://parallax.example.com/
    ```
 
 3. **Security scan** (using OWASP ZAP)
    ```bash
    docker pull owasp/zap2docker-stable
-   docker run -t owasp/zap2docker-stable zap-baseline.py -t https://cybersim.example.com
+   docker run -t owasp/zap2docker-stable zap-baseline.py -t https://parallax.example.com
    ```
 
 4. **Monitor error logs** for first 24 hours

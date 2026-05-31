@@ -1,10 +1,10 @@
 # Technical Architecture Atlas
 
-This atlas is the diagram-first architecture reference for CyberSim. It supports Chapter 4 of the formal report and the Canva visual companion. It is backed by the Repomix source inventory in `evidence/source-inventory.md` and by rendered Mermaid exports under `diagrams/export/`.
+This atlas is the diagram-first architecture reference for Parallax. It supports Chapter 4 of the formal report and the Canva visual companion. It is backed by the Repomix source inventory in `evidence/source-inventory.md` and by rendered Mermaid exports under `diagrams/export/`.
 
 ## Architecture Summary
 
-CyberSim is a single-node Docker platform composed of:
+Parallax is a single-node Docker platform composed of:
 
 - React/Vite frontend.
 - FastAPI backend.
@@ -21,7 +21,7 @@ The educational loop is built around one central idea: a student action in the R
 
 | Figure | Source | Purpose |
 | --- | --- | --- |
-| Figure 4.1 | `diagrams/source/c4-context.mmd` | Shows CyberSim in relation to students, instructors, Docker, AI provider, and UJ environment |
+| Figure 4.1 | `diagrams/source/c4-context.mmd` | Shows Parallax in relation to students, instructors, Docker, AI provider, and UJ environment |
 | Figure 4.2 | `diagrams/source/c4-container.mmd` | Shows major runtime containers and data stores |
 | Figure 4.3 | `diagrams/source/dfd-level-0.mmd` | Shows top-level data movement across browser, backend, data services, SIEM, and Docker |
 | Figure 4.4 | `diagrams/source/erd-core-schema.mmd` | Shows persistent relational schema relationships |
@@ -59,7 +59,7 @@ The educational loop is built around one central idea: a student action in the R
 | Figure 5.5 | `diagrams/export/svg/sc02-topology.svg` | `diagrams/export/png/sc02-topology.png` | Rendered |
 | Figure 5.6 | `diagrams/export/svg/sc03-topology.svg` | `diagrams/export/png/sc03-topology.png` | Rendered |
 
-All diagrams were exported with Mermaid CLI `11.15.0` and the CyberSim report theme in `diagrams/mermaid-theme.json`.
+All diagrams were exported with Mermaid CLI `11.15.0` and the Parallax report theme in `diagrams/mermaid-theme.json`.
 
 
 ## Design Decisions
@@ -79,7 +79,7 @@ All diagrams were exported with Mermaid CLI `11.15.0` and the CyberSim report th
 
 ### Context View
 
-CyberSim serves five external actors/systems:
+Parallax serves five external actors/systems:
 
 - Student as Red Team operator.
 - Student as Blue Team analyst.
@@ -130,10 +130,10 @@ Elasticsearch holds searchable telemetry/log records. Filebeat forwards containe
 The critical security boundary is between:
 
 - The real host and university network.
-- The CyberSim application stack.
+- The Parallax application stack.
 - Internal-only Docker scenario networks.
 
-Scenario networks are configured as Docker `internal: true` networks. Training actions must stay inside those scenario networks. The report should repeatedly state that CyberSim is not for testing real systems.
+Scenario networks are configured as Docker `internal: true` networks. Training actions must stay inside those scenario networks. The report should repeatedly state that Parallax is not for testing real systems.
 
 ### Evidence View
 

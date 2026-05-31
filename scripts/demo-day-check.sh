@@ -11,8 +11,8 @@ if [[ -f ".env" ]]; then
   set +a
 fi
 
-DOMAIN="${CYBERSIM_DOMAIN:-localhost}"
-BASE_URL="${CYBERSIM_BASE_URL:-https://${DOMAIN}}"
+DOMAIN="${PARALLAX_DOMAIN:-localhost}"
+BASE_URL="${PARALLAX_BASE_URL:-https://${DOMAIN}}"
 FAILURES=0
 
 section() {

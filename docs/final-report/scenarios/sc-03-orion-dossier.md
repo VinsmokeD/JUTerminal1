@@ -10,7 +10,7 @@
 | Estimated duration | 180 minutes |
 | Primary focus | Phishing simulation, email telemetry, endpoint-behavior simulation, and SOC response |
 
-SC-03 is the phishing and initial-access scenario in CyberSim. It represents a fictional logistics company with an internal mail relay, a campaign-management service, and a simulated endpoint. The scenario teaches how social-engineering activity and endpoint behavior can be analyzed safely without sending real campaigns or running real malware.
+SC-03 is the phishing and initial-access scenario in Parallax. It represents a fictional logistics company with an internal mail relay, a campaign-management service, and a simulated endpoint. The scenario teaches how social-engineering activity and endpoint behavior can be analyzed safely without sending real campaigns or running real malware.
 
 This dossier avoids publishing unsafe payload construction details, live campaign instructions, real target data, or exact solution steps.
 

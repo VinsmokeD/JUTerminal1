@@ -163,7 +163,7 @@ def compile_report(workspace_dir):
     
     p_title = doc.add_paragraph()
     format_paragraph(p_title, space_before=12, space_after=12, line_spacing=1.15, alignment=WD_ALIGN_PARAGRAPH.CENTER)
-    run_title = p_title.add_run("CYBERSIM: A BROWSER-BASED DUAL-PERSPECTIVE CYBERSECURITY TRAINING PLATFORM\n\n\n\n")
+    run_title = p_title.add_run("PARALLAX: A BROWSER-BASED DUAL-PERSPECTIVE CYBERSECURITY TRAINING PLATFORM\n\n\n\n")
     run_title.font.name = 'Times New Roman'
     run_title.font.size = Pt(16)
     run_title.bold = True
@@ -227,7 +227,7 @@ def compile_report(workspace_dir):
     
     p_abs = doc.add_paragraph()
     format_paragraph(p_abs, space_before=6, space_after=12, line_spacing=2.0, alignment=WD_ALIGN_PARAGRAPH.JUSTIFY)
-    run_abs_text = p_abs.add_run("CyberSim is a dual-perspective cybersecurity training platform designed for university students to bridge the gap between theoretical attack tools and real-time defensive monitoring. Traditional training platforms separate offensive practice from security analysis, making it difficult for students to understand the causal relationship between attacker commands and defender alerts. CyberSim addresses this by providing a unified, web-based training environment that runs entirely safely within Docker-isolated scenarios. The platform features two core workspaces: a Red Team space featuring an interactive terminal linked to a Kali Linux container, and a Blue Team space featuring a real-time SIEM alert feed, triage, and forensics containment controls. Educational command-to-detection causality is bridged using a real-time event correlation engine, and Socratic guidance is provided via an integrated rate-limited AI tutor. The system's effectiveness is validated through three high-fidelity scenarios: SC-01 (OWASP Web Vulnerabilities), SC-02 (Active Directory Lateral Movement), and SC-03 (Phishing Campaign Simulation). Automated unit, integration, and performance load tests verify the stability, security, and low latency of the platform under concurrent training conditions.")
+    run_abs_text = p_abs.add_run("Parallax is a dual-perspective cybersecurity training platform designed for university students to bridge the gap between theoretical attack tools and real-time defensive monitoring. Traditional training platforms separate offensive practice from security analysis, making it difficult for students to understand the causal relationship between attacker commands and defender alerts. Parallax addresses this by providing a unified, web-based training environment that runs entirely safely within Docker-isolated scenarios. The platform features two core workspaces: a Red Team space featuring an interactive terminal linked to a Kali Linux container, and a Blue Team space featuring a real-time SIEM alert feed, triage, and forensics containment controls. Educational command-to-detection causality is bridged using a real-time event correlation engine, and Socratic guidance is provided via an integrated rate-limited AI tutor. The system's effectiveness is validated through three high-fidelity scenarios: SC-01 (OWASP Web Vulnerabilities), SC-02 (Active Directory Lateral Movement), and SC-03 (Phishing Campaign Simulation). Automated unit, integration, and performance load tests verify the stability, security, and low latency of the platform under concurrent training conditions.")
     run_abs_text.font.name = 'Times New Roman'
     run_abs_text.font.size = Pt(12)
     
@@ -235,7 +235,7 @@ def compile_report(workspace_dir):
     doc.add_page_break()
     p_abs_ar_head = doc.add_paragraph()
     format_paragraph(p_abs_ar_head, space_before=12, space_after=12, line_spacing=1.15, alignment=WD_ALIGN_PARAGRAPH.CENTER)
-    run_abs_ar_head = p_abs_ar_head.add_run("ملخص المشروع")
+    run_abs_ar_head = p_abs_ar_head.add_run("Ù…Ù„Ø®Øµ Ø§Ù„Ù…Ø´Ø±ÙˆØ¹")
     run_abs_ar_head.font.name = 'Times New Roman'
     run_abs_ar_head.font.size = Pt(14)
     run_abs_ar_head.bold = True
@@ -243,7 +243,7 @@ def compile_report(workspace_dir):
     p_abs_ar = doc.add_paragraph()
     p_abs_ar.paragraph_format.bidi = True # Right to left
     format_paragraph(p_abs_ar, space_before=6, space_after=12, line_spacing=2.0, alignment=WD_ALIGN_PARAGRAPH.RIGHT)
-    run_abs_ar_text = p_abs_ar.add_run("يقدم مشروع CyberSim منصة تدريبية ثنائية المنظور للأمن السيبراني، مصممة خصيصاً لطلبة الجامعات لسد الفجوة بين أدوات الهجوم وتدابير المراقبة والدفاع الفورية. تركز منصات التدريب التقليدية على أحد الجانبين دون الآخر، مما يصعّب على الطلبة فهم العلاقة السببية بين هجمات المخترق والتنبيهات الأمنية التي تظهر لدى المحلل الأمني. تعالج منصة CyberSim هذا الخلل من خلال توفير بيئة تدريبية موحدة وقائمة على المتصفح تعمل بأمان تام داخل حاويات معزولة (Docker Containers). تتميز المنصة بوجود مساحتي عمل رئيسيتين: مساحة الفريق الأحمر (الهجوم) التي توفر محاكاة لسطر أوامر نظام كالي لينكس، ومساحة الفريق الأزرق (الدفاع) التي تعرض تغذية حية لتنبيهات نظام إدارة معلومات وأحداث الأمن السيبراني (SIEM) مع أدوات التحليل والاستجابة للحوادث. يتم ربط الأحداث وإرسالها فورياً عبر محرك ربط الأحداث الفوري، بينما يتولى معلّم ذكي مدعوم بالذكاء الاصطناعي تقديم توجيهات تفاعلية سقراطية. تم التحقق من فاعلية المنصة من خلال ثلاثة سيناريوهات عالية الدقة: سيناريو SC-01 (ثغرات تطبيقات الويب OWASP)، وسيناريو SC-02 (اختراق خوادم الدليل النشط AD ولترال موفمنت)، وسيناريو SC-03 (محاكاة هجمات التصيد الإلكتروني). أثبتت اختبارات الكفاءة والتحميل التلقائية استقرار وأمان المنصة وانخفاض زمن الاستجابة في ظل ظروف التدريب المتزامن للطلبة.")
+    run_abs_ar_text = p_abs_ar.add_run("ÙŠÙ‚Ø¯Ù… Ù…Ø´Ø±ÙˆØ¹ Parallax Ù…Ù†ØµØ© ØªØ¯Ø±ÙŠØ¨ÙŠØ© Ø«Ù†Ø§Ø¦ÙŠØ© Ø§Ù„Ù…Ù†Ø¸ÙˆØ± Ù„Ù„Ø£Ù…Ù† Ø§Ù„Ø³ÙŠØ¨Ø±Ø§Ù†ÙŠØŒ Ù…ØµÙ…Ù…Ø© Ø®ØµÙŠØµØ§Ù‹ Ù„Ø·Ù„Ø¨Ø© Ø§Ù„Ø¬Ø§Ù…Ø¹Ø§Øª Ù„Ø³Ø¯ Ø§Ù„ÙØ¬ÙˆØ© Ø¨ÙŠÙ† Ø£Ø¯ÙˆØ§Øª Ø§Ù„Ù‡Ø¬ÙˆÙ… ÙˆØªØ¯Ø§Ø¨ÙŠØ± Ø§Ù„Ù…Ø±Ø§Ù‚Ø¨Ø© ÙˆØ§Ù„Ø¯ÙØ§Ø¹ Ø§Ù„ÙÙˆØ±ÙŠØ©. ØªØ±ÙƒØ² Ù…Ù†ØµØ§Øª Ø§Ù„ØªØ¯Ø±ÙŠØ¨ Ø§Ù„ØªÙ‚Ù„ÙŠØ¯ÙŠØ© Ø¹Ù„Ù‰ Ø£Ø­Ø¯ Ø§Ù„Ø¬Ø§Ù†Ø¨ÙŠÙ† Ø¯ÙˆÙ† Ø§Ù„Ø¢Ø®Ø±ØŒ Ù…Ù…Ø§ ÙŠØµØ¹Ù‘Ø¨ Ø¹Ù„Ù‰ Ø§Ù„Ø·Ù„Ø¨Ø© ÙÙ‡Ù… Ø§Ù„Ø¹Ù„Ø§Ù‚Ø© Ø§Ù„Ø³Ø¨Ø¨ÙŠØ© Ø¨ÙŠÙ† Ù‡Ø¬Ù…Ø§Øª Ø§Ù„Ù…Ø®ØªØ±Ù‚ ÙˆØ§Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø§Ù„Ø£Ù…Ù†ÙŠØ© Ø§Ù„ØªÙŠ ØªØ¸Ù‡Ø± Ù„Ø¯Ù‰ Ø§Ù„Ù…Ø­Ù„Ù„ Ø§Ù„Ø£Ù…Ù†ÙŠ. ØªØ¹Ø§Ù„Ø¬ Ù…Ù†ØµØ© Parallax Ù‡Ø°Ø§ Ø§Ù„Ø®Ù„Ù„ Ù…Ù† Ø®Ù„Ø§Ù„ ØªÙˆÙÙŠØ± Ø¨ÙŠØ¦Ø© ØªØ¯Ø±ÙŠØ¨ÙŠØ© Ù…ÙˆØ­Ø¯Ø© ÙˆÙ‚Ø§Ø¦Ù…Ø© Ø¹Ù„Ù‰ Ø§Ù„Ù…ØªØµÙØ­ ØªØ¹Ù…Ù„ Ø¨Ø£Ù…Ø§Ù† ØªØ§Ù… Ø¯Ø§Ø®Ù„ Ø­Ø§ÙˆÙŠØ§Øª Ù…Ø¹Ø²ÙˆÙ„Ø© (Docker Containers). ØªØªÙ…ÙŠØ² Ø§Ù„Ù…Ù†ØµØ© Ø¨ÙˆØ¬ÙˆØ¯ Ù…Ø³Ø§Ø­ØªÙŠ Ø¹Ù…Ù„ Ø±Ø¦ÙŠØ³ÙŠØªÙŠÙ†: Ù…Ø³Ø§Ø­Ø© Ø§Ù„ÙØ±ÙŠÙ‚ Ø§Ù„Ø£Ø­Ù…Ø± (Ø§Ù„Ù‡Ø¬ÙˆÙ…) Ø§Ù„ØªÙŠ ØªÙˆÙØ± Ù…Ø­Ø§ÙƒØ§Ø© Ù„Ø³Ø·Ø± Ø£ÙˆØ§Ù…Ø± Ù†Ø¸Ø§Ù… ÙƒØ§Ù„ÙŠ Ù„ÙŠÙ†ÙƒØ³ØŒ ÙˆÙ…Ø³Ø§Ø­Ø© Ø§Ù„ÙØ±ÙŠÙ‚ Ø§Ù„Ø£Ø²Ø±Ù‚ (Ø§Ù„Ø¯ÙØ§Ø¹) Ø§Ù„ØªÙŠ ØªØ¹Ø±Ø¶ ØªØºØ°ÙŠØ© Ø­ÙŠØ© Ù„ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ù†Ø¸Ø§Ù… Ø¥Ø¯Ø§Ø±Ø© Ù…Ø¹Ù„ÙˆÙ…Ø§Øª ÙˆØ£Ø­Ø¯Ø§Ø« Ø§Ù„Ø£Ù…Ù† Ø§Ù„Ø³ÙŠØ¨Ø±Ø§Ù†ÙŠ (SIEM) Ù…Ø¹ Ø£Ø¯ÙˆØ§Øª Ø§Ù„ØªØ­Ù„ÙŠÙ„ ÙˆØ§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø© Ù„Ù„Ø­ÙˆØ§Ø¯Ø«. ÙŠØªÙ… Ø±Ø¨Ø· Ø§Ù„Ø£Ø­Ø¯Ø§Ø« ÙˆØ¥Ø±Ø³Ø§Ù„Ù‡Ø§ ÙÙˆØ±ÙŠØ§Ù‹ Ø¹Ø¨Ø± Ù…Ø­Ø±Ùƒ Ø±Ø¨Ø· Ø§Ù„Ø£Ø­Ø¯Ø§Ø« Ø§Ù„ÙÙˆØ±ÙŠØŒ Ø¨ÙŠÙ†Ù…Ø§ ÙŠØªÙˆÙ„Ù‰ Ù…Ø¹Ù„Ù‘Ù… Ø°ÙƒÙŠ Ù…Ø¯Ø¹ÙˆÙ… Ø¨Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ ØªÙ‚Ø¯ÙŠÙ… ØªÙˆØ¬ÙŠÙ‡Ø§Øª ØªÙØ§Ø¹Ù„ÙŠØ© Ø³Ù‚Ø±Ø§Ø·ÙŠØ©. ØªÙ… Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† ÙØ§Ø¹Ù„ÙŠØ© Ø§Ù„Ù…Ù†ØµØ© Ù…Ù† Ø®Ù„Ø§Ù„ Ø«Ù„Ø§Ø«Ø© Ø³ÙŠÙ†Ø§Ø±ÙŠÙˆÙ‡Ø§Øª Ø¹Ø§Ù„ÙŠØ© Ø§Ù„Ø¯Ù‚Ø©: Ø³ÙŠÙ†Ø§Ø±ÙŠÙˆ SC-01 (Ø«ØºØ±Ø§Øª ØªØ·Ø¨ÙŠÙ‚Ø§Øª Ø§Ù„ÙˆÙŠØ¨ OWASP)ØŒ ÙˆØ³ÙŠÙ†Ø§Ø±ÙŠÙˆ SC-02 (Ø§Ø®ØªØ±Ø§Ù‚ Ø®ÙˆØ§Ø¯Ù… Ø§Ù„Ø¯Ù„ÙŠÙ„ Ø§Ù„Ù†Ø´Ø· AD ÙˆÙ„ØªØ±Ø§Ù„ Ù…ÙˆÙÙ…Ù†Øª)ØŒ ÙˆØ³ÙŠÙ†Ø§Ø±ÙŠÙˆ SC-03 (Ù…Ø­Ø§ÙƒØ§Ø© Ù‡Ø¬Ù…Ø§Øª Ø§Ù„ØªØµÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ). Ø£Ø«Ø¨ØªØª Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª Ø§Ù„ÙƒÙØ§Ø¡Ø© ÙˆØ§Ù„ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªÙ„Ù‚Ø§Ø¦ÙŠØ© Ø§Ø³ØªÙ‚Ø±Ø§Ø± ÙˆØ£Ù…Ø§Ù† Ø§Ù„Ù…Ù†ØµØ© ÙˆØ§Ù†Ø®ÙØ§Ø¶ Ø²Ù…Ù† Ø§Ù„Ø§Ø³ØªØ¬Ø§Ø¨Ø© ÙÙŠ Ø¸Ù„ Ø¸Ø±ÙˆÙ Ø§Ù„ØªØ¯Ø±ÙŠØ¨ Ø§Ù„Ù…ØªØ²Ø§Ù…Ù† Ù„Ù„Ø·Ù„Ø¨Ø©.")
     run_abs_ar_text.font.name = 'Times New Roman'
     run_abs_ar_text.font.size = Pt(12)
     
@@ -258,7 +258,7 @@ def compile_report(workspace_dir):
     
     p_ack = doc.add_paragraph()
     format_paragraph(p_ack, space_before=6, space_after=12, line_spacing=2.0, alignment=WD_ALIGN_PARAGRAPH.JUSTIFY)
-    run_ack_text = p_ack.add_run("We express our deepest gratitude to our project supervisor for their guidance, feedback, and encouragement throughout the design and implementation of CyberSim. We also thank the examiners and committee members of the Department of Computer Science at the King Abdullah II School of Information Technology for their review and helpful recommendations. Finally, we thank our families and peers for their continuous support during this academic endeavor.")
+    run_ack_text = p_ack.add_run("We express our deepest gratitude to our project supervisor for their guidance, feedback, and encouragement throughout the design and implementation of Parallax. We also thank the examiners and committee members of the Department of Computer Science at the King Abdullah II School of Information Technology for their review and helpful recommendations. Finally, we thank our families and peers for their continuous support during this academic endeavor.")
     run_ack_text.font.name = 'Times New Roman'
     run_ack_text.font.size = Pt(12)
     
@@ -553,7 +553,7 @@ def compile_report(workspace_dir):
                             r_cap.font.size = Pt(10)
                     else:
                         print(f"Warning: Image file not found: {abs_img_path}")
-            # Figure captions as text (e.g. Figure 4.1: CyberSim system context.)
+            # Figure captions as text (e.g. Figure 4.1: Parallax system context.)
             elif re.match(r'^Figure \d+\.\d+:', stripped, re.IGNORECASE):
                 # The image handler already generates the caption, so skip the text line if it is a duplicate caption
                 continue
@@ -771,7 +771,7 @@ def compile_report(workspace_dir):
     output_dir = os.path.join(workspace_dir, "docs", "final-report", "formal-report")
     os.makedirs(output_dir, exist_ok=True)
     
-    docx_path = os.path.join(output_dir, "cybersim-graduation-report.docx")
+    docx_path = os.path.join(output_dir, "parallax-graduation-report.docx")
     doc.save(docx_path)
     print(f"Report compiled successfully to: {docx_path}")
 

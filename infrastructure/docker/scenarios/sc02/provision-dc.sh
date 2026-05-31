@@ -7,12 +7,12 @@ REALM="${REALM:-NEXORA.LOCAL}"
 NETBIOS_NAME="${NETBIOS_NAME:-NEXORA}"
 ADMIN_PASS="${ADMINPASS:-NexoraAdmin2024!}"
 
-echo "[*] CyberSim SC-02 Domain Controller Provisioner"
+echo "[*] Parallax SC-02 Domain Controller Provisioner"
 echo "[*] Realm: $REALM"
 echo "[*] Domain: $DOMAIN"
 echo "[*] NetBIOS: $NETBIOS_NAME"
 
-PROVISION_MARKER="/var/lib/samba/private/.cybersim_provisioned"
+PROVISION_MARKER="/var/lib/samba/private/.parallax_provisioned"
 
 if [ ! -f "$PROVISION_MARKER" ]; then
     echo "[+] Initializing Samba AD DC Provisioning..."
@@ -64,7 +64,7 @@ if [ -f /etc/samba/smb.conf ] && ! grep -q "ignore system acls" /etc/samba/smb.c
     sed -i '/^\[global\]/a\        acl_xattr:ignore system acls = yes' /etc/samba/smb.conf
 fi
 
-# ── Seed Users ───────────────────────────────────────────────────────
+# â”€â”€ Seed Users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # We seed users regardless of marker to ensure session-consistency
 echo "[+] Seeding users and service accounts..."
 
@@ -82,15 +82,15 @@ add_user "svc_backup" "Backup2023!"
 add_user "it.admin" "DomainAdmin2024!"
 add_user "rgreen" "Summer2024!"
 
-# ── Privileged group membership ──────────────────────────────────────
+# â”€â”€ Privileged group membership â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # it.admin is the intended Domain Admin and the end-goal of the kill chain
-# (low-priv jsmith → Kerberoast svc_backup → lateral movement → it.admin →
+# (low-priv jsmith â†’ Kerberoast svc_backup â†’ lateral movement â†’ it.admin â†’
 # DCSync). Without this, "DCSync as Domain Admin" has no account that can
 # actually replicate. Idempotent: addmembers no-ops if already a member.
 echo "[+] Granting it.admin Domain Admin rights..."
 samba-tool group addmembers "Domain Admins" it.admin 2>/dev/null || true
 
-# ── Configure AS-REP Roasting (rgreen) ─────────────────────────────
+# â”€â”€ Configure AS-REP Roasting (rgreen) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Set DONT_REQ_PREAUTH (0x00400000) bit in userAccountControl
 echo "[+] Configuring AS-REP Roasting for 'rgreen'..."
 SAM_PATH="/var/lib/samba/private/sam.ldb"
@@ -108,7 +108,7 @@ else
     echo "    [!] Could not find rgreen user for UAC update"
 fi
 
-# ── Configure Kerberoasting (svc_backup) ───────────────────────────
+# â”€â”€ Configure Kerberoasting (svc_backup) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Add an SPN for the service account
 echo "[+] Configuring Kerberoasting for 'svc_backup'..."
 samba-tool spn add "MSSQLSvc/nexora-fs01.nexora.local:1433" svc_backup 2>/dev/null || true
@@ -135,11 +135,11 @@ echo "[+] Audit directories prepared"
 # Seed SYSVOL artifacts for GPP and AS-REP methodology branches
 echo "[+] Seeding SYSVOL training artifacts..."
 mkdir -p /var/lib/samba/sysvol/$DOMAIN/Policies
-cp -R /opt/cybersim/sysvol-seed/* /var/lib/samba/sysvol/$DOMAIN/Policies/ 2>/dev/null || true
+cp -R /opt/parallax/sysvol-seed/* /var/lib/samba/sysvol/$DOMAIN/Policies/ 2>/dev/null || true
 cat > /var/lib/samba/sysvol/$DOMAIN/ASREP_ROASTABLE_rgreen.txt << 'EOF'
 Training marker: rgreen is configured as the AS-REP roasting branch user.
 Expected defensive finding: require Kerberos pre-authentication.
 EOF
 
-echo "[+] DC Setup Complete — Starting Samba via Supervisord"
+echo "[+] DC Setup Complete â€” Starting Samba via Supervisord"
 exec /usr/bin/supervisord -n

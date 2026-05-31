@@ -1,4 +1,4 @@
-# Disable strict permission checks — required for Windows Docker Desktop mounts
+# Disable strict permission checks â€” required for Windows Docker Desktop mounts
 filebeat.config.modules:
   path: ${path.config}/modules.d/*.yml
   reload.enabled: false
@@ -65,8 +65,8 @@ processors:
 output.elasticsearch:
   hosts: ["http://elasticsearch:9200"]
   # If you create an index template or use ILM:
-  index: "cybersim-logs-%{[agent.version]}-%{+yyyy.MM.dd}"
+  index: "parallax-logs-%{[agent.version]}-%{+yyyy.MM.dd}"
 
 setup.ilm.enabled: false
-setup.template.name: "cybersim-logs"
-setup.template.pattern: "cybersim-logs-*"
+setup.template.name: "parallax-logs"
+setup.template.pattern: "parallax-logs-*"

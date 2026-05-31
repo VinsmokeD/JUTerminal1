@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('CyberSim SC-01 Full Kill Chain Integration Test', () => {
+test.describe('Parallax SC-01 Full Kill Chain Integration Test', () => {
   test('Complete SC-01 pentest kill chain and verify all 4 flags', async ({ page }) => {
     test.setTimeout(120_000); // Enforce 2 minutes timeout for the full chain
 

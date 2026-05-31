@@ -60,7 +60,7 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(
-    title="CyberSim API",
+    title="Parallax API",
     version="0.1.0",
     lifespan=lifespan,
     docs_url="/api/docs" if settings.ENVIRONMENT == "development" else None,
@@ -97,7 +97,7 @@ async def health():
 @app.get("/api/health/readiness")
 async def readiness():
     """
-    Deep readiness probe — checks every subsystem.
+    Deep readiness probe â€” checks every subsystem.
     Returns 200 when all are healthy, 503 when any are degraded.
     Used by the demo-check script and instructor dashboard.
     """
@@ -106,7 +106,7 @@ async def readiness():
 
     checks: dict[str, dict] = {}
 
-    # ── Postgres ──────────────────────────────────────────────────────
+    # â”€â”€ Postgres â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         async with AsyncSessionLocal() as db:
             await db.execute(_text("SELECT 1"))
@@ -114,18 +114,18 @@ async def readiness():
     except Exception as exc:
         checks["postgres"] = {"status": "error", "detail": str(exc)[:120]}
 
-    # ── Redis ─────────────────────────────────────────────────────────
+    # â”€â”€ Redis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         from src.cache.redis import _get as _get_redis
 
         r = _get_redis()
         await r.ping()
-        active = await r.hlen("cybersim:active_sessions")
+        active = await r.hlen("parallax:active_sessions")
         checks["redis"] = {"status": "ok", "active_sessions": active}
     except Exception as exc:
         checks["redis"] = {"status": "error", "detail": str(exc)[:120]}
 
-    # ── Elasticsearch ─────────────────────────────────────────────────
+    # â”€â”€ Elasticsearch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         async with _httpx.AsyncClient() as client:
             resp = await client.get("http://elasticsearch:9200/_cluster/health", timeout=3.0)
@@ -138,7 +138,7 @@ async def readiness():
     except Exception as exc:
         checks["elasticsearch"] = {"status": "error", "detail": str(exc)[:120]}
 
-    # ── OpenRouter Reachability ───────────────────────────────────────
+    # â”€â”€ OpenRouter Reachability â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         if not settings.OPENROUTER_API_KEY:
             checks["openrouter"] = {
@@ -194,8 +194,8 @@ async def metrics():
         from src.cache.redis import _get as _get_redis
 
         r = _get_redis()
-        result["active_sessions"] = int(await r.hlen("cybersim:active_sessions") or 0)
-        ws_raw = await r.get("cybersim:ws_connections")
+        result["active_sessions"] = int(await r.hlen("parallax:active_sessions") or 0)
+        ws_raw = await r.get("parallax:ws_connections")
         result["ws_connections"] = max(0, int(ws_raw or 0))
 
         # AI latency: stored by monitor.py as a rolling sample

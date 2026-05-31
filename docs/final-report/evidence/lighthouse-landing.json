@@ -25,7 +25,7 @@
       "scoreDisplayMode": "numeric",
       "numericValue": 3839.8623,
       "numericUnit": "millisecond",
-      "displayValue": "3.8 s",
+      "displayValue": "3.8Â s",
       "scoringOptions": {
         "p10": 1800,
         "median": 3000
@@ -39,7 +39,7 @@
       "scoreDisplayMode": "numeric",
       "numericValue": 4030.4579999999996,
       "numericUnit": "millisecond",
-      "displayValue": "4.0 s",
+      "displayValue": "4.0Â s",
       "scoringOptions": {
         "p10": 2500,
         "median": 4000
@@ -53,7 +53,7 @@
       "scoreDisplayMode": "numeric",
       "numericValue": 5168.081501394701,
       "numericUnit": "millisecond",
-      "displayValue": "5.2 s",
+      "displayValue": "5.2Â s",
       "scoringOptions": {
         "p10": 3387,
         "median": 5800
@@ -133,7 +133,7 @@
       "scoreDisplayMode": "numeric",
       "numericValue": 157,
       "numericUnit": "millisecond",
-      "displayValue": "160 ms",
+      "displayValue": "160Â ms",
       "scoringOptions": {
         "p10": 200,
         "median": 600
@@ -147,7 +147,7 @@
       "scoreDisplayMode": "numeric",
       "numericValue": 207,
       "numericUnit": "millisecond",
-      "displayValue": "210 ms"
+      "displayValue": "210Â ms"
     },
     "cumulative-layout-shift": {
       "id": "cumulative-layout-shift",
@@ -184,7 +184,7 @@
       "scoreDisplayMode": "metricSavings",
       "numericValue": 33,
       "numericUnit": "millisecond",
-      "displayValue": "Root document took 30 ms",
+      "displayValue": "Root document took 30Â ms",
       "metricSavings": {
         "FCP": 0,
         "LCP": 0
@@ -221,7 +221,7 @@
       "scoreDisplayMode": "numeric",
       "numericValue": 4070.9579999999996,
       "numericUnit": "millisecond",
-      "displayValue": "4.1 s"
+      "displayValue": "4.1Â s"
     },
     "user-timings": {
       "id": "user-timings",
@@ -288,7 +288,7 @@
       "scoreDisplayMode": "metricSavings",
       "numericValue": 1880.0599999999968,
       "numericUnit": "millisecond",
-      "displayValue": "1.9 s",
+      "displayValue": "1.9Â s",
       "metricSavings": {
         "TBT": 150
       },
@@ -353,7 +353,7 @@
       "scoreDisplayMode": "metricSavings",
       "numericValue": 695.5360000000001,
       "numericUnit": "millisecond",
-      "displayValue": "0.7 s",
+      "displayValue": "0.7Â s",
       "metricSavings": {
         "TBT": 150
       },
@@ -745,7 +745,7 @@
       "scoreDisplayMode": "informative",
       "numericValue": 61.016000000000005,
       "numericUnit": "millisecond",
-      "displayValue": "60 ms",
+      "displayValue": "60Â ms",
       "details": {
         "type": "table",
         "headings": [
@@ -788,7 +788,7 @@
       "scoreDisplayMode": "informative",
       "numericValue": 58.197500000000005,
       "numericUnit": "millisecond",
-      "displayValue": "60 ms",
+      "displayValue": "60Â ms",
       "details": {
         "type": "table",
         "headings": [
@@ -1627,7 +1627,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -1669,7 +1669,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -1689,7 +1689,7 @@
                 "width": 52,
                 "height": 20
               },
-              "snippet": "<div class=\"font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-…\">",
+              "snippet": "<div class=\"font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-â€¦\">",
               "nodeLabel": "SC-01",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6e798e, background color: #1b2438, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
             }
@@ -1708,7 +1708,7 @@
                 "width": 87,
                 "height": 20
               },
-              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border…\">",
+              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border borderâ€¦\">",
               "nodeLabel": "OWASP Top 10",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 4.03 (foreground color: #6e798e, background color: #121827, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1"
             },
@@ -1729,8 +1729,8 @@
                       "width": 364,
                       "height": 244
                     },
-                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hov…\">",
-                    "nodeLabel": "SC-01\nNovaMed Healthcare Portal\n\nA PHP/Apache web application with patient reco…"
+                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hovâ€¦\">",
+                    "nodeLabel": "SC-01\nNovaMed Healthcare Portal\n\nA PHP/Apache web application with patient recoâ€¦"
                   }
                 },
                 {
@@ -1748,7 +1748,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -1768,7 +1768,7 @@
                 "width": 114,
                 "height": 20
               },
-              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border…\">",
+              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border borderâ€¦\">",
               "nodeLabel": "SQLi / LFI / IDOR",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 4.03 (foreground color: #6e798e, background color: #121827, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1"
             },
@@ -1789,8 +1789,8 @@
                       "width": 364,
                       "height": 244
                     },
-                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hov…\">",
-                    "nodeLabel": "SC-01\nNovaMed Healthcare Portal\n\nA PHP/Apache web application with patient reco…"
+                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hovâ€¦\">",
+                    "nodeLabel": "SC-01\nNovaMed Healthcare Portal\n\nA PHP/Apache web application with patient recoâ€¦"
                   }
                 },
                 {
@@ -1808,7 +1808,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -1828,7 +1828,7 @@
                 "width": 52,
                 "height": 20
               },
-              "snippet": "<div class=\"font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-…\">",
+              "snippet": "<div class=\"font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-â€¦\">",
               "nodeLabel": "SC-02",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6e798e, background color: #1b2438, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
             }
@@ -1847,7 +1847,7 @@
                 "width": 108,
                 "height": 20
               },
-              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border…\">",
+              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border borderâ€¦\">",
               "nodeLabel": "Active Directory",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 4.03 (foreground color: #6e798e, background color: #121827, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1"
             },
@@ -1868,8 +1868,8 @@
                       "width": 364,
                       "height": 244
                     },
-                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hov…\">",
-                    "nodeLabel": "SC-02\nNexora Financial AD\n\nA Samba4 Active Directory environment with a domain …"
+                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hovâ€¦\">",
+                    "nodeLabel": "SC-02\nNexora Financial AD\n\nA Samba4 Active Directory environment with a domain â€¦"
                   }
                 },
                 {
@@ -1887,7 +1887,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -1907,7 +1907,7 @@
                 "width": 98,
                 "height": 20
               },
-              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border…\">",
+              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border borderâ€¦\">",
               "nodeLabel": "Kerberos / SMB",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 4.03 (foreground color: #6e798e, background color: #121827, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1"
             },
@@ -1928,8 +1928,8 @@
                       "width": 364,
                       "height": 244
                     },
-                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hov…\">",
-                    "nodeLabel": "SC-02\nNexora Financial AD\n\nA Samba4 Active Directory environment with a domain …"
+                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hovâ€¦\">",
+                    "nodeLabel": "SC-02\nNexora Financial AD\n\nA Samba4 Active Directory environment with a domain â€¦"
                   }
                 },
                 {
@@ -1947,7 +1947,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -1967,7 +1967,7 @@
                 "width": 52,
                 "height": 20
               },
-              "snippet": "<div class=\"font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-…\">",
+              "snippet": "<div class=\"font-mono text-xs font-bold text-txt-dim bg-surface-3 px-2 py-0.5 rounded-â€¦\">",
               "nodeLabel": "SC-03",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 3.53 (foreground color: #6e798e, background color: #1b2438, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
             }
@@ -1986,7 +1986,7 @@
                 "width": 119,
                 "height": 20
               },
-              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border…\">",
+              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border borderâ€¦\">",
               "nodeLabel": "Social Engineering",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 4.03 (foreground color: #6e798e, background color: #121827, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1"
             },
@@ -2007,8 +2007,8 @@
                       "width": 364,
                       "height": 252
                     },
-                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hov…\">",
-                    "nodeLabel": "SC-03\nOrion Logistics Phishing\n\nConduct OSINT, craft a phishing campaign with G…"
+                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hovâ€¦\">",
+                    "nodeLabel": "SC-03\nOrion Logistics Phishing\n\nConduct OSINT, craft a phishing campaign with Gâ€¦"
                   }
                 },
                 {
@@ -2026,7 +2026,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -2046,7 +2046,7 @@
                 "width": 92,
                 "height": 20
               },
-              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border border…\">",
+              "snippet": "<span class=\"px-2.5 py-0.5 rounded-cs-sm font-mono text-[9px] font-medium border borderâ€¦\">",
               "nodeLabel": "OSINT / Email",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 4.03 (foreground color: #6e798e, background color: #121827, font size: 6.8pt (9px), font weight: normal). Expected contrast ratio of 4.5:1"
             },
@@ -2067,8 +2067,8 @@
                       "width": 364,
                       "height": 252
                     },
-                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hov…\">",
-                    "nodeLabel": "SC-03\nOrion Logistics Phishing\n\nConduct OSINT, craft a phishing campaign with G…"
+                    "snippet": "<div class=\"glass p-6 bg-[#0d0f14]/80 flex flex-col justify-between cursor-pointer hovâ€¦\">",
+                    "nodeLabel": "SC-03\nOrion Logistics Phishing\n\nConduct OSINT, craft a phishing campaign with Gâ€¦"
                   }
                 },
                 {
@@ -2086,7 +2086,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -2128,7 +2128,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -2149,7 +2149,7 @@
                 "height": 32
               },
               "snippet": "<div class=\"font-mono text-xs text-txt-dim\">",
-              "nodeLabel": "CyberSim (c) 2026 - Built for cybersecurity students. $0 infrastructure cost.",
+              "nodeLabel": "Parallax (c) 2026 - Built for cybersecurity students. $0 infrastructure cost.",
               "explanation": "Fix any of the following:\n  Element has insufficient color contrast of 4.4 (foreground color: #6e798e, background color: #0a0e17, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
             },
             "subItems": {
@@ -2170,7 +2170,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -2212,7 +2212,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -2254,7 +2254,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -2296,7 +2296,7 @@
                       "height": 5772
                     },
                     "snippet": "<div class=\"min-h-dvh bg-void text-txt-primary font-display\">",
-                    "nodeLabel": "CYBERSIM.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneously…"
+                    "nodeLabel": "PARALLAX.IO\nPLATFORM ONLINE - 3 SCENARIOS ACTIVE\nAttack. Defend.\nSimultaneouslyâ€¦"
                   }
                 }
               ]
@@ -2799,7 +2799,7 @@
       "scoreDisplayMode": "metricSavings",
       "numericValue": 409105,
       "numericUnit": "byte",
-      "displayValue": "Total size was 400 KiB",
+      "displayValue": "Total size was 400Â KiB",
       "details": {
         "type": "table",
         "headings": [
@@ -2935,7 +2935,7 @@
       "scoreDisplayMode": "metricSavings",
       "numericValue": 150,
       "numericUnit": "millisecond",
-      "displayValue": "Est savings of 18 KiB",
+      "displayValue": "Est savings of 18Â KiB",
       "metricSavings": {
         "FCP": 0,
         "LCP": 150
@@ -2990,7 +2990,7 @@
       "scoreDisplayMode": "metricSavings",
       "numericValue": 600,
       "numericUnit": "millisecond",
-      "displayValue": "Est savings of 120 KiB",
+      "displayValue": "Est savings of 120Â KiB",
       "metricSavings": {
         "FCP": 450,
         "LCP": 600
@@ -3067,7 +3067,7 @@
       "description": "A long cache lifetime can speed up repeat visits to your page. [Learn more about caching](https://developer.chrome.com/docs/performance/insights/cache).",
       "score": 0,
       "scoreDisplayMode": "metricSavings",
-      "displayValue": "Est savings of 324 KiB",
+      "displayValue": "Est savings of 324Â KiB",
       "metricSavings": {
         "FCP": 1150,
         "LCP": 1300
@@ -3269,7 +3269,7 @@
                 "height": 356
               },
               "snippet": "<div class=\"p-4 font-mono text-xs leading-[1.8] text-txt-secondary\">",
-              "nodeLabel": "student@kali:~$ nmap -sV -p 80,443,3306 172.20.1.20\nStarting Nmap 7.94 ( https:…"
+              "nodeLabel": "student@kali:~$ nmap -sV -p 80,443,3306 172.20.1.20\nStarting Nmap 7.94 ( https:â€¦"
             },
             "value": {
               "type": "numeric",
@@ -3556,8 +3556,8 @@
               "width": 314,
               "height": 91
             },
-            "snippet": "<p class=\"text-sm md:text-base text-txt-secondary leading-relaxed max-w-[580px] mx-a…\">",
-            "nodeLabel": "The first training platform where every attacker command triggers real-time SIE…"
+            "snippet": "<p class=\"text-sm md:text-base text-txt-secondary leading-relaxed max-w-[580px] mx-aâ€¦\">",
+            "nodeLabel": "The first training platform where every attacker command triggers real-time SIEâ€¦"
           }
         ]
       },
@@ -3797,7 +3797,7 @@
       "description": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://developer.chrome.com/docs/performance/insights/render-blocking) can move these network requests out of the critical path.",
       "score": 0,
       "scoreDisplayMode": "metricSavings",
-      "displayValue": "Est savings of 1,050 ms",
+      "displayValue": "Est savings of 1,050Â ms",
       "metricSavings": {
         "FCP": 1050,
         "LCP": 1050
@@ -3907,7 +3907,7 @@
     "viewport-insight": {
       "id": "viewport-insight",
       "title": "Optimize viewport for mobile",
-      "description": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport is not optimized for mobile.",
+      "description": "Tap interactions may be [delayed by up to 300Â ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport is not optimized for mobile.",
       "score": 1,
       "scoreDisplayMode": "numeric",
       "metricSavings": {
@@ -4696,11 +4696,11 @@
     },
     "seo-mobile": {
       "title": "Mobile Friendly",
-      "description": "Make sure your pages are mobile friendly so users don’t have to pinch or zoom in order to read the content pages. [Learn how to make pages mobile-friendly](https://developers.google.com/search/mobile-sites/)."
+      "description": "Make sure your pages are mobile friendly so users donâ€™t have to pinch or zoom in order to read the content pages. [Learn how to make pages mobile-friendly](https://developers.google.com/search/mobile-sites/)."
     },
     "seo-content": {
       "title": "Content Best Practices",
-      "description": "Format your HTML in a way that enables crawlers to better understand your app’s content."
+      "description": "Format your HTML in a way that enables crawlers to better understand your appâ€™s content."
     },
     "seo-crawl": {
       "title": "Crawling and Indexing",

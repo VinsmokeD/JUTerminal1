@@ -11,7 +11,7 @@ if [[ -f ".env" ]]; then
   set +a
 fi
 
-DOMAIN="${CYBERSIM_DOMAIN:-localhost}"
+DOMAIN="${PARALLAX_DOMAIN:-localhost}"
 BASE_URL="https://${DOMAIN}"
 
 "${COMPOSE[@]}" config --quiet
@@ -22,8 +22,8 @@ echo "Containers:"
 echo
 echo "Health:"
 for attempt in $(seq 1 30); do
-  if curl -kfsS "${BASE_URL}/health" >/tmp/cybersim-health.json; then
-    cat /tmp/cybersim-health.json
+  if curl -kfsS "${BASE_URL}/health" >/tmp/parallax-health.json; then
+    cat /tmp/parallax-health.json
     echo
     break
   fi

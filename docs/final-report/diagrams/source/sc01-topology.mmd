@@ -7,23 +7,23 @@ flowchart TB
     classDef alert fill:#78281F,stroke:#E74C3C,stroke-width:2px,color:#FFFFFF
     classDef net fill:#17324E,stroke:#00B4D8,stroke-width:1px,color:#00B4D8,stroke-dasharray:5
 
-    KALI(["🎯 Kali Terminal\n(Student - Red Team)"])
-    BE_PROXY["⚙️ FastAPI\nSandbox Proxy\n(Docker exec API)"]
+    KALI(["ðŸŽ¯ Kali Terminal\n(Student - Red Team)"])
+    BE_PROXY["âš™ï¸ FastAPI\nSandbox Proxy\n(Docker exec API)"]
 
     subgraph SC01["  SC-01: NovaMed Healthcare Web App  "]
         subgraph NET01["  sc01-net  172.20.1.0/24  (internal: true)  "]
             NGINX01["Nginx :80"]
-            WEB01["Apache 2.4 + PHP 7.4\n:8080\nVulnerabilities:\n  · SQLi (login.php)\n  · LFI (file param)\n  · Unrestricted upload"]
+            WEB01["Apache 2.4 + PHP 7.4\n:8080\nVulnerabilities:\n  Â· SQLi (login.php)\n  Â· LFI (file param)\n  Â· Unrestricted upload"]
             WAF01["ModSecurity WAF\n(OWASP CRS v3.3)\nDetects: SQLi, LFI, XSS"]
             MYSQL01[("MySQL 5.7\n:3306\nDB: novamedDB\nTables: users, records")]
-            FLAG01["🚩 /flag.txt\n(Admin panel access)"]
+            FLAG01["ðŸš© /flag.txt\n(Admin panel access)"]
         end
     end
 
-    FB["📦 Filebeat\nLog agent"]
-    ES[("🔍 Elasticsearch\ncybersim-sc01-*")]
-    SIEM_ENGINE["⚡ SIEM Engine\n5s poll interval"]
-    BLUE_UI["🛡️ Blue Team SIEM\nEvent Feed"]
+    FB["ðŸ“¦ Filebeat\nLog agent"]
+    ES[("ðŸ” Elasticsearch\nparallax-sc01-*")]
+    SIEM_ENGINE["âš¡ SIEM Engine\n5s poll interval"]
+    BLUE_UI["ðŸ›¡ï¸ Blue Team SIEM\nEvent Feed"]
 
     KALI -->|"WebSocket stdin"| BE_PROXY
     BE_PROXY <-->|"docker exec PTY"| WEB01

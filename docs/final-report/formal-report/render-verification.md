@@ -1,4 +1,4 @@
-# Render Verification — CyberSim Graduation Report v2 (Premium Edition)
+# Render Verification â€” Parallax Graduation Report v2 (Premium Edition)
 
 **Compiled:** 2026-05-27  
 **Compiler:** `scripts/compile_report_v2.py` (Phase 9A Premium Redesign)  
@@ -10,8 +10,8 @@
 
 | Format | File | Size |
 | --- | --- | --- |
-| Microsoft Word (DOCX) | `cybersim-graduation-report.docx` | 521,452 bytes |
-| Adobe PDF | `cybersim-graduation-report.pdf` | 960,684 bytes |
+| Microsoft Word (DOCX) | `parallax-graduation-report.docx` | 521,452 bytes |
+| Adobe PDF | `parallax-graduation-report.pdf` | 960,684 bytes |
 
 Both files generated in a single pipeline run with zero errors.
 
@@ -21,7 +21,7 @@ Both files generated in a single pipeline run with zero errors.
 
 | Rule | Requirement | Status |
 | --- | --- | --- |
-| Page Size | A4 (21.0 × 29.7 cm) | Verified |
+| Page Size | A4 (21.0 Ã— 29.7 cm) | Verified |
 | Typography | Times New Roman | Verified (body + headings) |
 | Body Text Size | 12 pt | Verified |
 | Line Spacing | 1.5 lines | Verified |
@@ -36,11 +36,11 @@ Both files generated in a single pipeline run with zero errors.
 
 ---
 
-## 3. CyberSim Brand Theme Applied
+## 3. Parallax Brand Theme Applied
 
 | Element | Design |
 | --- | --- |
-| Cover title | Navy (#0D1B2A) shaded bar, cyan (#00B4D8) "CyberSim" text, 28pt bold |
+| Cover title | Navy (#0D1B2A) shaded bar, cyan (#00B4D8) "Parallax" text, 28pt bold |
 | Cover subtitle | Dark bar, near-white blue subtitle, 13pt |
 | Chapter blocks | Navy label strip ("CHAPTER N") + light-blue (#E8F4F8) title band + accent rule |
 | H2 headings | Left cyan border rule (18pt/sz), 0.4cm indent |
@@ -57,10 +57,10 @@ Both files generated in a single pipeline run with zero errors.
 
 | # | Caption | Source PNG |
 |---|---------|-----------|
-| Fig 4.1 | CyberSim System Context (C4 Level 1) | c4-context.png |
-| Fig 4.2 | CyberSim Container Architecture (C4 Level 2) | c4-container.png |
-| Fig 4.3 | CyberSim Data Flow Diagram (Level 0) | dfd-level-0.png |
-| Fig 4.4 | CyberSim Core Entity-Relationship Diagram | erd-core-schema.png |
+| Fig 4.1 | Parallax System Context (C4 Level 1) | c4-context.png |
+| Fig 4.2 | Parallax Container Architecture (C4 Level 2) | c4-container.png |
+| Fig 4.3 | Parallax Data Flow Diagram (Level 0) | dfd-level-0.png |
+| Fig 4.4 | Parallax Core Entity-Relationship Diagram | erd-core-schema.png |
 | Fig 4.5 | Docker Network and Service Topology | docker-topology.png |
 | Fig 4.6 | Red-to-Blue Event Sequence | red-blue-event-sequence.png |
 | Fig 4.7 | UML Use Case Diagram | uml-use-case.png |
@@ -83,13 +83,13 @@ Update via: **Word > References > Update Table** or via `Fields.Update()` COM ca
 
 ---
 
-## 6. QA Gates (Phase 8 — Still Passing)
+## 6. QA Gates (Phase 8 â€” Still Passing)
 
 | Gate | Result |
 | --- | --- |
-| Placeholder text (TODO/TBD) | PASS — 0 hits |
-| SC-04/SC-05 scope leakage | PASS — Future Work only |
-| Leaked credentials | PASS — 0 hits |
-| Diagram count match | PASS — 16/16 |
-| DOCX integrity | LOCKED — SHA 33B5B0E1… |
-| PDF integrity | LOCKED — SHA 8DFB165D… |
+| Placeholder text (TODO/TBD) | PASS â€” 0 hits |
+| SC-04/SC-05 scope leakage | PASS â€” Future Work only |
+| Leaked credentials | PASS â€” 0 hits |
+| Diagram count match | PASS â€” 16/16 |
+| DOCX integrity | LOCKED â€” SHA 33B5B0E1â€¦ |
+| PDF integrity | LOCKED â€” SHA 8DFB165Dâ€¦ |

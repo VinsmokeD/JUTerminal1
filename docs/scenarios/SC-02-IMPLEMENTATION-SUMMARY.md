@@ -1,6 +1,6 @@
 # SC-02 Implementation Summary
 
-## Mission Status: ✅ COMPLETE
+## Mission Status: âœ… COMPLETE
 
 All deliverables for SC-02 (Nexora Financial AD Compromise) have been successfully implemented, validated, and documented.
 
@@ -13,14 +13,14 @@ All deliverables for SC-02 (Nexora Financial AD Compromise) have been successful
 #### 1. **Samba4 Domain Controller (NEXORA-DC01)**
 - **File**: `infrastructure/docker/scenarios/sc02/Dockerfile.dc`
 - **Features**:
-  - RFC2307 schema (Linux↔AD user mapping)
+  - RFC2307 schema (Linuxâ†”AD user mapping)
   - Kerberos RC4-HMAC encryption (intentionally weak for CTF)
   - LDAP (389/636), Kerberos (88), SMB (445), DNS (53), Global Catalog (3268-3269)
   - 4 pre-seeded users:
-    - `admin` — Domain Admin (NexoraAdmin2024!)
-    - `jsmith` — Standard user (Welcome1!)
-    - `it.admin` — IT Administrator (Welcome1!)
-    - `svc_backup` — Service account with Kerberoastable SPN (Backup2023)
+    - `admin` â€” Domain Admin (NexoraAdmin2024!)
+    - `jsmith` â€” Standard user (Welcome1!)
+    - `it.admin` â€” IT Administrator (Welcome1!)
+    - `svc_backup` â€” Service account with Kerberoastable SPN (Backup2023)
   - Audit logging configured for event tracking
   - Health check validates SMB availability
   - Environment variables for domain customization
@@ -30,10 +30,10 @@ All deliverables for SC-02 (Nexora Financial AD Compromise) have been successful
 - **Features**:
   - Domain-joined to NEXORA.LOCAL
   - 4 SMB shares with AD-based access control:
-    - `Public` — Everyone (guest access)
-    - `Finance` — Domain Users only
-    - `Backups` — Domain Admins + svc_backup service account
-    - `Admin` — it.admin read-only
+    - `Public` â€” Everyone (guest access)
+    - `Finance` â€” Domain Users only
+    - `Backups` â€” Domain Admins + svc_backup service account
+    - `Admin` â€” it.admin read-only
   - Realistic files seeded (budget reports, employee handbook, backups)
   - SMB audit logging enabled (access tracking)
   - Kerberos client configured for domain join
@@ -42,9 +42,9 @@ All deliverables for SC-02 (Nexora Financial AD Compromise) have been successful
 
 #### 3. **Active Directory Configuration Scripts**
 - **Files**:
-  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` — DC provisioning (domain creation, users, SPNs, Kerberos RC4)
-  - `infrastructure/docker/scenarios/sc02/setup-shares.sh` — File server domain join, share creation, file seeding
-  - `infrastructure/docker/scenarios/sc02/smb.conf` — SMB configuration with per-share ACLs and audit logging
+  - `infrastructure/docker/scenarios/sc02/provision-dc.sh` â€” DC provisioning (domain creation, users, SPNs, Kerberos RC4)
+  - `infrastructure/docker/scenarios/sc02/setup-shares.sh` â€” File server domain join, share creation, file seeding
+  - `infrastructure/docker/scenarios/sc02/smb.conf` â€” SMB configuration with per-share ACLs and audit logging
 - **Features**:
   - Idempotent (safe to re-run)
   - Environment variable support
@@ -88,9 +88,9 @@ All deliverables for SC-02 (Nexora Financial AD Compromise) have been successful
 
 #### 7. **Documentation**
 - **Files**:
-  - `docs/scenarios/SC-02-TESTING.md` — Comprehensive testing guide with 50+ verification steps
-  - `docs/architecture/CONTINUOUS_STATE.md` — Detailed implementation changelog
-  - This file — Implementation summary
+  - `docs/scenarios/SC-02-TESTING.md` â€” Comprehensive testing guide with 50+ verification steps
+  - `docs/architecture/CONTINUOUS_STATE.md` â€” Detailed implementation changelog
+  - This file â€” Implementation summary
 
 ---
 
@@ -109,7 +109,7 @@ All deliverables for SC-02 (Nexora Financial AD Compromise) have been successful
 
 ### Service Principal Name (SPN)
 ```
-svc_backup → CIFS/NEXORA-FS01.nexora.local
+svc_backup â†’ CIFS/NEXORA-FS01.nexora.local
 ```
 
 **Why?** Allows Kerberoasting attack: students request TGS for this service, extract hash, crack offline. Central to SC-02's red team learning objectives.
@@ -122,13 +122,13 @@ Backups:     @"NEXORA\Domain Admins", svc_backup (credential reuse leverage)
 Admin:       it.admin only (read-only, non-browseable)
 ```
 
-**Design**: Reflects realistic corporate environment — most users have read-only access, service accounts have specific limited rights.
+**Design**: Reflects realistic corporate environment â€” most users have read-only access, service accounts have specific limited rights.
 
 ### Network Isolation
 ```yaml
 sc02-net:
   driver: bridge
-  internal: true  # ← No gateway route to host network
+  internal: true  # â† No gateway route to host network
   ipam:
     config:
       - subnet: 172.20.2.0/24
@@ -172,7 +172,7 @@ The following features are documented in the SC-02 scenario spec but not yet imp
    - Status: Requires WS01 + privilege assignment
 
 5. **LAPS (Local Administrator Password Solution)**
-   - Current: Not deployed (correct for scenario — students should find weak local passwords)
+   - Current: Not deployed (correct for scenario â€” students should find weak local passwords)
    - Status: Can be deployed as "hardening" in blue team defensive scenarios
 
 **Recommendation**: Current implementation is sufficient for foundational AD pentesting training. Workstations can be added in a Phase 2 expansion if students require escalation exercises beyond DCSync.
@@ -189,7 +189,7 @@ The following features are documented in the SC-02 scenario spec but not yet imp
 5. Cracks hash offline with hashcat
 6. Pivots to file server using svc_backup credentials
 7. Attempts lateral movement / privilege escalation
-8. Documents all steps in CyberSim notes panel
+8. Documents all steps in Parallax notes panel
 
 ### Blue Team Workflow
 1. **SIEM Console** shows real-time events from `sc02_events.json`
@@ -213,20 +213,20 @@ The following features are documented in the SC-02 scenario spec but not yet imp
 
 All items tested and validated:
 
-- ✅ docker-compose.yml syntax valid
-- ✅ Dockerfile.dc builds successfully
-- ✅ Dockerfile.fileserver builds successfully
-- ✅ provision-dc.sh syntax valid (bash -n check)
-- ✅ setup-shares.sh syntax valid (bash -n check)
-- ✅ smb.conf syntax valid (no Samba parse errors)
-- ✅ sc02_events.json valid JSON (100+ events)
-- ✅ Network configuration correct (internal bridge, 172.20.2.0/24)
-- ✅ Health checks configured for both DC and fileserver
-- ✅ Resource limits enforced (0.5 CPU, 512MB RAM)
-- ✅ Dependencies configured (fileserver waits for DC healthy)
-- ✅ Environment variables configurable via docker-compose
-- ✅ SIEM event mapping covers all attack vectors
-- ✅ Documentation comprehensive (TESTING.md + CONTINUOUS_STATE.md)
+- âœ… docker-compose.yml syntax valid
+- âœ… Dockerfile.dc builds successfully
+- âœ… Dockerfile.fileserver builds successfully
+- âœ… provision-dc.sh syntax valid (bash -n check)
+- âœ… setup-shares.sh syntax valid (bash -n check)
+- âœ… smb.conf syntax valid (no Samba parse errors)
+- âœ… sc02_events.json valid JSON (100+ events)
+- âœ… Network configuration correct (internal bridge, 172.20.2.0/24)
+- âœ… Health checks configured for both DC and fileserver
+- âœ… Resource limits enforced (0.5 CPU, 512MB RAM)
+- âœ… Dependencies configured (fileserver waits for DC healthy)
+- âœ… Environment variables configurable via docker-compose
+- âœ… SIEM event mapping covers all attack vectors
+- âœ… Documentation comprehensive (TESTING.md + CONTINUOUS_STATE.md)
 
 ---
 
@@ -249,23 +249,23 @@ Includes:
 ## Files Modified/Created
 
 ### Infrastructure
-- `infrastructure/docker/scenarios/sc02/Dockerfile.dc` ✨ Enhanced
-- `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` ✨ Enhanced
-- `infrastructure/docker/scenarios/sc02/provision-dc.sh` ✨ Rewritten
-- `infrastructure/docker/scenarios/sc02/setup-shares.sh` ✨ Rewritten
-- `infrastructure/docker/scenarios/sc02/smb.conf` ✨ Enhanced
+- `infrastructure/docker/scenarios/sc02/Dockerfile.dc` âœ¨ Enhanced
+- `infrastructure/docker/scenarios/sc02/Dockerfile.fileserver` âœ¨ Enhanced
+- `infrastructure/docker/scenarios/sc02/provision-dc.sh` âœ¨ Rewritten
+- `infrastructure/docker/scenarios/sc02/setup-shares.sh` âœ¨ Rewritten
+- `infrastructure/docker/scenarios/sc02/smb.conf` âœ¨ Enhanced
 
 ### Configuration
-- `docker-compose.yml` ✨ Updated SC-02 section
-- `.env.example` ✨ Added SC02_ADMIN_PASS
+- `docker-compose.yml` âœ¨ Updated SC-02 section
+- `.env.example` âœ¨ Added SC02_ADMIN_PASS
 
 ### Backend
-- `backend/src/siem/events/sc02_events.json` ✨ Rewritten (100+ events)
+- `backend/src/siem/events/sc02_events.json` âœ¨ Rewritten (100+ events)
 
 ### Documentation
-- `docs/scenarios/SC-02-TESTING.md` ✨ New (comprehensive guide)
-- `docs/scenarios/SC-02-IMPLEMENTATION-SUMMARY.md` ✨ New (this file)
-- `docs/architecture/CONTINUOUS_STATE.md` ✨ Updated (detailed changelog)
+- `docs/scenarios/SC-02-TESTING.md` âœ¨ New (comprehensive guide)
+- `docs/scenarios/SC-02-IMPLEMENTATION-SUMMARY.md` âœ¨ New (this file)
+- `docs/architecture/CONTINUOUS_STATE.md` âœ¨ Updated (detailed changelog)
 
 ---
 
@@ -321,14 +321,14 @@ docker-compose --profile sc02 down
 ## Learning Objectives Covered
 
 ### Red Team (SC-02 Attack Flow)
-- T1046 — Network Service Scanning (nmap)
-- T1087 — Account Discovery (enum4linux, LDAP queries)
-- T1069 — Permission Groups Discovery (BloodHound reconnaissance)
-- T1558.003 — Steal/Forge Kerberos Tickets (Kerberoasting)
-- T1110.001 — Brute Force (crackmapexec password spray)
-- T1550.002 — Use Alternate Authentication Material (Pass-the-Hash)
-- T1003.006 — Credential Dumping (DCSync)
-- T1020 — Automated Exfiltration (Post-exploitation reporting)
+- T1046 â€” Network Service Scanning (nmap)
+- T1087 â€” Account Discovery (enum4linux, LDAP queries)
+- T1069 â€” Permission Groups Discovery (BloodHound reconnaissance)
+- T1558.003 â€” Steal/Forge Kerberos Tickets (Kerberoasting)
+- T1110.001 â€” Brute Force (crackmapexec password spray)
+- T1550.002 â€” Use Alternate Authentication Material (Pass-the-Hash)
+- T1003.006 â€” Credential Dumping (DCSync)
+- T1020 â€” Automated Exfiltration (Post-exploitation reporting)
 
 ### Blue Team (SC-02 Detection Flow)
 - Windows Security Event ID recognition (4625, 4768, 4769, 4624, 4662, etc.)
@@ -342,7 +342,7 @@ docker-compose --profile sc02 down
 
 ## Success Criteria
 
-✅ **Complete if**:
+âœ… **Complete if**:
 1. Both containers reach `Up (healthy)` status
 2. DC successfully provisions users with SPNs
 3. Fileserver joins domain and shares are accessible
@@ -357,28 +357,28 @@ docker-compose --profile sc02 down
 
 ## Next Phase Recommendations
 
-1. **Phase 2a — Workstations**: Add WS01/WS02 for escalation exercises
-2. **Phase 2b — Advanced Delegation**: Configure unconstrained delegation on FS01
-3. **Phase 2c — Blue Team Hardening**: Add LAPS, constrained delegation, audit policy improvements
-4. **Phase 3 — Multi-Scenario Integration**: Link SC-02 with SC-01 (external attack) for full kill chain
-5. **Phase 4 — Automated Assessment**: Implement scoring rubric based on SIEM detections
+1. **Phase 2a â€” Workstations**: Add WS01/WS02 for escalation exercises
+2. **Phase 2b â€” Advanced Delegation**: Configure unconstrained delegation on FS01
+3. **Phase 2c â€” Blue Team Hardening**: Add LAPS, constrained delegation, audit policy improvements
+4. **Phase 3 â€” Multi-Scenario Integration**: Link SC-02 with SC-01 (external attack) for full kill chain
+5. **Phase 4 â€” Automated Assessment**: Implement scoring rubric based on SIEM detections
 
 ---
 
 ## Support & Troubleshooting
 
 For detailed troubleshooting:
-→ See **SC-02-TESTING.md** (Troubleshooting Guide section)
+â†’ See **SC-02-TESTING.md** (Troubleshooting Guide section)
 
 For implementation details:
-→ See **docs/architecture/CONTINUOUS_STATE.md** (latest changelog)
+â†’ See **docs/architecture/CONTINUOUS_STATE.md** (latest changelog)
 
 For scenario learning objectives:
-→ See **docs/scenarios/SC-02-03-specs.md** (scenario brief)
+â†’ See **docs/scenarios/SC-02-03-specs.md** (scenario brief)
 
 ---
 
-**Status**: ✅ Implementation Complete  
+**Status**: âœ… Implementation Complete  
 **Date**: 2026-04-10  
 **Author**: Claude Code  
 **Testing**: All verification steps passed  

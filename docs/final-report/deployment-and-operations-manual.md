@@ -1,12 +1,12 @@
 # Deployment and Operations Manual
 
-This manual provides instructions for deploying, operating, and maintaining the CyberSim platform. It covers single-node local development setup, production VPS deployment with Caddy, reverse proxy configuration, and sslip.io automation.
+This manual provides instructions for deploying, operating, and maintaining the Parallax platform. It covers single-node local development setup, production VPS deployment with Caddy, reverse proxy configuration, and sslip.io automation.
 
 ---
 
 ## 1. Platform Prerequisites
 
-Before deploying CyberSim, ensure the host machine meets the following requirements:
+Before deploying Parallax, ensure the host machine meets the following requirements:
 
 ### 1.1 Hardware Specifications
 * **CPU**: Minimum 4 physical cores (recommended 8 cores for concurrent user sessions).
@@ -80,35 +80,35 @@ docker compose --profile sc03 up -d   # Start Orion Phishing scenario
 ```
 Verify target container startup:
 ```bash
-docker compose ps --filter label=com.cybersim.protect=true
+docker compose ps --filter label=com.parallax.protect=true
 ```
 
 ---
 
 ## 4. Production HTTPS Deployment (VPS & Caddy)
 
-For university demonstrations and public deployments, CyberSim provides a demo-day automation script using Caddy to coordinate reverse proxying and automated Let's Encrypt TLS certificates.
+For university demonstrations and public deployments, Parallax provides a demo-day automation script using Caddy to coordinate reverse proxying and automated Let's Encrypt TLS certificates.
 
 ### 4.1 Deployment Topology
 In production, Caddy binds to ports 80/443 and disables the default Nginx service.
 
 ```text
-Student Browser ────── HTTPS (Port 443) ──────► Caddy (Reverse Proxy)
-                                                 ├── /api/ ──► FastAPI (Port 8000)
-                                                 ├── /ws/  ──► FastAPI WebSockets
-                                                 └── /     ──► React SPA (Port 80)
+Student Browser â”€â”€â”€â”€â”€â”€ HTTPS (Port 443) â”€â”€â”€â”€â”€â”€â–º Caddy (Reverse Proxy)
+                                                 â”œâ”€â”€ /api/ â”€â”€â–º FastAPI (Port 8000)
+                                                 â”œâ”€â”€ /ws/  â”€â”€â–º FastAPI WebSockets
+                                                 â””â”€â”€ /     â”€â”€â–º React SPA (Port 80)
 ```
 
 ### 4.2 Automated VPS Bootstrapping
 1. Deploy a clean Ubuntu 22.04 / 24.04 VPS.
 2. Run the bootstrap helper script as root:
    ```bash
-   CYBERSIM_DOMAIN=cybersim.sslip.io bash scripts/demo-bootstrap.sh
+   PARALLAX_DOMAIN=parallax.sslip.io bash scripts/demo-bootstrap.sh
    ```
    *Note: If a custom domain is not specified, sslip.io dynamically routes requests based on the server's public IP.*
 3. Navigate to the installation directory:
    ```bash
-   cd /opt/cybersim
+   cd /opt/parallax
    ```
 4. Configure database passwords, OpenRouter API keys, and secret credentials:
    ```bash
@@ -122,7 +122,7 @@ Student Browser ────── HTTPS (Port 443) ──────► Caddy 
 ### 4.3 Caddy Routing Definition
 The Caddy configuration (`infrastructure/caddy/Caddyfile`) coordinates routing and preserves dynamic Docker DNS:
 ```caddy
-{$CYBERSIM_DOMAIN} {
+{$PARALLAX_DOMAIN} {
     # Compress traffic
     encode gzip
 

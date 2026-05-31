@@ -72,7 +72,7 @@ Use this checklist to drive the remaining documentation work from source freeze 
 - [x] Select Canva candidate 2.
 - [x] Create editable Canva visual report design.
 - [x] Create verified Canva page rewrite brief.
-- [ ] Replace generic Canva text with verified CyberSim content.
+- [ ] Replace generic Canva text with verified Parallax content.
 - [ ] Import/export polished architecture diagrams.
 - [ ] Add current screenshots.
 - [ ] Create defense deck.

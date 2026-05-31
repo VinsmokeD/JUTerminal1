@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 100" width="520" height="100"><style><![CDATA[@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@800&display=swap');]]></style><g>
+    <defs><filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>
+    <rect x="8" y="8" width="60" height="60" fill="#FF6B7A" filter="url(#g)" opacity="0.4"/>
+    <rect x="32" y="32" width="60" height="60" fill="#4CC2FF" filter="url(#g)" opacity="0.4"/>
+    <rect x="8" y="8" width="60" height="60" fill="#FF6B7A" opacity="0.95"/>
+    <rect x="32" y="32" width="60" height="60" fill="#4CC2FF" opacity="0.95"/>
+    <rect x="32" y="32" width="36" height="36" fill="#9B7DFF"/>
+  </g>
+     <g transform="translate(120, 0)"><text x="0" y="50" style="font-family:'Orbitron',sans-serif;font-weight:800;font-size:50px;letter-spacing:7.5px;" fill="#0A0E17" dominant-baseline="middle">
+    <tspan>P</tspan><tspan fill="#FF6B7A">A</tspan><tspan>R</tspan><tspan>A</tspan><tspan>LL</tspan><tspan fill="#4CC2FF">A</tspan><tspan>X</tspan>
+  </text></g></svg>

@@ -5,7 +5,7 @@ This inventory was produced from a scoped Repomix pack so the report can describ
 ## Repomix Command
 
 ```powershell
-npx --yes repomix@latest --compress --include "backend/src/**,frontend/src/**,docs/scenarios/**,ai-monitor/**,infrastructure/docker/**,infrastructure/nginx/**,docker-compose.yml,.env.example,README.md" --ignore "**/node_modules/**,**/dist/**,**/.venv/**,**/__pycache__/**,**/.pytest_cache/**" --output ".tmp/final-report/repomix-cybersim.xml"
+npx --yes repomix@latest --compress --include "backend/src/**,frontend/src/**,docs/scenarios/**,ai-monitor/**,infrastructure/docker/**,infrastructure/nginx/**,docker-compose.yml,.env.example,README.md" --ignore "**/node_modules/**,**/dist/**,**/.venv/**,**/__pycache__/**,**/.pytest_cache/**" --output ".tmp/final-report/repomix-parallax.xml"
 ```
 
 ## Pack Summary
@@ -15,7 +15,7 @@ npx --yes repomix@latest --compress --include "backend/src/**,frontend/src/**,do
 | Files processed | 210 |
 | Total tokens | 175,785 |
 | Total characters | 641,445 |
-| Output path | `.tmp/final-report/repomix-cybersim.xml` |
+| Output path | `.tmp/final-report/repomix-parallax.xml` |
 | Security check | No suspicious files detected |
 
 ## Largest Source Areas

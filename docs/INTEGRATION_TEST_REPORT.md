@@ -1,7 +1,7 @@
-# CyberSim Infrastructure Integration & Testing Report
+# Parallax Infrastructure Integration & Testing Report
 
 **Generated:** 2026-04-16  
-**Status:** ✓ FULLY OPERATIONAL
+**Status:** âœ“ FULLY OPERATIONAL
 
 All Docker services are running, databases initialized, APIs functional, and the complete platform stack is verified integrated and tested.
 
@@ -32,11 +32,11 @@ All Docker services are running, databases initialized, APIs functional, and the
 - **Creation Method:** SQLAlchemy ORM via `init_db()` in lifespan context manager
 - **Migration Status:** Alembic tracked (versions 001_initial_schema, 002_add_performance_indexes)
 - **Performance Indexes:**
-  - `idx_sessions_user_id` — Session lookup by user
-  - `idx_sessions_scenario_id` — Session lookup by scenario
-  - `idx_command_log_session_id` — Command retrieval by session
-  - `idx_siem_events_session_id` — SIEM event lookup by session
-  - `idx_siem_events_created_at` — SIEM event chronological queries (descending)
+  - `idx_sessions_user_id` â€” Session lookup by user
+  - `idx_sessions_scenario_id` â€” Session lookup by scenario
+  - `idx_command_log_session_id` â€” Command retrieval by session
+  - `idx_siem_events_session_id` â€” SIEM event lookup by session
+  - `idx_siem_events_created_at` â€” SIEM event chronological queries (descending)
 
 ---
 
@@ -48,13 +48,13 @@ All Docker services are running, databases initialized, APIs functional, and the
 
 ### Authentication
 - **POST /api/auth/login**  
-  Status: 200 | Input: admin / CyberSimAdmin!  
+  Status: 200 | Input: admin / ParallaxAdmin!  
   Response: JWT token with 8-hour expiry
 
 ### Scenarios
 - **GET /api/scenarios/**  
   Status: 200 | Returns 3 scenario definitions:
-  - **SC-01:** "Web Application Penetration Test — NovaMed Healthcare Portal"
+  - **SC-01:** "Web Application Penetration Test â€” NovaMed Healthcare Portal"
   - **SC-02:** "Active Directory Compromise: Nexora Financial"
   - **SC-03:** "Phishing Campaign & Initial Access: Orion Logistics"
 
@@ -70,33 +70,33 @@ All Docker services are running, databases initialized, APIs functional, and the
 
 ## 4. Infrastructure Integration Tests
 
-### Backend ↔ PostgreSQL
-- **Connection:** ✓ postgresql+asyncpg driver working
-- **Tables:** ✓ All 7 tables created and accessible
-- **Seeding:** ✓ Admin user created by lifespan context manager
-- **Async:** ✓ SQLAlchemy async sessions functioning
+### Backend â†” PostgreSQL
+- **Connection:** âœ“ postgresql+asyncpg driver working
+- **Tables:** âœ“ All 7 tables created and accessible
+- **Seeding:** âœ“ Admin user created by lifespan context manager
+- **Async:** âœ“ SQLAlchemy async sessions functioning
 
-### Backend ↔ Redis
-- **Connection:** ✓ PING response successful
-- **Pub/Sub:** ✓ Channels available for SIEM events
-- **Cache:** ✓ Database accessible (currently empty, as expected)
+### Backend â†” Redis
+- **Connection:** âœ“ PING response successful
+- **Pub/Sub:** âœ“ Channels available for SIEM events
+- **Cache:** âœ“ Database accessible (currently empty, as expected)
 
-### Backend ↔ Elasticsearch
-- **Connection:** ✓ HTTP API responding (cluster green)
-- **Health:** ✓ Cluster status healthy
-- **Indices:** ✓ System indices present, ready for SIEM events
+### Backend â†” Elasticsearch
+- **Connection:** âœ“ HTTP API responding (cluster green)
+- **Health:** âœ“ Cluster status healthy
+- **Indices:** âœ“ System indices present, ready for SIEM events
 
-### Nginx ↔ Backend & Frontend
-- **Reverse Proxy:** ✓ Routing requests correctly
-- **Frontend:** ✓ React app served on port 80
-- **API:** ✓ /api/* routes proxied to backend port 8001
-- **WebSocket:** ✓ /ws/* routes available for terminal/SIEM
+### Nginx â†” Backend & Frontend
+- **Reverse Proxy:** âœ“ Routing requests correctly
+- **Frontend:** âœ“ React app served on port 80
+- **API:** âœ“ /api/* routes proxied to backend port 8001
+- **WebSocket:** âœ“ /ws/* routes available for terminal/SIEM
 
 ### Container Cleanup Background Task
-- **Status:** ✓ Running (start_cleanup_loop() in lifespan)
-- **Interval:** ✓ 300 seconds (5 minutes)
-- **Function:** ✓ Kills idle Kali containers >60 minutes without activity
-- **Purpose:** ✓ Prevents RAM bloat on long-running sandbox sessions
+- **Status:** âœ“ Running (start_cleanup_loop() in lifespan)
+- **Interval:** âœ“ 300 seconds (5 minutes)
+- **Function:** âœ“ Kills idle Kali containers >60 minutes without activity
+- **Purpose:** âœ“ Prevents RAM bloat on long-running sandbox sessions
 
 ---
 
@@ -140,15 +140,15 @@ INSERT INTO alembic_version VALUES ('002_add_performance_indexes');
 
 | Criteria | Status | Evidence |
 |----------|--------|----------|
-| Docker stack running | ✓ | All 7 services healthy |
-| All databases initialized | ✓ | 7 tables, 5 indexes created |
-| All APIs functional | ✓ | Auth, scenarios, health working |
-| Frontend accessible | ✓ | React app serving on :80 |
-| Backend integrated with DB | ✓ | Admin user creation working |
-| Cache layer connected | ✓ | Redis PING successful |
-| SIEM ready | ✓ | Elasticsearch cluster green |
-| Background tasks running | ✓ | Container cleanup daemon active |
-| No errors in service logs | ✓ | All services healthy |
+| Docker stack running | âœ“ | All 7 services healthy |
+| All databases initialized | âœ“ | 7 tables, 5 indexes created |
+| All APIs functional | âœ“ | Auth, scenarios, health working |
+| Frontend accessible | âœ“ | React app serving on :80 |
+| Backend integrated with DB | âœ“ | Admin user creation working |
+| Cache layer connected | âœ“ | Redis PING successful |
+| SIEM ready | âœ“ | Elasticsearch cluster green |
+| Background tasks running | âœ“ | Container cleanup daemon active |
+| No errors in service logs | âœ“ | All services healthy |
 
 ---
 
@@ -196,10 +196,10 @@ idx_siem_events_session_id        (siem_events table)
 ```
 
 Expected query performance improvements:
-- Session lookup by user: O(1) → O(log n) with index
-- Command retrieval by session: O(n) → O(log n) with index
-- SIEM feed retrieval: O(n) → O(log n) with index
-- Time-based queries: O(n) → O(log n) with DESC index
+- Session lookup by user: O(1) â†’ O(log n) with index
+- Command retrieval by session: O(n) â†’ O(log n) with index
+- SIEM feed retrieval: O(n) â†’ O(log n) with index
+- Time-based queries: O(n) â†’ O(log n) with DESC index
 
 ---
 
@@ -212,9 +212,9 @@ Expected query performance improvements:
 - **Upgrade Path:** `alembic upgrade head` available for future migrations
 
 ### Migration Files
-- `backend/migrations/versions/001_initial_schema.py` — Creates 7 tables with schema
-- `backend/migrations/versions/002_add_performance_indexes.py` — Creates 5 performance indexes
-- `backend/migrations/env.py` — Async migration runner
+- `backend/migrations/versions/001_initial_schema.py` â€” Creates 7 tables with schema
+- `backend/migrations/versions/002_add_performance_indexes.py` â€” Creates 5 performance indexes
+- `backend/migrations/env.py` â€” Async migration runner
 
 ### Fresh Database Initialization
 1. PostgreSQL starts, init.sql creates extensions/functions (no indexes)
@@ -282,7 +282,7 @@ All containers configured with resource limits:
 
 **Phase E (Alembic Migrations & Container Cleanup) is COMPLETE**
 
-The CyberSim platform is fully operational with a verified, tested, and integrated infrastructure. All core systems are running, databases are initialized, APIs are functional, and background cleanup tasks are active.
+The Parallax platform is fully operational with a verified, tested, and integrated infrastructure. All core systems are running, databases are initialized, APIs are functional, and background cleanup tasks are active.
 
 **The platform is ready for:**
 1. Scenario deployment testing (SC-01, SC-02, SC-03)

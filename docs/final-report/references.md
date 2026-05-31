@@ -5,7 +5,7 @@ This file tracks sources that should be cited in the formal report. Final format
 ## Project and University Sources
 
 1. King Abdullah II School of Information Technology, The University of Jordan. Guidelines for Preparing Graduation Project-1 and Project-2 Reports. 2022-2023.
-2. CyberSim repository source files and documentation, local project workspace.
+2. Parallax repository source files and documentation, local project workspace.
 
 ## Standards and Frameworks To Cite
 

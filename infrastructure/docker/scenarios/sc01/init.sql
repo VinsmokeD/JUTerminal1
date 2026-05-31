@@ -1,5 +1,5 @@
--- NovaMed database — intentionally designed for training
--- Passwords are MD5 hashed (weak — intentional for training)
+-- NovaMed database â€” intentionally designed for training
+-- Passwords are MD5 hashed (weak â€” intentional for training)
 
 CREATE DATABASE IF NOT EXISTS novamed;
 USE novamed;
@@ -61,7 +61,7 @@ INSERT INTO patients (name, dob, diagnosis, ssn, user_id) VALUES
 ('Susan Miller', '1988-05-18', 'Anxiety disorder, sertraline 50mg daily', '321-54-9876', NULL);
 
 INSERT INTO patients (id, name, dob, diagnosis, ssn, user_id) VALUES
-(1042, 'Aisha Rahman', '1992-09-14', 'Simulated oncology follow-up record - CyberSim IDOR evidence marker: Patient 1042: Aisha Rahman', '104-20-4242', NULL)
+(1042, 'Aisha Rahman', '1992-09-14', 'Simulated oncology follow-up record - Parallax IDOR evidence marker: Patient 1042: Aisha Rahman', '104-20-4242', NULL)
 ON DUPLICATE KEY UPDATE
 name = VALUES(name),
 dob = VALUES(dob),

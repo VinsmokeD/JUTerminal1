@@ -1,6 +1,6 @@
-# CyberSim Architecture
+# Parallax Architecture
 
-CyberSim is a single-node Docker platform with a React frontend, FastAPI backend, Redis/PostgreSQL data services, Elastic/Filebeat telemetry plumbing, and isolated scenario networks.
+Parallax is a single-node Docker platform with a React frontend, FastAPI backend, Redis/PostgreSQL data services, Elastic/Filebeat telemetry plumbing, and isolated scenario networks.
 
 ## Runtime Topology
 

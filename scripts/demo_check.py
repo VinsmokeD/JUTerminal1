@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CyberSim Demo Readiness Check
+Parallax Demo Readiness Check
 ==============================
 One-command pre-flight before a graduation demo or lab session.
 
@@ -27,7 +27,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 
-# ── ANSI colours ──────────────────────────────────────────────────────────────
+# â”€â”€ ANSI colours â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 GREEN  = "\033[92m"
 YELLOW = "\033[93m"
@@ -35,13 +35,13 @@ RED    = "\033[91m"
 BOLD   = "\033[1m"
 RESET  = "\033[0m"
 
-def ok(msg: str)   -> str: return f"{GREEN}  ✔  {RESET}{msg}"
-def warn(msg: str) -> str: return f"{YELLOW}  ⚠  {RESET}{msg}"
-def fail(msg: str) -> str: return f"{RED}  ✘  {RESET}{msg}"
+def ok(msg: str)   -> str: return f"{GREEN}  âœ”  {RESET}{msg}"
+def warn(msg: str) -> str: return f"{YELLOW}  âš   {RESET}{msg}"
+def fail(msg: str) -> str: return f"{RED}  âœ˜  {RESET}{msg}"
 def head(msg: str) -> str: return f"\n{BOLD}{msg}{RESET}"
 
 
-# ── HTTP helpers ──────────────────────────────────────────────────────────────
+# â”€â”€ HTTP helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def _get_json(url: str, timeout: int = 5) -> dict:
     req = urllib.request.Request(url, headers={"Accept": "application/json"})
@@ -114,7 +114,7 @@ def _compose_service_ok(service_name: str, timeout: int = 8) -> bool:
     return False
 
 
-# ── Check result ─────────────────────────────────────────────────────────────
+# â”€â”€ Check result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @dataclass
 class Result:
@@ -124,11 +124,11 @@ class Result:
 
     def render(self) -> str:
         fn = ok if self.passed else fail
-        suffix = f" — {self.detail}" if self.detail else ""
+        suffix = f" â€” {self.detail}" if self.detail else ""
         return fn(f"{self.label}{suffix}")
 
 
-# ── Individual checks ─────────────────────────────────────────────────────────
+# â”€â”€ Individual checks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def check_backend(base: str) -> list[Result]:
     results = []
@@ -168,8 +168,8 @@ def check_frontend(frontend_url: str) -> list[Result]:
         req = urllib.request.Request(frontend_url)
         with urllib.request.urlopen(req, timeout=5) as resp:
             body = resp.read(256).decode(errors="ignore")
-        has_cybersim = "cybersim" in body.lower() or "CyberSim" in body
-        return [Result("Frontend serves HTML", has_cybersim, frontend_url)]
+        has_parallax = "parallax" in body.lower() or "Parallax" in body
+        return [Result("Frontend serves HTML", has_parallax, frontend_url)]
     except Exception as exc:
         return [Result("Frontend serves HTML", False, str(exc)[:80])]
 
@@ -274,17 +274,17 @@ def check_docker_compose() -> list[Result]:
     return results
 
 
-# ── Main ─────────────────────────────────────────────────────────────────────
+# â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="CyberSim demo readiness check")
+    parser = argparse.ArgumentParser(description="Parallax demo readiness check")
     parser.add_argument("--backend",  default="http://localhost:8001")
     parser.add_argument("--frontend", default="http://localhost:3000")
     parser.add_argument("--scenarios", default="", help="all | sc01 | sc02 | sc03 (comma-sep)")
     args = parser.parse_args()
 
     print(f"\n{BOLD}{'=' * 54}{RESET}")
-    print(f"{BOLD}  CyberSim Demo Readiness Check  {RESET}")
+    print(f"{BOLD}  Parallax Demo Readiness Check  {RESET}")
     print(f"{BOLD}{'=' * 54}{RESET}")
     print(f"  Backend:  {args.backend}")
     print(f"  Frontend: {args.frontend}")
@@ -324,13 +324,13 @@ def main() -> int:
     total  = len(all_results)
     failed = total - passed
 
-    print(f"\n{BOLD}{'─' * 54}{RESET}")
+    print(f"\n{BOLD}{'â”€' * 54}{RESET}")
     if failed == 0:
-        print(f"{GREEN}{BOLD}  ALL {total} CHECKS PASSED — ready to demo!{RESET}")
+        print(f"{GREEN}{BOLD}  ALL {total} CHECKS PASSED â€” ready to demo!{RESET}")
     else:
         print(f"{RED}{BOLD}  {failed}/{total} CHECKS FAILED{RESET}")
         print(f"{YELLOW}  Fix the red items above before starting the demo.{RESET}")
-    print(f"{BOLD}{'─' * 54}{RESET}\n")
+    print(f"{BOLD}{'â”€' * 54}{RESET}\n")
 
     return 0 if failed == 0 else 1
 

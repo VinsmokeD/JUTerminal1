@@ -1,5 +1,5 @@
 """
-Unit tests for Phase 25 — Instructor Learning Analytics helper logic and API routes.
+Unit tests for Phase 25 â€” Instructor Learning Analytics helper logic and API routes.
 """
 
 from __future__ import annotations
@@ -97,7 +97,7 @@ class _FakeDb:
         self.refreshed.append(item)
 
 
-# ── Helper Builders ──────────────────────────────────────────────────────────
+# â”€â”€ Helper Builders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def _student(user_id: str = "student-1", username: str = "stud1") -> User:
@@ -122,7 +122,7 @@ def _session(session_id: str = "sess-1", **overrides) -> Session:
     return Session(**data)
 
 
-# ── Tests ────────────────────────────────────────────────────────────────────
+# â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_generate_kde_svg_coords_normal():
@@ -360,8 +360,8 @@ async def test_export_grades_canvas_csv():
         "SIS User ID",
         "SIS Login ID",
         "Section",
-        "CyberSim Score",
-        "CyberSim Time (m)",
+        "Parallax Score",
+        "Parallax Time (m)",
         "Adherence %",
     ]
     # Row contents

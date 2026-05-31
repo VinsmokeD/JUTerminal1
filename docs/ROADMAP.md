@@ -1,8 +1,8 @@
-# CyberSim Roadmap
+# Parallax Roadmap
 
 ## Current State
 
-CyberSim is a feature-complete, multi-part platform: React frontend (V5 Design System), FastAPI backend, Postgres, Redis, Elastic/Filebeat SIEM plumbing, Docker scenario profiles, scenario docs, AI monitor, scoring, reports, and instructor support.
+Parallax is a feature-complete, multi-part platform: React frontend (V5 Design System), FastAPI backend, Postgres, Redis, Elastic/Filebeat SIEM plumbing, Docker scenario profiles, scenario docs, AI monitor, scoring, reports, and instructor support.
 
 Current assessed completion: 98/100.
 
@@ -21,7 +21,7 @@ Current assessed completion: 98/100.
 
 | Priority | Work |
 | --- | --- |
-| P0 | Complete Phase E: Coverage honesty and raising engine coverage to ≥80% |
+| P0 | Complete Phase E: Coverage honesty and raising engine coverage to â‰¥80% |
 | P1 | Load testing and final scalability documentation (Phase 12) |
 | P1 | Graduation Defense Preparation |
 
@@ -33,7 +33,7 @@ Current assessed completion: 98/100.
 
 ## Graduation Defense Target
 
-CyberSim should be presented as a working local cyber range with a strong safety model, not as a production SaaS. The strongest demo path is:
+Parallax should be presented as a working local cyber range with a strong safety model, not as a production SaaS. The strongest demo path is:
 
 1. Login (Optionally via returning session).
 2. Start SC-01 (NovaMed).

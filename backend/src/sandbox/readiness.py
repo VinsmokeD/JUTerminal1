@@ -1,4 +1,4 @@
-"""Readiness diagnostics and self-healing engine for CyberSim scenario workspaces."""
+"""Readiness diagnostics and self-healing engine for Parallax scenario workspaces."""
 
 from __future__ import annotations
 
@@ -85,7 +85,7 @@ async def self_heal_target(service_name: str) -> bool:
         cmd = [
             "docker-compose",
             "--project-name",
-            "cybersim",
+            "parallax",
             "-f",
             str(_COMPOSE_FILE),
             "restart",
@@ -145,7 +145,7 @@ async def get_session_readiness(session_id: str, scenario_id: str) -> dict[str, 
     targets_detail: dict[str, Any] = {}
 
     for service_name, port in target_probes.items():
-        container_name = f"cybersim-{service_name}-1"
+        container_name = f"parallax-{service_name}-1"
         try:
             loop = asyncio.get_running_loop()
             container = await loop.run_in_executor(

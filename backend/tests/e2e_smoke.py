@@ -70,7 +70,7 @@ async def test_full_lifecycle_smoke():
             assert (
                 first_msg["type"] == "terminal_output"
             ), f"Expected terminal_output greeting, got: {first_msg}"
-            assert "CyberSim Secure Sandbox PTY" in first_msg["data"]["data"]
+            assert "Parallax Secure Sandbox PTY" in first_msg["data"]["data"]
 
             print("Waiting for readiness status to become 'ready'...")
             ready = False

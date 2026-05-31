@@ -359,7 +359,7 @@ class _ContainerList:
         self._containers = containers
 
     def list(self, filters=None):
-        assert filters == {"label": "com.cybersim.role=kali"}
+        assert filters == {"label": "com.parallax.role=kali"}
         return self._containers
 
 

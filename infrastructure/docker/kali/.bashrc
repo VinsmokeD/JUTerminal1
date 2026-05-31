@@ -1,4 +1,4 @@
-# CyberSim Kali student shell configuration
+# Parallax Kali student shell configuration
 
 # Colored prompt showing scenario context
 SCENARIO=${SCENARIO_ID:-"??"}
@@ -41,7 +41,7 @@ alias myip='ip addr show | grep "inet " | grep -v 127.0.0.1'
 alias ports='ss -tlnp'
 
 echo ""
-echo "  CyberSim — Kali Terminal"
+echo "  Parallax â€” Kali Terminal"
 echo "  Scenario: ${SCENARIO_ID:-'Not set'}"
 echo "  Session:  ${SESSION_ID:-'Not set'}"
 echo "  Type 'scope' to see your authorized targets."

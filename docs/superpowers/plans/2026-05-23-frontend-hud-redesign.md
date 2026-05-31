@@ -1,8 +1,8 @@
-# CyberSim Immersive HUD Implementation Plan
+# Parallax Immersive HUD Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rework the entire CyberSim frontend into a cinematic "Immersive HUD" with phased navigation and 3D context.
+**Goal:** Rework the entire Parallax frontend into a cinematic "Immersive HUD" with phased navigation and 3D context.
 
 **Architecture:** We use a global `HudEnvironment` provider to manage the Three.js background and shared glassmorphism styles. Navigation is phased using Framer Motion for cinematic transitions between Briefing, Operation, and Debrief states.
 

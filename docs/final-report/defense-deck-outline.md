@@ -1,9 +1,9 @@
-# CyberSim Defense Deck Outline
+# Parallax Defense Deck Outline
 
 This document outlines the structure and content for the final graduation project defense presentation.
 
 ## 1. Title Slide
-- **Project Title:** CyberSim: A Dual-Perspective Cybersecurity Training Platform
+- **Project Title:** Parallax: A Dual-Perspective Cybersecurity Training Platform
 - **Team:** [Team Names]
 - **Supervisor:** [Supervisor Name]
 - **Date:** May 2026
@@ -14,7 +14,7 @@ This document outlines the structure and content for the final graduation projec
 - **Siloed Learning:** Students use Kali in one lab and SIEM in another, never seeing the causal link.
 - **Complexity:** Setting up realistic, safe sandboxes is difficult for students.
 
-## 3. The CyberSim Solution
+## 3. The Parallax Solution
 - **Dual Workspace:** Side-by-side Terminal (Red) and SIEM (Blue).
 - **Instant Feedback:** See an alert the moment a command is run.
 - **Socratic AI:** Adaptive guidance without giving away answers.

@@ -5,7 +5,7 @@ rules:
     mitre: T1558.003
     scenario: SC-02
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -23,7 +23,7 @@ rules:
     mitre: T1003.006
     scenario: SC-02
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -36,12 +36,12 @@ rules:
     expected_latency_s: 15
 
   - id: sc02.lateral_movement_4624
-    title: "Lateral movement — successful logon type 3"
+    title: "Lateral movement â€” successful logon type 3"
     severity: HIGH
     mitre: T1021.002
     scenario: SC-02
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -59,7 +59,7 @@ rules:
     mitre: T1110
     scenario: SC-02
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -75,7 +75,7 @@ rules:
     mitre: T1558.001
     scenario: SC-02
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -91,7 +91,7 @@ rules:
     mitre: T1039
     scenario: SC-02
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:

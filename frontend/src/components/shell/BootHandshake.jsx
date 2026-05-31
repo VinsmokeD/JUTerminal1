@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useReducedMotionSafe } from '../../lib/motion'
 
-const BOOT_KEY = 'cs.boot.done'
+const BOOT_KEY = 'px.boot.done'
 
 const STEPS = [
   { label: 'Establishing secure channel',     ms: 550 },
@@ -15,7 +15,7 @@ const STEPS = [
 const TOTAL_MS = STEPS.reduce((a, s) => a + s.ms, 0)
 
 /**
- * BootHandshake — connection-establish 0 → 100 % + dual red/blue curtain reveal.
+ * BootHandshake â€” connection-establish 0 â†’ 100 % + dual red/blue curtain reveal.
  * Runs once per browser session via sessionStorage key `cs.boot.done`.
  * Under reduced-motion the children are rendered immediately (no animation).
  *
@@ -66,7 +66,7 @@ export default function BootHandshake({ children }) {
 
   return (
     <>
-      {/* display:none until boot completes — prevents IntersectionObserver from
+      {/* display:none until boot completes â€” prevents IntersectionObserver from
           firing on hidden content and playing hero reveals behind the curtain */}
       <div style={done ? undefined : { display: 'none' }}>
         {children}
@@ -103,16 +103,13 @@ export default function BootHandshake({ children }) {
               }}
             />
 
-            {/* Boot UI — centered */}
+            {/* Boot UI â€” centered */}
             <div className="relative z-10 text-center space-y-8 px-8 max-w-xs w-full select-none">
               {/* Logo mark */}
               <div className="flex items-center justify-center gap-3">
-                <div className="w-6 h-6 relative flex-shrink-0">
-                  <span className="absolute top-0 left-0 w-[10px] h-[10px] bg-cs-red shadow-[0_0_12px_#ff3b3b]" />
-                  <span className="absolute bottom-0 right-0 w-[10px] h-[10px] bg-cs-blue shadow-[0_0_12px_#4CC2FF]" />
-                </div>
+                <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-10 h-10 flex-shrink-0" />
                 <span className="font-display font-bold text-txt-primary tracking-[0.15em] text-sm">
-                  CYBERSIM
+                  PARALLAX
                 </span>
               </div>
 
@@ -122,7 +119,7 @@ export default function BootHandshake({ children }) {
                 <span className="text-2xl text-txt-dim font-normal">%</span>
               </div>
 
-              {/* Progress bar — dual-color gradient */}
+              {/* Progress bar â€” dual-color gradient */}
               <div className="relative h-[2px] w-full bg-surface-3 rounded-full overflow-hidden">
                 <motion.div
                   className="absolute inset-y-0 left-0 rounded-full"

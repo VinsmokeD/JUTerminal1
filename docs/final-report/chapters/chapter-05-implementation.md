@@ -2,7 +2,7 @@
 
 ## 5.1 Implementation Overview
 
-CyberSim was implemented as a browser-based training platform backed by a single-node Docker Compose deployment. The implementation follows the architecture defined in Chapter 4: React/Vite frontend, FastAPI backend, PostgreSQL, Redis, Elasticsearch/Filebeat telemetry, Nginx routing, and isolated Docker scenario networks.
+Parallax was implemented as a browser-based training platform backed by a single-node Docker Compose deployment. The implementation follows the architecture defined in Chapter 4: React/Vite frontend, FastAPI backend, PostgreSQL, Redis, Elasticsearch/Filebeat telemetry, Nginx routing, and isolated Docker scenario networks.
 
 The implementation objective was to make the Red Team and Blue Team views operate from the same session state. A student's terminal action should update backend session data, trigger scenario logic, generate defensive telemetry where appropriate, and become available for debrief and instructor review.
 
@@ -105,7 +105,7 @@ The tutor is a learning assistant rather than an answer generator. Its output sh
 
 ## 5.8 Scenario Implementation
 
-CyberSim implements exactly three MVP scenarios:
+Parallax implements exactly three MVP scenarios:
 
 | Scenario | Definition file | Infrastructure path | Training focus |
 | --- | --- | --- | --- |
@@ -126,7 +126,7 @@ The main deployment file is `docker-compose.yml`. It defines:
 - Scenario services activated by Compose profiles.
 - Resource limits for core and scenario services.
 
-Scenario networks use `internal: true`, which is central to CyberSim's safety model.
+Scenario networks use `internal: true`, which is central to Parallax's safety model.
 
 ## 5.10 Reporting and Instructor Implementation
 
@@ -156,4 +156,4 @@ The implementation follows these constraints:
 
 ## 5.12 Chapter Summary
 
-CyberSim's implementation combines a modern web application, real-time backend services, containerized lab targets, structured scenario definitions, telemetry, AI guidance, and instructor analytics. The result is a safe cybersecurity training environment that demonstrates both offensive methodology and defensive evidence in one workflow.
+Parallax's implementation combines a modern web application, real-time backend services, containerized lab targets, structured scenario definitions, telemetry, AI guidance, and instructor analytics. The result is a safe cybersecurity training environment that demonstrates both offensive methodology and defensive evidence in one workflow.

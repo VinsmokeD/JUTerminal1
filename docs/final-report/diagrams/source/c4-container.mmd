@@ -8,50 +8,50 @@ flowchart TB
     classDef proxy fill:#4A235A,stroke:#8E44AD,stroke-width:2px,color:#FFFFFF
     classDef user fill:#784212,stroke:#F39C12,stroke-width:2px,color:#FFFFFF
 
-    BROWSER(["🌐 Browser\nStudent / Instructor"])
+    BROWSER(["ðŸŒ Browser\nStudent / Instructor"])
 
-    subgraph PLATFORM["  CyberSim Docker Compose Stack  "]
-        NGX["🔀 Nginx\nReverse Proxy / Router"]
+    subgraph PLATFORM["  Parallax Docker Compose Stack  "]
+        NGX["ðŸ”€ Nginx\nReverse Proxy / Router"]
 
         subgraph FRONTEND_BOX["  Frontend  "]
-            FE["⚛️ React + Vite\nSPA Application\n─────────────────\nRedWorkspace.jsx\nBlueWorkspace.jsx\nDebrief.jsx\nInstructorDashboard.jsx\nAuth.jsx · Dashboard.jsx"]
+            FE["âš›ï¸ React + Vite\nSPA Application\nâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\nRedWorkspace.jsx\nBlueWorkspace.jsx\nDebrief.jsx\nInstructorDashboard.jsx\nAuth.jsx Â· Dashboard.jsx"]
         end
 
         subgraph BACKEND_BOX["  Backend  "]
-            BE["🐍 FastAPI (Python 3.11)\nAPI + WebSocket Server\n─────────────────\n/auth · /sessions · /ws\n/siem · /scenarios\n/reports · /instructor"]
+            BE["ðŸ FastAPI (Python 3.11)\nAPI + WebSocket Server\nâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\n/auth Â· /sessions Â· /ws\n/siem Â· /scenarios\n/reports Â· /instructor"]
         end
 
         subgraph DATASTORES["  Data Stores  "]
-            PG[("🗄️ PostgreSQL\nSessions · Notes\nCommands · Events")]
-            RD[("⚡ Redis\nActive Sessions\nPub/Sub · Cooldowns")]
+            PG[("ðŸ—„ï¸ PostgreSQL\nSessions Â· Notes\nCommands Â· Events")]
+            RD[("âš¡ Redis\nActive Sessions\nPub/Sub Â· Cooldowns")]
         end
 
         subgraph TELEMETRY["  Telemetry  "]
-            ES[("🔍 Elasticsearch\nSIEM Index\nEvent Storage")]
-            FB["📦 Filebeat\nLog Shipper"]
+            ES[("ðŸ” Elasticsearch\nSIEM Index\nEvent Storage")]
+            FB["ðŸ“¦ Filebeat\nLog Shipper"]
         end
 
         subgraph SCENARIOS["  Scenario Containers (isolated networks)  "]
-            SC01["🌐 SC-01 NovaMed\nPHP+Apache+ModSec WAF\nMySQL · sc01-net"]
-            SC02["🏦 SC-02 Nexora\nSamba AD + LDAP\nKerberos · sc02-net"]
-            SC03["📧 SC-03 Orion\nPostfix SMTP\nGoPhish · sc03-net"]
+            SC01["ðŸŒ SC-01 NovaMed\nPHP+Apache+ModSec WAF\nMySQL Â· sc01-net"]
+            SC02["ðŸ¦ SC-02 Nexora\nSamba AD + LDAP\nKerberos Â· sc02-net"]
+            SC03["ðŸ“§ SC-03 Orion\nPostfix SMTP\nGoPhish Â· sc03-net"]
         end
     end
 
-    AI_P["🤖 AI Provider\n(External)"]
+    AI_P["ðŸ¤– AI Provider\n(External)"]
 
     BROWSER -->|"HTTPS / WSS"| NGX
     NGX -->|"Static SPA"| FE
-    NGX -->|"API Proxy\n/api · /ws"| BE
-    FE <-->|"WebSocket: stdin/stdout\nSIEM events · hints"| BE
+    NGX -->|"API Proxy\n/api Â· /ws"| BE
+    FE <-->|"WebSocket: stdin/stdout\nSIEM events Â· hints"| BE
     BE <-->|"ORM queries"| PG
-    BE <-->|"State · Pub/Sub"| RD
+    BE <-->|"State Â· Pub/Sub"| RD
     BE <-->|"SIEM event polling"| ES
     BE -->|"Bounded hint requests"| AI_P
     FB -->|"Ship container logs"| ES
-    SC01 -.->|"Audit logs → Filebeat"| FB
-    SC02 -.->|"Audit logs → Filebeat"| FB
-    SC03 -.->|"Audit logs → Filebeat"| FB
+    SC01 -.->|"Audit logs â†’ Filebeat"| FB
+    SC02 -.->|"Audit logs â†’ Filebeat"| FB
+    SC03 -.->|"Audit logs â†’ Filebeat"| FB
     BE <-->|"Docker API\nExec/PTY"| SC01
     BE <-->|"Docker API\nExec/PTY"| SC02
     BE <-->|"Docker API\nExec/PTY"| SC03

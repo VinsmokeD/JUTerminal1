@@ -1,6 +1,6 @@
-# CyberSim Local Hardware And Network Setup
+# Parallax Local Hardware And Network Setup
 
-CyberSim is currently verified as a single-node Docker Compose deployment for local development and graduation defense demos.
+Parallax is currently verified as a single-node Docker Compose deployment for local development and graduation defense demos.
 
 ## Verified Layout
 

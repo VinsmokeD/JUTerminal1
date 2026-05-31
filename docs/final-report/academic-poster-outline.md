@@ -1,9 +1,9 @@
-# CyberSim Academic Poster Outline
+# Parallax Academic Poster Outline
 
 This document outlines the visual and textual content for the academic poster.
 
 ## 1. Header
-- **Project Title:** CyberSim
+- **Project Title:** Parallax
 - **Subtitle:** Dual-Perspective Cybersecurity Sandbox
 - **Authors:** [Team Names]
 - **Advisor:** [Supervisor Name]
@@ -45,7 +45,7 @@ This document outlines the visual and textual content for the academic poster.
 - Sub-second event latency.
 
 ## 9. Conclusion
-- CyberSim effectively bridges the gap between offensive tools and defensive analysis in a safe, controlled environment.
+- Parallax effectively bridges the gap between offensive tools and defensive analysis in a safe, controlled environment.
 
 ## 10. Footer / QR Code
 - Repository Link (Github)

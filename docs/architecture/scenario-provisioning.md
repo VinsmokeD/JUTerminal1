@@ -1,7 +1,7 @@
 # SOP: Scenario Provisioning (AD & Infrastructure)
 
 ## Overview
-This document defines how complex scenarios like SC-02 (AD Compromise) are provisioned in the CyberSim environment using Docker.
+This document defines how complex scenarios like SC-02 (AD Compromise) are provisioned in the Parallax environment using Docker.
 
 ## SC-02 (Nexora AD) Specifications
 - **Domain**: nexora.local

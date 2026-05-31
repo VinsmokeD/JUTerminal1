@@ -95,16 +95,16 @@ def _cleanup_orphans_sync(
     docker_client = _get_docker_client()
     containers = docker_client.containers.list(
         all=True,
-        filters={"label": "cybersim_session"},
+        filters={"label": "parallax_session"},
     )
     cleaned_count = 0
 
     for container in containers:
         labels = getattr(container, "labels", {}) or {}
-        if labels.get("cybersim_role") != "kali":
+        if labels.get("parallax_role") != "kali":
             continue
 
-        session_id = labels.get("cybersim_session")
+        session_id = labels.get("parallax_session")
         expected_container_id = session_index.get(session_id or "")
         reason = None
 
@@ -154,26 +154,26 @@ async def cleanup_orphaned_containers() -> int:
 
 async def _cleanup_orphans(docker_client, active_container_ids: set[str]) -> int:
     """
-    Stop and remove CyberSim Kali containers bearing `com.cybersim.role=kali`
+    Stop and remove Parallax Kali containers bearing `com.parallax.role=kali`
     that are not tracked by any active session and are older than 2 hours.
 
-    Uses the canonical label added in B7-2 (com.cybersim.role=kali) so the
-    filter is independent of the legacy `cybersim_role` label.
+    Uses the canonical label added in B7-2 (com.parallax.role=kali) so the
+    filter is independent of the legacy `parallax_role` label.
     """
     removed = 0
     try:
         containers = await asyncio.to_thread(
-            lambda: docker_client.containers.list(filters={"label": "com.cybersim.role=kali"})
+            lambda: docker_client.containers.list(filters={"label": "com.parallax.role=kali"})
         )
         for c in containers:
             short_id = c.id[:12]
             if short_id in active_container_ids or c.id in active_container_ids:
-                continue  # actively tracked — leave it alone
+                continue  # actively tracked â€” leave it alone
 
             age_seconds = _container_age_seconds(c)
 
             if age_seconds < _ORPHAN_AGE_SECONDS:
-                continue  # too young — might still be reconnecting after crash
+                continue  # too young â€” might still be reconnecting after crash
 
             try:
                 c.stop(timeout=5)
@@ -292,19 +292,19 @@ async def container_cleanup_loop(interval_seconds: int = 60):
         try:
             cycle += 1
 
-            # ── 60-second pass: idle + DB-orphaned containers ────────────
+            # â”€â”€ 60-second pass: idle + DB-orphaned containers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             await cleanup_idle_containers()
             await cleanup_orphaned_containers()
 
-            # ── Stale session eviction from Redis active-sessions hash ───
+            # â”€â”€ Stale session eviction from Redis active-sessions hash â”€â”€â”€
             try:
                 from src.cache.redis import _get as get_redis
 
                 redis = get_redis()
-                active = await redis.hgetall("cybersim:active_sessions")  # type: ignore[misc]  # redis-py stub
+                active = await redis.hgetall("parallax:active_sessions")  # type: ignore[misc]  # redis-py stub
                 for sid_raw, val_raw in active.items():
                     sid = sid_raw.decode() if isinstance(sid_raw, bytes) else sid_raw
-                    alive = await redis.exists(f"cybersim:session:{sid}:alive")
+                    alive = await redis.exists(f"parallax:session:{sid}:alive")
                     if not alive:
                         container_id = None
                         try:
@@ -345,12 +345,12 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                                 "[CLEANUP] DB update for stale session %s failed: %s", sid[:8], dbe
                             )
 
-                        await redis.hdel("cybersim:active_sessions", sid)  # type: ignore[misc]  # redis-py stub
+                        await redis.hdel("parallax:active_sessions", sid)  # type: ignore[misc]  # redis-py stub
                         logger.info("[CLEANUP] Evicted stale session %s from active map", sid[:8])
             except Exception as _re:
                 logger.warning("[CLEANUP] Redis stale-session eviction failed: %s", _re)
 
-            # ── 5-minute pass: orphan Kali containers (age > 2h) ────────
+            # â”€â”€ 5-minute pass: orphan Kali containers (age > 2h) â”€â”€â”€â”€â”€â”€â”€â”€
             if cycle % 5 == 0:
                 try:
                     docker_client = _get_docker_client()
@@ -359,7 +359,7 @@ async def container_cleanup_loop(interval_seconds: int = 60):
                         from src.cache.redis import _get as get_redis2
 
                         redis2 = get_redis2()
-                        active2 = await redis2.hgetall("cybersim:active_sessions")  # type: ignore[misc]  # redis-py stub
+                        active2 = await redis2.hgetall("parallax:active_sessions")  # type: ignore[misc]  # redis-py stub
                     except RedisError:
                         active2 = {}
                     # Also pull from DB for belt-and-suspenders

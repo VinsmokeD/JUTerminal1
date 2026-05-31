@@ -34,7 +34,7 @@ function BootLogo() {
           <span className="absolute top-0 left-0 w-[10px] h-[10px] bg-cs-red shadow-[0_0_12px_#ff3b3b]" />
           <span className="absolute bottom-0 right-0 w-[10px] h-[10px] bg-cs-blue shadow-[0_0_12px_#4CC2FF]" />
         </div>
-        <span className="font-display font-bold text-txt-primary tracking-[0.15em] text-sm">CYBERSIM</span>
+        <span className="font-display font-bold text-txt-primary tracking-[0.15em] text-sm">PARALLAX</span>
       </div>
     </div>
   )

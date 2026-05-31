@@ -3,7 +3,7 @@
     "red": {
       "1": {
         "L1": [
-          "Step 1: This is a phishing simulation inside CyberSim only. Do not send anything to real people or real domains.",
+          "Step 1: This is a phishing simulation inside Parallax only. Do not send anything to real people or real domains.",
           "Step 2: Your first job is target research. A good pretext comes from the victim organization's normal work: invoices, shipments, delivery issues, helpdesk tickets, or password resets.",
           "Step 3: Write down the simulated domain, likely email pattern, target role, and pretext idea before touching GoPhish."
         ],
@@ -40,7 +40,7 @@
       },
       "3": {
         "L1": [
-          "Step 1: Payload crafting in this scenario is simulated and must stay inside the CyberSim network.",
+          "Step 1: Payload crafting in this scenario is simulated and must stay inside the Parallax network.",
           "Step 2: Start the listener before delivering the payload. If the victim executes first and no listener is ready, you miss the callback.",
           "Step 3: Record payload type, listener IP, listener port, and expected victim IP before launching."
         ],

@@ -1,6 +1,6 @@
-# CyberSim Documentation
+# Parallax Documentation
 
-This folder is the maintained documentation entry point for CyberSim. Older reports and agent handoff files remain for project history, but the files below are the docs a reviewer or teammate should read first.
+This folder is the maintained documentation entry point for Parallax. Older reports and agent handoff files remain for project history, but the files below are the docs a reviewer or teammate should read first.
 
 ## Start Here
 

@@ -9,8 +9,8 @@ os.environ["JWT_SECRET"] = os.environ.get(
 os.environ["POSTGRES_URL"] = os.environ.get(
     "TEST_POSTGRES_URL",
     # Default matches the docker-compose dev stack (POSTGRES_PASSWORD defaults to
-    # "cybersim"); override with TEST_POSTGRES_URL for any other environment.
-    "postgresql+asyncpg://cybersim:cybersim@127.0.0.1:5432/cybersim",
+    # "parallax"); override with TEST_POSTGRES_URL for any other environment.
+    "postgresql+asyncpg://parallax:parallax@127.0.0.1:5432/parallax",
 )
 os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:6379/1")
 

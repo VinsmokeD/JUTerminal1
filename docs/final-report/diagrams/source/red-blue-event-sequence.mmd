@@ -11,7 +11,7 @@ sequenceDiagram
     participant BT as Blue Team Student
     participant AI as AI Monitor
 
-    Note over RT,AI: Phase: Exploitation — sqlmap execution
+    Note over RT,AI: Phase: Exploitation â€” sqlmap execution
 
     RT->>WS: stdin frame: {type:stdin, data:base64(sqlmap -u ...)}
     WS->>SB: Route to container PTY
@@ -24,10 +24,10 @@ sequenceDiagram
     Note over SC,ES: Defensive Telemetry Pipeline
     SC->>SC: ModSecurity WAF logs SQLi pattern
     SC->>FB: Append to /var/log/modsec_audit.log
-    FB->>ES: Ship log document (index: cybersim-*)
+    FB->>ES: Ship log document (index: parallax-*)
 
     Note over ES,BT: Real-Time Blue Team Alert
-    SE->>ES: Poll /cybersim-*/_search (5s interval)
+    SE->>ES: Poll /parallax-*/_search (5s interval)
     ES-->>SE: New WAF alert document
     SE->>SE: Map to SIEM_EVENT schema + MITRE tag
     SE->>WS: Publish to Redis channel siem:{session_id}

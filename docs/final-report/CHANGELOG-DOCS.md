@@ -1,6 +1,6 @@
 # Changelog: Documentation Synchronization
 
-This document tracks all additions, modifications, and synchronization passes performed on the CyberSim graduation documentation package. It records how the written documentation aligns with changes in the code repository.
+This document tracks all additions, modifications, and synchronization passes performed on the Parallax graduation documentation package. It records how the written documentation aligns with changes in the code repository.
 
 ---
 

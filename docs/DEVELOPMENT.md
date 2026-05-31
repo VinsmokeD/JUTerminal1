@@ -33,7 +33,7 @@ pip install -e .  # Install in editable mode
 cp ../.env .env.local
 
 # Or set variables directly
-export POSTGRES_URL=postgresql://user:password@localhost:5432/cybersim
+export POSTGRES_URL=postgresql://user:password@localhost:5432/parallax
 export REDIS_URL=redis://localhost:6379/0
 export OPENROUTER_API_KEY=your_key_here
 export JWT_SECRET=your_secret_here
@@ -168,37 +168,37 @@ npm run lint:fix
 ## Project Structure
 
 ```
-cybersim/
-├── backend/
-│   ├── src/
-│   │   ├── main.py              # FastAPI app
-│   │   ├── config.py            # Configuration
-│   │   ├── ai/                  # OpenRouter (DeepSeek) integration
-│   │   ├── auth/                # Authentication
-│   │   ├── db/                  # Database models
-│   │   ├── sandbox/             # Docker management
-│   │   ├── scenarios/           # Scenario engine
-│   │   ├── siem/                # Event system
-│   │   ├── ws/                  # WebSocket
-│   │   ├── notes/               # Note storage
-│   │   ├── scoring/             # Score calculation
-│   │   └── reports/             # Report generation
-│   ├── tests/
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx              # Root component
-│   │   ├── pages/               # Page components
-│   │   ├── components/          # Reusable components
-│   │   ├── hooks/               # Custom hooks
-│   │   ├── store/               # Zustand stores
-│   │   ├── lib/                 # Utilities
-│   │   └── index.css            # Tailwind styles
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── package.json
-└── docs/
+parallax/
+â”œâ”€â”€ backend/
+â”‚   â”œâ”€â”€ src/
+â”‚   â”‚   â”œâ”€â”€ main.py              # FastAPI app
+â”‚   â”‚   â”œâ”€â”€ config.py            # Configuration
+â”‚   â”‚   â”œâ”€â”€ ai/                  # OpenRouter (DeepSeek) integration
+â”‚   â”‚   â”œâ”€â”€ auth/                # Authentication
+â”‚   â”‚   â”œâ”€â”€ db/                  # Database models
+â”‚   â”‚   â”œâ”€â”€ sandbox/             # Docker management
+â”‚   â”‚   â”œâ”€â”€ scenarios/           # Scenario engine
+â”‚   â”‚   â”œâ”€â”€ siem/                # Event system
+â”‚   â”‚   â”œâ”€â”€ ws/                  # WebSocket
+â”‚   â”‚   â”œâ”€â”€ notes/               # Note storage
+â”‚   â”‚   â”œâ”€â”€ scoring/             # Score calculation
+â”‚   â”‚   â””â”€â”€ reports/             # Report generation
+â”‚   â”œâ”€â”€ tests/
+â”‚   â”œâ”€â”€ requirements.txt
+â”‚   â””â”€â”€ Dockerfile
+â”œâ”€â”€ frontend/
+â”‚   â”œâ”€â”€ src/
+â”‚   â”‚   â”œâ”€â”€ App.jsx              # Root component
+â”‚   â”‚   â”œâ”€â”€ pages/               # Page components
+â”‚   â”‚   â”œâ”€â”€ components/          # Reusable components
+â”‚   â”‚   â”œâ”€â”€ hooks/               # Custom hooks
+â”‚   â”‚   â”œâ”€â”€ store/               # Zustand stores
+â”‚   â”‚   â”œâ”€â”€ lib/                 # Utilities
+â”‚   â”‚   â””â”€â”€ index.css            # Tailwind styles
+â”‚   â”œâ”€â”€ vite.config.js
+â”‚   â”œâ”€â”€ tailwind.config.js
+â”‚   â””â”€â”€ package.json
+â””â”€â”€ docs/
 ```
 
 ## Code Conventions
@@ -415,13 +415,13 @@ async with AsyncSession(engine) as session:
 
 ```bash
 # Build backend
-docker build -t cybersim-backend:latest ./backend
+docker build -t parallax-backend:latest ./backend
 
 # Build frontend
-docker build -t cybersim-frontend:latest ./frontend
+docker build -t parallax-frontend:latest ./frontend
 
 # Build Kali
-docker build -t cybersim-kali:latest ./infrastructure/docker/kali
+docker build -t parallax-kali:latest ./infrastructure/docker/kali
 ```
 
 ### View Containers

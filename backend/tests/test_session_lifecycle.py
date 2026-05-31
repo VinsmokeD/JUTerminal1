@@ -17,14 +17,14 @@ import pytest
 from unittest.mock import AsyncMock, patch
 
 
-# ── helpers ───────────────────────────────────────────────────────────────────
+# â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 class FakeRedis:
     """Minimal in-memory Redis mock for lifecycle tests."""
 
     def __init__(self):
-        self._store: dict[str, tuple[str, int | None]] = {}  # key → (value, ttl)
+        self._store: dict[str, tuple[str, int | None]] = {}  # key â†’ (value, ttl)
         self._hash: dict[str, dict[str, str]] = {}
 
     # --- string ops ---
@@ -93,7 +93,7 @@ class _FakePipeline:
         return [1] * len(self._ops)
 
 
-# ── keepalive key TTL ─────────────────────────────────────────────────────────
+# â”€â”€ keepalive key TTL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
@@ -101,8 +101,8 @@ async def test_keepalive_key_has_correct_ttl():
     """Keepalive key must be set with ex=7200."""
     redis = FakeRedis()
     session_id = "sess-keepalive-001"
-    await redis.set(f"cybersim:session:{session_id}:alive", "1", ex=7200)
-    ttl = await redis.ttl(f"cybersim:session:{session_id}:alive")
+    await redis.set(f"parallax:session:{session_id}:alive", "1", ex=7200)
+    ttl = await redis.ttl(f"parallax:session:{session_id}:alive")
     assert ttl == 7200, f"Expected TTL 7200 but got {ttl}"
 
 
@@ -110,24 +110,24 @@ async def test_keepalive_key_has_correct_ttl():
 async def test_keepalive_key_does_not_overwrite_with_shorter_ttl():
     """Re-setting keepalive must always use ex=7200 (heartbeat pattern)."""
     redis = FakeRedis()
-    key = "cybersim:session:sess-hb:alive"
+    key = "parallax:session:sess-hb:alive"
     await redis.set(key, "1", ex=7200)
     await redis.set(key, "1", ex=7200)  # second heartbeat
     ttl = await redis.ttl(key)
     assert ttl == 7200
 
 
-# ── stale session eviction ────────────────────────────────────────────────────
+# â”€â”€ stale session eviction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
 async def test_stale_session_evicted_from_active_map():
     """
-    A session with no keepalive key must be removed from cybersim:active_sessions
+    A session with no keepalive key must be removed from parallax:active_sessions
     by the cleanup loop logic.
     """
     redis = FakeRedis()
-    ACTIVE_KEY = "cybersim:active_sessions"
+    ACTIVE_KEY = "parallax:active_sessions"
     stale_id = "sess-stale-001"
     alive_id = "sess-alive-001"
 
@@ -136,13 +136,13 @@ async def test_stale_session_evicted_from_active_map():
     await redis.hset(ACTIVE_KEY, alive_id, json.dumps({"scenario_id": "SC-01"}))
 
     # Only alive_id has a keepalive key
-    await redis.set(f"cybersim:session:{alive_id}:alive", "1", ex=7200)
+    await redis.set(f"parallax:session:{alive_id}:alive", "1", ex=7200)
 
     # Simulate the cleanup sweep
     active = await redis.hgetall(ACTIVE_KEY)
     for sid_bytes in list(active.keys()):
         sid = sid_bytes.decode() if isinstance(sid_bytes, bytes) else sid_bytes
-        alive = await redis.exists(f"cybersim:session:{sid}:alive")
+        alive = await redis.exists(f"parallax:session:{sid}:alive")
         if not alive:
             await redis.hdel(ACTIVE_KEY, sid)
 
@@ -157,16 +157,16 @@ async def test_stale_session_evicted_from_active_map():
 async def test_active_session_not_evicted_while_alive():
     """Session with valid keepalive key must survive the eviction sweep."""
     redis = FakeRedis()
-    ACTIVE_KEY = "cybersim:active_sessions"
+    ACTIVE_KEY = "parallax:active_sessions"
     sid = "sess-live-002"
 
     await redis.hset(ACTIVE_KEY, sid, json.dumps({"scenario_id": "SC-02"}))
-    await redis.set(f"cybersim:session:{sid}:alive", "1", ex=7200)
+    await redis.set(f"parallax:session:{sid}:alive", "1", ex=7200)
 
     active = await redis.hgetall(ACTIVE_KEY)
     for sid_bytes in list(active.keys()):
         s = sid_bytes.decode() if isinstance(sid_bytes, bytes) else sid_bytes
-        if not await redis.exists(f"cybersim:session:{s}:alive"):
+        if not await redis.exists(f"parallax:session:{s}:alive"):
             await redis.hdel(ACTIVE_KEY, s)
 
     remaining = await redis.hgetall(ACTIVE_KEY)
@@ -174,14 +174,14 @@ async def test_active_session_not_evicted_while_alive():
     assert sid in remaining_keys
 
 
-# ── dedup key TTL ─────────────────────────────────────────────────────────────
+# â”€â”€ dedup key TTL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
 async def test_dedup_key_ttl_is_one_hour():
     """SIEM dedup keys must have exactly 3600s TTL."""
     redis = FakeRedis()
-    key = "cybersim:siem:emitted:sess-001:sc02.kerberoast:doc-abc"
+    key = "parallax:siem:emitted:sess-001:sc02.kerberoast:doc-abc"
     await redis.set(key, "1", ex=3600, nx=True)
     ttl = await redis.ttl(key)
     assert ttl == 3600, f"Expected dedup TTL 3600 but got {ttl}"
@@ -191,14 +191,14 @@ async def test_dedup_key_ttl_is_one_hour():
 async def test_dedup_key_nx_prevents_duplicate():
     """Second SET NX on same dedup key must return None (already exists)."""
     redis = FakeRedis()
-    key = "cybersim:siem:emitted:sess-002:sc02.kerberoast:doc-xyz"
+    key = "parallax:siem:emitted:sess-002:sc02.kerberoast:doc-xyz"
     first = await redis.set(key, "1", ex=3600, nx=True)
     second = await redis.set(key, "1", ex=3600, nx=True)
     assert first is True, "First SET NX should succeed"
     assert second is None, "Second SET NX on same key should return None (already exists)"
 
 
-# ── command cap alignment ─────────────────────────────────────────────────────
+# â”€â”€ command cap alignment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_command_cap_matches_read_window():
@@ -229,7 +229,7 @@ def test_command_cap_matches_read_window():
     )
 
 
-# ── active_sessions payload decoding ─────────────────────────────────────────
+# â”€â”€ active_sessions payload decoding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_decode_active_session_scenario_plain_string():

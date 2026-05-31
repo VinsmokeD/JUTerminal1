@@ -1,6 +1,6 @@
 # Quick Start Continuation Guide
 
-CyberSim is now in defense-readiness mode, not broad feature-build mode. Continue from the current worktree and verify real product behavior before making changes.
+Parallax is now in defense-readiness mode, not broad feature-build mode. Continue from the current worktree and verify real product behavior before making changes.
 
 ## Verified Baseline
 

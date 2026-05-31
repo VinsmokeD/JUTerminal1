@@ -1,27 +1,27 @@
 # Accessibility and Usability Notes
 
-This document highlights the user experience (UX) architecture, interface styling, usability targets, and accessibility accommodations implemented across the CyberSim platform.
+This document highlights the user experience (UX) architecture, interface styling, usability targets, and accessibility accommodations implemented across the Parallax platform.
 
 ---
 
 ## 1. Usability Principles & Workspace Design
 
-The CyberSim workspace is designed to mimic a high-density Security Operations Center (SOC) dashboard. The interface coordinates several functional streams (a Kali terminal, a live SIEM feed, Socratic hints, notes, and playbooks) without overwhelming the student.
+The Parallax workspace is designed to mimic a high-density Security Operations Center (SOC) dashboard. The interface coordinates several functional streams (a Kali terminal, a live SIEM feed, Socratic hints, notes, and playbooks) without overwhelming the student.
 
 ```text
-┌────────────────────────────────────────────────────────┐
-│                   Workspace Header                     │
-├───────────────────────────┬────────────────────────────┤
-│                           │                            │
-│                           │      AI Hint Panel         │
-│                           │                            │
-│       Kali Terminal       ├────────────────────────────┤
-│        (xterm.js)         │                            │
-│                           │       SIEM Feed            │
-│                           │                            │
-├───────────────────────────┴────────────────────────────┤
-│                   Guided Notebook                      │
-└────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                   Workspace Header                     â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                           â”‚                            â”‚
+â”‚                           â”‚      AI Hint Panel         â”‚
+â”‚                           â”‚                            â”‚
+â”‚       Kali Terminal       â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚        (xterm.js)         â”‚                            â”‚
+â”‚                           â”‚       SIEM Feed            â”‚
+â”‚                           â”‚                            â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                   Guided Notebook                      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 1.1 Persistent Workspace Layouts
@@ -39,7 +39,7 @@ The CyberSim workspace is designed to mimic a high-density Security Operations C
 
 ## 2. Accessibility Mapping (WCAG 2.1 Alignment)
 
-CyberSim targets compliance with Web Content Accessibility Guidelines (WCAG 2.1 AA) where possible for an interactive, console-based application.
+Parallax targets compliance with Web Content Accessibility Guidelines (WCAG 2.1 AA) where possible for an interactive, console-based application.
 
 ### 2.1 Keyboard Navigation & Focus
 * **Interactive Element Outlines**: Buttons, input cards, and tabs display explicit hover and focus rings.

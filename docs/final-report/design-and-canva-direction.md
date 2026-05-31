@@ -9,17 +9,17 @@ The selected Canva candidate is the editable visual report:
 - View URL: https://www.canva.com/d/pfQr_4wjgUjRfJs
 - Page count: 17
 
-This design should be treated as the visual companion style for CyberSim. It should influence the deck, poster, scenario one-pagers, and visual executive report. The official Word/PDF submission should preserve the KASIT handbook layout and use the richer visual style only inside figures, diagrams, and visual appendices.
+This design should be treated as the visual companion style for Parallax. It should influence the deck, poster, scenario one-pagers, and visual executive report. The official Word/PDF submission should preserve the KASIT handbook layout and use the richer visual style only inside figures, diagrams, and visual appendices.
 
 ## Canva Audit Notes
 
 The selected Canva design has the right visual direction, but its text still includes generic business content. Replace all placeholder financial labels, fake metric values, generic contact details, and repeated `Your Text` fields before using it in the defense package.
 
-The page-by-page replacement source is `canva-page-rewrite-brief.md`. Use that file as the control document when editing Canva so the visual report stays aligned with verified CyberSim content.
+The page-by-page replacement source is `canva-page-rewrite-brief.md`. Use that file as the control document when editing Canva so the visual report stays aligned with verified Parallax content.
 
 ## Visual Identity
 
-CyberSim documentation should feel like a university-grade cybersecurity operations manual:
+Parallax documentation should feel like a university-grade cybersecurity operations manual:
 
 - Formal enough for an academic committee.
 - Technical enough for software engineers.
@@ -62,7 +62,7 @@ The selected Canva design should be revised into the following sections:
 
 | Page | Target Content | Visual Direction |
 | --- | --- | --- |
-| 1 | Cover: CyberSim, UJ/KASIT, team/supervisor/date | Black/gold/green title treatment |
+| 1 | Cover: Parallax, UJ/KASIT, team/supervisor/date | Black/gold/green title treatment |
 | 2 | Project problem and motivation | Split red/blue learning-gap graphic |
 | 3 | Proposed solution | Dual-perspective platform overview |
 | 4 | Full-stack architecture | C4 container diagram |

@@ -1,6 +1,6 @@
 # Defense Rehearsal Script
 
-This document provides a 15-minute presentation script and rehearsal guide for the CyberSim graduation project defense. It includes timings, slide cues, key talking points, live demo actions, and backup procedures.
+This document provides a 15-minute presentation script and rehearsal guide for the Parallax graduation project defense. It includes timings, slide cues, key talking points, live demo actions, and backup procedures.
 
 ---
 
@@ -23,18 +23,18 @@ Total duration: **15 minutes** (strict KASIT panel time limit).
 ### 2.1 Part 1: Project Introduction & Motivation (0:00 - 2:00)
 
 *   **Slide 1: Title Slide**
-    *   *Speaker 1*: "Good morning respected committee members. Today, we are presenting our graduation project: **CyberSim**, a dual-perspective cybersecurity training platform designed for university labs."
+    *   *Speaker 1*: "Good morning respected committee members. Today, we are presenting our graduation project: **Parallax**, a dual-perspective cybersecurity training platform designed for university labs."
 *   **Slide 2: The Security Education Gap**
     *   *Speaker 1*: "In current computer science and security programs, students learn offensive penetration testing and defensive SOC analysis in separate, isolated courses. Offensive courses focus on executing tools like `nmap` or `sqlmap` to capture a flag, while defensive courses analyze static log dumps. This creates a cognitive gap: students lack visibility into the exact network telemetry their offensive keystrokes generate."
 *   **Slide 3: Project Vision & Objectives**
-    *   *Speaker 1*: "CyberSim solves this by integrating attacker terminals and defender SIEM dashboards side-by-side. The platform provides a sandboxed environment where students run real methodologies (like PTES and NIST CSF), guided by a Socratic AI monitor that helps them understand the *why* rather than just copying commands."
+    *   *Speaker 1*: "Parallax solves this by integrating attacker terminals and defender SIEM dashboards side-by-side. The platform provides a sandboxed environment where students run real methodologies (like PTES and NIST CSF), guided by a Socratic AI monitor that helps them understand the *why* rather than just copying commands."
 
 ---
 
 ### 2.2 Part 2: System Architecture & Sandbox Isolation (2:00 - 5:00)
 
 *   **Slide 4: Full-Stack Containerized Architecture**
-    *   *Speaker 2*: "To maintain security and zero cost, CyberSim deploys as a containerized stack on a single Docker host. The frontend is built on React 18, Vite, and xterm.js for high-fidelity terminal proxying. The backend is an asynchronous FastAPI service utilizing PostgreSQL for session persistence and Redis for real-time WebSockets."
+    *   *Speaker 2*: "To maintain security and zero cost, Parallax deploys as a containerized stack on a single Docker host. The frontend is built on React 18, Vite, and xterm.js for high-fidelity terminal proxying. The backend is an asynchronous FastAPI service utilizing PostgreSQL for session persistence and Redis for real-time WebSockets."
 *   **Slide 5: Telemetry Pipeline & Event Ingestion**
     *   *Speaker 2*: "The Blue Team SIEM runs a realistic telemetry pipeline. Container logs (such as Apache, MySQL, and Samba4 logs) are collected using Filebeat and shipped to Elasticsearch. An event engine polls Elasticsearch every 2 seconds, correlating events using a custom Sigma-like engine, and publishes alerts directly to the student's browser over WebSockets."
 *   **Slide 6: Hardened Sandbox Isolation**
@@ -77,7 +77,7 @@ Total duration: **15 minutes** (strict KASIT panel time limit).
 *   **Slide 10: Platform Roadmap**
     *   *Speaker 2*: "Our future phases focus on moving to Kubernetes orchestration to allow horizontal clustering, implementing LTI 1.3 standards to integrate directly with LMS platforms like Canvas, and expanding forensics containment controls."
 *   **Slide 11: Closing Slide**
-    *   *Speaker 2*: "In conclusion, CyberSim bridges the gap between offensive execution and defensive visibility. We are ready to take your questions. Thank you."
+    *   *Speaker 2*: "In conclusion, Parallax bridges the gap between offensive execution and defensive visibility. We are ready to take your questions. Thank you."
 
 ---
 

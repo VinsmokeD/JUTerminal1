@@ -1,11 +1,11 @@
 """
-Integration tests — WebSocket terminal proxy + Docker exec stream.
+Integration tests â€” WebSocket terminal proxy + Docker exec stream.
 
 Test matrix:
   1. Health endpoint returns 200 + correct JSON
-  2. Auth: register → login → receive JWT
+  2. Auth: register â†’ login â†’ receive JWT
   3. Auth: duplicate username rejected
-  4. Session: start SC-01 red session → container provisioned (or mock in dev)
+  4. Session: start SC-01 red session â†’ container provisioned (or mock in dev)
   5. Scenario loader: all 3 YAML specs load without error
   6. Scenario engine: gate check blocks exploitation tool in phase 1
   7. Scenario engine: gate check passes when phase is sufficient
@@ -34,20 +34,20 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from httpx import AsyncClient, ASGITransport
 from httpx_ws import aconnect_ws
 
-# ── App bootstrap ──────────────────────────────────────────────────────────
+# â”€â”€ App bootstrap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("JWT_SECRET", "test-secret-for-ci-only-do-not-use-in-prod")
 os.environ["POSTGRES_URL"] = os.environ.get(
     "TEST_POSTGRES_URL",
-    # Matches the docker-compose dev stack default (POSTGRES_PASSWORD=cybersim).
-    "postgresql+asyncpg://cybersim:cybersim@localhost:5432/cybersim",
+    # Matches the docker-compose dev stack default (POSTGRES_PASSWORD=parallax).
+    "postgresql+asyncpg://parallax:parallax@localhost:5432/parallax",
 )
 os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://localhost:6379/1")
 
 from src.main import app  # noqa: E402  (must come after env setup)
 
 
-# ── Fixtures ───────────────────────────────────────────────────────────────
+# â”€â”€ Fixtures â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -74,7 +74,7 @@ async def auth_token(client: AsyncClient):
     return resp.json()["access_token"]
 
 
-# ── Test 1: Health ──────────────────────────────────────────────────────────
+# â”€â”€ Test 1: Health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
@@ -86,7 +86,7 @@ async def test_health(client: AsyncClient):
     assert "version" in body
 
 
-# ── Test 2: Auth register + login ─────────────────────────────────────────
+# â”€â”€ Test 2: Auth register + login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
@@ -109,7 +109,7 @@ async def test_register_and_login(client: AsyncClient):
     assert login.json()["username"] == username
 
 
-# ── Test 3: Duplicate username rejected ────────────────────────────────────
+# â”€â”€ Test 3: Duplicate username rejected â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
@@ -119,7 +119,7 @@ async def test_duplicate_username_rejected(client: AsyncClient):
     assert resp.status_code == 400
 
 
-# ── Test 4: Scenarios list returns 3 entries (v2.0 scope) ──────────────────
+# â”€â”€ Test 4: Scenarios list returns 3 entries (v2.0 scope) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
@@ -134,7 +134,7 @@ async def test_scenarios_returns_three(client: AsyncClient):
     assert set(ids) == {"SC-01", "SC-02", "SC-03"}
 
 
-# ── Test 5: YAML loader — all specs load cleanly ────────────────────────────
+# â”€â”€ Test 5: YAML loader â€” all specs load cleanly â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_scenario_loader_all_specs():
@@ -156,12 +156,12 @@ def test_scenario_loader_rejects_unknown():
         load_scenario("SC-99")
 
 
-# ── Test 6: Engine gate — blocks tool in wrong phase ──────────────────────
+# â”€â”€ Test 6: Engine gate â€” blocks tool in wrong phase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
 async def test_engine_gate_blocks_in_phase_1(client: AsyncClient, auth_token: str):
-    """sqlmap requires phase >= 3; session starts at phase 1 → gate fires."""
+    """sqlmap requires phase >= 3; session starts at phase 1 â†’ gate fires."""
     from unittest.mock import AsyncMock, patch
     from src.scenarios.engine import check_gate, GateBlock
 
@@ -179,7 +179,7 @@ async def test_engine_gate_blocks_in_phase_1(client: AsyncClient, auth_token: st
     assert exc_info.value.min_phase == 3
 
 
-# ── Test 7: Engine gate — passes when phase is sufficient ─────────────────
+# â”€â”€ Test 7: Engine gate â€” passes when phase is sufficient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
@@ -199,7 +199,7 @@ async def test_engine_gate_passes_at_correct_phase():
         )
 
 
-# ── Test 8: Engine gate — ungated tool always passes ──────────────────────
+# â”€â”€ Test 8: Engine gate â€” ungated tool always passes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
@@ -217,7 +217,7 @@ async def test_engine_gate_ungated_tool_passes():
         )
 
 
-# ── Test 9: SIEM event generation from command ────────────────────────────
+# â”€â”€ Test 9: SIEM event generation from command â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
@@ -243,7 +243,7 @@ async def test_siem_events_generated_for_gobuster():
     assert "siem_event" == events[0]["type"]
 
 
-# ── Test 10: Session start rejected for any scenario outside the catalog ──
+# â”€â”€ Test 10: Session start rejected for any scenario outside the catalog â”€â”€
 
 
 @pytest.mark.asyncio
@@ -256,7 +256,7 @@ async def test_session_start_rejects_unknown_scenario(client: AsyncClient, auth_
     assert r.status_code == 400
 
 
-# ── Test 11: WebSocket connection accepted with valid JWT ──────────────────
+# â”€â”€ Test 11: WebSocket connection accepted with valid JWT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio

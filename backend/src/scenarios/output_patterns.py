@@ -99,13 +99,13 @@ def _dedup_key(session_id: str, insight: dict[str, Any]) -> str:
 
 
 _BANNER_GUARD = re.compile(
-    r"RED OBJECTIVE|BLUE OBJECTIVE|CyberSim Training(?: Platform)?|"
+    r"RED OBJECTIVE|BLUE OBJECTIVE|Parallax Training(?: Platform)?|"
     r"Type 'scope'|Tools(?: available)?:\s*(nmap|gobuster|sqlmap|smbclient|kerbrute)",
     re.IGNORECASE,
 )
 
 
-_FLAG_CANDIDATE_DEDUP_TTL_SECONDS = 600  # 10 min — re-nudge if still uncaptured
+_FLAG_CANDIDATE_DEDUP_TTL_SECONDS = 600  # 10 min â€” re-nudge if still uncaptured
 
 
 @lru_cache(maxsize=8)
@@ -144,7 +144,7 @@ async def scan_flag_candidates(
     """Return flag_candidate nudges for flag-shaped strings seen in terminal output.
 
     Only fires when the student's terminal actually produces a matching line.
-    Never volunteers the flag value — only flag_id, points available, and
+    Never volunteers the flag value â€” only flag_id, points available, and
     whether already captured. The student must still submit via FlagSubmitWidget.
     """
     if not chunk:
@@ -196,7 +196,7 @@ async def scan_flag_candidates(
                 dedup_key, "1", ttl=_FLAG_CANDIDATE_DEDUP_TTL_SECONDS
             )
             if already_nudged and flag_id not in captured_flags:
-                # Still suppress — student was already nudged
+                # Still suppress â€” student was already nudged
                 seen_ids.add(flag_id)
                 continue
             seen_ids.add(flag_id)

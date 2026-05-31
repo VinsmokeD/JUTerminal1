@@ -5,7 +5,7 @@ rules:
     mitre: T1190
     scenario: SC-01
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -25,7 +25,7 @@ rules:
     mitre: T1083
     scenario: SC-01
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -43,7 +43,7 @@ rules:
     mitre: T1505.003
     scenario: SC-01
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -63,7 +63,7 @@ rules:
     mitre: T1110
     scenario: SC-01
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:
@@ -81,7 +81,7 @@ rules:
     mitre: T1059
     scenario: SC-01
     trigger:
-      index: "cybersim-logs-*"
+      index: "parallax-logs-*"
       dsl:
         bool:
           must:

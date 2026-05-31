@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import api from '../lib/api'
-import CyberSimNav from '../components/nav/CyberSimNav'
+import ParallaxNav from '../components/nav/ParallaxNav'
 import { Badge, Button, Stat } from '../components/ui'
 import { useReducedMotionSafe, staggerItem } from '../lib/motion'
 
@@ -121,7 +121,7 @@ function ShareModal({ session, score, gradeLabel, onClose }) {
         }}
       />
 
-      {/* Scoped print stylesheet — only the dossier card prints */}
+      {/* Scoped print stylesheet â€” only the dossier card prints */}
       <style>{`
         @media print {
           body > *:not(#cs-print-dossier-root) { display: none !important; }
@@ -145,7 +145,7 @@ function ShareModal({ session, score, gradeLabel, onClose }) {
             <span className="absolute top-0 left-0 w-2 h-2 bg-cs-red shadow-red-glow" />
             <span className="absolute bottom-0 right-0 w-2 h-2 bg-cs-blue shadow-blue-glow" />
           </div>
-          <span className="font-mono text-[9px] tracking-[0.25em] text-txt-dim">CYBERSIM OPERATOR DOSSIER</span>
+          <span className="font-mono text-[9px] tracking-[0.25em] text-txt-dim">PARALLAX OPERATOR DOSSIER</span>
         </div>
 
         <div className="space-y-1">
@@ -165,7 +165,7 @@ function ShareModal({ session, score, gradeLabel, onClose }) {
         </div>
 
         <p className="text-xs text-txt-secondary leading-relaxed max-w-xs mx-auto font-display">
-          This dossier records the successful completion of training under CyberSim's sandboxed environment.
+          This dossier records the successful completion of training under Parallax's sandboxed environment.
           All simulated operations adhered to methodology parameters.
         </p>
 
@@ -278,7 +278,7 @@ export default function Debrief() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `cybersim-report-${sessionId.slice(0, 8)}.md`
+    a.download = `parallax-report-${sessionId.slice(0, 8)}.md`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -302,7 +302,7 @@ export default function Debrief() {
       })
     }
 
-    addLine('CyberSim Mission Debrief', 18, 22)
+    addLine('Parallax Mission Debrief', 18, 22)
     addLine(`${session.scenario_id} | ${session.role === 'red' ? 'Red' : 'Blue'} Team | Score ${score?.final_score ?? session.score ?? '--'}/100`, 11, 18)
     addLine(`Phase ${session.phase} | Findings ${findings.length} | Evidence ${evidence.length} | Events ${siemEvents.length}`, 10, 18)
     addLine('Summary', 13, 20)
@@ -318,7 +318,7 @@ export default function Debrief() {
     const improvements = insights?.coaching?.improvement_areas || []
     addLine(`Strengths: ${strengths.length ? strengths.join('; ') : 'Not available.'}`, 10, 14)
     addLine(`Improve Next: ${improvements.length ? improvements.join('; ') : 'Not available.'}`, 10, 14)
-    doc.save(`cybersim-debrief-${sessionId.slice(0, 8)}.pdf`)
+    doc.save(`parallax-debrief-${sessionId.slice(0, 8)}.pdf`)
   }
 
   if (loading) return <DebriefLoading />
@@ -479,7 +479,7 @@ export default function Debrief() {
 
   return (
     <div className="min-h-dvh bg-void text-txt-primary font-display">
-      <CyberSimNav />
+      <ParallaxNav />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className={`card-v3 ${gradeBorder} ${gradeBg} p-8 mb-8 relative overflow-hidden`}>

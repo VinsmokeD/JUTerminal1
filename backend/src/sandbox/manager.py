@@ -44,12 +44,12 @@ from src.config import settings
 from src.cache.redis import cache_get, cache_set
 from src.db.database import AsyncSessionLocal, Session
 
-# v2.0 guardrail — hardcoded, not configurable at runtime
+# v2.0 guardrail â€” hardcoded, not configurable at runtime
 _CPU_PERIOD = 100000
 _CPU_QUOTA = 50000  # 0.5 cores
 _MEM_LIMIT = "512m"
 
-# Scenario profile → target services that must be running
+# Scenario profile â†’ target services that must be running
 _SCENARIO_TARGETS: dict[str, list[str]] = {
     "sc01": ["sc01-db", "sc01-webapp", "sc01-waf"],
     "sc02": ["sc02-dc", "sc02-fileserver"],
@@ -164,7 +164,7 @@ def _ensure_scenario_targets(scenario_id: str, force_reset: bool = True) -> None
 
     Explicitly targets the required services to avoid restarting the backend.
     """
-    profile = scenario_id.lower().replace("-", "")  # SC-01 → sc01
+    profile = scenario_id.lower().replace("-", "")  # SC-01 â†’ sc01
     targets = _SCENARIO_TARGETS.get(profile)
     if not targets or not _COMPOSE_FILE.exists():
         return
@@ -173,7 +173,7 @@ def _ensure_scenario_targets(scenario_id: str, force_reset: bool = True) -> None
         cmd = [
             "docker-compose",
             "--project-name",
-            "cybersim",
+            "parallax",
             "-f",
             str(_COMPOSE_FILE),
             "up",
@@ -205,7 +205,7 @@ def _teardown_scenario_targets(scenario_id: str) -> None:
             [
                 "docker-compose",
                 "--project-name",
-                "cybersim",
+                "parallax",
                 "-f",
                 str(_COMPOSE_FILE),
                 "stop",
@@ -223,7 +223,7 @@ def _get_scenario_network(sc_num: str) -> str:
     Return the Docker network name for a scenario profile.
 
     Docker Compose prefixes networks with the project name derived from the
-    directory (e.g. 'JUTerminal1' → 'juterminal1').  We discover the name
+    directory (e.g. 'JUTerminal1' â†’ 'juterminal1').  We discover the name
     at runtime so the code works regardless of where the project is cloned.
     """
     try:
@@ -235,7 +235,7 @@ def _get_scenario_network(sc_num: str) -> str:
     except (DockerException, APIError, RuntimeError):
         pass
     # Derive from compose file parent directory as a reliable fallback
-    return f"cybersim_{sc_num}-net"
+    return f"parallax_{sc_num}-net"
 
 
 def _repair_kali_tools(container: "docker.models.containers.Container") -> bool:
@@ -311,21 +311,21 @@ def _start_sync(session_id: str, scenario_id: str) -> Tuple[str, str]:
             hostname="kali",
             environment=env_vars,
             user="student",
-            # v2.0 guardrail — hardcoded, not from settings
+            # v2.0 guardrail â€” hardcoded, not from settings
             cpu_period=_CPU_PERIOD,
             cpu_quota=_CPU_QUOTA,
             mem_limit=_MEM_LIMIT,
             cap_drop=["ALL"],
             security_opt=["no-new-privileges"],
             labels={
-                "cybersim_managed": "true",
-                "cybersim_role": "kali",
-                "cybersim_session": session_id,
-                "cybersim_scenario": scenario_id,
+                "parallax_managed": "true",
+                "parallax_role": "kali",
+                "parallax_session": session_id,
+                "parallax_scenario": scenario_id,
                 # Canonical labels used by orphan sweep (B7-2)
-                "com.cybersim.project": "JUTerminal1",
-                "com.cybersim.role": "kali",
-                "com.cybersim.session": session_id,
+                "com.parallax.project": "JUTerminal1",
+                "com.parallax.role": "kali",
+                "com.parallax.session": session_id,
             },
             remove=False,
         )

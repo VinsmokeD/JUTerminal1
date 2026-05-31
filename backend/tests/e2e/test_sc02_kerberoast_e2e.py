@@ -1,7 +1,7 @@
 """
 End-to-end acceptance test: SC-02 Kerberoasting pipeline.
 
-Marked @pytest.mark.e2e — skipped by default.
+Marked @pytest.mark.e2e â€” skipped by default.
 Run explicitly:  pytest -m e2e backend/tests/e2e/test_sc02_kerberoast_e2e.py
 
 Prerequisites:
@@ -23,8 +23,8 @@ import httpx
 import pytest
 
 pytestmark = pytest.mark.skipif(
-    os.getenv("RUN_CYBERSIM_E2E") != "1",
-    reason="End-to-end Docker/Kali scenario test is opt-in; set RUN_CYBERSIM_E2E=1 to run.",
+    os.getenv("RUN_PARALLAX_E2E") != "1",
+    reason="End-to-end Docker/Kali scenario test is opt-in; set RUN_PARALLAX_E2E=1 to run.",
 )
 
 
@@ -129,7 +129,7 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
       8. mitre == T1558.003
       9. Typo variant (GetUserSPNz.py) produces NO sc02.kerberoast event
     """
-    # ── Step 1: bring up SC-02 ──────────────────────────────────────────────
+    # â”€â”€ Step 1: bring up SC-02 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     _compose("up", "-d", "--build", "--wait", check=False)
     # Give Samba AD time to fully provision (up to 3 minutes)
     for _ in range(36):
@@ -140,7 +140,7 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
     else:
         pytest.skip("SC-02 containers did not become healthy within 3 minutes")
 
-    # ── Step 2: provision Kali session via API ──────────────────────────────
+    # â”€â”€ Step 2: provision Kali session via API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async with httpx.AsyncClient() as client:
         # Register + login
         # Use "test_" prefix to bypass scenario randomization
@@ -211,9 +211,9 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
         state_resp = await client.get(f"{base_url}/api/sessions/{session_id}", headers=headers)
         kali_id = state_resp.json().get("container_id", "")
         if not kali_id:
-            pytest.skip("Session has no container_id — Kali may not have started")
+            pytest.skip("Session has no container_id â€” Kali may not have started")
 
-    # ── Step 3: run commands inside Kali ───────────────────────────────────
+    # â”€â”€ Step 3: run commands inside Kali â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Port check
     rc, out = _exec_kali(kali_id, "nc -zv 172.20.2.20 88 389 445 2>&1 | head -10")
     open_count = out.count("open") + out.count("succeeded")
@@ -224,7 +224,7 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
     assert rc == 0, f"smbclient failed:\n{out}"
     assert "NETLOGON" in out or "Sharename" in out, f"smbclient did not list shares:\n{out}"
 
-    # GetUserSPNs.py — extract Kerberoastable hash
+    # GetUserSPNs.py â€” extract Kerberoastable hash
     rc, spn_out = _exec_kali(
         kali_id,
         "GetUserSPNs.py -dc-ip 172.20.2.20 -request nexora.local/jsmith:Password123 2>&1",
@@ -244,7 +244,7 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
     )
     assert "Backup2023!" in crack_out or rc == 0, f"hashcat did not crack hash:\n{crack_out}"
 
-    # ── Step 4: poll for sc02.kerberoast SIEM event ─────────────────────────
+    # â”€â”€ Step 4: poll for sc02.kerberoast SIEM event â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async with httpx.AsyncClient() as client:
         matched = await _poll_siem_events(
             session_id,
@@ -262,7 +262,7 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
         ev.get("mitre_technique") == "T1558.003"
     ), f"Expected MITRE T1558.003 but got {ev.get('mitre_technique')}"
 
-    # ── Step 5: typo variant — must produce ZERO sc02.kerberoast events ──────
+    # â”€â”€ Step 5: typo variant â€” must produce ZERO sc02.kerberoast events â”€â”€â”€â”€â”€â”€
     typo_count_before = len(matched)
 
     _exec_kali(
@@ -277,4 +277,4 @@ async def test_sc02_kerberoast_full_pipeline(base_url: str):
     kerberoast_after = [e for e in events_after if e.get("rule_id") == "sc02.kerberoast"]
     assert (
         len(kerberoast_after) == typo_count_before
-    ), "Typo command GetUserSPNz.py triggered a sc02.kerberoast event — regex theater not dead!"
+    ), "Typo command GetUserSPNz.py triggered a sc02.kerberoast event â€” regex theater not dead!"

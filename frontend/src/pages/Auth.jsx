@@ -30,7 +30,7 @@ export default function Auth() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [typedWords, setTypedWords] = useState([])
-  // Only mount HeroScene3D at the lg breakpoint — prevents a 0-size WebGL
+  // Only mount HeroScene3D at the lg breakpoint â€” prevents a 0-size WebGL
   // context (camera.aspect = NaN) inside the hidden lg:flex panel on mobile.
   const [isLg, setIsLg] = useState(() =>
     typeof window !== 'undefined' && window.matchMedia('(min-width:1024px)').matches
@@ -49,7 +49,7 @@ export default function Auth() {
   const perfMode = useSettingsStore((s) => s.perfMode)
   const setPerfMode = useSettingsStore((s) => s.setPerfMode)
 
-  // Reticle intent on the submit CTA — tint/label follow the active mode
+  // Reticle intent on the submit CTA â€” tint/label follow the active mode
   const submitCursor = useCursorIntent({
     intent: 'launch',
     label: mode === 'login' ? 'INITIALIZE' : 'REGISTER',
@@ -204,11 +204,8 @@ export default function Auth() {
 
         <div className="relative z-10">
           <div className="inline-flex items-center gap-4 mb-8">
-            <div className="relative h-[52px] w-[52px]">
-              <div className="auth-logo-pulse-a absolute left-0 top-0 h-6 w-6 rounded bg-cs-red shadow-red-glow" />
-              <div className="auth-logo-pulse-b absolute bottom-0 right-0 h-6 w-6 rounded bg-cs-blue shadow-blue-glow" />
-            </div>
-            <span className="text-3xl font-extrabold text-txt-primary font-display">CyberSim</span>
+            <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-[52px] h-[52px] flex-shrink-0" />
+            <span className="text-3xl font-extrabold text-txt-primary font-display">Parallax</span>
           </div>
 
           <h1 className="text-4xl font-extrabold text-txt-primary mb-4 leading-tight font-display">
@@ -242,12 +239,9 @@ export default function Auth() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="relative h-10 w-10">
-              <div className="auth-logo-pulse-a absolute left-0 top-0 h-[18px] w-[18px] rounded bg-cs-red shadow-red-glow" />
-              <div className="auth-logo-pulse-b absolute bottom-0 right-0 h-[18px] w-[18px] rounded bg-cs-blue shadow-blue-glow" />
-            </div>
+            <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-10 h-10 flex-shrink-0" />
             <div>
-              <div className="text-gradient-nimbus font-bold text-xl font-display">CyberSim</div>
+              <div className="text-gradient-nimbus font-bold text-xl font-display">Parallax</div>
               <div className="text-txt-dim text-xs font-mono">Cybersecurity Training Platform</div>
             </div>
           </div>

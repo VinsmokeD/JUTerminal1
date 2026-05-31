@@ -43,19 +43,19 @@ replacement = (
     '                service=service, session_info=session_info)\n'
     '        except Exception as _e:\n'
     '            import sys\n'
-    '            print(f"[cybersim] tolerating smbd.set_nt_acl failure on {file}: {_e}", file=sys.stderr)'
+    '            print(f"[parallax] tolerating smbd.set_nt_acl failure on {file}: {_e}", file=sys.stderr)'
 )
 if needle in src:
     p.write_text(src.replace(needle, replacement))
-    print('[cybersim] patched samba.ntacls.setntacl')
+    print('[parallax] patched samba.ntacls.setntacl')
 else:
-    print('[cybersim] WARNING: setntacl pattern not found; aborting')
+    print('[parallax] WARNING: setntacl pattern not found; aborting')
     raise SystemExit(1)
 PYEOF
 
 # Domain provisioning script (Kerberos config handled inline in script)
 COPY provision-dc.sh /provision-dc.sh
-COPY sysvol-seed/ /opt/cybersim/sysvol-seed/
+COPY sysvol-seed/ /opt/parallax/sysvol-seed/
 COPY samba-supervisor.conf /etc/supervisor/conf.d/samba.conf
 RUN chmod +x /provision-dc.sh
 

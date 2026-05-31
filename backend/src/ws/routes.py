@@ -50,11 +50,11 @@ _HINT_PENALTIES = {
     "intermediate": {1: 5, 2: 10, 3: 20},
     "experienced": {1: 10, 2: 20, 3: 40},
 }
-_ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → JSON session state
+_ACTIVE_SESSIONS_KEY = "parallax:active_sessions"  # Redis hash: session_id â†’ JSON session state
 
 router = APIRouter()
 
-_WS_CONNECTIONS_KEY = "cybersim:ws_connections"
+_WS_CONNECTIONS_KEY = "parallax:ws_connections"
 
 
 async def _increment_ws_counter() -> None:
@@ -119,7 +119,7 @@ async def _handle_terminal_command(
     if not command.strip():
         return
 
-    # ── ROE gate: backend hard-check before any processing ────────────────
+    # â”€â”€ ROE gate: backend hard-check before any processing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async with AsyncSessionLocal() as db:
         roe_result = await db.execute(select(Session).where(Session.id == session_id))
         roe_session = roe_result.scalar_one_or_none()
@@ -141,7 +141,7 @@ async def _handle_terminal_command(
     except (WebSocketDisconnect, RuntimeError):
         ptes_phase = ""
 
-    # ── ROE scope gate: block explicit out-of-scope targets (fail-open) ───────
+    # â”€â”€ ROE scope gate: block explicit out-of-scope targets (fail-open) â”€â”€â”€â”€â”€â”€â”€
     try:
         scope_result = check_scope(command, load_scenario(session_state["scenario_id"]))
     except Exception:
@@ -176,7 +176,7 @@ async def _handle_terminal_command(
             await db.commit()
         warn = (
             f"\r\n\x1b[31m[OUT OF SCOPE] {scope_result.message}\x1b[0m"
-            f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — ROE violation]\x1b[0m\r\n"
+            f"\r\n\x1b[33m[-{_GATE_PENALTY} pts â€” ROE violation]\x1b[0m\r\n"
         )
         await send_json({"type": "terminal_output", "data": {"data": warn}})
         if new_score is not None:
@@ -220,7 +220,7 @@ async def _handle_terminal_command(
 
             warn = (
                 f"\r\n\x1b[31m[GATE BLOCKED] {gate_result.redirect_message}\x1b[0m"
-                f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
+                f"\r\n\x1b[33m[-{_GATE_PENALTY} pts â€” methodology violation]\x1b[0m\r\n"
             )
             await send_json({"type": "terminal_output", "data": {"data": warn}})
             if new_score is not None:
@@ -279,7 +279,7 @@ async def _handle_terminal_command(
 
         warn = (
             f"\r\n\x1b[31m[GATE BLOCKED] {gate_exc.message}\x1b[0m"
-            f"\r\n\x1b[33m[-{_GATE_PENALTY} pts — methodology violation]\x1b[0m\r\n"
+            f"\r\n\x1b[33m[-{_GATE_PENALTY} pts â€” methodology violation]\x1b[0m\r\n"
         )
         await send_json({"type": "terminal_output", "data": {"data": warn}})
         if new_score is not None:
@@ -370,7 +370,7 @@ async def _handle_terminal_command(
             db.add(
                 CommandLog(
                     session_id=session_id,
-                    command=f"[phase_advance] {old_phase} → {new_phase}",
+                    command=f"[phase_advance] {old_phase} â†’ {new_phase}",
                     tool="phase:advance",
                     phase=new_phase,
                     triggered_siem_events=[],
@@ -433,7 +433,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     greeting = (
         "\r\n\x1b[32m"
         "======================================================\r\n"
-        "      CyberSim Secure Sandbox PTY Terminal v2.0       \r\n"
+        "      Parallax Secure Sandbox PTY Terminal v2.0       \r\n"
         "======================================================\r\n"
         "[*] Booting Kali pentest environment...\r\n"
         "[*] Initializing network security interfaces...\r\n"
@@ -494,14 +494,14 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     await _send_reconnect_history(websocket, session_id)
 
     # Register session as active for noise daemon targeting ONLY when a real
-    # container is running — prevents spurious SIEM noise when Docker is unavailable.
+    # container is running â€” prevents spurious SIEM noise when Docker is unavailable.
     redis = get_redis_client()
     has_real_container = bool(
         session_state["container_id"] and not session_state["container_id"].startswith("mock-")
     )
     if has_real_container:
         await redis.hset(_ACTIVE_SESSIONS_KEY, session_id, _active_session_payload(session_state))  # type: ignore[misc]  # redis-py overloads return Awaitable|int
-        await redis.set(f"cybersim:session:{session_id}:alive", "1", ex=7200)
+        await redis.set(f"parallax:session:{session_id}:alive", "1", ex=7200)
 
     # Subscribe to SIEM channels via Redis pub/sub. Terminal output is delivered
     # through the direct listener queue and still persisted to Redis for refresh.
@@ -690,7 +690,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 hint_text = ai_hint
                 hint_steps = [ai_hint]
 
-        # ── Log hint request + apply score penalty ─────────────────────────
+        # â”€â”€ Log hint request + apply score penalty â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         skill = session_state.get("skill_level", "beginner")
         penalties = _HINT_PENALTIES.get(skill, _HINT_PENALTIES["beginner"])
         penalty = penalties.get(int(level), 5)
@@ -780,14 +780,14 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
             msg_type = msg.get("type")
 
             # Keepalive: refresh liveness key on every message so cleanup loop
-            # can evict abandoned sessions from cybersim:active_sessions hash.
+            # can evict abandoned sessions from parallax:active_sessions hash.
             try:
-                await redis.set(f"cybersim:session:{session_id}:alive", "1", ex=7200)
+                await redis.set(f"parallax:session:{session_id}:alive", "1", ex=7200)
             except (WebSocketDisconnect, RuntimeError):
                 pass  # non-fatal; eviction will happen on next cleanup cycle
 
             if msg_type == "terminal_raw":
-                # ── Raw PTY passthrough: every keystroke → Docker ──────────
+                # â”€â”€ Raw PTY passthrough: every keystroke â†’ Docker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if readiness_status != "ready" and not force_unlocked:
                     continue
                 raw_data = msg.get("data", "")
@@ -848,7 +848,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                             {
                                 "type": "ai_hint",
                                 "data": {
-                                    "text": "Wait a moment — the tutor is thinking. Try again in a few seconds.",
+                                    "text": "Wait a moment â€” the tutor is thinking. Try again in a few seconds.",
                                     "level": 0,
                                     "source": "rate_limit",
                                 },
@@ -894,7 +894,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         }
                     )
             elif msg_type == "terminal_input":
-                # ── Legacy: line-buffered input (mock terminal fallback) ────
+                # â”€â”€ Legacy: line-buffered input (mock terminal fallback) â”€â”€â”€â”€
                 if readiness_status != "ready" and not force_unlocked:
                     continue
                 command = msg.get("data", "")
@@ -965,7 +965,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         except (WebSocketDisconnect, RuntimeError):
             pass
         try:
-            await redis.delete(f"cybersim:session:{session_id}:alive")
+            await redis.delete(f"parallax:session:{session_id}:alive")
         except (WebSocketDisconnect, RuntimeError):
             pass
         unregister_terminal_output_listener(session_id, terminal_output_queue)

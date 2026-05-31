@@ -1,12 +1,12 @@
 """
-Phase 17 — Instructor Dashboard API.
+Phase 17 â€” Instructor Dashboard API.
 
 Endpoints (all require role=instructor):
-  GET /api/instructor/sessions  — all sessions with student + scenario + score data
-  GET /api/instructor/metrics   — aggregate platform stats
+  GET /api/instructor/sessions  â€” all sessions with student + scenario + score data
+  GET /api/instructor/metrics   â€” aggregate platform stats
 
 Auth: require_instructor dependency checks user.role == "instructor".
-Default instructor: username=admin / password=CyberSimAdmin! (seeded in main.py lifespan)
+Default instructor: username=admin / password=ParallaxAdmin! (seeded in main.py lifespan)
 """
 
 from __future__ import annotations
@@ -114,7 +114,7 @@ async def get_student_report(
     return PlainTextResponse(
         report_md,
         media_type="text/markdown",
-        headers={"Content-Disposition": f'attachment; filename="cybersim-{session_id}.md"'},
+        headers={"Content-Disposition": f'attachment; filename="parallax-{session_id}.md"'},
     )
 
 
@@ -173,7 +173,7 @@ def _coverage_percent(done: int, total: int) -> int:
     return round((done / total) * 100)
 
 
-# ── User Management ────────────────────────────────────────────────────────
+# â”€â”€ User Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @router.get("/users")
@@ -290,7 +290,7 @@ async def user_drilldown(
     }
 
 
-# ── Session Management ─────────────────────────────────────────────────────
+# â”€â”€ Session Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @router.get("/sessions/{session_id}/detail")
@@ -374,7 +374,7 @@ async def session_ai_interactions(
     ]
 
 
-# ── Platform Activity & AI ─────────────────────────────────────────────────
+# â”€â”€ Platform Activity & AI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @router.get("/activity")
@@ -421,7 +421,7 @@ async def get_ai_usage(
     return {"global_daily_tokens_used": global_tokens, "total_flagged_interactions": total_flagged}
 
 
-# ── Instructor Analytics (Phase 25) ───────────────────────────────────────────
+# â”€â”€ Instructor Analytics (Phase 25) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @router.get("/analytics")
@@ -493,8 +493,8 @@ async def export_grades(
                 "SIS User ID",
                 "SIS Login ID",
                 "Section",
-                "CyberSim Score",
-                "CyberSim Time (m)",
+                "Parallax Score",
+                "Parallax Time (m)",
                 "Adherence %",
             ]
         )
@@ -529,7 +529,7 @@ async def export_grades(
             )
 
     csv_content = output.getvalue()
-    filename = f"cybersim_grades_{format}_{datetime.now(timezone.utc).strftime('%Y%m%d')}.csv"
+    filename = f"parallax_grades_{format}_{datetime.now(timezone.utc).strftime('%Y%m%d')}.csv"
     return Response(
         content=csv_content,
         media_type="text/csv",

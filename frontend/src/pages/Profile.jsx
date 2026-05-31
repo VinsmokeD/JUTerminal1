@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../lib/api'
-import CyberSimNav from '../components/nav/CyberSimNav'
+import ParallaxNav from '../components/nav/ParallaxNav'
 import { Badge, Button } from '../components/ui'
 
 export default function Profile() {
@@ -24,7 +24,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-dvh bg-void text-txt-primary font-display pb-12">
-      <CyberSimNav />
+      <ParallaxNav />
       
       <main className="max-w-6xl mx-auto px-6 pt-10">
         {/* Header Section */}
@@ -187,7 +187,7 @@ function ProficiencyRow({ label, count, total, color, shadow }) {
 function ProfileLoading() {
   return (
     <div className="min-h-dvh bg-void text-txt-primary font-display">
-      <CyberSimNav />
+      <ParallaxNav />
       <div className="max-w-4xl mx-auto px-6 pt-24 space-y-12">
         <div className="flex gap-8 items-center animate-pulse">
           <div className="w-32 h-32 rounded-cs-lg bg-surface-3" />

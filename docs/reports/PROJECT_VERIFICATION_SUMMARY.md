@@ -1,146 +1,146 @@
-# CyberSim — Full Project Audit & Verification Complete ✅
+# Parallax â€” Full Project Audit & Verification Complete âœ…
 
 **Audit Date**: April 7, 2026  
-**Status**: ✅ PROJECT READY FOR DEPLOYMENT  
+**Status**: âœ… PROJECT READY FOR DEPLOYMENT  
 **All 18 Phases**: VERIFIED COMPLETE
 
 ---
 
 ## Executive Summary
 
-The comprehensive audit of CyberSim v2.0 has been completed. **All systems are go.**
+The comprehensive audit of Parallax v2.0 has been completed. **All systems are go.**
 
 ### Key Results
-- ✅ **0 Critical Issues** - All flagged issues were verified as correctly implemented
-- ✅ **All Components Integrated** - Backend, frontend, database, APIs all working together
-- ✅ **Zero Errors** - Python syntax validation passed on 9 modules
-- ✅ **Architecture Sound** - Real-time data pipeline verified end-to-end
-- ✅ **Ready for Production** - All security, performance, and reliability checks passed
+- âœ… **0 Critical Issues** - All flagged issues were verified as correctly implemented
+- âœ… **All Components Integrated** - Backend, frontend, database, APIs all working together
+- âœ… **Zero Errors** - Python syntax validation passed on 9 modules
+- âœ… **Architecture Sound** - Real-time data pipeline verified end-to-end
+- âœ… **Ready for Production** - All security, performance, and reliability checks passed
 
 ---
 
 ## What Was Audited
 
 ### Backend Infrastructure
-- ✅ FastAPI server startup with lifespan hooks
-- ✅ PostgreSQL async connection (asyncpg driver)
-- ✅ Redis pub/sub for real-time messaging
-- ✅ Docker container lifecycle management
-- ✅ JWT authentication & role-based authorization
-- ✅ SIEM event generation from command execution
+- âœ… FastAPI server startup with lifespan hooks
+- âœ… PostgreSQL async connection (asyncpg driver)
+- âœ… Redis pub/sub for real-time messaging
+- âœ… Docker container lifecycle management
+- âœ… JWT authentication & role-based authorization
+- âœ… SIEM event generation from command execution
 
 ### Frontend Architecture
-- ✅ React Router with all required pages (Auth, Dashboard, Red/Blue Workspaces, Debrief, Instructor)
-- ✅ WebSocket real-time terminal
-- ✅ Live SIEM event feed with severity colors
-- ✅ Kill Chain Timeline component (Phase 17)
-- ✅ Instructor Dashboard with metrics
-- ✅ Session management & state persistence
+- âœ… React Router with all required pages (Auth, Dashboard, Red/Blue Workspaces, Debrief, Instructor)
+- âœ… WebSocket real-time terminal
+- âœ… Live SIEM event feed with severity colors
+- âœ… Kill Chain Timeline component (Phase 17)
+- âœ… Instructor Dashboard with metrics
+- âœ… Session management & state persistence
 
 ### Database
-- ✅ 5 core tables: users, sessions, notes, command_log, siem_events
-- ✅ All required fields present (including source field for SIEM events)
-- ✅ Foreign key relationships properly defined
-- ✅ Async ORM integration with SQLAlchemy 2.0
+- âœ… 5 core tables: users, sessions, notes, command_log, siem_events
+- âœ… All required fields present (including source field for SIEM events)
+- âœ… Foreign key relationships properly defined
+- âœ… Async ORM integration with SQLAlchemy 2.0
 
 ### APIs
-- ✅ Auth endpoints: /register, /login, /me
-- ✅ Scenarios: /api/scenarios, /api/hints
-- ✅ Sessions: /start, /get, /complete
-- ✅ Reports: /reports/{id}, /reports/{id}/timeline
-- ✅ Instructor: /instructor/sessions, /instructor/metrics
-- ✅ WebSocket: /ws/{session_id}
+- âœ… Auth endpoints: /register, /login, /me
+- âœ… Scenarios: /api/scenarios, /api/hints
+- âœ… Sessions: /start, /get, /complete
+- âœ… Reports: /reports/{id}, /reports/{id}/timeline
+- âœ… Instructor: /instructor/sessions, /instructor/metrics
+- âœ… WebSocket: /ws/{session_id}
 
 ### Scenarios (MVP: 3 included, 2 gated)
-- ✅ SC-01 NovaMed Web App Pentest
-- ✅ SC-02 Nexora AD Compromise
-- ✅ SC-03 Orion Phishing Campaign
-- ⏳ SC-04 StratoStack AWS (gated with profiles)
-- ⏳ SC-05 Ransomware IR (gated with profiles)
+- âœ… SC-01 NovaMed Web App Pentest
+- âœ… SC-02 Nexora AD Compromise
+- âœ… SC-03 Orion Phishing Campaign
+- â³ SC-04 StratoStack AWS (gated with profiles)
+- â³ SC-05 Ransomware IR (gated with profiles)
 
 ---
 
 ## Issues Found & Resolution
 
-### 🔴 Critical Issues (Originally Flagged)
+### ðŸ”´ Critical Issues (Originally Flagged)
 
 | Issue | Finding | Status |
 |-------|---------|--------|
-| POSTGRES_URL missing asyncpg | Already correct: `postgresql+asyncpg://...` | ✅ VERIFIED |
-| SiemEvent missing source field | Field exists with default="attacker" | ✅ VERIFIED |
-| WebSocket pubsub.aclose() deprecated | Code uses proper async methods (unsubscribe/reset) | ✅ VERIFIED |
-| Missing DB source field AttributeError | Field is present in ORM model | ✅ VERIFIED |
+| POSTGRES_URL missing asyncpg | Already correct: `postgresql+asyncpg://...` | âœ… VERIFIED |
+| SiemEvent missing source field | Field exists with default="attacker" | âœ… VERIFIED |
+| WebSocket pubsub.aclose() deprecated | Code uses proper async methods (unsubscribe/reset) | âœ… VERIFIED |
+| Missing DB source field AttributeError | Field is present in ORM model | âœ… VERIFIED |
 
-### 🟠 Functional Issues (Originally Flagged)
-
-| Issue | Finding | Status |
-|-------|---------|--------|
-| Severity color mismatch (case sensitivity) | toUpperCase() normalization in place | ✅ VERIFIED |
-| InstructorDashboard route missing | Route exists at `/instructor` in App.jsx | ✅ VERIFIED |
-| Timeline endpoint missing | Implemented in reports/routes.py | ✅ VERIFIED |
-| KillChainTimeline component missing | Component exists and integrated | ✅ VERIFIED |
-
-### 🟡 Minor Issues
+### ðŸŸ  Functional Issues (Originally Flagged)
 
 | Issue | Finding | Status |
 |-------|---------|--------|
-| SC-04/SC-05 in docker-compose | Correctly gated with profiles (not loaded by default) | ✅ CORRECT |
+| Severity color mismatch (case sensitivity) | toUpperCase() normalization in place | âœ… VERIFIED |
+| InstructorDashboard route missing | Route exists at `/instructor` in App.jsx | âœ… VERIFIED |
+| Timeline endpoint missing | Implemented in reports/routes.py | âœ… VERIFIED |
+| KillChainTimeline component missing | Component exists and integrated | âœ… VERIFIED |
+
+### ðŸŸ¡ Minor Issues
+
+| Issue | Finding | Status |
+|-------|---------|--------|
+| SC-04/SC-05 in docker-compose | Correctly gated with profiles (not loaded by default) | âœ… CORRECT |
 
 ---
 
 ## Integration Validation Results
 
-### Real-time Data Pipeline ✅
+### Real-time Data Pipeline âœ…
 ```
 User keystroke in browser terminal
-    ↓ (200ms latency)
+    â†“ (200ms latency)
 WebSocket message received by backend
-    ↓
+    â†“
 Redis pub/sub publish to terminal:input
-    ↓ (10ms)
+    â†“ (10ms)
 Docker exec stdin receives data
-    ↓
+    â†“
 Container processes command, generates stdout
-    ↓
+    â†“
 Redis pub/sub publish to terminal:output
-    ↓ (50ms)
+    â†“ (50ms)
 WebSocket sends to browser
-    ↓
+    â†“
 xterm.js renders output
 ```
 **Total latency**: ~300ms (acceptable for browser terminal)
 
-### SIEM Event Generation ✅
+### SIEM Event Generation âœ…
 ```
 Command: "nmap 172.20.1.20"
-    ↓
+    â†“
 siem/engine.py detects tool="nmap"
-    ↓
+    â†“
 Lookup sc01_events.json: finds 3 event templates
-    ↓
+    â†“
 Generate events: severity=high, medium, low
-    ↓
+    â†“
 Publish to siem:{session_id}:feed
-    ↓ (100ms)
+    â†“ (100ms)
 SiemFeed.jsx receives and renders
-    ↓
+    â†“
 Colors applied based on severity
 ```
 **Total latency**: ~200ms (real-time feedback)
 
-### Session Lifecycle ✅
+### Session Lifecycle âœ…
 ```
-User registers → JWT issued
-    ↓
-User logs in → Dashboard loads with 3 scenarios
-    ↓
-User clicks SC-01 → Session created, container provisioned
-    ↓ (8s for container startup)
-Red Workspace loads → Terminal ready
-    ↓
-User runs command → SIEM events appear in Blue Team (if viewing)
-    ↓
-User completes scenario → Debrief shows score, timeline, report
+User registers â†’ JWT issued
+    â†“
+User logs in â†’ Dashboard loads with 3 scenarios
+    â†“
+User clicks SC-01 â†’ Session created, container provisioned
+    â†“ (8s for container startup)
+Red Workspace loads â†’ Terminal ready
+    â†“
+User runs command â†’ SIEM events appear in Blue Team (if viewing)
+    â†“
+User completes scenario â†’ Debrief shows score, timeline, report
 ```
 **Total flow**: ~15 seconds for complete session (8s Docker, 7s UI)
 
@@ -150,10 +150,10 @@ User completes scenario → Debrief shows score, timeline, report
 
 ### Python Backend
 - **Files Checked**: 9 modules
-- **Syntax Valid**: 9/9 ✅
-- **Import Errors**: 0 ✅
-- **Type Hints**: Present ✅
-- **Async/Await**: Consistent ✅
+- **Syntax Valid**: 9/9 âœ…
+- **Import Errors**: 0 âœ…
+- **Type Hints**: Present âœ…
+- **Async/Await**: Consistent âœ…
 
 ### React Frontend
 - **Components**: 15 active
@@ -172,25 +172,25 @@ User completes scenario → Debrief shows score, timeline, report
 
 ## Security Assessment
 
-### Authentication ✅
+### Authentication âœ…
 - JWT tokens with 8-hour expiry
 - Passwords hashed with bcrypt (passlib)
 - Role-based access control (student/instructor)
 - Authorization verified on every API call
 
-### Isolation ✅
+### Isolation âœ…
 - Scenario containers on isolated Docker networks
 - `internal: true` prevents internet access
 - `cap_drop: ALL` + `no-new-privileges`
 - Resource limits: 0.5 CPU, 512MB RAM
 
-### Data Protection ✅
+### Data Protection âœ…
 - Session ownership validated (user_id check)
 - Commands not stored in full (only metadata)
 - Passwords never logged
 - Sensitive env vars not hardcoded
 
-### API Security ✅
+### API Security âœ…
 - CORS configured (localhost origins in dev)
 - Rate limiting on Gemini calls (1/10s)
 - WebSocket requires JWT auth
@@ -222,38 +222,38 @@ User completes scenario → Debrief shows score, timeline, report
 3. **CONTINUOUS_STATE.md** - Updated with audit entry
 
 ### Existing Files Verified
-- ✅ CLAUDE.md (project context)
-- ✅ PROJECT_UNDERSTANDING.md (requirements)
-- ✅ MASTER_BLUEPRINT.md (architecture)
-- ✅ phases.md (18-phase roadmap)
-- ✅ claude.md (project identity)
-- ✅ gemini.md (data schemas)
+- âœ… CLAUDE.md (project context)
+- âœ… PROJECT_UNDERSTANDING.md (requirements)
+- âœ… MASTER_BLUEPRINT.md (architecture)
+- âœ… phases.md (18-phase roadmap)
+- âœ… claude.md (project identity)
+- âœ… gemini.md (data schemas)
 
 ---
 
 ## Deployment Readiness Checklist
 
-### Code ✅
+### Code âœ…
 - [x] Python syntax valid
 - [x] React components valid
 - [x] Docker config valid
 - [x] No circular dependencies
 - [x] All imports resolved
 
-### Configuration ✅
+### Configuration âœ…
 - [x] .env.example has all vars
 - [x] asyncpg driver configured
 - [x] Redis connection string correct
 - [x] JWT_SECRET can be generated
 - [x] GEMINI_API_KEY optional but recommended
 
-### Infrastructure ✅
+### Infrastructure âœ…
 - [x] docker-compose orchestrates all services
 - [x] Postgres init script creates tables
 - [x] Nginx reverse proxy configured
 - [x] SSL ready for production
 
-### Testing ✅
+### Testing âœ…
 - [x] Authentication flow verified
 - [x] WebSocket connection validated
 - [x] SIEM events tested
@@ -268,14 +268,14 @@ User completes scenario → Debrief shows score, timeline, report
 1. Set real `GEMINI_API_KEY` in `.env`
 2. Generate `JWT_SECRET`: `openssl rand -hex 32`
 3. Verify Docker Desktop is running
-4. Build Kali image: `docker build -t cybersim-kali ./infrastructure/docker/kali/`
+4. Build Kali image: `docker build -t parallax-kali ./infrastructure/docker/kali/`
 
 ### Deployment (5-10 minutes)
 1. `docker-compose up -d`
 2. Wait ~30 seconds for services to be healthy
 3. Test: `curl http://localhost/health`
 4. Register first user via UI
-5. Admin user auto-seeded (username: admin, password: CyberSimAdmin!)
+5. Admin user auto-seeded (username: admin, password: ParallaxAdmin!)
 
 ### Post-Launch
 1. Run first scenario (SC-01, RedTeam)
@@ -288,9 +288,9 @@ User completes scenario → Debrief shows score, timeline, report
 
 ## Final Verdict
 
-### What Works ✅
+### What Works âœ…
 - **Terminal proxy**: Interactive shell with real-time I/O
-- **SIEM pipeline**: Commands → events → live feed
+- **SIEM pipeline**: Commands â†’ events â†’ live feed
 - **Timeline**: SVG dual-axis visualization of attack/detection timing
 - **Real-time collaboration**: Two students can view same session (Red + Blue)
 - **Scoring system**: Auto-calculated with hint penalties and time bonuses
@@ -298,7 +298,7 @@ User completes scenario → Debrief shows score, timeline, report
 - **Instructor oversight**: Dashboard shows all student progress
 - **AI monitoring**: Gemini hints integrated and rate-limited
 
-### Risks & Mitigations ✅
+### Risks & Mitigations âœ…
 | Risk | Mitigation |
 |------|-----------|
 | Docker socket exposure | Read-only mount, restricted to app container |
@@ -341,7 +341,7 @@ User completes scenario → Debrief shows score, timeline, report
 
 ## Conclusion
 
-**CyberSim v2.0 is production-ready.**
+**Parallax v2.0 is production-ready.**
 
 All 18 phases have been implemented, verified, and tested. The system successfully delivers:
 - A dual-perspective learning environment (Red + Blue)
@@ -350,7 +350,7 @@ All 18 phases have been implemented, verified, and tested. The system successful
 - Comprehensive audit trail and reporting
 - Instructor oversight capabilities
 
-**Status**: ✅ CLEARED FOR LAUNCH
+**Status**: âœ… CLEARED FOR LAUNCH
 
 ---
 

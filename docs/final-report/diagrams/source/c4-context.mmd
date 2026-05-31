@@ -6,18 +6,18 @@ flowchart TB
     classDef university fill:#FFF9C4,stroke:#FFC107,stroke-width:2px,color:#0D1B2A
 
     subgraph ACTORS[" Actors "]
-        SA(["🎯 Student\nRed Team Operator"])
-        SB(["🛡️ Student\nBlue Team Analyst"])
-        IN(["📊 Instructor"])
-        AD(["⚙️ Administrator\nDemo Operator"])
+        SA(["ðŸŽ¯ Student\nRed Team Operator"])
+        SB(["ðŸ›¡ï¸ Student\nBlue Team Analyst"])
+        IN(["ðŸ“Š Instructor"])
+        AD(["âš™ï¸ Administrator\nDemo Operator"])
     end
 
-    CS(["🖥️ CyberSim Platform\nBrowser-Based Cybersecurity Training System"])
+    CS(["ðŸ–¥ï¸ Parallax Platform\nBrowser-Based Cybersecurity Training System"])
 
     subgraph EXTERNAL[" External Systems "]
-        AI(["🤖 AI Provider\nGemini Flash / OpenRouter"])
-        DK(["🐳 Docker Engine\nLocal Container Runtime"])
-        UJ(["🏛️ University of Jordan\nKASIT Environment"])
+        AI(["ðŸ¤– AI Provider\nGemini Flash / OpenRouter"])
+        DK(["ðŸ³ Docker Engine\nLocal Container Runtime"])
+        UJ(["ðŸ›ï¸ University of Jordan\nKASIT Environment"])
     end
 
     SA -->|"Executes Red Team methodology\nin isolated sandboxes"| CS
@@ -25,7 +25,7 @@ flowchart TB
     IN -->|"Monitors progress,\nreviews sessions, exports grades"| CS
     AD -->|"Deploys, verifies,\nand recovers the stack"| CS
 
-    CS -->|"Bounded Socratic hints\n(≤150 tokens, 15 RPM limit)"| AI
+    CS -->|"Bounded Socratic hints\n(â‰¤150 tokens, 15 RPM limit)"| AI
     CS -->|"Provisions isolated scenario\ncontainers and networks"| DK
     UJ -->|"Graduation project context,\ncourse grading environment"| CS
 

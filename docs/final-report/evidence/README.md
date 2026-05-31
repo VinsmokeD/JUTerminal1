@@ -1,6 +1,6 @@
 # Evidence Bundle
 
-This folder stores the evidence used to support the final CyberSim report. The formal report should not make unsupported claims; every architecture, implementation, test, and deployment claim should point to a local source file, command output, screenshot, exported diagram, or official external reference.
+This folder stores the evidence used to support the final Parallax report. The formal report should not make unsupported claims; every architecture, implementation, test, and deployment claim should point to a local source file, command output, screenshot, exported diagram, or official external reference.
 
 ## Current Evidence Snapshot
 
@@ -9,13 +9,13 @@ This folder stores the evidence used to support the final CyberSim report. The f
 | Repository commit | `b8c94fc` |
 | Git status at evidence capture | `M docs/architecture/CONTINUOUS_STATE.md`; untracked diagram export/theme files before this documentation update |
 | Canva design id | `DAHKeHjt8IY` |
-| Canva title | `Report - CyberSim Project Report` |
+| Canva title | `Report - Parallax Project Report` |
 | Canva page count | 17 A4 pages |
 | Canva current edit URL | https://www.canva.com/d/8CmCA-8Y41Ms9ML |
 | Canva current view URL | https://www.canva.com/d/pfQr_4wjgUjRfJs |
 | Mermaid CLI version | `11.15.0` |
 | Diagram exports | 6 SVG files and 6 PNG files |
-| Repomix packed source file | `.tmp/final-report/repomix-cybersim.xml` |
+| Repomix packed source file | `.tmp/final-report/repomix-parallax.xml` |
 | Repomix scope | backend, frontend, scenarios, AI prompt, Docker scenario files, Nginx, Compose, README, environment example |
 | Repomix output | 210 files, 175,785 tokens, 641,445 characters |
 | Repomix security check | No suspicious files detected |

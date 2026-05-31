@@ -1,12 +1,12 @@
 # Security and Safety Case
 
-This document presents the complete security architecture, safety case, threat model, and compliance mapping for the CyberSim training platform. As an educational system hosting live penetration testing utilities and vulnerable scenarios, CyberSim must enforce rigorous boundaries to prevent safety compromises, unauthorized network use, and host-level exploit execution.
+This document presents the complete security architecture, safety case, threat model, and compliance mapping for the Parallax training platform. As an educational system hosting live penetration testing utilities and vulnerable scenarios, Parallax must enforce rigorous boundaries to prevent safety compromises, unauthorized network use, and host-level exploit execution.
 
 ---
 
 ## 1. Safety Architecture and Isolation Guarantees
 
-CyberSim uses a container-based isolation model where all student operations are encapsulated within sandboxed environments. The physical host, backend services, and external networks are protected through multiple security boundaries.
+Parallax uses a container-based isolation model where all student operations are encapsulated within sandboxed environments. The physical host, backend services, and external networks are protected through multiple security boundaries.
 
 ```mermaid
 graph TD
@@ -110,13 +110,13 @@ To prevent credentials, hashes, and flags from leaking into the LLM history (whi
 
 ## 4. Compliance and Industry Framework Mapping
 
-The CyberSim training scenarios and architecture align directly with major cybersecurity education and industrial standards.
+The Parallax training scenarios and architecture align directly with major cybersecurity education and industrial standards.
 
 ### 4.1 MITRE ATT&CK Mapping
 The methodology progression (Reconnaissance -> Enumeration -> Exploit -> Post-Exploitation) mirrors the MITRE ATT&CK Enterprise Matrix:
 
 ```text
-[TA0043 Reconnaissance]  ──►  [TA0007 Discovery]  ──►  [TA0001 Initial Access]  ──►  [TA0006 Credential Access]
+[TA0043 Reconnaissance]  â”€â”€â–º  [TA0007 Discovery]  â”€â”€â–º  [TA0001 Initial Access]  â”€â”€â–º  [TA0006 Credential Access]
      (nmap, whatweb)               (gobuster)              (SQLi, LFI, Phish)            (Kerberoasting)
 ```
 
@@ -144,7 +144,7 @@ The platform teaches the core pillars of the NIST CSF:
 
 ## 5. Security Logging and Audit Capabilities
 
-CyberSim preserves a complete audit trail of user activity to monitor classroom progress and enforce accountability.
+Parallax preserves a complete audit trail of user activity to monitor classroom progress and enforce accountability.
 
 ### 5.1 Command Log Auditing
 Every terminal command submitted is captured by `backend/src/ws/routes.py` and written to the PostgreSQL database table `command_log`. The entry preserves:

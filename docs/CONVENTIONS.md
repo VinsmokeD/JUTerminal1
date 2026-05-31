@@ -2,7 +2,7 @@
 
 ## Overview
 
-CyberSim follows consistent coding conventions across Python (backend) and JavaScript (frontend). This guide ensures maintainability, readability, and quality.
+Parallax follows consistent coding conventions across Python (backend) and JavaScript (frontend). This guide ensures maintainability, readability, and quality.
 
 ## Python (Backend)
 
@@ -24,14 +24,14 @@ pylint backend/src
 **Type Hints**: Mandatory everywhere
 
 ```python
-# ✅ Good
+# âœ… Good
 def get_user(user_id: int) -> Optional[User]:
     pass
 
 def calculate_score(discovery_count: int, time_seconds: int) -> float:
     return discovery_count * 1.5 - (time_seconds / 60)
 
-# ❌ Bad
+# âŒ Bad
 def get_user(user_id):
     pass
 
@@ -128,7 +128,7 @@ class UserProfile(BaseModel):
 ### Error Handling
 
 ```python
-# ✅ Good
+# âœ… Good
 try:
     container = docker_client.containers.get(container_id)
 except docker.errors.NotFound as e:
@@ -138,7 +138,7 @@ except docker.errors.APIError as e:
     logger.error(f"Docker API error: {e}")
     raise DockerAPIException(f"Docker error: {e}") from e
 
-# ❌ Bad
+# âŒ Bad
 try:
     container = docker_client.containers.get(container_id)
 except:
@@ -220,7 +220,7 @@ npm run lint:fix
 ### Functional Components
 
 ```jsx
-// ✅ Good
+// âœ… Good
 export function TerminalPanel({ sessionId, onCommand }) {
   const [history, setHistory] = useState([]);
   const { output } = useTerminal(sessionId);
@@ -241,7 +241,7 @@ export function TerminalPanel({ sessionId, onCommand }) {
   );
 }
 
-// ❌ Bad
+// âŒ Bad
 export class TerminalPanel extends React.Component {
   // Class components discouraged
 }
@@ -309,7 +309,7 @@ function MyComponent() {
 ### JSX Style
 
 ```jsx
-// ✅ Good
+// âœ… Good
 <div className="panel p-4 rounded-lg">
   <h2 className="text-xl font-bold">{title}</h2>
   <p className="text-gray-600">{description}</p>
@@ -317,7 +317,7 @@ function MyComponent() {
   {!isLoading && <Content data={data} />}
 </div>
 
-// ❌ Bad
+// âŒ Bad
 <div class="panel p4 rounded">  {/* class instead of className, wrong tailwind */}
   <h2>{title}</h2>
   <p>{description}</p>
@@ -328,7 +328,7 @@ function MyComponent() {
 ### Async/Await
 
 ```javascript
-// ✅ Good
+// âœ… Good
 async function fetchUserData(userId) {
   try {
     const response = await fetch(`/api/users/${userId}`);
@@ -340,7 +340,7 @@ async function fetchUserData(userId) {
   }
 }
 
-// ❌ Bad
+// âŒ Bad
 async function fetchUserData(userId) {
   const response = await fetch(`/api/users/${userId}`);
   const data = await response.json();
@@ -351,7 +351,7 @@ async function fetchUserData(userId) {
 ### Comments
 
 ```javascript
-// ✅ Good
+// âœ… Good
 // Check if permission is sufficient for current operation
 if (user.role === 'admin' || user.role === 'instructor') {
   // ...
@@ -360,7 +360,7 @@ if (user.role === 'admin' || user.role === 'instructor') {
 // TODO: Implement caching for frequently accessed scenarios
 // FIXME: WebSocket reconnection sometimes fails
 
-// ❌ Bad
+// âŒ Bad
 // loop through users
 users.forEach(...) {
   // get user name
@@ -510,21 +510,21 @@ Checks include:
 
 ## Don't's (Anti-patterns)
 
-❌ **Don't use `console.log()` in production code** — Use logger or remove
+âŒ **Don't use `console.log()` in production code** â€” Use logger or remove
 
-❌ **Don't hardcode API URLs** — Use environment variables
+âŒ **Don't hardcode API URLs** â€” Use environment variables
 
-❌ **Don't catch all exceptions** — Catch specific exceptions
+âŒ **Don't catch all exceptions** â€” Catch specific exceptions
 
-❌ **Don't use `*` imports** — Import specific items
+âŒ **Don't use `*` imports** â€” Import specific items
 
-❌ **Don't commit secrets** — Use .env, .gitignore
+âŒ **Don't commit secrets** â€” Use .env, .gitignore
 
-❌ **Don't use var** — Use `const` or `let`
+âŒ **Don't use var** â€” Use `const` or `let`
 
-❌ **Don't disable linters without reason** — Add comments if needed
+âŒ **Don't disable linters without reason** â€” Add comments if needed
 
-❌ **Don't leave TODO comments without context** — Explain what needs to be done
+âŒ **Don't leave TODO comments without context** â€” Explain what needs to be done
 
 ---
 

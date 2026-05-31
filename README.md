@@ -1,6 +1,6 @@
-# CyberSim
+# Parallax
 
-CyberSim is a dual-perspective cybersecurity training platform for university labs. Students work through safe, Docker-isolated scenarios as Red Team operators while Blue Team analysts watch the matching security telemetry, write notes, triage events, and review a debrief timeline.
+Parallax is a dual-perspective cybersecurity training platform for university labs. Students work through safe, Docker-isolated scenarios as Red Team operators while Blue Team analysts watch the matching security telemetry, write notes, triage events, and review a debrief timeline.
 
 The current MVP is intentionally focused on three high-fidelity scenarios:
 
@@ -10,7 +10,7 @@ The current MVP is intentionally focused on three high-fidelity scenarios:
 | SC-02 | Nexora Financial | Samba4 Active Directory compromise and detection |
 | SC-03 | Orion Logistics | Phishing campaign, simulated endpoint activity, and SOC response |
 
-All attack activity is designed for isolated Docker networks only. CyberSim is not a tool for testing real systems.
+All attack activity is designed for isolated Docker networks only. Parallax is not a tool for testing real systems.
 
 ## Current Verification Status
 
@@ -41,10 +41,10 @@ docker compose up -d
 # REQUIRED for a real Red Team terminal (~6-15 min, ~9 GB image).
 # Without this image the terminal runs in mock mode (commands still drive
 # SIEM/AI/scoring, but do not execute in a real shell).
-docker build -t cybersim-kali:latest infrastructure/docker/kali
+docker build -t parallax-kali:latest infrastructure/docker/kali
 ```
 
-CyberSim uses OpenRouter for the AI monitor. The default budget/performance model is `deepseek/deepseek-chat-v3-0324`.
+Parallax uses OpenRouter for the AI monitor. The default budget/performance model is `deepseek/deepseek-chat-v3-0324`.
 
 ## Database Migrations
 
@@ -68,7 +68,7 @@ docker compose --profile sc03 up -d   # Orion Logistics (Phishing)
 ## Default Credentials
 
 ```text
-Instructor: admin / CyberSimAdmin!
+Instructor: admin / ParallaxAdmin!
 Students:   self-register at /auth
 ```
 
@@ -109,8 +109,8 @@ For the graduation-defense version, use the checked-in demo deployment layer ins
 
 ```bash
 # On a fresh Ubuntu 24.04 VPS as root
-CYBERSIM_DOMAIN=demo.example.com bash scripts/demo-bootstrap.sh
-cd /opt/cybersim
+PARALLAX_DOMAIN=demo.example.com bash scripts/demo-bootstrap.sh
+cd /opt/parallax
 nano .env
 bash scripts/demo-deploy.sh
 ```
@@ -125,7 +125,7 @@ The demo layer is:
 - `scripts/demo-recover.sh soft` restarts only Caddy/backend/frontend if the live demo looks stuck.
 - `scripts/demo-local-rehearsal.ps1` starts the full local stack on Windows and checks `localhost` before you rehearse.
 
-If you do not own a domain yet, omit `CYBERSIM_DOMAIN`; the bootstrap script creates an `sslip.io` hostname from the VPS public IP.
+If you do not own a domain yet, omit `PARALLAX_DOMAIN`; the bootstrap script creates an `sslip.io` hostname from the VPS public IP.
 
 ## Documentation
 
@@ -145,7 +145,7 @@ Historical reports and agent handoff files remain in the repo for continuity, bu
 
 ## Security Rules
 
-- Never test against real external systems from CyberSim.
+- Never test against real external systems from Parallax.
 - Never commit `.env` or real API keys.
 - Keep scenario networks internal and isolated.
 - Keep exploit behavior educational and scoped to local containers.
@@ -155,4 +155,4 @@ Historical reports and agent handoff files remain in the repo for continuity, bu
 
 Current assessed completion: 98/100.
 
-CyberSim is defense-ready for the core graduation demo path. Before presenting live, perform one physical browser xterm keyboard check and one uninterrupted rehearsal on the presentation machine.
+Parallax is defense-ready for the core graduation demo path. Before presenting live, perform one physical browser xterm keyboard check and one uninterrupted rehearsal on the presentation machine.

@@ -1,8 +1,8 @@
-# CyberSim Team Setup Guide
+# Parallax Team Setup Guide
 
 This guide is the repeatable setup path for every team member machine. Use it when a teammate pulls the project for the first time, moves to a new laptop, or needs to restore a clean local demo stack.
 
-CyberSim runs as a single-node Docker Compose lab. The browser, FastAPI backend, Postgres, Redis, Elasticsearch/Filebeat, Nginx, Kali session containers, and SC-01 through SC-03 scenario targets all run on the same Docker host. Scenario networks are intentionally internal-only and must not be used against real systems.
+Parallax runs as a single-node Docker Compose lab. The browser, FastAPI backend, Postgres, Redis, Elasticsearch/Filebeat, Nginx, Kali session containers, and SC-01 through SC-03 scenario targets all run on the same Docker host. Scenario networks are intentionally internal-only and must not be used against real systems.
 
 ## 1. Supported Local Machines
 
@@ -125,9 +125,9 @@ Edit `.env` and set at least:
 ```env
 OPENROUTER_API_KEY=your_openrouter_key_here
 OPENROUTER_MODEL=deepseek/deepseek-v4-pro
-POSTGRES_USER=cybersim
+POSTGRES_USER=parallax
 POSTGRES_PASSWORD=change_this_password
-POSTGRES_DB=cybersim
+POSTGRES_DB=parallax
 JWT_SECRET=replace_with_generated_64_character_hex_secret
 ENVIRONMENT=development
 ```
@@ -172,7 +172,7 @@ docker compose --profile sc01 --profile sc02 --profile sc03 build
 
 The first build can take several minutes. If it fails while downloading base images or packages, retry after confirming Docker Desktop or Docker Engine has network access.
 
-## 6. Start CyberSim Fully
+## 6. Start Parallax Fully
 
 Start the complete local platform, including all scenario target containers:
 
@@ -246,7 +246,7 @@ Default local instructor account:
 
 ```text
 username: admin
-password: CyberSimAdmin!
+password: ParallaxAdmin!
 ```
 
 Use this only for local development and demos. Do not expose this local stack beyond the team machine.
@@ -347,7 +347,7 @@ Remove stale Kali session containers if a terminal session gets stuck after code
 docker ps -a --filter "name=kali-" --format "{{.Names}}"
 ```
 
-Remove only CyberSim Kali session containers that are safe to discard. Do not remove unrelated Docker containers.
+Remove only Parallax Kali session containers that are safe to discard. Do not remove unrelated Docker containers.
 
 ## 11. Network And Port Map
 
@@ -365,10 +365,10 @@ Internal scenario networks:
 
 | Network | Subnet | Purpose |
 | --- | --- | --- |
-| `cybersim_sc01-net` | `172.20.1.0/24` | SC-01 web app lab |
-| `cybersim_sc02-net` | `172.20.2.0/24` | SC-02 AD lab |
-| `cybersim_sc03-net` | `172.20.3.0/24` | SC-03 phishing lab |
-| `cybersim_internal` | `172.30.0.0/24` | Core app services |
+| `parallax_sc01-net` | `172.20.1.0/24` | SC-01 web app lab |
+| `parallax_sc02-net` | `172.20.2.0/24` | SC-02 AD lab |
+| `parallax_sc03-net` | `172.20.3.0/24` | SC-03 phishing lab |
+| `parallax_internal` | `172.30.0.0/24` | Core app services |
 
 The scenario networks are `internal: true` by design. They should not have outbound internet.
 

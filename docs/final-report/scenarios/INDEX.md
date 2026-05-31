@@ -1,6 +1,6 @@
 # Scenario Design Dossier Index
 
-This index provides a comparison of the three MVP scenarios included in the CyberSim graduation project. Detailed dossiers for each scenario are available in this directory.
+This index provides a comparison of the three MVP scenarios included in the Parallax graduation project. Detailed dossiers for each scenario are available in this directory.
 
 ## Scenario Comparison Table
 

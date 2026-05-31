@@ -1,13 +1,13 @@
-# CyberSim — Development Phases (v2.0 Master Blueprint Aligned)
+# Parallax â€” Development Phases (v2.0 Master Blueprint Aligned)
 
-## Phase 0 — Concept, architecture, documentation ✅
+## Phase 0 â€” Concept, architecture, documentation âœ…
 **Goal**: Complete project spec before any code.
 **Deliverables**: CLAUDE.md, .antigravity-rules.md, MASTER_BLUEPRINT.md, all docs/, scenario specs, network specs.
 **Acceptance**: All docs readable, no placeholders, repo initialized.
 
 ---
 
-## Phase 1 — Infrastructure skeleton ✅ Done
+## Phase 1 â€” Infrastructure skeleton âœ… Done
 **Blockers**: None.
 **Goal**: docker-compose brings up all services; health checks pass.
 **Files**:
@@ -17,12 +17,12 @@
 - frontend/Dockerfile
 - infrastructure/nginx/nginx.conf
 - .github/workflows/ci.yml
-**Acceptance**: `docker-compose up` → all services healthy. `curl localhost/health` returns 200.
+**Acceptance**: `docker-compose up` â†’ all services healthy. `curl localhost/health` returns 200.
 **Est. tokens**: ~600
 
 ---
 
-## Phase 2 — Backend foundation ✅ Done
+## Phase 2 â€” Backend foundation âœ… Done
 **Goal**: FastAPI app with auth, session management, WebSocket endpoint.
 **Files**:
 - backend/src/main.py
@@ -53,7 +53,7 @@
 **Goal**: xterm.js in browser connects to real Docker container shell via WebSocket.
 **Files**:
 - backend/src/sandbox/manager.py (Docker SDK container lifecycle)
-- backend/src/sandbox/terminal.py (exec stream ↔ WS proxy)
+- backend/src/sandbox/terminal.py (exec stream â†” WS proxy)
 - infrastructure/docker/kali/Dockerfile (Kali base, tools pre-installed)
 - frontend/src/components/terminal/Terminal.jsx
 - frontend/src/hooks/useTerminal.js
@@ -62,44 +62,44 @@
 
 ---
 
-## Phase 5 — SIEM event engine ✅ Done
+## Phase 5 â€” SIEM event engine âœ… Done
 **Goal**: Attacker terminal actions trigger corresponding SIEM events on blue side in real time.
 **Files**:
-- backend/src/siem/engine.py (action → event mapping)
+- backend/src/siem/engine.py (action â†’ event mapping)
 - backend/src/siem/events/sc01_events.json (full event map SC-01)
 - backend/src/siem/events/sc02_events.json
 - backend/src/siem/events/sc03_events.json
 - frontend/src/components/siem/SiemFeed.jsx
 - frontend/src/components/siem/EventDetail.jsx
-**Acceptance**: nmap scan in terminal → 3 SIEM events appear on blue panel within 2 seconds.
+**Acceptance**: nmap scan in terminal â†’ 3 SIEM events appear on blue panel within 2 seconds.
 **Est. tokens**: ~800
 
 ---
 
-## Phase 6 — Notes system ✅ Done
+## Phase 6 â€” Notes system âœ… Done
 **Goal**: Structured pentest notebook and IR notebook with tag system and auto-save.
 **Files**:
 - frontend/src/components/notes/PentestNotebook.jsx
 - frontend/src/components/notes/IrNotebook.jsx
 - frontend/src/components/notes/NoteEntry.jsx
 - backend/src/notes/ (CRUD API)
-**Acceptance**: Add a #finding note → it persists across page refresh → appears in session export.
+**Acceptance**: Add a #finding note â†’ it persists across page refresh â†’ appears in session export.
 **Est. tokens**: ~500
 
 ---
 
-## Phase 7 — Methodology tracker ✅ Done
+## Phase 7 â€” Methodology tracker âœ… Done
 **Goal**: Student declares methodology at scenario start; phase progress tracked against it.
 **Files**:
 - frontend/src/components/methodology/MethodologySelector.jsx
 - frontend/src/components/methodology/PhaseTrail.jsx
 - backend/src/scenarios/methodology.py
-**Acceptance**: Student selects PTES → phase dots update as steps are completed.
+**Acceptance**: Student selects PTES â†’ phase dots update as steps are completed.
 **Est. tokens**: ~400
 
 ---
 
-## Phase 8 — AI monitor (Gemini Flash) ✅ Done
+## Phase 8 â€” AI monitor (Gemini Flash) âœ… Done
 **Goal**: Every terminal command triggers AI analysis; hints appear in learning panel.
 **Files**:
 - ai-monitor/system_prompt.md (full prompt, all 3 scenarios)
@@ -107,24 +107,24 @@
 - backend/src/ai/prompt_builder.py (context assembler)
 - frontend/src/components/hints/AiHintPanel.jsx
 - frontend/src/components/hints/HintCard.jsx
-**Acceptance**: Run `nmap 10.10.1.10` → AI hint appears within 3s. Hint asks a question, not gives an answer.
+**Acceptance**: Run `nmap 10.10.1.10` â†’ AI hint appears within 3s. Hint asks a question, not gives an answer.
 **Est. tokens**: ~700
 
 ---
 
-## Phase 9 — Hint system ✅ Done
+## Phase 9 â€” Hint system âœ… Done
 **Goal**: Three-level graduated hint trees for all 3 scenarios, both red and blue sides.
 **Files**:
 - backend/src/scenarios/hints/sc01_hints.json (all phases, L1/L2/L3)
 - backend/src/scenarios/hints/sc02_hints.json
 - backend/src/scenarios/hints/sc03_hints.json
 - backend/src/scenarios/hint_engine.py
-**Acceptance**: Student requests L1 hint for SC-01 Phase 3 → gets conceptual nudge, -5 points. L3 → -20 points.
+**Acceptance**: Student requests L1 hint for SC-01 Phase 3 â†’ gets conceptual nudge, -5 points. L3 â†’ -20 points.
 **Est. tokens**: ~600
 
 ---
 
-## Phase 10 — Scope & ROE briefing system ✅ Done
+## Phase 10 â€” Scope & ROE briefing system âœ… Done
 **Goal**: Before each scenario, student reads and acknowledges Scope + ROE document. Actions outside scope are blocked.
 **Files**:
 - frontend/src/components/workspace/ScopeBriefing.jsx
@@ -135,30 +135,30 @@
 
 ---
 
-## Phase 11 — Debrief & report generation ✅ Done
+## Phase 11 â€” Debrief & report generation âœ… Done
 **Goal**: Post-mission screen shows attack path replay, defender timeline, and exports PDF report.
 **Files**:
 - frontend/src/pages/Debrief.jsx
 - frontend/src/components/debrief/AttackPath.jsx
 - frontend/src/components/debrief/DefenderTimeline.jsx
-- backend/src/reports/generator.py (Markdown → PDF via weasyprint)
+- backend/src/reports/generator.py (Markdown â†’ PDF via weasyprint)
 - backend/src/reports/templates/ (pentest report + IR report templates)
-**Acceptance**: Complete SC-01 → debrief shows 6-phase attack path → Export PDF generates valid report.
+**Acceptance**: Complete SC-01 â†’ debrief shows 6-phase attack path â†’ Export PDF generates valid report.
 **Est. tokens**: ~700
 
 ---
 
-## Phase 12 — Scoring system ✅ Done
+## Phase 12 â€” Scoring system âœ… Done
 **Goal**: Real-time scoring for both red and blue. Hint usage deducts points. Time bonus.
 **Files**:
 - backend/src/scoring/engine.py
 - frontend/src/components/workspace/ScoreBar.jsx
-**Acceptance**: Complete SC-01 without hints → score > 80. Using 3 L3 hints → score < 60.
+**Acceptance**: Complete SC-01 without hints â†’ score > 80. Using 3 L3 hints â†’ score < 60.
 **Est. tokens**: ~350
 
 ---
 
-## Phase 13 — Dashboard and scenario selection ✅ Done
+## Phase 13 â€” Dashboard and scenario selection âœ… Done
 **Goal**: Landing page showing 3 scenarios, difficulty, your history, leaderboard.
 **Files**:
 - frontend/src/pages/Dashboard.jsx
@@ -169,11 +169,11 @@
 
 ---
 
-## Phase 14 — Final integration and polish ✅ Done
+## Phase 14 â€” Final integration and polish âœ… Done
 **Goal**: Full end-to-end flow working for SC-01 to SC-03.
 **Tasks**:
 - Integration tests for SC-01 full flow
-- Mobile layout check (terminal requires min 900px — gate with warning)
+- Mobile layout check (terminal requires min 900px â€” gate with warning)
 - Docker resource limits on scenario containers
 - Rate limiting on AI monitor calls (max 1 per 10s per session)
 - README finalized with full setup guide
@@ -182,7 +182,7 @@
 
 ---
 
-## Phase 15 — Background Noise Generator ✅ Done
+## Phase 15 â€” Background Noise Generator âœ… Done
 **Goal**: Target networks simulate benign background traffic so attacker actions are hidden in noise.
 **Files**:
 - backend/src/sandbox/daemon-noise.py
@@ -191,7 +191,7 @@
 
 ---
 
-## Phase 16 — Methodology Gating (Hard Locks) ✅ Done
+## Phase 16 â€” Methodology Gating (Hard Locks) âœ… Done
 **Goal**: Enforce PTES phases natively. Block exploitation if recon is not logged.
 **Files**:
 - backend/src/scenarios/gatekeeper.py
@@ -200,7 +200,7 @@
 
 ---
 
-## Phase 17 — The Kill Chain Timeline (Debrief UI) ✅ Done
+## Phase 17 â€” The Kill Chain Timeline (Debrief UI) âœ… Done
 **Goal**: Post-scenario Debrief page displays a dual-axis visual timeline of Red actions vs Blue detection timestamps.
 **Files**:
 - frontend/src/components/debrief/KillChainTimeline.jsx
@@ -209,7 +209,7 @@
 
 ---
 
-## Phase 18 — Instructor Dashboard ✅ Done
+## Phase 18 â€” Instructor Dashboard âœ… Done
 **Goal**: High-level view for professors to see student methodology adherence and download auto-generated reports.
 **Files**:
 - frontend/src/pages/InstructorDashboard.jsx
@@ -219,7 +219,7 @@
 
 ---
 
-## Phase 19 — Real SIEM Deployment (Unified Elastic Stack) ✅ Done
+## Phase 19 â€” Real SIEM Deployment (Unified Elastic Stack) âœ… Done
 **Goal**: Deploy an Elasticsearch single-node cluster to act as the central SIEM on the same platform machine, replacing the mocked Python SIEM engine.
 **Tasks**:
 - Integrate a highly-restricted Elasticsearch + Kibana combination into the main `docker-compose.yml`.
@@ -229,7 +229,7 @@
 
 ---
 
-## Phase 20 — Authentic Target Telemetry ✅ Done
+## Phase 20 â€” Authentic Target Telemetry âœ… Done
 **Goal**: Target containers generate real logs and forward them to the Elastic SIEM via Filebeat/Syslog.
 **Tasks**:
 - Install and configure Filebeat in `sc01/Dockerfile.waf` (ModSecurity).
@@ -239,7 +239,7 @@
 
 ---
 
-## Phase 21 — Kali Terminal Strict Raw Mode ✅ Done
+## Phase 21 â€” Kali Terminal Strict Raw Mode âœ… Done
 **Goal**: Terminal must strictly be a raw PTY passthrough to the genuine Kali container, with no fallback mocks.
 **Tasks**:
 - Delete `_mock_command_output()` from `terminal.py`.
@@ -248,13 +248,13 @@
 
 ---
 
-## Phase 22 — Unified Single-Node Architecture & Integration ✅ Done
+## Phase 22 â€” Unified Single-Node Architecture & Integration âœ… Done
 **Goal**: Restructure all moving parts to operate seamlessly without crashing resources on a single user machine.
 **Tasks**:
 - Optimize ELK stack RAM consumption (`ES_JAVA_OPTS="-Xms1g -Xmx1g"`).
 - Implement dynamic Docker lifecycle (start SC-01 target containers only when SC-01 session begins, and teardown when ending).
 - Run load tests to ensure memory usage across all containers stays under the local host's threshold (<8GB footprint).
-**Acceptance**: A user can boot the entire CyberSim repository using a single `docker-compose up` flow and engage with all scenarios on one local computer.
+**Acceptance**: A user can boot the entire Parallax repository using a single `docker-compose up` flow and engage with all scenarios on one local computer.
 
 ---
 
@@ -285,31 +285,31 @@
 
 ---
 
-## Phase 25 — Instructor Learning Analytics ✅ Done
+## Phase 25 â€” Instructor Learning Analytics âœ… Done
 **Goal**: Give instructors class-level learning signals, common mistake summaries, and stronger grading exports.
 **Acceptance**: Instructor can see weak phases, most-used hints, detection coverage, and export grade-ready data.
 
 ---
 
-## Phase 26 — Mission Shell And Readiness UX ✅ Done
+## Phase 26 â€” Mission Shell And Readiness UX âœ… Done
 **Goal**: Make each scenario feel like a coherent mission with readiness states for targets, terminal, SIEM, and AI.
 **Acceptance**: Students can see what is starting, ready, degraded, or blocked before they begin acting.
 
 ---
 
-## Phase 27 — AI Debrief Mode ✅ Done
+## Phase 27 â€” AI Debrief Mode âœ… Done
 **Goal**: Add safe post-session coaching that summarizes mistakes, missed detections, and next practice without giving exploit chains.
 **Acceptance**: Debrief produces bounded, safe coaching with deterministic fallback when Gemini is unavailable.
 
 ---
 
-## Phase 28 — Scenario Depth And Randomization ✅ Done
+## Phase 28 â€” Scenario Depth And Randomization âœ… Done
 **Goal**: Increase replay value for SC-01 through SC-03 before expanding scenario count.
 **Acceptance**: Scenario seeds, difficulty variants, richer noise, and alternate valid paths exist while fixed demo paths still pass.
 
 ---
 
-## Total estimated phases: 28 ✅ All Completed
+## Total estimated phases: 28 âœ… All Completed
 ## Estimated total Claude Code sessions: +6 for Product Evolution
 ## GitHub push points: after every phase
 

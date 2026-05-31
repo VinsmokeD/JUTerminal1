@@ -1,36 +1,36 @@
-# 🎯 Claude Development Prompts (Phase A-F Execution)
+# ðŸŽ¯ Claude Development Prompts (Phase A-F Execution)
 
-**Last Updated**: 2026-04-15 | **Project Status**: Phase B complete — SIEM engine live. Now executing Phase C.
+**Last Updated**: 2026-04-15 | **Project Status**: Phase B complete â€” SIEM engine live. Now executing Phase C.
 
 **NOTICE**: Antigravity handles Phases A, D, and F. Claude Code focuses exclusively on Backend Python and complex Target Container infrastructure.
 
 ---
 
-## 📋 Priority Queue (Claude's Tasks)
+## ðŸ“‹ Priority Queue (Claude's Tasks)
 
-1. ✅ **Phase B: SC-01 E2E SIEM Engine & Event Mapping** — COMPLETE
-2. ✅ **Phase C: SC-02 Samba4 AD Environment** — COMPLETE (Verified via CONTINUOUS_STATE.md on 2026-04-15)
-3. ✅ **Phase C: SC-03 GoPhish + Victim Simulator** — COMPLETE (Verified via CONTINUOUS_STATE.md on 2026-04-10)
-4. ✅ **Phase E: Alembic DB Migrations & Sandbox Hardening** — COMPLETE (Verified Alembic schema and indexes applied, main.py lifespan active)
-
----
-
-## ✅ Phase B Deliverables — Verified
-- `backend/src/siem/events/sc01_events.json` — 38 events (SQLi, LFI, IDOR, file upload, auth)
-- `backend/src/siem/events/sc02_events.json` — 45+ events (BloodHound, Kerberoasting, DCSync, lateral movement)
-- `backend/src/siem/events/sc03_events.json` — 40+ events (OSINT, GoPhish, macro exec, C2, persistence)
-- `backend/src/siem/engine.py` — Regex command-matching engine that queues events to Redis pub/sub
-- `docs/phases/PHASE_B_STATUS.md` — Documentation
+1. âœ… **Phase B: SC-01 E2E SIEM Engine & Event Mapping** â€” COMPLETE
+2. âœ… **Phase C: SC-02 Samba4 AD Environment** â€” COMPLETE (Verified via CONTINUOUS_STATE.md on 2026-04-15)
+3. âœ… **Phase C: SC-03 GoPhish + Victim Simulator** â€” COMPLETE (Verified via CONTINUOUS_STATE.md on 2026-04-10)
+4. âœ… **Phase E: Alembic DB Migrations & Sandbox Hardening** â€” COMPLETE (Verified Alembic schema and indexes applied, main.py lifespan active)
 
 ---
 
-# PROMPT 2: Phase C — SC-02 (Nexora) Samba4 Active Directory
+## âœ… Phase B Deliverables â€” Verified
+- `backend/src/siem/events/sc01_events.json` â€” 38 events (SQLi, LFI, IDOR, file upload, auth)
+- `backend/src/siem/events/sc02_events.json` â€” 45+ events (BloodHound, Kerberoasting, DCSync, lateral movement)
+- `backend/src/siem/events/sc03_events.json` â€” 40+ events (OSINT, GoPhish, macro exec, C2, persistence)
+- `backend/src/siem/engine.py` â€” Regex command-matching engine that queues events to Redis pub/sub
+- `docs/phases/PHASE_B_STATUS.md` â€” Documentation
+
+---
+
+# PROMPT 2: Phase C â€” SC-02 (Nexora) Samba4 Active Directory
 
 ```text
 MISSION: Build and validate the SC-02 Active Directory environment. This is the hardest infrastructure piece in the project.
 
 CONTEXT:
-- Project: CyberSim — cybersecurity training platform
+- Project: Parallax â€” cybersecurity training platform
 - Reference: docs/architecture/MASTER_BLUEPRINT.md, docs/scenarios/SC-02-ad-compromise.yaml
 - SC-02 requires: Samba4 AD DC, domain-joined file server, 4 pre-seeded users
 - Read CONTINUOUS_STATE.md and docs/architecture/MASTER_BLUEPRINT.md first
@@ -42,7 +42,7 @@ CURRENT STATE:
 
 GOAL:
 1. Review and fix provision-dc.sh to ensure it runs samba-tool domain provision correctly
-2. Create the 4 required users: jsmith (low-priv), svc_backup (Kerberoastable — SPN: CIFS/NEXORA-FS01.nexora.local), it.admin (Domain Admin), admin
+2. Create the 4 required users: jsmith (low-priv), svc_backup (Kerberoastable â€” SPN: CIFS/NEXORA-FS01.nexora.local), it.admin (Domain Admin), admin
 3. Ensure Fileserver container successfully joins the nexora.local domain
 4. Test independently: docker compose --profile sc02 up -d, then from Kali: enum4linux 172.20.2.20 returns user listing
 
@@ -57,13 +57,13 @@ DELIVERABLES:
 
 ---
 
-# PROMPT 3: Phase C — SC-03 (Orion) GoPhish + Victim Simulation
+# PROMPT 3: Phase C â€” SC-03 (Orion) GoPhish + Victim Simulation
 
 ```text
 MISSION: Implement the deterministic victim simulation for SC-03 (phishing scenario).
 
 CONTEXT:
-- Project: CyberSim — cybersecurity training platform
+- Project: Parallax â€” cybersecurity training platform
 - Reference: docs/architecture/MASTER_BLUEPRINT.md, docs/scenarios/SC-03-phishing.yaml
 - SC-03 requires: GoPhish, Postfix mail relay, Python victim simulator
 - Read CONTINUOUS_STATE.md and MASTER_BLUEPRINT.md first
@@ -90,13 +90,13 @@ DELIVERABLES:
 
 ---
 
-# PROMPT 4: Phase E — Alembic DB Migrations & Container Hardening
+# PROMPT 4: Phase E â€” Alembic DB Migrations & Container Hardening
 
 ```text
 MISSION: Add database migration infrastructure and harden the sandbox container lifecycle.
 
 CONTEXT:
-- Project: CyberSim — cybersecurity training platform
+- Project: Parallax â€” cybersecurity training platform
 - Read CONTINUOUS_STATE.md and MASTER_BLUEPRINT.md first
 - Backend uses FastAPI + SQLAlchemy async + asyncpg against PostgreSQL
 
@@ -125,7 +125,7 @@ DELIVERABLES:
 
 ---
 
-## 📊 Progress Tracker
+## ðŸ“Š Progress Tracker
 
 - [x] Phase B: SIEM Events (123 total) + engine.py regex matching
 - [x] Phase C-1: SC-02 Samba4 AD environment

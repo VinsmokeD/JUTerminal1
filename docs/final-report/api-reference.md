@@ -1,4 +1,4 @@
-# CyberSim API Reference
+# Parallax API Reference
 
 This reference is generated from the current FastAPI router inventory in `backend/src/main.py` and `backend/src/**/routes.py`. It is a source document for Chapter 5 and Appendix C.
 

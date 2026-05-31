@@ -1,12 +1,12 @@
-# CyberSim Platform Security Case
+# Parallax Platform Security Case
 
-This document describes the security architecture, sandboxing isolation, and defense hardening controls implemented across the CyberSim dual-perspective training platform.
+This document describes the security architecture, sandboxing isolation, and defense hardening controls implemented across the Parallax dual-perspective training platform.
 
 ---
 
 ## 1. Sandbox Isolation & Virtualization
 
-CyberSim runs all pentesting tools and target infrastructure within isolated Docker containers on local scenario subnets. To prevent compromise of the host machine or lateral movement to external networks, the following engineering controls are enforced:
+Parallax runs all pentesting tools and target infrastructure within isolated Docker containers on local scenario subnets. To prevent compromise of the host machine or lateral movement to external networks, the following engineering controls are enforced:
 
 ### 1.1 Air-Gapped Scenario Networks
 All scenario Docker Compose networks are defined with `internal: true`. The Docker daemon restricts these networks from routing any traffic to or from the internet (0.0.0.0/0). Target and Kali containers can only communicate with peer containers on their assigned subnet (e.g. `172.20.1.0/24` for SC-01).
@@ -25,7 +25,7 @@ To prevent container escape via kernel exploits or misconfigurations, the dynami
 
 ## 2. Resource Constraints & Denial of Service Hardening
 
-To prevent a student's script or infinite loops from consuming all host CPU and memory resources (which would degrade the training platform for other sessions), CyberSim applies strict limits at the virtualization layer:
+To prevent a student's script or infinite loops from consuming all host CPU and memory resources (which would degrade the training platform for other sessions), Parallax applies strict limits at the virtualization layer:
 
 - **CPU Quota**: Restricted to `0.5 cores` (`cpu_period=100000`, `cpu_quota=50000`) per Kali container.
 - **Memory Limit**: Bounded to `512MB` (`mem_limit="512m"`) per container, causing memory-hogging processes to be terminated by the kernel out-of-memory (OOM) killer without impacting the host OS.
@@ -35,7 +35,7 @@ To prevent a student's script or infinite loops from consuming all host CPU and 
 
 ## 3. API & Websocket Rate Limiting
 
-To mitigate automated brute-force attacks and abuse of external API tokens (such as OpenRouter keys), CyberSim implements rate limiting using Redis cache tracking:
+To mitigate automated brute-force attacks and abuse of external API tokens (such as OpenRouter keys), Parallax implements rate limiting using Redis cache tracking:
 
 ### 3.1 Authentication Rate Limiting
 - **Endpoint**: `/api/auth/register` is limited to `20 registrations per hour` per IP address.

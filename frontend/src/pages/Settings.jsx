@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import CyberSimNav from '../components/nav/CyberSimNav'
+import ParallaxNav from '../components/nav/ParallaxNav'
 import { Button } from '../components/ui'
 import { useAuthStore } from '../store/authStore'
 import { useSettingsStore } from '../store/settingsStore'
@@ -24,7 +24,7 @@ export default function Settings() {
 
   return (
     <div className="min-h-dvh bg-void text-txt-primary font-display">
-      <CyberSimNav />
+      <ParallaxNav />
       <main className="mx-auto max-w-5xl px-6 py-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -100,7 +100,7 @@ export default function Settings() {
                 label="Render quality"
                 note={
                   perfMode === 'low'
-                    ? 'Low: 3D and blur disabled — best for older laptops and projectors.'
+                    ? 'Low: 3D and blur disabled â€” best for older laptops and projectors.'
                     : perfMode === 'high'
                     ? 'High: all effects enabled regardless of device.'
                     : 'Auto: adapts to device capability and monitors live FPS.'

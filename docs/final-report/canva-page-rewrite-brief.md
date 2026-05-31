@@ -1,13 +1,13 @@
 # Canva Page Rewrite Brief
 
-The selected Canva report currently has a strong visual direction but still contains generic business language, financial chart placeholders, and sample contact details. This brief is the source plan for replacing that content with verified CyberSim material.
+The selected Canva report currently has a strong visual direction but still contains generic business language, financial chart placeholders, and sample contact details. This brief is the source plan for replacing that content with verified Parallax material.
 
 ## Current Canva Design
 
 | Field | Value |
 | --- | --- |
 | Design id | `DAHKeHjt8IY` |
-| Title | `Report - CyberSim Project Report` |
+| Title | `Report - Parallax Project Report` |
 | Pages | 17 |
 | Page size | A4, 794 x 1123 px per page from Canva page inventory |
 | Current edit URL | https://www.canva.com/d/8CmCA-8Y41Ms9ML |
@@ -18,7 +18,7 @@ The selected Canva report currently has a strong visual direction but still cont
 - Remove all generic labels such as `Your Text`, `US$ M`, `YOY change`, and fake business target numbers.
 - Remove sample contact content such as `hello@reallygreatsite.com`, `www.reallygreatsite.com`, and `123-456-7890`.
 - Do not publish real API keys, passwords, tokens, or full scenario secrets.
-- Use CyberSim's active scope only: SC-01, SC-02, and SC-03.
+- Use Parallax's active scope only: SC-01, SC-02, and SC-03.
 - Every visual claim must map to a local source, an exported diagram, a screenshot, or an official reference.
 - Keep the Canva pages visual and concise. The formal report carries the long prose.
 
@@ -26,8 +26,8 @@ The selected Canva report currently has a strong visual direction but still cont
 
 | Page | New title | Core content | Visual asset |
 | --- | --- | --- | --- |
-| 1 | CyberSim Graduation Project Report | University of Jordan, KASIT, project title, team, supervisor, May 2026. | UJ-inspired black, green, and gold cover treatment. |
-| 2 | The Training Gap | Students often learn offense and defense separately; CyberSim links one student action to one defensive signal. | Split Red Team / Blue Team learning gap graphic. |
+| 1 | Parallax Graduation Project Report | University of Jordan, KASIT, project title, team, supervisor, May 2026. | UJ-inspired black, green, and gold cover treatment. |
+| 2 | The Training Gap | Students often learn offense and defense separately; Parallax links one student action to one defensive signal. | Split Red Team / Blue Team learning gap graphic. |
 | 3 | Proposed Solution | Browser-based dual workspace with Docker-isolated scenarios, terminal, SIEM, notes, scoring, and AI hints. | Figure 4.1 context diagram or simplified overview. |
 | 4 | System Architecture | React frontend, FastAPI backend, PostgreSQL, Redis, Elasticsearch, Filebeat, Docker scenario networks. | `diagrams/export/png/c4-container.png`. |
 | 5 | Red Team Workspace | Kali-style terminal, methodology gating, notes, output insights, scoped scenario execution. | Red workspace screenshot plus terminal callouts. |
@@ -50,11 +50,11 @@ Use these prompts when updating page copy or generating Canva text blocks.
 
 ### Cover Prompt
 
-Write a concise academic cover for a University of Jordan KASIT graduation project report titled CyberSim. Include project type, team/supervisor placeholders, May 2026, and no marketing language.
+Write a concise academic cover for a University of Jordan KASIT graduation project report titled Parallax. Include project type, team/supervisor placeholders, May 2026, and no marketing language.
 
 ### Architecture Page Prompt
 
-Rewrite this page into a visual architecture summary for CyberSim. Mention React/Vite, FastAPI, PostgreSQL, Redis, Elasticsearch, Filebeat, Docker, and internal scenario networks. Keep text under 120 words and leave space for a diagram.
+Rewrite this page into a visual architecture summary for Parallax. Mention React/Vite, FastAPI, PostgreSQL, Redis, Elasticsearch, Filebeat, Docker, and internal scenario networks. Keep text under 120 words and leave space for a diagram.
 
 ### Scenario Page Prompt
 

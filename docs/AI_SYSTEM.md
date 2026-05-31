@@ -1,6 +1,6 @@
-# CyberSim AI System
+# Parallax AI System
 
-CyberSim uses OpenRouter (DeepSeek) as a Socratic training assistant. The AI monitor is designed to guide student reasoning, not to provide complete attack chains or real-world exploitation instructions.
+Parallax uses OpenRouter (DeepSeek) as a Socratic training assistant. The AI monitor is designed to guide student reasoning, not to provide complete attack chains or real-world exploitation instructions.
 
 ## Source Files
 

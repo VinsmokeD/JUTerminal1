@@ -1,7 +1,7 @@
-# CyberSim — Deployment Checklist & Action Items
+# Parallax â€” Deployment Checklist & Action Items
 
-**Project**: CyberSim v2.0 (18 Phases Complete)  
-**Status**: ✅ READY FOR DEPLOYMENT  
+**Project**: Parallax v2.0 (18 Phases Complete)  
+**Status**: âœ… READY FOR DEPLOYMENT  
 **Date**: April 7, 2026
 
 ---
@@ -29,7 +29,7 @@
   ```
 - [ ] Build Kali base image: 
   ```bash
-  docker build -t cybersim-kali:latest ./infrastructure/docker/kali/
+  docker build -t parallax-kali:latest ./infrastructure/docker/kali/
   ```
 
 ### 3. Frontend Build Preparation
@@ -54,7 +54,7 @@
 
 ### Step 1: Start Core Services
 ```bash
-cd /path/to/cybersim
+cd /path/to/parallax
 
 # Start PostgreSQL, Redis, backend, frontend, nginx
 docker-compose up -d postgres redis backend frontend nginx
@@ -70,10 +70,10 @@ curl http://localhost/health
 ### Step 2: Verify Database
 ```bash
 # Check PostgreSQL is running
-docker exec cybersim-postgres-1 pg_isready -U cybersim
+docker exec parallax-postgres-1 pg_isready -U parallax
 
 # Verify tables were created (from init.sql)
-docker exec cybersim-postgres-1 psql -U cybersim cybersim -c "\dt"
+docker exec parallax-postgres-1 psql -U parallax parallax -c "\dt"
 
 # Should show: users, sessions, notes, command_log, siem_events
 ```
@@ -94,7 +94,7 @@ TOKEN="<from_above>"
 # Use curl to login as admin
 curl -X POST http://localhost/api/auth/login \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=admin&password=CyberSimAdmin!"
+  -d "username=admin&password=ParallaxAdmin!"
 ```
 
 ### Step 4: Test Scenario & Session Creation
@@ -141,7 +141,7 @@ curl -X POST http://localhost/api/sessions/start \
 # Login as admin
 curl -X POST http://localhost/api/auth/login \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=admin&password=CyberSimAdmin!" \
+  -d "username=admin&password=ParallaxAdmin!" \
   -o admin_token.txt
 
 # Access instructor dashboard
@@ -158,18 +158,18 @@ curl -H "Authorization: Bearer $ADMIN_TOKEN" \
 
 ### Frontend UI
 - [ ] Navigate to `http://localhost/`
-- [ ] You should see CyberSim login page
+- [ ] You should see Parallax login page
 - [ ] Register a new user
 - [ ] Verify dashboard loads with 3 scenario cards (SC-01, SC-02, SC-03)
-- [ ] Click on SC-01 → should load Red Team workspace
+- [ ] Click on SC-01 â†’ should load Red Team workspace
   - [ ] Terminal panel shows Kali prompt
   - [ ] Methodology tracker shows Phase 1
   - [ ] Notes panel is blank
   - [ ] Hints panel shows "Request hint" buttons
-- [ ] Try a command: `whoami` → should display username
+- [ ] Try a command: `whoami` â†’ should display username
 - [ ] Switch to Blue Team view (if supported in UI)
   - [ ] SIEM feed should show events from Red Team actions
-- [ ] Complete scenario → Debrief should load
+- [ ] Complete scenario â†’ Debrief should load
   - [ ] Score displayed
   - [ ] Kill Chain Timeline visible with SVG dual-axis
   - [ ] Export report button downloads Markdown
@@ -177,7 +177,7 @@ curl -H "Authorization: Bearer $ADMIN_TOKEN" \
 ### Backend Logs
 ```bash
 # Watch backend logs
-docker logs -f cybersim-backend-1
+docker logs -f parallax-backend-1
 
 # Look for:
 # - "Application startup complete"
@@ -214,8 +214,8 @@ docker-compose logs frontend
 docker ps | grep postgres
 
 # Test connection manually
-docker exec cybersim-postgres-1 \
-  psql -U cybersim cybersim -c "SELECT version();"
+docker exec parallax-postgres-1 \
+  psql -U parallax parallax -c "SELECT version();"
 
 # Check asyncpg driver is installed
 pip list | grep asyncpg
@@ -241,14 +241,14 @@ curl -i -N -H "Connection: Upgrade" \
 docker ps | grep redis
 
 # Test Redis manually
-docker exec cybersim-redis-1 redis-cli PING
+docker exec parallax-redis-1 redis-cli PING
 # Should return: PONG
 
 # Check event map files exist
 ls backend/src/siem/events/sc*.json
 
 # Verify event was published
-docker exec cybersim-redis-1 \
+docker exec parallax-redis-1 \
   redis-cli SUBSCRIBE "siem:*:feed"
 
 # Run command in terminal, should see events in this subscription
@@ -292,7 +292,7 @@ docker-compose restart backend
 
 ## Final Notes
 
-✅ **All 18 phases are complete and verified.**
+âœ… **All 18 phases are complete and verified.**
 
 The system is ready to handle:
 - 10 concurrent student sessions (per config.py)
@@ -310,10 +310,10 @@ The system is ready to handle:
 ```bash
 # One-liner to deploy locally
 git clone https://github.com/VinsmokeD/JUTerminal1.git && \
-cd cybersim && \
+cd parallax && \
 cp .env.example .env && \
 # Edit .env to set OPENROUTER_API_KEY and JWT_SECRET \
-docker build -t cybersim-kali:latest ./infrastructure/docker/kali/ && \
+docker build -t parallax-kali:latest ./infrastructure/docker/kali/ && \
 docker-compose up -d && \
 echo "Visit http://localhost in 30 seconds"
 ```

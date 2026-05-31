@@ -1,4 +1,4 @@
-{$CYBERSIM_DOMAIN:localhost} {
+{$PARALLAX_DOMAIN:localhost} {
     encode zstd gzip
 
     log {

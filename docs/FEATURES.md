@@ -1,4 +1,4 @@
-# CyberSim Features
+# Parallax Features
 
 ## Implemented Platform Areas
 

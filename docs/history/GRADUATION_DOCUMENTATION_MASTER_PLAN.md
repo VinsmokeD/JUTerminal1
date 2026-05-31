@@ -1,4 +1,4 @@
-# CyberSim Graduation Documentation Master Plan
+# Parallax Graduation Documentation Master Plan
 
 Status: Draft plan for a commercial-grade graduation documentation package.
 Date: 2026-05-22
@@ -6,9 +6,9 @@ Primary output: University-compliant final report, professional visual appendix,
 
 ## 1. Objective
 
-Create a full software engineering documentation package for CyberSim that satisfies the University of Jordan KASIT graduation project handbook while also presenting the project at a commercial product-documentation standard.
+Create a full software engineering documentation package for Parallax that satisfies the University of Jordan KASIT graduation project handbook while also presenting the project at a commercial product-documentation standard.
 
-The documentation must cover the entire CyberSim platform:
+The documentation must cover the entire Parallax platform:
 
 - Product vision, problem, motivation, research context, and educational value.
 - Full-stack architecture: React, FastAPI, PostgreSQL, Redis, Elasticsearch, Filebeat, Docker, Nginx/Caddy, Kali, and isolated scenario targets.
@@ -24,7 +24,7 @@ The documentation must cover the entire CyberSim platform:
 
 ## 2. Handbook Alignment
 
-The KASIT handbook requires a product-based project report with front matter, seven main chapters, references, and appendices. CyberSim should follow that structure for the formal report.
+The KASIT handbook requires a product-based project report with front matter, seven main chapters, references, and appendices. Parallax should follow that structure for the formal report.
 
 Required formal report order:
 
@@ -69,8 +69,8 @@ Recommended strategy:
 
 File target:
 
-- `docs/final-report/CyberSim_Final_Report.docx`
-- `docs/final-report/CyberSim_Final_Report.pdf`
+- `docs/final-report/Parallax_Final_Report.docx`
+- `docs/final-report/Parallax_Final_Report.pdf`
 
 Purpose:
 
@@ -127,7 +127,7 @@ Selected Canva direction:
 - Editable design id: `DAHKeHjt8IY`
 - Edit URL: https://www.canva.com/d/HiO92F8_1b90Umj
 - View URL: https://www.canva.com/d/AWvF-sEqVnIMkdU
-- Title: `Report - CyberSim Project Report`
+- Title: `Report - Parallax Project Report`
 - Page count: 17
 
 Canva deliverables:
@@ -237,7 +237,7 @@ Commercial visual companion:
 
 Cover page:
 
-- Project title: CyberSim: A Dual-Perspective Cybersecurity Training Platform.
+- Project title: Parallax: A Dual-Perspective Cybersecurity Training Platform.
 - Student names and registration numbers.
 - Department name.
 - King Abdullah II School of Information Technology.
@@ -275,7 +275,7 @@ Lists:
 
 Goal:
 
-- Explain why CyberSim exists and what problem it solves.
+- Explain why Parallax exists and what problem it solves.
 
 Sections:
 
@@ -312,7 +312,7 @@ Tables:
 
 Figures:
 
-- Figure 1.1 CyberSim concept overview.
+- Figure 1.1 Parallax concept overview.
 - Figure 1.2 Red Team to Blue Team learning loop.
 - Figure 1.3 Project scope boundary.
 
@@ -320,7 +320,7 @@ Figures:
 
 Goal:
 
-- Compare CyberSim with existing training platforms and explain its novelty.
+- Compare Parallax with existing training platforms and explain its novelty.
 
 Sections:
 
@@ -360,7 +360,7 @@ Comparison criteria:
 Tables:
 
 - Table 2.1 Existing platform comparison matrix.
-- Table 2.2 CyberSim feature gap analysis.
+- Table 2.2 Parallax feature gap analysis.
 - Table 2.3 Educational methodology comparison.
 
 Figures:
@@ -734,7 +734,7 @@ Appendix P: Poster and defense slide thumbnails.
 ### 7.1 Academic Required Diagrams
 
 1. Context diagram:
-   - Shows students, instructors, admin, browser, CyberSim platform, Docker host, and external AI provider.
+   - Shows students, instructors, admin, browser, Parallax platform, Docker host, and external AI provider.
 2. DFD Level 0:
    - Browser, backend, database, Redis, SIEM, Docker sandbox.
 3. DFD Level 1 - Authentication:
@@ -1044,12 +1044,12 @@ Use these prompts to generate draft text. Every output must be checked against s
 ### 11.1 Chapter 1 Prompt
 
 ```text
-Write Chapter 1: Introduction for the CyberSim graduation project report.
+Write Chapter 1: Introduction for the Parallax graduation project report.
 Follow the University of Jordan KASIT product-based project structure.
 Use a formal academic tone.
 Cover background, motivation, problem statement, aim, objectives, scope, stakeholders, software/hardware requirements, limitations, expected output, schedule, and report outline.
 Project facts:
-- CyberSim is a dual-perspective cybersecurity training platform.
+- Parallax is a dual-perspective cybersecurity training platform.
 - It links Red Team terminal activity to Blue Team SIEM telemetry.
 - It runs only against isolated Docker scenario containers.
 - Active scenarios are SC-01 NovaMed web app pentest, SC-02 Nexora Active Directory, and SC-03 Orion phishing.
@@ -1061,17 +1061,17 @@ Add table suggestions and figure references.
 ### 11.2 Chapter 2 Prompt
 
 ```text
-Write Chapter 2: Related Existing Systems for CyberSim.
-Compare CyberSim with CTF platforms, cyber ranges, SOC labs, and vulnerable-app labs.
+Write Chapter 2: Related Existing Systems for Parallax.
+Compare Parallax with CTF platforms, cyber ranges, SOC labs, and vulnerable-app labs.
 Include TryHackMe, Hack The Box Academy, PicoCTF, CyberDefenders, RangeForce, Immersive Labs, Splunk Boss of the SOC, Security Onion, DVWA, Juice Shop, and Metasploitable where relevant.
 Use comparison criteria: offensive realism, defensive visibility, local deployment, AI guidance, instructor analytics, reporting, cost/accessibility, classroom suitability, and safety isolation.
-End with a gap analysis explaining why CyberSim combines Red Team execution, Blue Team telemetry, AI Socratic hints, reports, and instructor analytics in one university-ready platform.
+End with a gap analysis explaining why Parallax combines Red Team execution, Blue Team telemetry, AI Socratic hints, reports, and instructor analytics in one university-ready platform.
 ```
 
 ### 11.3 Chapter 3 Prompt
 
 ```text
-Write Chapter 3: System Requirements Engineering and Analysis for CyberSim.
+Write Chapter 3: System Requirements Engineering and Analysis for Parallax.
 Include feasibility, requirement gathering, target users, functional requirements, non-functional requirements, security/safety requirements, usability goals, educational requirements, scenario requirements, data requirements, and traceability.
 Functional groups must include auth, scenario catalog, session lifecycle, ROE, Red Team terminal, Blue Team SIEM, notes, AI hints, methodology gating, scoring, debrief reports, instructor dashboard, readiness checks, simulated containment, forensics, and deployment checks.
 Create formal requirement IDs such as FR-AUTH-01 and NFR-SEC-01.
@@ -1081,7 +1081,7 @@ Include a requirements traceability matrix template mapping requirement, feature
 ### 11.4 Chapter 4 Prompt
 
 ```text
-Write Chapter 4: System Design for CyberSim.
+Write Chapter 4: System Design for Parallax.
 Use a software architecture documentation style.
 Cover C4 architecture, DFDs, ERD, UML use cases, sequence diagrams, class/component diagrams, database design, API design, WebSocket protocol, terminal proxy, SIEM pipeline, AI monitor, scenario engine, scoring/reporting, instructor analytics, Docker infrastructure, network isolation, security design, and UI/UX design.
 For every major subsystem, explain design rationale, responsibilities, inputs, outputs, dependencies, failure modes, and diagrams to include.
@@ -1091,7 +1091,7 @@ Keep exploit details educational and bounded to isolated Docker scenarios.
 ### 11.5 Chapter 5 Prompt
 
 ```text
-Write Chapter 5: System Implementation for CyberSim.
+Write Chapter 5: System Implementation for Parallax.
 Use the actual repository structure.
 Explain frontend implementation, backend implementation, database/migrations, WebSockets, Docker sandboxing, SIEM, AI monitor, scenarios, notes, reports, scoring, instructor analytics, security controls, and deployment scripts.
 Mention source file paths as implementation evidence.
@@ -1102,7 +1102,7 @@ Do not paste large source code blocks; summarize modules and include short examp
 ### 11.6 Chapter 6 Prompt
 
 ```text
-Write Chapter 6: System Testing and Installation for CyberSim.
+Write Chapter 6: System Testing and Installation for Parallax.
 Cover unit tests, integration tests, e2e tests, browser smoke tests, Docker Compose validation, frontend lint/build, backend coverage, SIEM verification, AI fallback verification, scenario readiness checks, load testing, security testing, usability evaluation, installation steps, user manual, and demo readiness.
 Use actual evidence from test output files and commands.
 Include test result tables and explain failures/fixes where relevant.
@@ -1112,7 +1112,7 @@ Add installation commands for Windows/local Docker and demo deployment.
 ### 11.7 Chapter 7 Prompt
 
 ```text
-Write Chapter 7: Conclusions and Future Work for CyberSim.
+Write Chapter 7: Conclusions and Future Work for Parallax.
 Summarize the achieved objectives, technical contributions, educational contributions, strengths, limitations, lessons learned, and future work.
 Future work should include additional scenarios, multi-class deployment, Kubernetes support, LMS integration, advanced SIEM content, enhanced AI debriefing, scenario randomization, accessibility improvements, and instructor grading exports.
 Keep the tone honest, reflective, and professional.
@@ -1130,7 +1130,7 @@ Do not include real-world exploit instructions outside the isolated lab framing.
 ### 11.9 Diagram Prompt
 
 ```text
-Create a {DIAGRAM_TYPE} diagram for CyberSim.
+Create a {DIAGRAM_TYPE} diagram for Parallax.
 Audience: university examiners and software engineers.
 Style: formal, readable, black/gold/green University of Jordan palette, with Red Team in red and Blue Team in blue.
 Include only real components from the repository.
@@ -1142,7 +1142,7 @@ Caption format: Figure X.Y: concise description.
 ### 11.10 API Reference Prompt
 
 ```text
-Generate an API reference section for CyberSim from the FastAPI routes.
+Generate an API reference section for Parallax from the FastAPI routes.
 For each endpoint include method, path, purpose, auth requirements, request body, response shape, errors, source file, and related frontend consumer.
 Group endpoints by auth, scenarios, sessions, notes, scoring, reports, AI, SIEM, instructor, and playbooks.
 Do not invent endpoints; use only the route list extracted from backend/src.
@@ -1151,7 +1151,7 @@ Do not invent endpoints; use only the route list extracted from backend/src.
 ### 11.11 Database Reference Prompt
 
 ```text
-Generate a database documentation section for CyberSim.
+Generate a database documentation section for Parallax.
 Use SQLAlchemy models and Alembic migrations as the source of truth.
 For each table include purpose, columns, primary key, foreign keys, indexes, data retention concerns, related backend module, and report usage.
 Explain relationships among users, sessions, notes, command_log, siem_events, siem_triage, auto_evidence, ai_interactions, user_activity, and containment_actions.
@@ -1161,7 +1161,7 @@ Include an ERD caption and table catalog.
 ### 11.12 Security and Compliance Prompt
 
 ```text
-Write the security and compliance documentation for CyberSim.
+Write the security and compliance documentation for Parallax.
 Cover sandbox isolation, Docker internal networks, no internet access from scenario containers, JWT auth, RBAC, input validation, command scope/methodology gating, AI prompt safety, context redaction, rate limiting, secrets handling, logging boundaries, data retention, OWASP mapping, NIST mapping, MITRE ATT&CK mapping, and academic ethics.
 Distinguish clearly between educational simulation and real-world offensive use.
 Include a STRIDE threat model table and mitigation matrix.
@@ -1170,7 +1170,7 @@ Include a STRIDE threat model table and mitigation matrix.
 ### 11.13 UI/UX Prompt
 
 ```text
-Write the UI/UX documentation for CyberSim.
+Write the UI/UX documentation for Parallax.
 Cover information architecture, page map, user journeys, RedWorkspace, BlueWorkspace, Dashboard, Debrief, InstructorDashboard, Profile, Settings, Onboarding, terminal ergonomics, SIEM triage controls, note taking, hints, methodology trail, readiness overlay, visual language, accessibility, usability goals, and evaluation methods.
 Include wireframe/figure descriptions and a component responsibility table.
 ```
@@ -1187,7 +1187,7 @@ Do not hide failures; explain fixes or residual risk.
 ### 11.15 Canva Deck Prompt
 
 ```text
-Create a professional University of Jordan styled defense presentation for CyberSim.
+Create a professional University of Jordan styled defense presentation for Parallax.
 Audience: KASIT graduation project examiners.
 Visual style: black, gold, academic green, deep navy, sharp technical diagrams, restrained cybersecurity aesthetic.
 Slide count: 18 to 25.
@@ -1196,7 +1196,7 @@ Narrative arc:
 2. Problem.
 3. Motivation.
 4. Existing systems gap.
-5. CyberSim solution.
+5. Parallax solution.
 6. Architecture overview.
 7. Red Team workspace.
 8. Blue Team workspace.
@@ -1219,7 +1219,7 @@ Use clean diagrams, screenshots, and concise bullets.
 ### 11.16 Poster Prompt
 
 ```text
-Design an A0/A1 academic poster for CyberSim.
+Design an A0/A1 academic poster for Parallax.
 Use University of Jordan inspired black/gold/green styling.
 Sections: Problem, Objectives, Architecture, Scenarios, AI Guidance, Red/Blue Learning Loop, Testing Results, Contributions, Future Work, QR codes for repository/demo if available.
 Use a large central architecture diagram and three scenario cards.

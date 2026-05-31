@@ -1,15 +1,15 @@
 # Testing and Verification Evidence
 
-This document compiles the testing strategy, test coverage reports, execution logs, and performance evaluation metrics for the CyberSim training platform. This evidence verifies the system's stability, security, and demo readiness before graduation defense and release.
+This document compiles the testing strategy, test coverage reports, execution logs, and performance evaluation metrics for the Parallax training platform. This evidence verifies the system's stability, security, and demo readiness before graduation defense and release.
 
 ---
 
 ## 1. Testing Strategy
 
-CyberSim implements a multi-tier testing pyramid to validate all system modules, integrations, and interfaces.
+Parallax implements a multi-tier testing pyramid to validate all system modules, integrations, and interfaces.
 
 ```text
-       ▲
+       â–²
       / \      E2E UI & Browser tests (Playwright)
      /   \     - Session workspace, terminal, SIEM alignment
     /     \
@@ -17,7 +17,7 @@ CyberSim implements a multi-tier testing pyramid to validate all system modules,
   /         \  - Token auth, flag verification, reports
  /           \
 /             \  Unit Tests (Python pytest)
-───────────────  - Config, DB seeding, WAF patterns, AI context
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  - Config, DB seeding, WAF patterns, AI context
 ```
 
 * **Unit Testing (pytest)**: Validates functional correctness of helper routines, schema conversions, rate-limiting, and AI prompt context builder outputs.
@@ -79,7 +79,7 @@ TOTAL                                390     62    84%
 * **Vite Production Build**: Compiles successfully with no chunk size or route errors:
   ```text
   vite v5.4.21 building for production...
-  ✓ 544 modules transformed.
+  âœ“ 544 modules transformed.
   built in 5.24s
   dist/index.html                                1.29 kB
   dist/assets/index-B77T6vV7.css                77.82 kB
@@ -122,7 +122,7 @@ Before live demonstrations, the platform is verified using `demo_check.py` to co
 
 ```text
 ======================================================
-  CyberSim Demo Readiness Check
+  Parallax Demo Readiness Check
 ======================================================
   Backend:  http://localhost:8001
   Frontend: http://localhost:3000

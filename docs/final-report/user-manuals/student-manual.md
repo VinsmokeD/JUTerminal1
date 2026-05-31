@@ -1,8 +1,8 @@
-# CyberSim Student Manual
+# Parallax Student Manual
 
 ## 1. Purpose
 
-This manual explains how a student should use CyberSim during a university lab, demo, or assessment. CyberSim is a safe dual-perspective training environment. It is not a tool for testing real systems.
+This manual explains how a student should use Parallax during a university lab, demo, or assessment. Parallax is a safe dual-perspective training environment. It is not a tool for testing real systems.
 
 Students may work from the Red Team perspective, the Blue Team perspective, or both perspectives depending on the lab structure selected by the instructor.
 
@@ -13,7 +13,7 @@ Students should confirm:
 - The instructor has assigned a scenario and role.
 - The Rules of Engagement screen has been read and accepted.
 - The active scenario is one of SC-01, SC-02, or SC-03.
-- All actions remain inside the CyberSim browser workspace and lab targets.
+- All actions remain inside the Parallax browser workspace and lab targets.
 - Notes are used throughout the session, not only at the end.
 
 ## 3. Dashboard
@@ -91,7 +91,7 @@ Students should review the Debrief before submitting their report or assessment 
 ## 9. Safety Rules
 
 - Do not target real systems.
-- Do not use CyberSim commands outside the assigned lab scope.
+- Do not use Parallax commands outside the assigned lab scope.
 - Do not publish lab credentials, tokens, hashes, or exact solution chains.
 - Ask the instructor when the scope is unclear.
 - Keep evidence concise and report-safe.

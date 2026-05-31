@@ -36,8 +36,8 @@ os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("JWT_SECRET", "test-secret-for-ci-only-do-not-use-in-prod")
 os.environ["POSTGRES_URL"] = os.environ.get(
     "TEST_POSTGRES_URL",
-    # Matches the docker-compose dev stack default (POSTGRES_PASSWORD=cybersim).
-    "postgresql+asyncpg://cybersim:cybersim@127.0.0.1:5432/cybersim",
+    # Matches the docker-compose dev stack default (POSTGRES_PASSWORD=parallax).
+    "postgresql+asyncpg://parallax:parallax@127.0.0.1:5432/parallax",
 )
 os.environ["REDIS_URL"] = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:6379/1")
 
@@ -47,9 +47,9 @@ from httpx_ws import aconnect_ws
 from src.main import app
 
 
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # FIXTURES
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -76,7 +76,7 @@ async def admin_token(client: AsyncClient):
     """Get admin instructor token."""
     resp = await client.post(
         "/api/auth/login",
-        data={"username": "admin", "password": "CyberSimAdmin!"},
+        data={"username": "admin", "password": "ParallaxAdmin!"},
     )
     assert resp.status_code == 200
     return resp.json()["access_token"]
@@ -109,14 +109,14 @@ async def test_session_id(client: AsyncClient, auth_token: str):
     return resp.json()["session_id"]
 
 
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # SECTION 1: TERMINAL & CONTAINER HEALTH
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
 async def test_01_health_endpoint_returns_ok(client: AsyncClient):
-    """✓ Health endpoint returns 200 + correct JSON."""
+    """âœ“ Health endpoint returns 200 + correct JSON."""
     r = await client.get("/health")
     assert r.status_code == 200
     body = r.json()
@@ -128,7 +128,7 @@ async def test_01_health_endpoint_returns_ok(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_api_scenarios_no_trailing_slash_redirect(client: AsyncClient):
     """API contract (C2): the scenarios collection must answer directly on both
-    /api/scenarios and /api/scenarios/ — no 307 trailing-slash redirect.
+    /api/scenarios and /api/scenarios/ â€” no 307 trailing-slash redirect.
     The AsyncClient does not follow redirects, so a 307 would fail this test."""
     r_noslash = await client.get("/api/scenarios")
     assert r_noslash.status_code == 200, f"expected 200, got {r_noslash.status_code}"
@@ -140,7 +140,7 @@ async def test_api_scenarios_no_trailing_slash_redirect(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_02_kali_container_reference(client: AsyncClient, auth_token: str):
-    """✓ Session creation records container reference."""
+    """âœ“ Session creation records container reference."""
     resp = await client.post(
         "/api/sessions/start",
         json={"scenario_id": "SC-01", "role": "red"},
@@ -154,7 +154,7 @@ async def test_02_kali_container_reference(client: AsyncClient, auth_token: str)
 
 @pytest.mark.asyncio
 async def test_03_terminal_io_ready(client: AsyncClient, test_session_id: str):
-    """✓ Terminal I/O endpoint is ready to accept WebSocket."""
+    """âœ“ Terminal I/O endpoint is ready to accept WebSocket."""
     # Verify WS route exists
     from src.ws.routes import router
 
@@ -166,7 +166,7 @@ async def test_03_terminal_io_ready(client: AsyncClient, test_session_id: str):
 async def test_04_session_persists_on_refresh(
     client: AsyncClient, auth_token: str, test_session_id: str
 ):
-    """✓ Session data persists after retrieval (browser refresh equivalent)."""
+    """âœ“ Session data persists after retrieval (browser refresh equivalent)."""
     resp = await client.get(
         f"/api/sessions/{test_session_id}",
         headers={"Authorization": f"Bearer {auth_token}"},
@@ -178,14 +178,14 @@ async def test_04_session_persists_on_refresh(
     assert body["phase"] >= 1
 
 
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # SECTION 2: AUTH & SESSION MANAGEMENT
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
 async def test_05_register_creates_user(client: AsyncClient):
-    """✓ POST /api/auth/register creates JWT token."""
+    """âœ“ POST /api/auth/register creates JWT token."""
     username = f"new_user_{int(time.time())}"
     resp = await client.post(
         "/api/auth/register",
@@ -200,7 +200,7 @@ async def test_05_register_creates_user(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_06_login_returns_token(client: AsyncClient):
-    """✓ POST /api/auth/login returns JWT token."""
+    """âœ“ POST /api/auth/login returns JWT token."""
     username = f"login_user_{int(time.time())}"
     # First register
     await client.post(
@@ -220,7 +220,7 @@ async def test_06_login_returns_token(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_07_session_persists_with_token(client: AsyncClient, auth_token: str):
-    """✓ Session persists across page refresh (token reuse)."""
+    """âœ“ Session persists across page refresh (token reuse)."""
     # Cleanup
     while True:
         active_resp = await client.get(
@@ -253,7 +253,7 @@ async def test_07_session_persists_with_token(client: AsyncClient, auth_token: s
 
 @pytest.mark.asyncio
 async def test_08_logout_clears_session(client: AsyncClient, auth_token: str):
-    """✓ Logout invalidates token (subsequent requests fail)."""
+    """âœ“ Logout invalidates token (subsequent requests fail)."""
     resp = await client.post(
         "/api/auth/logout",
         headers={"Authorization": f"Bearer {auth_token}"},
@@ -265,7 +265,7 @@ async def test_08_logout_clears_session(client: AsyncClient, auth_token: str):
 
 @pytest.mark.asyncio
 async def test_09_admin_role_distinguished(client: AsyncClient, admin_token: str):
-    """✓ Admin/instructor login works."""
+    """âœ“ Admin/instructor login works."""
     # Verify admin token can access instructor routes
     resp = await client.get(
         "/api/instructor/sessions",
@@ -356,7 +356,7 @@ async def test_09d_submit_flag_route(
     auth_token: str,
     test_session_id: str,
 ):
-    """✓ POST /api/sessions/{session_id}/flag validates flag and records command log."""
+    """âœ“ POST /api/sessions/{session_id}/flag validates flag and records command log."""
     # Submit an invalid flag
     resp = await client.post(
         f"/api/sessions/{test_session_id}/flag",
@@ -396,7 +396,7 @@ async def test_09e_consolidated_report_route(
     auth_token: str,
     test_session_id: str,
 ):
-    """✓ GET /api/reports/{session_id}/report returns consolidated report data."""
+    """âœ“ GET /api/reports/{session_id}/report returns consolidated report data."""
     resp = await client.get(
         f"/api/reports/{test_session_id}/report",
         headers={"Authorization": f"Bearer {auth_token}"},
@@ -420,19 +420,19 @@ async def test_09e_consolidated_report_route(
 
 @pytest.mark.asyncio
 async def test_10_unauthorized_request_rejected(client: AsyncClient):
-    """✓ Role-based access enforced (missing token)."""
+    """âœ“ Role-based access enforced (missing token)."""
     resp = await client.get("/api/instructor/sessions")
     assert resp.status_code in [401, 403]
 
 
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # SECTION 3: SCENARIO LOADING & PHASE TRACKING
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
 async def test_11_get_scenarios_returns_three(client: AsyncClient):
-    """✓ GET /api/scenarios returns 3 scenarios (v2.0 scope)."""
+    """âœ“ GET /api/scenarios returns 3 scenarios (v2.0 scope)."""
     r = await client.get("/api/scenarios/")
     assert r.status_code == 200
     scenarios = r.json()
@@ -450,7 +450,7 @@ async def test_11_get_scenarios_returns_three(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_12_start_session_creates_with_phase_1(client: AsyncClient, auth_token: str):
-    """✓ POST /api/sessions/start/{sc01} creates session with phase=1."""
+    """âœ“ POST /api/sessions/start/{sc01} creates session with phase=1."""
     # Cleanup
     while True:
         active_resp = await client.get(
@@ -476,7 +476,7 @@ async def test_12_start_session_creates_with_phase_1(client: AsyncClient, auth_t
 
 @pytest.mark.asyncio
 async def test_13_phase_gating_prevents_escalation(client: AsyncClient):
-    """✓ Phase gating prevents premature escalation (sqlmap in phase 1 → blocked)."""
+    """âœ“ Phase gating prevents premature escalation (sqlmap in phase 1 â†’ blocked)."""
     from src.scenarios.engine import GateBlock
     from unittest.mock import AsyncMock, patch
 
@@ -496,7 +496,7 @@ async def test_13_phase_gating_prevents_escalation(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_14_phase_advances_on_task_completion():
-    """✓ Phase advances when completion signals are met."""
+    """âœ“ Phase advances when completion signals are met."""
     from src.scenarios.loader import load_scenario
 
     spec = load_scenario("SC-01")
@@ -511,7 +511,7 @@ async def test_14_phase_advances_on_task_completion():
 
 @pytest.mark.asyncio
 async def test_15_scenario_yaml_loads_cleanly():
-    """✓ All scenario YAML specs load without error."""
+    """âœ“ All scenario YAML specs load without error."""
     from src.scenarios.loader import load_scenario, invalidate_cache
 
     invalidate_cache()
@@ -525,7 +525,7 @@ async def test_15_scenario_yaml_loads_cleanly():
 
 @pytest.mark.asyncio
 async def test_16_methodology_gates_configured():
-    """✓ Methodology gates prevent tool use out of phase."""
+    """âœ“ Methodology gates prevent tool use out of phase."""
     from src.scenarios.loader import load_scenario
 
     spec = load_scenario("SC-01")
@@ -538,7 +538,7 @@ async def test_16_methodology_gates_configured():
 
 @pytest.mark.asyncio
 async def test_17_unknown_scenario_rejected(client: AsyncClient, auth_token: str):
-    """✓ Session start is rejected for any scenario outside the catalog."""
+    """âœ“ Session start is rejected for any scenario outside the catalog."""
     resp = await client.post(
         "/api/sessions/start",
         json={"scenario_id": "SC-99", "role": "red"},
@@ -547,13 +547,13 @@ async def test_17_unknown_scenario_rejected(client: AsyncClient, auth_token: str
     assert resp.status_code == 400
 
 
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # SECTION 4: TERMINAL COMMANDS (SC-01 to SC-03)
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_18_sc01_sqlmap_pattern_recognized():
-    """✓ SC-01: nmap scan pattern recognized by SIEM."""
+    """âœ“ SC-01: nmap scan pattern recognized by SIEM."""
     from src.scenarios.loader import load_scenario
 
     spec = load_scenario("SC-01")
@@ -564,7 +564,7 @@ def test_18_sc01_sqlmap_pattern_recognized():
 
 
 def test_19_sc01_gobuster_pattern_recognized():
-    """✓ SC-01: gobuster finds directories (pattern exists)."""
+    """âœ“ SC-01: gobuster finds directories (pattern exists)."""
     from src.scenarios.loader import load_scenario
 
     spec = load_scenario("SC-01")
@@ -577,7 +577,7 @@ def test_19_sc01_gobuster_pattern_recognized():
 
 
 def test_20_sc02_crackmapexec_pattern_recognized():
-    """✓ SC-02: enum4linux enumerates users (pattern exists)."""
+    """âœ“ SC-02: enum4linux enumerates users (pattern exists)."""
     from src.scenarios.loader import load_scenario
 
     spec = load_scenario("SC-02")
@@ -588,7 +588,7 @@ def test_20_sc02_crackmapexec_pattern_recognized():
 
 
 def test_21_sc02_spn_enumeration_pattern_recognized():
-    """✓ SC-02: GetUserSPNs finds Kerberoastable accounts (pattern exists)."""
+    """âœ“ SC-02: GetUserSPNs finds Kerberoastable accounts (pattern exists)."""
     from src.scenarios.loader import load_scenario
 
     spec = load_scenario("SC-02")
@@ -607,7 +607,7 @@ def test_21_sc02_spn_enumeration_pattern_recognized():
 
 
 def test_22_sc03_gophish_pattern_recognized():
-    """✓ SC-03: GoPhish campaign launch pattern (exists)."""
+    """âœ“ SC-03: GoPhish campaign launch pattern (exists)."""
     from src.scenarios.loader import load_scenario
 
     spec = load_scenario("SC-03")
@@ -625,7 +625,7 @@ def test_22_sc03_gophish_pattern_recognized():
 
 
 def test_23_sc03_email_callback_pattern_recognized():
-    """✓ SC-03: Phishing callback detected (pattern exists)."""
+    """âœ“ SC-03: Phishing callback detected (pattern exists)."""
     from src.scenarios.loader import load_scenario
 
     spec = load_scenario("SC-03")
@@ -643,7 +643,7 @@ def test_23_sc03_email_callback_pattern_recognized():
 
 
 def test_24_all_commands_have_severity():
-    """✓ All SIEM detection rules have severity field."""
+    """âœ“ All SIEM detection rules have severity field."""
     from src.scenarios.loader import load_scenario
 
     for scenario_id in ["SC-01", "SC-02", "SC-03"]:
@@ -655,14 +655,14 @@ def test_24_all_commands_have_severity():
             assert rule["severity"].upper() in ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
 
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # SECTION 5: SIEM EVENT TRIGGERING
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
 async def test_25_siem_event_structure_valid():
-    """✓ SIEM events follow template format."""
+    """âœ“ SIEM events follow template format."""
     from src.scenarios.engine import process_command_for_siem
     from unittest.mock import AsyncMock, patch
 
@@ -689,7 +689,7 @@ async def test_25_siem_event_structure_valid():
 
 @pytest.mark.asyncio
 async def test_26_siem_events_have_mitre_mappings():
-    """✓ SIEM events include MITRE ATT&CK mappings."""
+    """âœ“ SIEM events include MITRE ATT&CK mappings."""
     from src.scenarios.loader import load_scenario
 
     for scenario_id in ["SC-01", "SC-02", "SC-03"]:
@@ -705,7 +705,7 @@ async def test_26_siem_events_have_mitre_mappings():
 
 @pytest.mark.asyncio
 async def test_27_siem_events_have_cwe_mappings():
-    """✓ SIEM events include CWE mappings."""
+    """âœ“ SIEM events include CWE mappings."""
     from src.scenarios.loader import load_scenario
 
     for scenario_id in ["SC-01", "SC-02", "SC-03"]:
@@ -721,7 +721,7 @@ async def test_27_siem_events_have_cwe_mappings():
 
 @pytest.mark.asyncio
 async def test_28_background_noise_events_marked():
-    """✓ Background noise events carry source='background' tag."""
+    """âœ“ Background noise events carry source='background' tag."""
     from src.scenarios.loader import load_scenario
 
     # Noise daemon generates background events
@@ -734,7 +734,7 @@ async def test_28_background_noise_events_marked():
 
 @pytest.mark.asyncio
 async def test_29_siem_event_timestamp_valid():
-    """✓ SIEM events have valid ISO timestamps."""
+    """âœ“ SIEM events have valid ISO timestamps."""
     from src.scenarios.engine import process_command_for_siem
     from unittest.mock import AsyncMock, patch
 
@@ -763,7 +763,7 @@ async def test_29_siem_event_timestamp_valid():
 
 @pytest.mark.asyncio
 async def test_30_siem_rules_have_event_templates():
-    """✓ All SIEM rules have event_template or message."""
+    """âœ“ All SIEM rules have event_template or message."""
     from src.scenarios.loader import load_scenario
 
     for scenario_id in ["SC-01", "SC-02", "SC-03"]:
@@ -775,14 +775,14 @@ async def test_30_siem_rules_have_event_templates():
             assert has_template, f"Rule {rule.get('id')} missing event template/message"
 
 
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # SECTION 6: PERFORMANCE BENCHMARKS
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @pytest.mark.asyncio
 async def test_31_performance_health_endpoint_latency(client: AsyncClient):
-    """⏱ Health endpoint latency < 100ms."""
+    """â± Health endpoint latency < 100ms."""
     start = time.perf_counter()
     await client.get("/health")
     elapsed = (time.perf_counter() - start) * 1000
@@ -792,7 +792,7 @@ async def test_31_performance_health_endpoint_latency(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_32_performance_scenario_list_latency(client: AsyncClient):
-    """⏱ GET /scenarios latency < 500ms."""
+    """â± GET /scenarios latency < 500ms."""
     start = time.perf_counter()
     await client.get("/api/scenarios/")
     elapsed = (time.perf_counter() - start) * 1000
@@ -802,7 +802,7 @@ async def test_32_performance_scenario_list_latency(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_33_performance_session_creation_latency(client: AsyncClient, auth_token: str):
-    """⏱ POST /sessions/start latency < 2000ms (DB + Docker)."""
+    """â± POST /sessions/start latency < 2000ms (DB + Docker)."""
     start = time.perf_counter()
     await client.post(
         "/api/sessions/start",
@@ -817,7 +817,7 @@ async def test_33_performance_session_creation_latency(client: AsyncClient, auth
 
 @pytest.mark.asyncio
 async def test_34_performance_siem_engine_throughput():
-    """⏱ SIEM engine processes commands in <200ms."""
+    """â± SIEM engine processes commands in <200ms."""
     from src.scenarios.engine import process_command_for_siem
     from unittest.mock import AsyncMock, patch
 
@@ -841,7 +841,7 @@ async def test_34_performance_siem_engine_throughput():
 
 @pytest.mark.asyncio
 async def test_35_performance_yaml_loader_cached():
-    """⏱ YAML loader (cached) returns in <10ms."""
+    """â± YAML loader (cached) returns in <10ms."""
     from src.scenarios.loader import load_scenario
 
     # First load (uncached)
@@ -859,7 +859,7 @@ async def test_35_performance_yaml_loader_cached():
 
 @pytest.mark.asyncio
 async def test_36_performance_auth_token_validation(client: AsyncClient, auth_token: str):
-    """⏱ Authorization check latency < 50ms."""
+    """â± Authorization check latency < 50ms."""
     start = time.perf_counter()
     await client.get(
         "/api/instructor/sessions",
@@ -871,9 +871,9 @@ async def test_36_performance_auth_token_validation(client: AsyncClient, auth_to
     assert elapsed < 500, f"Auth check took {elapsed:.2f}ms (target: <500ms)"
 
 
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # SUMMARY & REPORTING
-# ────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_summary_all_scenarios_valid():
@@ -887,13 +887,13 @@ def test_summary_all_scenarios_valid():
         try:
             spec = load_scenario(scenario_id)
             results[scenario_id] = {
-                "status": "✅ PASS",
+                "status": "âœ… PASS",
                 "phases": len(spec.get("phases", [])),
                 "gates": len(spec.get("methodology_gates", {})),
                 "detection_rules": len(spec.get("soc_detection", [])),
             }
         except Exception as e:
-            results[scenario_id] = {"status": f"❌ FAIL: {e}"}
+            results[scenario_id] = {"status": f"âŒ FAIL: {e}"}
 
     print("\n" + "=" * 70)
     print("SCENARIO VALIDATION SUMMARY")
@@ -908,13 +908,13 @@ def test_summary_all_scenarios_valid():
 
     # Assert all passed
     for scenario_id, result in results.items():
-        assert "✅" in result["status"], f"{scenario_id} failed: {result}"
+        assert "âœ…" in result["status"], f"{scenario_id} failed: {result}"
 
 
 if __name__ == "__main__":
     print(
         """
-    CyberSim Integration Test Suite
+    Parallax Integration Test Suite
     ===============================
 
     Run all tests:

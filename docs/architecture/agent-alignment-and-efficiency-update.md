@@ -1,10 +1,10 @@
-# CyberSim Efficiency & Agent Alignment Report
+# Parallax Efficiency & Agent Alignment Report
 
 ## Overview
-A comprehensive review of the CyberSim project configuration, agent alignment documents, and operational rules has been completed. The goal was to eliminate contradictions and overlapping constraints, severely reduce the need for human intervention, and dramatically improve token efficiency (particularly tailored for Claude Code and Gemini). 
+A comprehensive review of the Parallax project configuration, agent alignment documents, and operational rules has been completed. The goal was to eliminate contradictions and overlapping constraints, severely reduce the need for human intervention, and dramatically improve token efficiency (particularly tailored for Claude Code and Gemini). 
 
 ## Identified Issues & Contradictions
-1. **Escalation Trigger Bottlenecks**: The `.antigravity-rules.md` file had explicit rules that blocked progress, mandating asking the human before doing >800 lines of code, network access inside scenario containers, and writes outside the `cybersim/` directory.
+1. **Escalation Trigger Bottlenecks**: The `.antigravity-rules.md` file had explicit rules that blocked progress, mandating asking the human before doing >800 lines of code, network access inside scenario containers, and writes outside the `parallax/` directory.
 2. **Prioritization Overhead**: The `claude.md` file forced Claude to wait for user permission if more than 3 files were intended to be modified, driving up interaction latency and wasting tokens on permission-asking dialogs.
 3. **Implicit Overlapping Constraints**: The `gemini.md` and `claude.md` rules did not definitively instruct agents on self-routing and automatic contradiction resolution.
 

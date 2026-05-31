@@ -20,7 +20,7 @@ New-Item -ItemType Directory -Force -Path $SVG | Out-Null
 $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 Write-Host ""
 Write-Host "============================================================"
-Write-Host " CyberSim Diagram Renderer -- $ts"
+Write-Host " Parallax Diagram Renderer -- $ts"
 Write-Host "============================================================"
 Write-Host ""
 

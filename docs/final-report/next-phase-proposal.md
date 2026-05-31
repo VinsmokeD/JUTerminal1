@@ -6,14 +6,14 @@ Standing rule: every documentation handoff should include a proposed next phase 
 
 Goal:
 
-- Convert the source documentation into examiner-facing visual assets by capturing current UI screenshots, replacing Canva placeholder text with verified CyberSim page content, and preparing the defense deck/poster outline.
+- Convert the source documentation into examiner-facing visual assets by capturing current UI screenshots, replacing Canva placeholder text with verified Parallax page content, and preparing the defense deck/poster outline.
 
 Why this phase came next:
 
 - Chapters 4, 5, and 6 now have source text.
 - Scenario dossiers and user manuals exist.
 - The final report still lacks screenshot evidence.
-- The selected Canva design is visually useful but still needs verified CyberSim-specific content.
+- The selected Canva design is visually useful but still needs verified Parallax-specific content.
 - Defense deliverables need a consistent figure and screenshot set.
 
 Acceptance criteria:
@@ -91,13 +91,13 @@ Verification:
 
 ---
 
-## Completed Phase: Phase 9A — Report Quality, Format, and Theme Redesign
+## Completed Phase: Phase 9A â€” Report Quality, Format, and Theme Redesign
 
 **Completed:** 2026-05-27
 
 Goal:
 - Redesign the DOCX report compiler (v2) to produce a premium-quality, KASIT-compliant
-  document with CyberSim brand theming, rich table/figure formatting, styled chapter
+  document with Parallax brand theming, rich table/figure formatting, styled chapter
   title blocks, sidebar accent rules, and improved readability at every level.
 
 Why this phase came next:
@@ -108,10 +108,10 @@ Why this phase came next:
 
 Approach and improvements delivered:
 
-1. BRAND THEME (CyberSim palette applied throughout):
+1. BRAND THEME (Parallax palette applied throughout):
    - Cover: dark navy (#0D1B2A) title bar, cyan (#00B4D8) project name, near-white blue subtitle.
    - Chapter title blocks: navy shaded label bar ("CHAPTER N") + light-blue title band + bottom accent rule.
-   - H2 headings: left cyan border rule (18pt) + 0.4cm indent — visually separates major sections.
+   - H2 headings: left cyan border rule (18pt) + 0.4cm indent â€” visually separates major sections.
    - H3 headings: left mid-navy border rule (10pt) + 0.3cm indent.
 
 2. TABLE REDESIGN (alternating rows + navy header):
@@ -130,7 +130,7 @@ Approach and improvements delivered:
    - Left cyan border (6pt) for visual distinction from body text.
 
 5. FRONT MATTER REDESIGN:
-   - Branded cover page: university + school + department + CyberSim title block.
+   - Branded cover page: university + school + department + Parallax title block.
    - Abstract page with bold keyword list.
    - TOC / LOF / LOT pages with Word field codes for auto-population via COM.
 
@@ -143,31 +143,31 @@ Approach and improvements delivered:
    - Per-chapter table numbering (N.1, N.2 ...) for KASIT compliance.
 
 Files created or modified:
-- `scripts/compile_report_v2.py` — new premium compiler (replaces v1 approach)
-- `docs/final-report/formal-report/cybersim-graduation-report.docx` — regenerated
-- `docs/final-report/formal-report/cybersim-graduation-report.pdf` — regenerated
-- `docs/architecture/CONTINUOUS_STATE.md` — updated
+- `scripts/compile_report_v2.py` â€” new premium compiler (replaces v1 approach)
+- `docs/final-report/formal-report/parallax-graduation-report.docx` â€” regenerated
+- `docs/final-report/formal-report/parallax-graduation-report.pdf` â€” regenerated
+- `docs/architecture/CONTINUOUS_STATE.md` â€” updated
 
 Acceptance criteria achieved:
 - [x] DOCX compiles without error.
 - [x] PDF generated via Word COM.
 - [x] All 16 figures embedded.
 - [x] All tables styled with navy header + alternating rows.
-- [x] Chapter title blocks use CyberSim brand palette.
+- [x] Chapter title blocks use Parallax brand palette.
 - [x] H2/H3 headings have accent left-border rules.
 - [x] Code blocks use monospace + grey fill + cyan border.
 - [x] KASIT margins (L 3cm), A4, Times New Roman 12pt body maintained.
 
 ---
 
-## Proposed Phase: Phase 10 — Defense Preparation & Examiner Pack
+## Proposed Phase: Phase 10 â€” Defense Preparation & Examiner Pack
 
 Goal:
 - Produce the complete defense-day package using the now-polished formal report
   as the source of truth.
 
 Acceptance criteria:
-- Finalize defense slide deck (12-15 slides) with embedded CyberSim-branded diagrams
+- Finalize defense slide deck (12-15 slides) with embedded Parallax-branded diagrams
   and UI screenshots. Export as PPTX and PDF.
 - Update `defense-rehearsal-script.md` with timed speaker notes (<=18 minutes total).
 - Produce `docs/final-report/examiner-qa-pack.md` with predicted examiner questions

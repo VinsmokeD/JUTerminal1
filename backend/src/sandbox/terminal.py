@@ -6,12 +6,12 @@ cross-event-loop issue that arises when the singleton aioredis.Redis client
 (created on the main FastAPI loop) is awaited from a thread-local loop.
 
 Data flow:
-  Browser → WS → Redis PUBLISH terminal:{id}:input
-                                   ↓
+  Browser â†’ WS â†’ Redis PUBLISH terminal:{id}:input
+                                   â†“
                       _redis_to_docker thread reads & sends to Docker exec socket
-  Docker exec socket → _docker_to_redis thread → Redis PUBLISH terminal:{id}:output
-                                                                  ↓
-                                           WS handler → browser xterm.js
+  Docker exec socket â†’ _docker_to_redis thread â†’ Redis PUBLISH terminal:{id}:output
+                                                                  â†“
+                                           WS handler â†’ browser xterm.js
 """
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ from src.config import settings
 from src.cache.redis import _get as get_async_redis
 from src.scenarios.loader import load_scenario
 
-# Track active proxy threads — prevent duplicate sessions
+# Track active proxy threads â€” prevent duplicate sessions
 _active_sessions: set[str] = set()
 _active_input_queues: dict[str, "queue.Queue[str]"] = {}
 _active_output_queues: dict[str, list["queue.Queue[str]"]] = {}
@@ -67,7 +67,7 @@ _active_sessions_lock = threading.Lock()
 
 
 # ---------------------------------------------------------------------------
-# Public async API (called from ws/routes.py — main event loop)
+# Public async API (called from ws/routes.py â€” main event loop)
 # ---------------------------------------------------------------------------
 
 
@@ -97,7 +97,7 @@ async def stream_terminal_output(
 ) -> None:
     """
     Start a background thread that proxies Docker exec <-> Redis.
-    Idempotent — subsequent calls for the same session_id are no-ops.
+    Idempotent â€” subsequent calls for the same session_id are no-ops.
     Falls back to an interactive mock terminal when Docker is unavailable.
     """
     if container_id.startswith("mock-"):
@@ -174,8 +174,8 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
     Background thread: duplex proxy between Docker exec PTY and Redis channels.
 
     Two child threads are spawned:
-      _docker_to_redis — reads Docker socket, publishes to terminal:{id}:output
-      _redis_to_docker  — subscribes to terminal:{id}:input, writes to Docker socket
+      _docker_to_redis â€” reads Docker socket, publishes to terminal:{id}:output
+      _redis_to_docker  â€” subscribes to terminal:{id}:input, writes to Docker socket
 
     The parent thread blocks on stop_event and then cleans up.
     """
@@ -225,7 +225,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
             _fanout_terminal_output(session_id, banner)
         r_init.close()
 
-        # ── Thread A: Docker stdout → Redis publish ──────────────────────
+        # â”€â”€ Thread A: Docker stdout â†’ Redis publish â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         def _docker_to_redis() -> None:
             r = _make_sync_redis()
             max_chunk_size = 4096  # Max bytes per WebSocket frame
@@ -240,7 +240,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                         break
                     chunk = data.decode("utf-8", errors="replace")
 
-                    # Split into ≤4KB frames to prevent overwhelming frontend
+                    # Split into â‰¤4KB frames to prevent overwhelming frontend
                     for i in range(0, len(chunk), max_chunk_size):
                         frame = chunk[i : i + max_chunk_size]
                         r.publish(f"terminal:{session_id}:output", json.dumps({"data": frame}))
@@ -259,7 +259,7 @@ def _terminal_proxy_thread(session_id: str, container_id: str, scenario_id: str 
                     break
             stop_event.set()  # Signal the sibling thread to exit too
 
-        # ── Thread B: Redis subscribe → Docker stdin ─────────────────────
+        # â”€â”€ Thread B: Redis subscribe â†’ Docker stdin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         def _queue_to_docker() -> None:
             while not stop_event.is_set():
                 try:
@@ -371,7 +371,7 @@ def _build_banner(scenario_id: str) -> str:
     lines = [
         "",
         "\x1b[1;34m" + "=" * 68 + "\x1b[0m",
-        f"\x1b[1;37m  CyberSim Training - \x1b[1;31m{spec.get('display_name') or spec.get('title') or scenario_id}\x1b[0m",
+        f"\x1b[1;37m  Parallax Training - \x1b[1;31m{spec.get('display_name') or spec.get('title') or scenario_id}\x1b[0m",
         "\x1b[1;34m" + "=" * 68 + "\x1b[0m",
         "",
         f"\x1b[1;33m  NETWORK:\x1b[0m  {net.get('cidr','')}",

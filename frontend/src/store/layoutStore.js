@@ -118,7 +118,7 @@ export const useLayoutStore = create(
       }),
     }),
     {
-      name: 'cybersim-layout-storage-v2',
+      name: 'parallax-layout-storage-v2',
     }
   )
 )

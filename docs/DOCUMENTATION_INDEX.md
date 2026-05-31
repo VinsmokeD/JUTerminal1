@@ -1,6 +1,6 @@
 # Documentation Index
 
-This file now points to the maintained CyberSim documentation set. Older development reports in `docs/reports/` are retained for project history only and may describe pre-defense plans that are no longer active.
+This file now points to the maintained Parallax documentation set. Older development reports in `docs/reports/` are retained for project history only and may describe pre-defense plans that are no longer active.
 
 ## Maintained Docs
 
@@ -19,7 +19,7 @@ This file now points to the maintained CyberSim documentation set. Older develop
 
 ## Active Scope
 
-CyberSim's active MVP and defense scope is exactly:
+Parallax's active MVP and defense scope is exactly:
 
 - SC-01 NovaMed Healthcare
 - SC-02 Nexora Financial AD

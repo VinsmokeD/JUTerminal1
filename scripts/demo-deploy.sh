@@ -14,8 +14,8 @@ set -a
 source .env
 set +a
 
-if [[ -z "${CYBERSIM_DOMAIN:-}" ]]; then
-  echo "CYBERSIM_DOMAIN must be set in .env." >&2
+if [[ -z "${PARALLAX_DOMAIN:-}" ]]; then
+  echo "PARALLAX_DOMAIN must be set in .env." >&2
   exit 1
 fi
 

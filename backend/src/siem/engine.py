@@ -1,4 +1,4 @@
-"""SIEM engine — ES-poll driven, Sigma-style rule matching, Redis dedup."""
+"""SIEM engine â€” ES-poll driven, Sigma-style rule matching, Redis dedup."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ _last_poll_time: str = "now-1m"
 _RULES: list[dict] = []
 
 _RULES_DIR = Path(__file__).resolve().parent / "rules"
-_ACTIVE_KEY = "cybersim:active_sessions"
+_ACTIVE_KEY = "parallax:active_sessions"
 _DEDUP_TTL = 3600  # 1 hour
 
 
@@ -161,7 +161,7 @@ def _infer_scenario(source: dict) -> str | None:
 
 
 # ---------------------------------------------------------------------------
-# Sigma-rule DSL matcher (shallow but sufficient for CyberSim field depth)
+# Sigma-rule DSL matcher (shallow but sufficient for Parallax field depth)
 # ---------------------------------------------------------------------------
 
 
@@ -312,7 +312,7 @@ async def _poll_elasticsearch() -> None:
                                     continue
 
                             # Redis-based dedup: one emit per (session, rule, doc) per hour
-                            dedup_key = f"cybersim:siem:emitted:{session_id}:{rule['id']}:{doc_id}"
+                            dedup_key = f"parallax:siem:emitted:{session_id}:{rule['id']}:{doc_id}"
                             redis = get_redis()
                             already = await redis.set(dedup_key, "1", ex=_DEDUP_TTL, nx=True)
                             if not already:
@@ -349,7 +349,7 @@ async def _poll_elasticsearch() -> None:
 async def _ensure_es_ilm(client: httpx.AsyncClient) -> None:
     """
     Create (or update) an ILM policy + index template on Elasticsearch so
-    cybersim-logs-* and filebeat-* indices roll over at 5 GB / 7 days and
+    parallax-logs-* and filebeat-* indices roll over at 5 GB / 7 days and
     are deleted after 30 days.  Runs once at startup; is idempotent (PUT).
     """
     policy = {
@@ -367,16 +367,16 @@ async def _ensure_es_ilm(client: httpx.AsyncClient) -> None:
         }
     }
     index_template = {
-        "index_patterns": ["cybersim-logs-*", "filebeat-*"],
-        "template": {"settings": {"index.lifecycle.name": "cybersim-logs"}},
+        "index_patterns": ["parallax-logs-*", "filebeat-*"],
+        "template": {"settings": {"index.lifecycle.name": "parallax-logs"}},
     }
     await client.put(
-        "http://elasticsearch:9200/_ilm/policy/cybersim-logs",
+        "http://elasticsearch:9200/_ilm/policy/parallax-logs",
         json=policy,
         timeout=10.0,
     )
     await client.put(
-        "http://elasticsearch:9200/_index_template/cybersim-logs-template",
+        "http://elasticsearch:9200/_index_template/parallax-logs-template",
         json=index_template,
         timeout=10.0,
     )
@@ -404,7 +404,7 @@ async def init_siem_batch() -> None:
     _event_queue = asyncio.Queue(maxsize=1000)
     _batch_flush_task = asyncio.create_task(_batch_flush())
     _elk_poll_task = asyncio.create_task(_poll_elasticsearch())
-    # Apply ILM policy in the background — failure must not block startup
+    # Apply ILM policy in the background â€” failure must not block startup
     asyncio.create_task(_apply_es_ilm_on_startup())
 
 

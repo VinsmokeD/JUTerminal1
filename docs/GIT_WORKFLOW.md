@@ -2,7 +2,7 @@
 
 ## Overview
 
-CyberSim follows a Git workflow with conventional commits, feature branches, and pull request reviews. This ensures clean history, easy rollbacks, and clear change tracking.
+Parallax follows a Git workflow with conventional commits, feature branches, and pull request reviews. This ensures clean history, easy rollbacks, and clear change tracking.
 
 ---
 
@@ -27,7 +27,7 @@ CyberSim follows a Git workflow with conventional commits, feature branches, and
 
 ### Examples
 
-✅ **Good**
+âœ… **Good**
 ```bash
 feature/ai-hint-system
 fix/websocket-timeout
@@ -35,7 +35,7 @@ docs/deployment-guide
 chore/bump-python-version
 ```
 
-❌ **Bad**
+âŒ **Bad**
 ```bash
 new_feature
 fix_stuff
@@ -138,10 +138,10 @@ No functional changes.
 ```bash
 chore: update python requirements to latest stable versions
 
-- FastAPI 0.108 → 0.109
-- SQLAlchemy 2.0.22 → 2.0.23
-- google-genai 1.73.1 → next stable
-- pytest 7.4.3 → 7.4.4
+- FastAPI 0.108 â†’ 0.109
+- SQLAlchemy 2.0.22 â†’ 2.0.23
+- google-genai 1.73.1 â†’ next stable
+- pytest 7.4.3 â†’ 7.4.4
 
 All tests passing.
 ```
@@ -191,7 +191,7 @@ git push
 ### 4. Create Pull Request
 
 On GitHub:
-1. Compare `feature/my-feature` → `main`
+1. Compare `feature/my-feature` â†’ `main`
 2. Fill out PR template
 3. Request reviewers
 4. Wait for CI checks to pass
@@ -250,9 +250,9 @@ git push -u origin hotfix/critical-bug
 
 ## Best Practices
 
-### ✅ Do's
+### âœ… Do's
 
-✅ **Commit early, commit often**
+âœ… **Commit early, commit often**
 ```bash
 # Good: Multiple logical commits
 git commit -m "feat: add terminal history buffer"
@@ -263,7 +263,7 @@ git commit -m "test: add terminal history tests"
 git commit -m "add terminal feature with all code changes"
 ```
 
-✅ **Use descriptive commit messages**
+âœ… **Use descriptive commit messages**
 ```bash
 # Good
 git commit -m "fix: resolve race condition in terminal I/O by using threading.Event"
@@ -272,7 +272,7 @@ git commit -m "fix: resolve race condition in terminal I/O by using threading.Ev
 git commit -m "fix bug"
 ```
 
-✅ **Reference issues in commits**
+âœ… **Reference issues in commits**
 ```bash
 git commit -m "feat: add guided templates
 
@@ -281,7 +281,7 @@ Closes #42
 Addresses #38"
 ```
 
-✅ **Keep commits focused**
+âœ… **Keep commits focused**
 ```bash
 # Good: Each commit does one thing
 git add backend/src/ai/monitor.py
@@ -294,7 +294,7 @@ git add .  # backend code + frontend + docs + chore
 git commit -m "misc updates"
 ```
 
-✅ **Use interactive rebase before PR**
+âœ… **Use interactive rebase before PR**
 ```bash
 # Squash "work in progress" commits into logical commits
 git rebase -i main
@@ -303,9 +303,9 @@ git rebase -i main
 git push origin feature/x --force-with-lease
 ```
 
-### ❌ Don'ts
+### âŒ Don'ts
 
-❌ **Don't push secrets**
+âŒ **Don't push secrets**
 ```bash
 # Never commit credentials, API keys, passwords
 # .env is in .gitignore
@@ -315,23 +315,23 @@ git commit -m "remove .env from history"
 git push --force-with-lease  # Only if not in main yet
 ```
 
-❌ **Don't force push to main/master**
+âŒ **Don't force push to main/master**
 ```bash
 # Safe: Only on your feature branch
 git push origin feature/x --force-with-lease
 
 # Dangerous: Don't do this to main
-git push origin main --force  # ❌ NEVER
+git push origin main --force  # âŒ NEVER
 ```
 
-❌ **Don't merge the wrong branch**
+âŒ **Don't merge the wrong branch**
 ```bash
 # Check before merging
 git merge develop  # Is this what you want?
 git status        # Always verify
 ```
 
-❌ **Don't leave huge WIP commits**
+âŒ **Don't leave huge WIP commits**
 ```bash
 # Bad: Commit that sits 2 weeks with "WIP"
 git commit -m "WIP: experimental feature"
@@ -340,10 +340,10 @@ git commit -m "WIP: experimental feature"
 git rebase -i HEAD~5  # Clean up before PR
 ```
 
-❌ **Don't skip CI checks**
+âŒ **Don't skip CI checks**
 ```bash
-# Don't merge if GitHub shows red ❌
-# Always wait for green ✅
+# Don't merge if GitHub shows red âŒ
+# Always wait for green âœ…
 ```
 
 ---
@@ -470,16 +470,16 @@ git log --grep="API" --oneline
 
 Every push triggers:
 
-1. **Format Check** — Black, Prettier
-2. **Linting** — Flake8, ESLint
-3. **Type Check** — mypy, TypeScript
-4. **Unit Tests** — pytest, Vitest
-5. **Integration Tests** — docker-compose tests
-6. **Security Scan** — Bandit, npm audit
-7. **Deploy (main only)** — Production deployment
+1. **Format Check** â€” Black, Prettier
+2. **Linting** â€” Flake8, ESLint
+3. **Type Check** â€” mypy, TypeScript
+4. **Unit Tests** â€” pytest, Vitest
+5. **Integration Tests** â€” docker-compose tests
+6. **Security Scan** â€” Bandit, npm audit
+7. **Deploy (main only)** â€” Production deployment
 
 View results:
-- GitHub: PR → "Checks" tab
+- GitHub: PR â†’ "Checks" tab
 - CLI: `git status` after push
 
 ---

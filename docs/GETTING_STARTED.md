@@ -1,6 +1,6 @@
-# Getting Started with CyberSim
+# Getting Started with Parallax
 
-Welcome to CyberSim! This guide will help you set up the platform quickly.
+Welcome to Parallax! This guide will help you set up the platform quickly.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ Welcome to CyberSim! This guide will help you set up the platform quickly.
 
 ```bash
 git clone https://github.com/VinsmokeD/JUTerminal1.git
-cd cybersim
+cd parallax
 cp .env.example .env
 ```
 
@@ -35,7 +35,7 @@ openssl rand -hex 32
 
 ```bash
 docker build -f infrastructure/docker/kali/Dockerfile \
-  -t cybersim-kali:latest \
+  -t parallax-kali:latest \
   infrastructure/docker/kali/
 ```
 
@@ -105,7 +105,7 @@ docker-compose logs -f frontend
 ```bash
 # Windows: Start Docker Desktop
 # Linux: sudo systemctl start docker
-# Mac: Docker Desktop → Preferences → Resources → Start
+# Mac: Docker Desktop â†’ Preferences â†’ Resources â†’ Start
 ```
 
 ### Port conflicts

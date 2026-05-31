@@ -238,7 +238,7 @@ export default function MissionReadinessOverlay({ sessionId, scenarioId, onClose
           
           <div className="space-y-3 text-xs leading-relaxed max-h-[300px] md:max-h-[500px] overflow-y-auto">
             <div>
-              <span className="text-[#38bdf8]">[~]</span> Initializing CyberSim local sandbox...
+              <span className="text-[#38bdf8]">[~]</span> Initializing Parallax local sandbox...
             </div>
             
             {/* Kali check */}

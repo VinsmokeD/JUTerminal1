@@ -1,23 +1,23 @@
-# CyberSim — Master Enhancement & Hardening Plan
+# Parallax â€” Master Enhancement & Hardening Plan
 **Author:** Claude Code (Lead Technical Auditor / Planner)
 **Created:** 2026-05-29
 **Status:** Active master plan. Supersedes ad-hoc roadmaps for the enhancement cycle.
-**Scope:** End-to-end hardening of every layer — Docker, backend, frontend, AI tutor, SIEM, scenarios/machines, kill chain, Kali terminal, reporting, knowledge, architecture, UI/UX, security, compliance, testing, reliability, scalability, documentation, and management.
+**Scope:** End-to-end hardening of every layer â€” Docker, backend, frontend, AI tutor, SIEM, scenarios/machines, kill chain, Kali terminal, reporting, knowledge, architecture, UI/UX, security, compliance, testing, reliability, scalability, documentation, and management.
 
 ---
 
 ## 0. How to read & use this plan
 
 This is a **phase-by-phase execution playbook**. Each phase has:
-- **Objective** — what "done" looks like.
-- **Target files / areas** — the real paths in this repo to touch.
-- **Skills** — which `/skill` to invoke (this environment ships hundreds; the right ones are named per phase).
-- **Tasks** — concrete checklist.
-- **Prompt(s)** — copy-paste ready instructions you can hand to Claude Code (or any agent) to execute the phase.
-- **Exit criteria / verification** — the empirical gate (per `CLAUDE.md`: no `STATE_SAVE` without a physical test).
+- **Objective** â€” what "done" looks like.
+- **Target files / areas** â€” the real paths in this repo to touch.
+- **Skills** â€” which `/skill` to invoke (this environment ships hundreds; the right ones are named per phase).
+- **Tasks** â€” concrete checklist.
+- **Prompt(s)** â€” copy-paste ready instructions you can hand to Claude Code (or any agent) to execute the phase.
+- **Exit criteria / verification** â€” the empirical gate (per `CLAUDE.md`: no `STATE_SAVE` without a physical test).
 
 **Execution rules (carry into every phase):**
-1. **Pre-flight read** (per `CLAUDE.md`): `PROJECT_UNDERSTANDING.md`, `.antigravity-rules.md`, `openrouter.md`, `docs/architecture/MASTER_BLUEPRINT.md`, `docs/architecture/CONTINUOUS_STATE.md` (tail only — it is 600KB).
+1. **Pre-flight read** (per `CLAUDE.md`): `PROJECT_UNDERSTANDING.md`, `.antigravity-rules.md`, `openrouter.md`, `docs/architecture/MASTER_BLUEPRINT.md`, `docs/architecture/CONTINUOUS_STATE.md` (tail only â€” it is 600KB).
 2. **One phase = one branch.** `git checkout -b phase/<n>-<slug>`. Small, conventional commits.
 3. **Verify before claiming done.** Run `pytest`, `docker compose config`, `npm run build`, and targeted curl/WS checks.
 4. **Log to state.** Append a dated entry to `CONTINUOUS_STATE.md` (When/Who/Why/Where/What+How/Verification). See Phase 0.4 about splitting that file.
@@ -31,22 +31,22 @@ A real audit on 2026-05-29 (code + docs read, not just doc claims) surfaced thes
 
 | # | Finding | Severity | Evidence |
 |---|---------|----------|----------|
-| F1 | ~~Terminal WebSocket reconnect/reattach is absent.~~ **CORRECTED 2026-05-29 (code read):** reconnect IS implemented. Backend `_send_reconnect_history()` replays terminal+command history on reattach (`ws/routes.py:79,456`), the PTY stream is idempotent (`:452-453`), and `alive`/`active_sessions` grace keys exist. Frontend `useWebSocket.js` auto-reconnects with exponential backoff (`:154-178`), has a connection-state machine, replays pending frames, answers heartbeat pongs (`:137`), and rehydrates history (`:92`). The "Phase 16 NOT IMPLEMENTED" claim came from the **stale 2026-04-08** report; the code evolved since. Phase 7 is therefore **verify/harden + add e2e**, not build. A characterization test now covers the replay path (`test_ws_integration.py::test_send_reconnect_history_replays_terminal_and_commands`). | ~~HIGH~~ → LOW | code read 2026-05-29 |
-| F2 | **Gemini → OpenRouter documentation drift.** Code/README use OpenRouter (`deepseek-chat-v3`); many docs still say "Gemini Flash". | HIGH (credibility) | `docs/ARCHITECTURE.md`, `FEATURES.md`, `ROADMAP.md`, `findings.md`, `progress.md`, `task_plan.md`, `CURRENT_STATUS_REPORT.md` all reference Gemini. |
+| F1 | ~~Terminal WebSocket reconnect/reattach is absent.~~ **CORRECTED 2026-05-29 (code read):** reconnect IS implemented. Backend `_send_reconnect_history()` replays terminal+command history on reattach (`ws/routes.py:79,456`), the PTY stream is idempotent (`:452-453`), and `alive`/`active_sessions` grace keys exist. Frontend `useWebSocket.js` auto-reconnects with exponential backoff (`:154-178`), has a connection-state machine, replays pending frames, answers heartbeat pongs (`:137`), and rehydrates history (`:92`). The "Phase 16 NOT IMPLEMENTED" claim came from the **stale 2026-04-08** report; the code evolved since. Phase 7 is therefore **verify/harden + add e2e**, not build. A characterization test now covers the replay path (`test_ws_integration.py::test_send_reconnect_history_replays_terminal_and_commands`). | ~~HIGH~~ â†’ LOW | code read 2026-05-29 |
+| F2 | **Gemini â†’ OpenRouter documentation drift.** Code/README use OpenRouter (`deepseek-chat-v3`); many docs still say "Gemini Flash". | HIGH (credibility) | `docs/ARCHITECTURE.md`, `FEATURES.md`, `ROADMAP.md`, `findings.md`, `progress.md`, `task_plan.md`, `CURRENT_STATUS_REPORT.md` all reference Gemini. |
 | F3 | **Inconsistent self-assessment.** README "95/100", ROADMAP "78/100". `.env.example` lists `GEMINI_API_KEY` while README says `OPENROUTER_API_KEY`. | MEDIUM | Direct file diff. |
-| F4 | **SC-04 / SC-05 are half-built.** Hint trees + SIEM maps exist; no YAML spec, no Docker infra → cannot launch. | MEDIUM | `loader.py` loads only SC-01..03; `infrastructure/docker/scenarios/sc04,sc05` empty. |
-| F5 | **Thin SIEM event maps for SC-03/04** (≈3 trigger keys) → sparse Blue feed. | MEDIUM | Status report §4.4. |
-| F6 | **`CONTINUOUS_STATE.md` is ~600KB** — exceeds tool read limits, slows every agent, violates token-efficiency rules. | MEDIUM | File size; cannot be read whole. |
+| F4 | **SC-04 / SC-05 are half-built.** Hint trees + SIEM maps exist; no YAML spec, no Docker infra â†’ cannot launch. | MEDIUM | `loader.py` loads only SC-01..03; `infrastructure/docker/scenarios/sc04,sc05` empty. |
+| F5 | **Thin SIEM event maps for SC-03/04** (â‰ˆ3 trigger keys) â†’ sparse Blue feed. | MEDIUM | Status report Â§4.4. |
+| F6 | **`CONTINUOUS_STATE.md` is ~600KB** â€” exceeds tool read limits, slows every agent, violates token-efficiency rules. | MEDIUM | File size; cannot be read whole. |
 | F7 | **Secrets hygiene risk.** `.env` is checked into the working tree; `stash.patch` is 3MB; `.gemini_backup/`, `screenshot-temp-env/`, `graphify-out/`, `backend/src/graphify-out/cache/` are committed artifacts. | HIGH | Top-level `ls`; grep found cache files. |
-| F8 | **`scope_enforcer.py` missing** (blueprint v2 requirement) — attack scope is not hard-enforced server-side. | MEDIUM | Status report §4.4. |
-| F9 | **Heavy files (`ws/routes.py` 915 LOC, `SiemFeed.jsx` 541, `useTerminal.js` 454)** concentrate logic and risk; need decomposition + tests. | LOW–MED | `wc -l`. |
-| F10 | **Two casing variants of project memory** (`CLAUDE.md` and `claude.md`) coexist on a case-insensitive FS — drift/confusion risk. | LOW | Top-level `ls`. |
+| F8 | **`scope_enforcer.py` missing** (blueprint v2 requirement) â€” attack scope is not hard-enforced server-side. | MEDIUM | Status report Â§4.4. |
+| F9 | **Heavy files (`ws/routes.py` 915 LOC, `SiemFeed.jsx` 541, `useTerminal.js` 454)** concentrate logic and risk; need decomposition + tests. | LOWâ€“MED | `wc -l`. |
+| F10 | **Two casing variants of project memory** (`CLAUDE.md` and `claude.md`) coexist on a case-insensitive FS â€” drift/confusion risk. | LOW | Top-level `ls`. |
 
-These findings drive the phase ordering: **truth → correctness → reliability → security → realism → polish → proof.**
+These findings drive the phase ordering: **truth â†’ correctness â†’ reliability â†’ security â†’ realism â†’ polish â†’ proof.**
 
 ---
 
-## 2. Skills → workstream map
+## 2. Skills â†’ workstream map
 
 Invoke these with the Skill tool (e.g. `/security-auditor`). Use them; don't hand-roll what a skill does well.
 
@@ -69,11 +69,11 @@ Invoke these with the Skill tool (e.g. `/security-auditor`). Use them; don't han
 
 ## 3. The phases (dependency-ordered)
 
-> Phases 0–3 are **foundation and must run in order**. Phases 4–9 are **feature pillars** that can partly parallelize via git worktrees / subagents once Phase 1–2 land. Phases 10–12 are **proof and release**. A "Continuous track" runs alongside everything.
+> Phases 0â€“3 are **foundation and must run in order**. Phases 4â€“9 are **feature pillars** that can partly parallelize via git worktrees / subagents once Phase 1â€“2 land. Phases 10â€“12 are **proof and release**. A "Continuous track" runs alongside everything.
 
 ---
 
-### Phase 0 — Ground Truth & Baseline (no feature work)
+### Phase 0 â€” Ground Truth & Baseline (no feature work)
 **Objective:** Replace optimistic doc claims with a measured baseline. Repo hygiene. One source of truth.
 
 **Target areas:** whole repo; `.env`, `stash.patch`, `.gemini_backup/`, `graphify-out/`, `screenshot-temp-env/`, `CONTINUOUS_STATE.md`, `CLAUDE.md`/`claude.md`.
@@ -85,7 +85,7 @@ Invoke these with the Skill tool (e.g. `/security-auditor`). Use them; don't han
 2. Run backend `pytest` and frontend `npm run build`; capture true counts (not "295" by memory).
 3. `secret-scanner`: confirm no live keys in tree; ensure `.env` is git-ignored and untracked; rotate anything exposed.
 4. Repo hygiene: remove/ignore `stash.patch`, `.gemini_backup/`, `graphify-out/`, `backend/src/graphify-out/`, `screenshot-temp-env/`, `__pycache__`. Update `.gitignore`.
-5. Resolve `CLAUDE.md` vs `claude.md` duplication → single canonical file.
+5. Resolve `CLAUDE.md` vs `claude.md` duplication â†’ single canonical file.
 6. **Split `CONTINUOUS_STATE.md`**: archive history to `docs/history/CONTINUOUS_STATE_ARCHIVE_<date>.md`, keep a lean rolling tail (<2000 lines) as the live file. Add a header explaining the rotation policy.
 
 **Prompt:**
@@ -105,7 +105,7 @@ Verify: pytest green, npm build green, docker compose config --quiet OK, git sta
 
 ---
 
-### Phase 1 — Backend Correctness, Logic & API Contracts
+### Phase 1 â€” Backend Correctness, Logic & API Contracts
 **Objective:** Fix real bugs and tighten logic in the core engines before building on them.
 
 **Target files:** `backend/src/ws/routes.py` (915 LOC), `siem/engine.py`, `siem/command_bridge.py`, `scenarios/engine.py`, `scenarios/gatekeeper.py`, `scenarios/branching.py`, `scoring/engine.py`, `ai/monitor.py`, `sessions/routes.py`, `db/database.py`, `cache/redis.py`.
@@ -114,8 +114,8 @@ Verify: pytest green, npm build green, docker compose config --quiet OK, git sta
 
 **Tasks:**
 1. `code-reviewer` pass over the 5 heaviest modules; log findings.
-2. Decompose `ws/routes.py` into cohesive units (terminal handler, SIEM subscriber, lifecycle, auth) — behavior-preserving refactor with tests first.
-3. Audit async correctness: blocking calls in async paths, unclosed Docker/Redis clients, race conditions on session state, Redis key TTLs (the state log already records key-collision bugs — add namespacing + TTL discipline).
+2. Decompose `ws/routes.py` into cohesive units (terminal handler, SIEM subscriber, lifecycle, auth) â€” behavior-preserving refactor with tests first.
+3. Audit async correctness: blocking calls in async paths, unclosed Docker/Redis clients, race conditions on session state, Redis key TTLs (the state log already records key-collision bugs â€” add namespacing + TTL discipline).
 4. Validate every API shape is a Pydantic model; standardize error envelopes and status codes (`api-designer`).
 5. DB: confirm Alembic migrations match models; add missing indexes (session_id, user_id, created_at); ensure `init_db` only runs in dev/test.
 6. Add regression tests for each bug fixed (TDD on fixes).
@@ -128,14 +128,14 @@ Run Phase 1 (Backend Correctness) of the master plan.
 3. Refactor ws/routes.py into focused modules (terminal stream, siem subscriber, session lifecycle, auth guard) with NO behavior change; tests must stay green.
 4. /api-designer: ensure every request/response is a Pydantic model; unify error envelope {error, detail, code} and HTTP status usage across all routers.
 5. Verify Alembic head matches models; add indexes on hot columns; confirm init_db is dev/test-only.
-Verify with full pytest + a live curl smoke of auth→session→scenario list. Append CONTINUOUS_STATE.md.
+Verify with full pytest + a live curl smoke of authâ†’sessionâ†’scenario list. Append CONTINUOUS_STATE.md.
 ```
 
 **Exit criteria:** pytest green with new regression tests; no module >~400 LOC in the hot path without justification; uniform API contracts.
 
 ---
 
-### Phase 2 — Docker, Sandbox & Infrastructure Reliability
+### Phase 2 â€” Docker, Sandbox & Infrastructure Reliability
 **Objective:** Make the stack boot deterministically and the sandbox lifecycle robust.
 
 **Target files:** `docker-compose.yml`, `docker-compose.demo.yml`, `infrastructure/docker/**`, `backend/src/sandbox/manager.py`, `readiness.py`, `container_cleanup.py`, `terminal.py`, `infrastructure/nginx/`, `infrastructure/caddy/Caddyfile`.
@@ -147,8 +147,8 @@ Verify with full pytest + a live curl smoke of auth→session→scenario list. A
 2. Pin all image tags by digest where feasible; multi-stage + non-root users in backend/frontend Dockerfiles; `.dockerignore` review.
 3. Sandbox manager: enforce CPU/mem limits, `--cap-drop ALL` + minimal caps, `no-new-privileges`, read-only rootfs where possible, auto-reap orphaned containers, hard session-count cap (`MAX_CONCURRENT_SESSIONS`).
 4. Confirm scenario networks are `internal: true` (verified present) and add an automated test that asserts no scenario container can reach the internet.
-5. Make reset deterministic (`down && up` ~8s claim → measure and document real time).
-6. Resource budget doc: ES needs ≥2GB; document host minimums and a low-resource profile.
+5. Make reset deterministic (`down && up` ~8s claim â†’ measure and document real time).
+6. Resource budget doc: ES needs â‰¥2GB; document host minimums and a low-resource profile.
 
 **Prompt:**
 ```
@@ -161,11 +161,11 @@ Run Phase 2 (Docker & Sandbox Reliability) of the master plan.
 Verify: docker compose config --quiet OK; cold `up` reaches all-healthy; isolation test passes. Append CONTINUOUS_STATE.md.
 ```
 
-**Exit criteria:** Cold boot → all services healthy without manual retries; isolation test green; sandbox can't leak or exhaust the host.
+**Exit criteria:** Cold boot â†’ all services healthy without manual retries; isolation test green; sandbox can't leak or exhaust the host.
 
 ---
 
-### Phase 3 — Security & Isolation Hardening + Threat Model
+### Phase 3 â€” Security & Isolation Hardening + Threat Model
 **Objective:** Treat this like the security product it teaches. Defense-in-depth + a written threat model.
 
 **Target files:** `backend/src/auth/**`, `ai/security.py`, `scenarios/gatekeeper.py`, new `scenarios/scope_enforcer.py`, `ws/routes.py` (authz on WS), `config.py`, `infrastructure/nginx/`.
@@ -179,7 +179,7 @@ Verify: docker compose config --quiet OK; cold `up` reaches all-healthy; isolati
 4. AI safety: harden `ai/security.py` against prompt injection from terminal output; confirm credential redaction tests (`tests/ai/test_credential_redaction.py`) cover real leak vectors; never echo secrets into AI prompts.
 5. `owasp-checker` against SC-01 web target surface (intended-vuln vs accidental-vuln separation) and against the platform's own API.
 6. Rate limiting on auth + AI endpoints; CORS tightened from `config.py`; security headers via nginx/Caddy.
-7. `dependency-auditor` + `vuln-scanner` → patch criticals.
+7. `dependency-auditor` + `vuln-scanner` â†’ patch criticals.
 
 **Prompt:**
 ```
@@ -197,7 +197,7 @@ Verify: security tests + full pytest green; document residual risk in the threat
 
 ---
 
-### Phase 4 — AI Tutor & System Prompts Overhaul
+### Phase 4 â€” AI Tutor & System Prompts Overhaul
 **Objective:** A reliable, Socratic, non-repetitive, leak-proof, low-latency tutor.
 
 **Target files:** `backend/src/ai/monitor.py`, `context_builder.py`, `debrief_coach.py`, `discovery_tracker.py`, `level_classifier.py`, `ai/routes.py`, `ai-monitor/system_prompt.md`, `openrouter.md`, frontend `components/hints/AiHintPanel.jsx`.
@@ -205,7 +205,7 @@ Verify: security tests + full pytest green; document residual risk in the threat
 **Skills:** `claude-api` (caching/streaming/tool-use patterns), `brainstorming` (prompt design), `ux-researcher`.
 
 **Tasks:**
-1. Rewrite `ai-monitor/system_prompt.md` as the single source of truth: Socratic L1→L3 ladder, hard "never reveal full chain / never print secrets" guardrails, ≤150-token budget, branch-aware context. Version it.
+1. Rewrite `ai-monitor/system_prompt.md` as the single source of truth: Socratic L1â†’L3 ladder, hard "never reveal full chain / never print secrets" guardrails, â‰¤150-token budget, branch-aware context. Version it.
 2. Fix repetition (state log shows a recurring "same answer" bug): add response diversity via conversation memory + de-dup, and verify the `reasoning_effort` removal didn't regress quality.
 3. Robustness: timeouts, retries with backoff, graceful fallback to local hint trees, cost/latency telemetry; per-session AI call cooldown (`AI_CALL_COOLDOWN_SECONDS`).
 4. Context builder: ensure terminal output is **sanitized + truncated** before prompting (ties to Phase 3 injection defense).
@@ -215,7 +215,7 @@ Verify: security tests + full pytest green; document residual risk in the threat
 **Prompt:**
 ```
 Run Phase 4 (AI Tutor & System Prompts) of the master plan.
-1. Rewrite ai-monitor/system_prompt.md as the canonical, versioned tutor prompt: Socratic L1->L3, ≤150 tokens, hard guardrails (never full kill-chain, never echo secrets), branch-aware. Reference /claude-api patterns for structure.
+1. Rewrite ai-monitor/system_prompt.md as the canonical, versioned tutor prompt: Socratic L1->L3, â‰¤150 tokens, hard guardrails (never full kill-chain, never echo secrets), branch-aware. Reference /claude-api patterns for structure.
 2. In backend/src/ai/monitor.py + context_builder.py: kill response repetition (conversation memory + de-dup), add timeouts/retries/backoff, fallback to local hint trees, and emit latency+cost telemetry. Respect AI_CALL_COOLDOWN_SECONDS.
 3. Sanitize+truncate terminal output before it enters any prompt (anti prompt-injection).
 4. Frontend AiHintPanel.jsx: add streaming, loading/error states, hint-level + penalty transparency.
@@ -227,7 +227,7 @@ Verify: tutor returns varied, on-scope, secret-free answers under a scripted 10-
 
 ---
 
-### Phase 5 — SIEM Feed, Detection Rules & Blue Team Depth
+### Phase 5 â€” SIEM Feed, Detection Rules & Blue Team Depth
 **Objective:** A dense, accurate, MITRE-mapped Blue feed that actually reacts to Red activity.
 
 **Target files:** `backend/src/siem/engine.py`, `command_bridge.py`, `forensics.py`, `response.py`, `siem/rules/`, `siem/events/`, `docs/scenarios/SC-*.yaml` (`soc_detection`), `sandbox/daemon_noise.py`, frontend `components/siem/SiemFeed.jsx`, `ForensicsWorkbench.jsx`, `pages/BlueWorkspace.jsx`.
@@ -236,7 +236,7 @@ Verify: tutor returns varied, on-scope, secret-free answers under a scripted 10-
 
 **Tasks:**
 1. Enrich thin event maps (F5): each scenario phase should emit multiple, distinct, MITRE ATT&CK-tagged events; tune `daemon_noise.py` so signal stands out from noise (realistic false-positive ratio).
-2. Verify the documented detection path (Filebeat→ES→Sigma poll every 2s→WS) actually runs, or align docs to the real Redis-pub/sub path — **pick one and make it true** (current docs describe both).
+2. Verify the documented detection path (Filebeatâ†’ESâ†’Sigma poll every 2sâ†’WS) actually runs, or align docs to the real Redis-pub/sub path â€” **pick one and make it true** (current docs describe both).
 3. Detection rules as data: store Sigma-style rules in `siem/rules/`, test each rule fires on its trigger and stays quiet otherwise.
 4. Blue UX: severity coloring, MITRE technique chips, source-IP/host grouping, alert triage workflow (ack/escalate), forensics SQL workbench safety (read-only).
 5. Add SIEM dedup tests (exist: `test_siem_dedup.py`) coverage for new events.
@@ -248,14 +248,14 @@ Run Phase 5 (SIEM & Blue Team) of the master plan.
 2. Resolve the detection-path contradiction: confirm whether ES+Sigma-poll or Redis pub/sub is the real pipeline, implement ONE end-to-end, and correct docs to match.
 3. Move detections into siem/rules as data; add a test per rule (fires on trigger, silent otherwise). Extend test_siem_dedup + test_siem_rule_engine.
 4. Frontend SiemFeed.jsx/ForensicsWorkbench.jsx: severity colors, MITRE chips, group-by source/host, ack/escalate triage, read-only forensic SQL.
-Verify: a scripted SC-01 recon→exploit run produces a dense, correctly-tagged Blue feed within 3s; rule tests green. Append CONTINUOUS_STATE.md.
+Verify: a scripted SC-01 reconâ†’exploit run produces a dense, correctly-tagged Blue feed within 3s; rule tests green. Append CONTINUOUS_STATE.md.
 ```
 
 **Exit criteria:** Live Red run yields a rich, MITRE-tagged Blue feed; one true detection pipeline; per-rule tests green.
 
 ---
 
-### Phase 6 — Scenarios / Machines / Kill-Chain Realism
+### Phase 6 â€” Scenarios / Machines / Kill-Chain Realism
 **Objective:** SC-01..03 are polished and verifiable end-to-end; SC-04/05 either finished or formally descoped (no half-built dead weight).
 
 **Target files:** `infrastructure/docker/scenarios/sc01..03/**`, `docs/scenarios/SC-*.yaml`, `backend/src/scenarios/{loader,engine,branching,gatekeeper,randomizer}.py`, `scenarios/hints/sc0X_hints.json`, frontend `components/killchain/KillChainView.jsx`, `methodology/PhaseTrail.jsx`.
@@ -275,7 +275,7 @@ Run Phase 6 (Scenario Realism) of the master plan.
 1. For SC-01, SC-02, SC-03: launch the profile and execute the full intended kill chain in the live sandbox. Capture a transcript, the resulting SIEM events, and the final score into docs/final-report/scenarios/<sc>-walkthrough.md. Fix any non-completable phase.
 2. Verify gatekeeper.py + branching.py gating matches each scenario's real path and that KillChainView.jsx + PhaseTrail.jsx show true progress.
 3. Confirm randomizer.py varies flags/IPs/creds per session WITHOUT breaking hints or detections (add a test).
-4. SC-04/SC-05 decision: descope cleanly — remove them from the live catalog/loader and mark "planned" in ONE doc (delete dangling half-assets or move under docs/scenarios/planned/). Record the rationale.
+4. SC-04/SC-05 decision: descope cleanly â€” remove them from the live catalog/loader and mark "planned" in ONE doc (delete dangling half-assets or move under docs/scenarios/planned/). Record the rationale.
 5. Write a one-page instructor brief + student objectives per scenario; wire to RoeBriefing.jsx.
 Verify: three scenarios complete end-to-end with captured evidence; catalog shows only launchable scenarios. Append CONTINUOUS_STATE.md.
 ```
@@ -284,7 +284,7 @@ Verify: three scenarios complete end-to-end with captured evidence; catalog show
 
 ---
 
-### Phase 7 — Kali Terminal & WebSocket Reliability (verify/harden — core reconnect already exists, see F1)
+### Phase 7 â€” Kali Terminal & WebSocket Reliability (verify/harden â€” core reconnect already exists, see F1)
 **Objective:** Production-grade terminal: survives refresh, reconnects, no lost sessions, clean PTY. **Reconnect is already built** (history replay + frontend backoff/state-machine/pong); this phase **proves it with e2e** and hardens the edges (PTY resize, backpressure, grace-window tuning), rather than building from scratch.
 
 **Target files:** `backend/src/ws/routes.py`, `sandbox/terminal.py`, `sandbox/readiness.py`, frontend `hooks/useWebSocket.js`, `hooks/useTerminal.js`, `components/terminal/Terminal.jsx`, `ConnectionPill.jsx`.
@@ -294,9 +294,9 @@ Verify: three scenarios complete end-to-end with captured evidence; catalog show
 **Tasks:**
 1. **Implement reconnect/reattach (F1):** server keeps the PTY/exec session keyed by `session_id` with a grace window; client auto-reconnects with backoff and replays scrollback so a refresh resumes the same shell.
 2. Heartbeat/ping-pong + connection state machine in `useWebSocket.js`; surface state in `ConnectionPill.jsx`.
-3. PTY correctness: resize propagation (xterm `cols/rows` → exec), control sequences, UTF-8, paste, copy-all; backpressure on large output.
-4. Per `CLAUDE.md`: never store full terminal output in Postgres — only command + metadata; verify this holds in the new code.
-5. E2E (Playwright): launch → type command → refresh page → confirm session resumes and output continues.
+3. PTY correctness: resize propagation (xterm `cols/rows` â†’ exec), control sequences, UTF-8, paste, copy-all; backpressure on large output.
+4. Per `CLAUDE.md`: never store full terminal output in Postgres â€” only command + metadata; verify this holds in the new code.
+5. E2E (Playwright): launch â†’ type command â†’ refresh page â†’ confirm session resumes and output continues.
 
 **Prompt:**
 ```
@@ -313,16 +313,16 @@ Verify: e2e passes; manual refresh keeps the shell; pytest green. Append CONTINU
 
 ---
 
-### Phase 8 — Frontend, UI/UX, Accessibility & Design System
+### Phase 8 â€” Frontend, UI/UX, Accessibility & Design System
 **Objective:** Cohesive, professional, accessible, fast UI across both workspaces.
 
-**Target files:** `frontend/src/**` — `styles/v3-design.css`, `index.css`, `components/ui/**`, all pages, `store/**`.
+**Target files:** `frontend/src/**` â€” `styles/v3-design.css`, `index.css`, `components/ui/**`, all pages, `store/**`.
 
 **Skills:** `frontend-design`, `react-best-practices`, `design-system`, `accessibility-checker`, `web-design-guidelines`, `theme-factory`, `color-palette`, `typography-guide`, `ux-researcher`, `composition-patterns`.
 
 **Tasks:**
 1. `design-system`: consolidate tokens (color/spacing/type) into `ui/` + Tailwind config; eliminate ad-hoc colors (grep shows mixed `slate-*`/`gray-*`/custom `cs-*`). One token system.
-2. `accessibility-checker`: WCAG 2.2 AA — contrast, focus rings, keyboard nav for terminal/SIEM/notes, ARIA on live regions (SIEM feed is a live region), reduced-motion for canvas/particles.
+2. `accessibility-checker`: WCAG 2.2 AA â€” contrast, focus rings, keyboard nav for terminal/SIEM/notes, ARIA on live regions (SIEM feed is a live region), reduced-motion for canvas/particles.
 3. React health (`react-best-practices`, `composition-patterns`): split `SiemFeed.jsx` (541), `useTerminal.js` (454), `Debrief.jsx`; memoization for high-frequency WS updates; error boundaries everywhere (some exist).
 4. UX flows (`ux-researcher`): first-run onboarding, empty/loading/error states, command palette discoverability, responsive down to laptop 1366px.
 5. Performance: code-split routes, lazy-load Three.js/particles, measure bundle, target <250KB initial JS gz.
@@ -331,18 +331,18 @@ Verify: e2e passes; manual refresh keeps the shell; pytest green. Append CONTINU
 ```
 Run Phase 8 (Frontend, UI/UX, Accessibility) of the master plan.
 1. /design-system: unify color/spacing/type tokens across frontend/src/styles + tailwind config; remove ad-hoc slate/gray/custom mixing into one token set.
-2. /accessibility-checker: bring both workspaces to WCAG 2.2 AA — contrast, visible focus, full keyboard nav (terminal, SIEM, notes), ARIA live-region on the SIEM feed, prefers-reduced-motion for canvas/particles.
+2. /accessibility-checker: bring both workspaces to WCAG 2.2 AA â€” contrast, visible focus, full keyboard nav (terminal, SIEM, notes), ARIA live-region on the SIEM feed, prefers-reduced-motion for canvas/particles.
 3. /react-best-practices + /composition-patterns: decompose SiemFeed.jsx, useTerminal.js, Debrief.jsx; memoize high-frequency WS render paths; ensure error boundaries cover every route.
 4. /ux-researcher: tighten onboarding, empty/loading/error states, command-palette discoverability; verify responsive at 1366px.
 5. Performance: route code-splitting, lazy-load Three.js/particles; report initial JS gz size and drive it under 250KB.
 Verify: npm run build green, Lighthouse a11y >= 95, no console errors on either workspace. Append CONTINUOUS_STATE.md.
 ```
 
-**Exit criteria:** One token system; Lighthouse a11y ≥95; no oversized hot components; bundle within budget.
+**Exit criteria:** One token system; Lighthouse a11y â‰¥95; no oversized hot components; bundle within budget.
 
 ---
 
-### Phase 9 — Reporting, Debrief, Scoring & Knowledge Layer
+### Phase 9 â€” Reporting, Debrief, Scoring & Knowledge Layer
 **Objective:** Trustworthy scoring + a debrief/report that proves learning, plus an in-app knowledge base.
 
 **Target files:** `backend/src/scoring/{engine,routes}.py`, `reports/{generator,learning_insights,routes}.py`, `ai/debrief_coach.py`, `instructor/analytics.py`, frontend `pages/Debrief.jsx`, `InstructorDashboard.jsx`, `components/killchain/KillChainView.jsx`, `docs/soc/`.
@@ -351,10 +351,10 @@ Verify: npm run build green, Lighthouse a11y >= 95, no console errors on either 
 
 **Tasks:**
 1. Scoring transparency: document the rubric (points, hint penalties, time bonus); add tests that scores are deterministic and explainable; show a score breakdown in the debrief.
-2. Debrief: kill-chain timeline (Red actions vs Blue detections on a shared axis), per-phase performance, what-was-missed, AI debrief coach Q&A (already present — verify quality + question budget).
+2. Debrief: kill-chain timeline (Red actions vs Blue detections on a shared axis), per-phase performance, what-was-missed, AI debrief coach Q&A (already present â€” verify quality + question budget).
 3. Exportable report: `report-builder` + `pdf` to generate a per-session PDF (student + instructor versions).
 4. Instructor analytics: cohort view, per-student progress, common failure points (`instructor/analytics.py`); KPIs via `kpi-tracker`.
-5. Knowledge layer: surface scenario theory, MITRE references, and methodology guidance in-app (`PlaybookViewer.jsx`, `GuidedNotebook.jsx`); link hints → knowledge.
+5. Knowledge layer: surface scenario theory, MITRE references, and methodology guidance in-app (`PlaybookViewer.jsx`, `GuidedNotebook.jsx`); link hints â†’ knowledge.
 
 **Prompt:**
 ```
@@ -371,7 +371,7 @@ Verify: a completed SC-01 session yields a correct score breakdown + a generated
 
 ---
 
-### Phase 10 — Testing, QA, CI/CD & Performance
+### Phase 10 â€” Testing, QA, CI/CD & Performance
 **Objective:** Provable quality gates so future changes can't silently regress.
 
 **Target files:** `backend/tests/**`, `frontend/tests/**`, `.github/workflows/ci.yml`, `backend/tests/load_test.py`.
@@ -379,11 +379,11 @@ Verify: a completed SC-01 session yields a correct score breakdown + a generated
 **Skills:** `tdd`, `webapp-testing`, `qa`, `perf-optimizer`, `ci-cd-builder`, `github-actions`, `verification-before-completion`.
 
 **Tasks:**
-1. Coverage: measure backend coverage, target ≥80% on engines (siem, scenarios, scoring, ai, sandbox). Add the missing-path tests `test_coverage_gaps.py` hints at.
+1. Coverage: measure backend coverage, target â‰¥80% on engines (siem, scenarios, scoring, ai, sandbox). Add the missing-path tests `test_coverage_gaps.py` hints at.
 2. Frontend tests: component tests for the heavy components; expand Playwright e2e to cover both workspaces + the Phase 7 reconnect path.
 3. CI (`ci.yml`): jobs for backend pytest, frontend build+lint+test, `docker compose config`, secret-scan, dependency-audit; fail the build on critical findings.
 4. Load test (`load_test.py` / Locust): establish concurrency limits (sessions, WS connections) and document them.
-5. `perf-optimizer`: profile the command→SIEM→AI path latency budget; set SLOs (e.g., SIEM event <3s, AI hint <2s).
+5. `perf-optimizer`: profile the commandâ†’SIEMâ†’AI path latency budget; set SLOs (e.g., SIEM event <3s, AI hint <2s).
 
 **Prompt:**
 ```
@@ -396,21 +396,21 @@ Run Phase 10 (Testing, CI/CD, Performance) of the master plan.
 Verify: CI green end-to-end on a PR; coverage report attached; SLO test passes. Append CONTINUOUS_STATE.md.
 ```
 
-**Exit criteria:** CI enforces all gates on PRs; ≥80% engine coverage; documented load limits + SLOs.
+**Exit criteria:** CI enforces all gates on PRs; â‰¥80% engine coverage; documented load limits + SLOs.
 
 ---
 
-### Phase 11 — Documentation, Compliance, Auditing & Management
-**Objective:** Reviewer-grade docs, compliance posture, and a clean management surface — fixing F2/F3/F6/F10 permanently.
+### Phase 11 â€” Documentation, Compliance, Auditing & Management
+**Objective:** Reviewer-grade docs, compliance posture, and a clean management surface â€” fixing F2/F3/F6/F10 permanently.
 
 **Target files:** `docs/**`, `README.md`, `CLAUDE.md`, `.env.example`, `MANIFEST.sha256`, `SECURITY.md`.
 
 **Skills:** `technical-writer`, `docs-generator`, `markdown-pro`, `compliance-checker`, `gdpr-helper`, `soc2-helper`, `security-policy`, `graphify`/`concept-mapper`, `to-issues`, `project-planner`.
 
 **Tasks:**
-1. Single source of truth: reconcile the completion score (one number, evidence-backed), purge Gemini drift (F2), align `.env.example` ↔ README ↔ code (F3). Maintain a `docs/DOCUMENTATION_INDEX.md` that is actually current.
+1. Single source of truth: reconcile the completion score (one number, evidence-backed), purge Gemini drift (F2), align `.env.example` â†” README â†” code (F3). Maintain a `docs/DOCUMENTATION_INDEX.md` that is actually current.
 2. Compliance: `compliance-checker` map to a framework relevant to a teaching tool that stores student data (GDPR for PII via `gdpr-helper`; security policy via `security-policy`). Document data retention (notes, scores, logs).
-3. Architecture docs: regenerate diagrams from the real system (`graphify`/Mermaid) — flows for terminal, SIEM, AI, scoring; one canonical `ARCHITECTURE.md`.
+3. Architecture docs: regenerate diagrams from the real system (`graphify`/Mermaid) â€” flows for terminal, SIEM, AI, scoring; one canonical `ARCHITECTURE.md`.
 4. Auditing: enable structured audit logging (who launched what, when; instructor actions) and document the audit trail.
 5. Management: convert this plan's open items into tracked issues (`to-issues`); maintain a KPI/OKR snapshot; keep `CONTINUOUS_STATE.md` rotation policy from Phase 0 enforced.
 
@@ -429,7 +429,7 @@ Verify: grep for "gemini" in non-archive docs returns nothing; env names match a
 
 ---
 
-### Phase 12 — Scalability, Reliability & Release Readiness
+### Phase 12 â€” Scalability, Reliability & Release Readiness
 **Objective:** Prove it holds up beyond a single demo laptop, and ship a tagged release.
 
 **Target files:** `docker-compose.yml`, `docker-compose.demo.yml`, `infrastructure/caddy/`, `scripts/demo-*`, `backend/src/main.py` (lifespan/health), monitoring config.
@@ -438,7 +438,7 @@ Verify: grep for "gemini" in non-archive docs returns nothing; env names match a
 
 **Tasks:**
 1. Reliability: graceful shutdown, container reaping on crash, session recovery after backend restart, ES/Redis outage handling (degrade, don't crash).
-2. Observability: `monitoring-setup` — health/readiness endpoints, structured logs, metrics (active sessions, WS count, AI latency, SIEM lag); `alerting-config` thresholds.
+2. Observability: `monitoring-setup` â€” health/readiness endpoints, structured logs, metrics (active sessions, WS count, AI latency, SIEM lag); `alerting-config` thresholds.
 3. Scalability path: document the single-node limits (from Phase 10 load tests) and a horizontal-scale design (stateless backend + shared Redis/PG + container host pool). Optional: Helm/K8s sketch for future.
 4. Release: version bump, `MANIFEST.sha256` regen, CHANGELOG, tagged release, demo rehearsal via `scripts/demo-local-rehearsal.ps1` and `demo-day-check.sh`.
 
@@ -461,14 +461,14 @@ Verify: kill Redis mid-session and confirm graceful degradation; metrics endpoin
 - **Security track:** `secret-scanner` + `dependency-auditor` on every branch; never weaken sandbox isolation.
 - **State hygiene:** append a When/Who/Why/Where/What+How/Verification entry to `CONTINUOUS_STATE.md` per phase; rotate when it grows past ~2000 lines.
 - **Review track:** `/code-review` before each merge; `requesting-code-review` / `receiving-code-review` for non-trivial PRs. For the big cycles, `/code-review ultra` (user-triggered).
-- **Verification track:** `verification-before-completion` — no phase closes on a memory of success; only on fresh command output.
-- **Parallelism:** once Phase 1–2 land, use `using-git-worktrees` + `dispatching-parallel-agents`/`subagent-driven-development` to run Phases 4, 5, 8 concurrently (they touch mostly disjoint files).
+- **Verification track:** `verification-before-completion` â€” no phase closes on a memory of success; only on fresh command output.
+- **Parallelism:** once Phase 1â€“2 land, use `using-git-worktrees` + `dispatching-parallel-agents`/`subagent-driven-development` to run Phases 4, 5, 8 concurrently (they touch mostly disjoint files).
 
 ---
 
 ## 5. Definition of Done (whole program)
 
-- [x] Cold `docker compose up` → all services healthy, no manual retries.
+- [x] Cold `docker compose up` â†’ all services healthy, no manual retries.
 - [x] SC-01/02/03 each completable end-to-end with captured evidence.
 - [x] Terminal survives page refresh (reconnect proven by e2e).
 - [x] Blue SIEM feed is dense, MITRE-tagged, reacts <3s to Red actions.
@@ -476,7 +476,7 @@ Verify: kill Redis mid-session and confirm graceful degradation; metrics endpoin
 - [x] Scope enforced server-side; WS authenticated; no critical CVEs; threat model published.
 - [x] Scores explainable; debrief dual-axis; PDF export; instructor analytics real.
 - [x] WCAG 2.2 AA; one design-token system; bundle within budget.
-- [ ] CI enforces pytest + build + compose + secret/dep scans on every PR; ≥80% engine coverage.
+- [ ] CI enforces pytest + build + compose + secret/dep scans on every PR; â‰¥80% engine coverage.
 - [x] Zero doc drift (no "Gemini"; one completion score; env names aligned); diagrams match reality; audit trail live.
 - [ ] Graceful degradation on dependency outage; metrics/alerts; tagged release + clean rehearsal.
 
@@ -488,11 +488,11 @@ Verify: kill Redis mid-session and confirm graceful degradation; metrics endpoin
 |---|---|
 | Kali/ES image size & RAM make full local boot slow | Low-resource profile (Phase 2); document host minimums; cache images. |
 | Refactors regress passing tests | TDD-first on every fix (Phase 1/7); CI gate (Phase 10). |
-| SC-04/05 scope creep delays the solid core | Descope cleanly in Phase 6; revisit as 6b only after 0–12 are green. |
+| SC-04/05 scope creep delays the solid core | Descope cleanly in Phase 6; revisit as 6b only after 0â€“12 are green. |
 | AI provider outage during demo | Local hint-tree fallback (Phase 4); rehearsal check (Phase 12). |
 | `CONTINUOUS_STATE.md` keeps ballooning | Rotation policy enforced from Phase 0 onward. |
-| Parallel agents collide on shared files | Worktrees + disjoint-file assignment (§4). |
+| Parallel agents collide on shared files | Worktrees + disjoint-file assignment (Â§4). |
 
 ---
 
-*This plan is the execution contract for the enhancement cycle. Update the checkboxes in §5 as phases close; record the "why/what/how" of each change in `CONTINUOUS_STATE.md`.*
+*This plan is the execution contract for the enhancement cycle. Update the checkboxes in Â§5 as phases close; record the "why/what/how" of each change in `CONTINUOUS_STATE.md`.*

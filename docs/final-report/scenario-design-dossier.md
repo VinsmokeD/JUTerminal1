@@ -1,6 +1,6 @@
 # Scenario Design Dossier
 
-This dossier compiles the pedagogical framework, structural design, threat vectors, and scoring mechanics for the three high-fidelity scenarios in the CyberSim MVP:
+This dossier compiles the pedagogical framework, structural design, threat vectors, and scoring mechanics for the three high-fidelity scenarios in the Parallax MVP:
 * **SC-01 NovaMed**: Web Application Security & ModSecurity WAF.
 * **SC-02 Nexora**: Active Directory Security & Lateral Movement.
 * **SC-03 Orion**: Phishing, Email Analysis, and Endpoint Forensics.
@@ -9,13 +9,13 @@ This dossier compiles the pedagogical framework, structural design, threat vecto
 
 ## 1. Pedagogical Rationale
 
-CyberSim scenarios are structured around a dual-perspective learning loop. Rather than separating offensive operations and defensive monitoring, the platform forces students to analyze both sides.
+Parallax scenarios are structured around a dual-perspective learning loop. Rather than separating offensive operations and defensive monitoring, the platform forces students to analyze both sides.
 
 ### The Attack-to-Detection Causality
 Every action taken in the Red Team terminal translates directly to defensive logs, teaching students how tools trigger specific telemetry events:
 
 ```text
-[Attacker Action] ────────► [Log Generation] ────────► [Ingestion] ────────► [SIEM Event]
+[Attacker Action] â”€â”€â”€â”€â”€â”€â”€â”€â–º [Log Generation] â”€â”€â”€â”€â”€â”€â”€â”€â–º [Ingestion] â”€â”€â”€â”€â”€â”€â”€â”€â–º [SIEM Event]
  e.g., sqlmap scan           WAF audit.log              Filebeat             severity: MEDIUM
 ```
 

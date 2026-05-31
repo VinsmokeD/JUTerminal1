@@ -7,8 +7,8 @@ ENV GOPHISH_ADMIN_PORT=3333 \
 # Campaign initialization script
 USER root
 COPY init-gophish.sh /init-gophish.sh
-COPY landing-pages/ /opt/gophish/cybersim/landing-pages/
-COPY payloads/ /opt/gophish/cybersim/payloads/
+COPY landing-pages/ /opt/gophish/parallax/landing-pages/
+COPY payloads/ /opt/gophish/parallax/payloads/
 RUN chmod +x /init-gophish.sh
 
 USER app

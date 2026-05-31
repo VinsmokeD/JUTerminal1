@@ -1,8 +1,8 @@
-# CyberSim Documentation Master Prompt Pack
+# Parallax Documentation Master Prompt Pack
 
 Status date: 2026-05-23
 
-This file is the maximum-detail handoff pack for the remaining CyberSim graduation documentation work. It gives future Codex, Claude Code, Gemini, Antigravity, Canva, Browser, Documents, Presentations, and local CLI sessions enough context to continue without guessing.
+This file is the maximum-detail handoff pack for the remaining Parallax graduation documentation work. It gives future Codex, Claude Code, Gemini, Antigravity, Canva, Browser, Documents, Presentations, and local CLI sessions enough context to continue without guessing.
 
 Use this file as a prompt source. Copy one phase prompt at a time into a fresh agent session, then verify the phase before moving on.
 
@@ -121,10 +121,10 @@ Use tools deliberately. Do not use a tool just to say it was used.
 Use this prompt at the start of any future documentation session.
 
 ```text
-You are continuing the CyberSim graduation documentation package in the repository:
+You are continuing the Parallax graduation documentation package in the repository:
 C:\Users\Mahmo\OneDrive\Documents\Mahmoud\Graduation Project\JUTerminal1
 
-CyberSim is a dual-perspective cybersecurity training platform for university students. It uses a React/Vite frontend, FastAPI backend, PostgreSQL, Redis, Elasticsearch/Filebeat, Nginx/Caddy routing, and Docker-isolated scenario networks. The active MVP scope is exactly three scenarios:
+Parallax is a dual-perspective cybersecurity training platform for university students. It uses a React/Vite frontend, FastAPI backend, PostgreSQL, Redis, Elasticsearch/Filebeat, Nginx/Caddy routing, and Docker-isolated scenario networks. The active MVP scope is exactly three scenarios:
 - SC-01 NovaMed Healthcare: web application security and WAF/SIEM analysis.
 - SC-02 Nexora Financial: directory-service compromise concepts and authentication telemetry.
 - SC-03 Orion Logistics: phishing simulation, endpoint markers, and SOC response.
@@ -136,7 +136,7 @@ Before editing, read:
 - docs/architecture/MASTER_BLUEPRINT.md
 - docs/architecture/CONTINUOUS_STATE.md
 
-Documentation source is under docs/final-report/. The formal report must stay handbook-compliant and conservative. Canva, poster, and deck assets may use the richer CyberSim visual style. Never publish secrets, exact solution chains, lab-only passwords, hashes, full payloads, or unsafe instructions. Use local evidence first. Use official sources only for standards and external technology references.
+Documentation source is under docs/final-report/. The formal report must stay handbook-compliant and conservative. Canva, poster, and deck assets may use the richer Parallax visual style. Never publish secrets, exact solution chains, lab-only passwords, hashes, full payloads, or unsafe instructions. Use local evidence first. Use official sources only for standards and external technology references.
 
 Required behavior:
 1. Inspect current docs/final-report status and git status.
@@ -168,7 +168,7 @@ Copy-paste prompt:
 PHASE 5: Screenshots, Canva Replacement, and Defense Visuals
 
 Goal:
-Capture current CyberSim UI evidence, replace generic Canva report text with verified CyberSim content, and prepare the visual companion assets for the defense package.
+Capture current Parallax UI evidence, replace generic Canva report text with verified Parallax content, and prepare the visual companion assets for the defense package.
 
 Context:
 The selected Canva design is `DAHKeHjt8IY`, 17 A4 pages. The rewrite source is docs/final-report/canva-page-rewrite-brief.md. Current diagram exports are under docs/final-report/diagrams/export/. Screenshot requirements are listed in docs/final-report/evidence/screenshots/README.md.
@@ -217,7 +217,7 @@ Screenshot target list:
 - API docs: api-docs.png
 
 Canva page replacement objectives:
-1. Cover: CyberSim graduation project report, UJ/KASIT, team/supervisor/date placeholders.
+1. Cover: Parallax graduation project report, UJ/KASIT, team/supervisor/date placeholders.
 2. Training gap: show offense/defense silo problem.
 3. Proposed solution: browser dual workspace and Docker isolation.
 4. Architecture: C4 container diagram.
@@ -387,8 +387,8 @@ Formal formatting requirements:
 - Consistent reference style.
 
 Create:
-- docs/final-report/formal-report/cybersim-graduation-report.docx
-- docs/final-report/formal-report/cybersim-graduation-report.pdf
+- docs/final-report/formal-report/parallax-graduation-report.docx
+- docs/final-report/formal-report/parallax-graduation-report.pdf
 - docs/final-report/formal-report/render-verification.md
 
 Modify:
@@ -533,7 +533,7 @@ Goal:
 Produce examiner-facing presentation materials: defense deck, academic poster, and one-page visual summaries for SC-01, SC-02, and SC-03.
 
 Inputs:
-- docs/final-report/formal-report/cybersim-graduation-report.pdf
+- docs/final-report/formal-report/parallax-graduation-report.pdf
 - docs/final-report/design-and-canva-direction.md
 - docs/final-report/canva-page-rewrite-brief.md
 - docs/final-report/diagrams/export/png/
@@ -554,15 +554,15 @@ Create:
 - docs/final-report/scenario-one-pagers/sc-01-one-pager.md
 - docs/final-report/scenario-one-pagers/sc-02-one-pager.md
 - docs/final-report/scenario-one-pagers/sc-03-one-pager.md
-- docs/final-report/presentation/cybersim-defense-deck.pptx
+- docs/final-report/presentation/parallax-defense-deck.pptx
 - docs/final-report/presentation/speaker-notes.md
-- docs/final-report/poster/cybersim-academic-poster.pdf or Canva link record
+- docs/final-report/poster/parallax-academic-poster.pdf or Canva link record
 
 Deck structure:
 1. Title.
 2. Problem and motivation.
 3. Existing systems gap.
-4. CyberSim solution.
+4. Parallax solution.
 5. Architecture.
 6. Red Team workspace.
 7. Blue Team workspace.
@@ -700,7 +700,7 @@ Update docs/final-report/next-phase-proposal.md with "Documentation Complete - D
 ### 12.1 Browser Screenshot Prompt
 
 ```text
-Use the Browser plugin or Playwright through Node REPL to capture current CyberSim UI screenshots.
+Use the Browser plugin or Playwright through Node REPL to capture current Parallax UI screenshots.
 
 Targets:
 - http://localhost:3000
@@ -730,7 +730,7 @@ Process:
 1. Start editing transaction.
 2. Inspect richtexts and page list.
 3. Map each page to docs/final-report/canva-page-rewrite-brief.md.
-4. Replace generic text with CyberSim text using bulk operations.
+4. Replace generic text with Parallax text using bulk operations.
 5. Use find-and-replace for small repeated placeholder strings.
 6. Use replace_text for full non-responsive text blocks.
 7. If inserting media, use verified diagrams and screenshots only.
@@ -747,7 +747,7 @@ Do not:
 ### 12.3 Mermaid Diagram Prompt
 
 ```text
-Create or update Mermaid diagrams for the CyberSim final report.
+Create or update Mermaid diagrams for the Parallax final report.
 
 Rules:
 - Use service names from repository files.
@@ -764,7 +764,7 @@ npx --yes @mermaid-js/mermaid-cli -c docs/final-report/diagrams/mermaid-theme.js
 ### 12.4 Formal Report Prose Prompt
 
 ```text
-Review and polish the CyberSim chapter for a university graduation report.
+Review and polish the Parallax chapter for a university graduation report.
 
 Requirements:
 - Preserve technical facts.
@@ -823,7 +823,7 @@ Before final submission, all of these must be true:
 
 - Formal report DOCX exists.
 - Formal report PDF exists.
-- Canva visual report has verified CyberSim content.
+- Canva visual report has verified Parallax content.
 - Defense deck exists.
 - Academic poster exists.
 - Scenario one-pagers exist.

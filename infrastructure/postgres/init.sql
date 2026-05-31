@@ -1,5 +1,5 @@
--- CyberSim database initialisation
--- SQLAlchemy creates tables via ORM — this file handles extensions and functions
+-- Parallax database initialisation
+-- SQLAlchemy creates tables via ORM â€” this file handles extensions and functions
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -20,7 +20,7 @@ $$ LANGUAGE plpgsql;
 --
 -- Default instructor account is seeded programmatically in main.py lifespan:
 --   username: admin
---   password: CyberSimAdmin!
+--   password: ParallaxAdmin!
 --   role: instructor
 
 -- Performance indexes are now created via Alembic migrations (002_add_performance_indexes.py)

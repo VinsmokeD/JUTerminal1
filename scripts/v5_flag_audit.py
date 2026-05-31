@@ -24,7 +24,7 @@ SCENARIO_SLUGS = {
 }
 SCENARIO_DIR = Path("docs/scenarios")
 API_BASE_CANDIDATES = [
-    os.environ.get("CYBERSIM_API_BASE"),
+    os.environ.get("PARALLAX_API_BASE"),
     "http://127.0.0.1:8001",
     "http://127.0.0.1:8000",
 ]

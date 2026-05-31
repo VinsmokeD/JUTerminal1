@@ -1,8 +1,8 @@
-# CyberSim Instructor Manual
+# Parallax Instructor Manual
 
 ## 1. Purpose
 
-This manual explains how an instructor can supervise CyberSim sessions, review student progress, and use generated evidence for assessment. It is written for university labs, project demonstrations, and controlled classroom exercises.
+This manual explains how an instructor can supervise Parallax sessions, review student progress, and use generated evidence for assessment. It is written for university labs, project demonstrations, and controlled classroom exercises.
 
 ## 2. Instructor Responsibilities
 
@@ -13,7 +13,7 @@ Instructors should:
 - Monitor session progress and hint usage.
 - Review notes, SIEM triage, and debrief outputs.
 - Export or record grade evidence according to course policy.
-- Stop any activity that moves outside the CyberSim lab boundary.
+- Stop any activity that moves outside the Parallax lab boundary.
 
 ## 3. Instructor Dashboard
 
@@ -82,4 +82,4 @@ Instructor exports and screenshots should redact:
 - Exact scenario solution chains.
 - Student personal information not required for grading.
 
-CyberSim should be presented as an isolated learning platform, not as an unrestricted offensive toolkit.
+Parallax should be presented as an isolated learning platform, not as an unrestricted offensive toolkit.

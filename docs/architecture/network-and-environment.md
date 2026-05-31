@@ -1,4 +1,4 @@
-# CyberSim — Network & Environment Architecture
+# Parallax â€” Network & Environment Architecture
 
 ## Overview
 
@@ -11,7 +11,7 @@ Target containers have no internet access. No container can reach the host netwo
 ## Host machine requirements (development)
 - RAM: 16 GB minimum (8 GB for containers, 8 GB for host)
 - CPU: 4 cores minimum
-- Disk: 40 GB free (Docker images are large — Kali alone is ~4 GB)
+- Disk: 40 GB free (Docker images are large â€” Kali alone is ~4 GB)
 - OS: Linux or macOS. Windows requires WSL2.
 - Docker: 24.x + Docker Compose v2
 - Ports used by docker-compose: 80 (nginx), 5432 (postgres), 6379 (redis)
@@ -27,8 +27,8 @@ Internet / Browser
        |
   [nginx reverse proxy]
        |
-  ┌────┴────────────────────┐
-  │                         │
+  â”Œâ”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚                         â”‚
 [frontend:3000]      [backend:8000]
   React/Vite              FastAPI
                            |
@@ -37,13 +37,13 @@ Internet / Browser
                            |
                     [Docker SDK]
                            |
-          ┌────────────────┼────────────────┐
-          │                │                │
+          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+          â”‚                â”‚                â”‚
    [sc01-network]   [sc02-network]   [sc03-network]
    172.20.1.0/24   172.20.2.0/24   172.20.3.0/24
-          │
-    ┌─────┴──────────────────────┐
-    │                            │
+          â”‚
+    â”Œâ”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+    â”‚                            â”‚
 [kali-sc01]              [targets-sc01]
 172.20.1.10              172.20.1.20 (web server)
                          172.20.1.21 (db server)
@@ -54,30 +54,30 @@ Internet / Browser
 
 ## Docker network definitions per scenario
 
-### SC-01 — Web application pentest
+### SC-01 â€” Web application pentest
 ```
-Network name:    cybersim-sc01
+Network name:    parallax-sc01
 Subnet:          172.20.1.0/24
 Gateway:         172.20.1.1
 
 Containers:
-  kali-sc01        172.20.1.10   Kali Linux 2024.1 — student terminal
+  kali-sc01        172.20.1.10   Kali Linux 2024.1 â€” student terminal
   webapp-sc01      172.20.1.20   Apache 2.4.49 + PHP 7.4 + MySQL 5.7 (NovaMed portal)
   db-sc01          172.20.1.21   MySQL 5.7 (internal, not directly reachable from kali)
   waf-sc01         172.20.1.1    ModSecurity WAF (simulated via nginx + modsec rules)
 
 Internet access: NONE (--internal flag on Docker network)
-DNS:             Internal only (webapp.novamed.local → 172.20.1.20)
+DNS:             Internal only (webapp.novamed.local â†’ 172.20.1.20)
 ```
 
-### SC-02 — Active Directory compromise
+### SC-02 â€” Active Directory compromise
 ```
-Network name:    cybersim-sc02
+Network name:    parallax-sc02
 Subnet:          172.20.2.0/24
 Gateway:         172.20.2.1
 
 Containers:
-  kali-sc02        172.20.2.10   Kali Linux — student terminal
+  kali-sc02        172.20.2.10   Kali Linux â€” student terminal
   dc-sc02          172.20.2.20   Samba4 AD DC (Windows AD-compatible, nexora.local)
   ws01-sc02        172.20.2.30   Windows 10 simulation (Ubuntu + Samba client)
   ws02-sc02        172.20.2.31   Windows 10 simulation
@@ -90,14 +90,14 @@ Pre-seeded:
   GPOs: Password policy, Logon scripts
 ```
 
-### SC-03 — Phishing & initial access
+### SC-03 â€” Phishing & initial access
 ```
-Network name:    cybersim-sc03
+Network name:    parallax-sc03
 Subnet:          172.20.3.0/24
 Gateway:         172.20.3.1
 
 Containers:
-  kali-sc03        172.20.3.10   Kali Linux — attacker
+  kali-sc03        172.20.3.10   Kali Linux â€” attacker
   mailserver-sc03  172.20.3.20   Postfix SMTP (simulated Orion Logistics mail)
   target-ws-sc03   172.20.3.30   Simulated Windows 10 endpoint (Python-based behavior sim)
   gophish-sc03     172.20.3.40   GoPhish campaign server (pre-configured)
@@ -107,7 +107,7 @@ Special: GoPhish dashboard exposed at http://localhost:3333 (mapped from contain
 
 ### Scenario ranges
 
-CyberSim exposes exactly SC-01, SC-02, and SC-03.
+Parallax exposes exactly SC-01, SC-02, and SC-03.
 
 ---
 
@@ -152,7 +152,7 @@ COPY .zshrc /home/student/.zshrc
 ## Backend environment variables
 
 ```bash
-# .env.example — copy to .env and fill in
+# .env.example â€” copy to .env and fill in
 
 # AI Monitor (OpenRouter / DeepSeek)
 OPENROUTER_API_KEY=your_openrouter_api_key_here
@@ -161,10 +161,10 @@ OPENROUTER_MAX_TOKENS=150
 AI_CALL_COOLDOWN_SECONDS=10
 
 # Database
-POSTGRES_URL=postgresql://cybersim:cybersim@postgres:5432/cybersim
-POSTGRES_USER=cybersim
+POSTGRES_URL=postgresql://parallax:parallax@postgres:5432/parallax
+POSTGRES_USER=parallax
 POSTGRES_PASSWORD=change_in_production
-POSTGRES_DB=cybersim
+POSTGRES_DB=parallax
 
 # Redis
 REDIS_URL=redis://redis:6379/0
@@ -176,7 +176,7 @@ JWT_EXPIRY_HOURS=8
 # Docker
 DOCKER_SOCKET=/var/run/docker.sock
 SCENARIO_NETWORK_PREFIX=172.20
-KALI_IMAGE=cybersim-kali:latest
+KALI_IMAGE=parallax-kali:latest
 MAX_CONCURRENT_SESSIONS=10
 
 # App
@@ -254,11 +254,11 @@ CREATE TABLE siem_events (
 ## Redis key structure
 
 ```
-session:{session_id}:state        → JSON session state (TTL 8h)
-session:{session_id}:commands     → List of recent commands (last 10)
-siem:{session_id}:feed            → Pub/Sub channel for live SIEM events
-terminal:{session_id}:output      → Pub/Sub channel for terminal output
-ai:{session_id}:last_call         → Timestamp (rate limiting, TTL 10s)
+session:{session_id}:state        â†’ JSON session state (TTL 8h)
+session:{session_id}:commands     â†’ List of recent commands (last 10)
+siem:{session_id}:feed            â†’ Pub/Sub channel for live SIEM events
+terminal:{session_id}:output      â†’ Pub/Sub channel for terminal output
+ai:{session_id}:last_call         â†’ Timestamp (rate limiting, TTL 10s)
 ```
 
 ---
@@ -270,7 +270,7 @@ ai:{session_id}:last_call         → Timestamp (rate limiting, TTL 10s)
 3. No scenario container has `--privileged` flag
 4. All scenario networks use `--internal` (no internet)
 5. Backend talks to Docker via socket mounted read-only where possible
-6. Student terminal input is sanitized — no direct shell injection to host
+6. Student terminal input is sanitized â€” no direct shell injection to host
 7. File uploads (for SC-03 payload crafting) are scanned and size-limited
 8. Container CPU limit: 1.0 core. Memory limit: 512MB per container.
 9. Session cleanup: containers destroyed after scenario completion + 10 min grace

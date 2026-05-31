@@ -4,18 +4,18 @@
 This document provides step-by-step verification procedures for the SC-02 Nexora Financial AD infrastructure.
 
 **Completed Components**:
-- ✅ Samba4 Domain Controller (NEXORA-DC01 @ 172.20.2.20)
-- ✅ File Server (NEXORA-FS01 @ 172.20.2.40)
-- ✅ SIEM Event Mapping (100+ events covering red/blue team activities)
-- ✅ Kerberos RC4 Support (intentionally weak for CTF)
-- ✅ Active Directory Users (admin, jsmith, it.admin, svc_backup)
-- ✅ Network Isolation (internal bridge, no internet)
-- ✅ Health Checks & Dependencies
+- âœ… Samba4 Domain Controller (NEXORA-DC01 @ 172.20.2.20)
+- âœ… File Server (NEXORA-FS01 @ 172.20.2.40)
+- âœ… SIEM Event Mapping (100+ events covering red/blue team activities)
+- âœ… Kerberos RC4 Support (intentionally weak for CTF)
+- âœ… Active Directory Users (admin, jsmith, it.admin, svc_backup)
+- âœ… Network Isolation (internal bridge, no internet)
+- âœ… Health Checks & Dependencies
 
 **Future Enhancements**:
-- ⏳ Workstation containers (WS01, WS02) with unconstrained delegation
-- ⏳ Pre-seeded vulnerabilities (password reuse, local admin privileges)
-- ⏳ Conditional Access Policies (CAP) for advanced scenarios
+- â³ Workstation containers (WS01, WS02) with unconstrained delegation
+- â³ Pre-seeded vulnerabilities (password reuse, local admin privileges)
+- â³ Conditional Access Policies (CAP) for advanced scenarios
 
 ---
 
@@ -58,7 +58,7 @@ docker-compose ps --profile sc02
 
 **Expected Output**:
 ```
-STATUS: Up (healthy) — both containers
+STATUS: Up (healthy) â€” both containers
 PORTS: sc02-dc (445/tcp), sc02-fileserver (445/tcp)
 ```
 
@@ -352,7 +352,7 @@ Event ID 5143  (share access)
 
 ### 6.1 Check Compose File Syntax
 ```bash
-docker-compose config > /dev/null && echo "✓ Valid" || echo "✗ Invalid"
+docker-compose config > /dev/null && echo "âœ“ Valid" || echo "âœ— Invalid"
 ```
 
 ### 6.2 Verify Network Configuration
@@ -471,7 +471,7 @@ docker volume prune
 
 ## Success Criteria
 
-✅ **All tests pass if**:
+âœ… **All tests pass if**:
 1. Both containers reach `Up (healthy)` status
 2. DC user enumeration returns 6+ users
 3. File server shares accessible with appropriate auth
@@ -490,13 +490,13 @@ docker volume prune
 Once all tests pass, students can execute:
 
 1. **Reconnaissance** (nmap, enum4linux, LDAP queries)
-   ↓
-2. **Kerberoasting** (GetUserSPNs.py → hashcat)
-   ↓
+   â†“
+2. **Kerberoasting** (GetUserSPNs.py â†’ hashcat)
+   â†“
 3. **Lateral Movement** (smbclient with svc_backup credentials)
-   ↓
+   â†“
 4. **Privilege Escalation** (DCSync via mimikatz/secretsdump)
-   ↓
+   â†“
 5. **Post-Exploitation** (dump NTDS.dit, create golden ticket)
 
 ---
@@ -504,15 +504,15 @@ Once all tests pass, students can execute:
 ## Blue Team Detection Roadmap
 
 SIEM monitors for:
-- T1046 (Nmap scans) → Event 4625 anomaly
-- T1087 (User enumeration) → Event 4662
-- T1558.003 (Kerberoasting) → Event 4769 with RC4
-- T1550.002 (Pass-the-hash) → NTLM signature failures
-- T1003.006 (DCSync) → Event 4662 GetNCChanges from non-DC
-- T1003.001 (Credential dumping) → Windows Defender alerts
+- T1046 (Nmap scans) â†’ Event 4625 anomaly
+- T1087 (User enumeration) â†’ Event 4662
+- T1558.003 (Kerberoasting) â†’ Event 4769 with RC4
+- T1550.002 (Pass-the-hash) â†’ NTLM signature failures
+- T1003.006 (DCSync) â†’ Event 4662 GetNCChanges from non-DC
+- T1003.001 (Credential dumping) â†’ Windows Defender alerts
 
 ---
 
 **Last Updated**: 2026-04-10
-**Author**: Claude Code (CyberSim Platform)
-**Status**: ✅ Complete & Verified
+**Author**: Claude Code (Parallax Platform)
+**Status**: âœ… Complete & Verified

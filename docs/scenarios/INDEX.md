@@ -1,6 +1,6 @@
 # Scenario Index
 
-CyberSim's scope is exactly three training scenarios: SC-01, SC-02, and SC-03.
+Parallax's scope is exactly three training scenarios: SC-01, SC-02, and SC-03.
 
 ## Active Scenarios
 
@@ -106,5 +106,5 @@ Files:
 - Architecture: `docs/ARCHITECTURE.md`
 - GitHub issues: `https://github.com/VinsmokeD/JUTerminal1/issues`
 
-**Status**: SC-01 through SC-03 are the active CyberSim defense scope.  
+**Status**: SC-01 through SC-03 are the active Parallax defense scope.  
 **Last Updated**: 2026-04-29

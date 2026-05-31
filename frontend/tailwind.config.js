@@ -5,14 +5,14 @@ export default {
     extend: {
       colors: {
         /*
-         * TWO-TIER COLOR IDENTITY (V5 — Option A, locked 2026-05-30)
-         * ─────────────────────────────────────────────────────────────
+         * TWO-TIER COLOR IDENTITY (V5 â€” Option A, locked 2026-05-30)
+         * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
          * DUALITY (cs-red / cs-blue)   = semantic layer: text, borders, severity
          * HUD NEON (hud-crimson / hud-cyan) = glow/accent layer: box-shadows only
          * Never use hud-* for readable text or solid borders.
          */
 
-        /* Tier 1 — Duality (semantic/legible) */
+        /* Tier 1 â€” Duality (semantic/legible) */
         'cs-red': {
           DEFAULT: '#FF6B7A',      /* coral red */
           glow: 'rgba(255, 107, 122, 0.4)',
@@ -26,7 +26,7 @@ export default {
           surface: '#0d1320',
         },
 
-        /* Tier 2 — HUD Neon (glow/accent) */
+        /* Tier 2 â€” HUD Neon (glow/accent) */
         'hud-void': '#0A0E17',
         'hud-cyan': '#4CC2FF',
         'hud-crimson': '#FF6B7A',
@@ -54,15 +54,15 @@ export default {
         magenta: '#9B7DFF',      /* AI / Pro-Tip violet accent */
       },
       fontFamily: {
-        /* hud     — Orbitron: hero wordmark + large HUD numerals ONLY */
+        /* hud     â€” Orbitron: hero wordmark + large HUD numerals ONLY */
         hud:     ['"Orbitron"', 'sans-serif'],
-        /* display — Outfit: all headings, labels, UI text */
+        /* display â€” Outfit: all headings, labels, UI text */
         display: ['"Outfit"', 'sans-serif'],
-        /* mono    — JetBrains Mono: terminal, SIEM, IPs, scores, code */
+        /* mono    â€” JetBrains Mono: terminal, SIEM, IPs, scores, code */
         mono:    ['"JetBrains Mono"', '"Cascadia Code"', '"Fira Code"', 'monospace'],
       },
       fontSize: {
-        /* CyberSim type scale v3 - [size, { lineHeight, letterSpacing, fontWeight }] */
+        /* Parallax type scale v3 - [size, { lineHeight, letterSpacing, fontWeight }] */
         'display-1': ['72px', { lineHeight: '76px', letterSpacing: '-0.04em', fontWeight: '800' }],
         'display-2': ['56px', { lineHeight: '60px', letterSpacing: '-0.03em', fontWeight: '800' }],
         'display-3': ['40px', { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '700' }],

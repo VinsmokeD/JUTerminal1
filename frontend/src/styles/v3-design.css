@@ -1,10 +1,10 @@
-/* ═══════════════════════════════════════════════════════════════════
-   CYBERSIM DESIGN SYSTEM v3 — "Operations Center"
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PARALLAX DESIGN SYSTEM v3 â€” "Operations Center"
    Layered on top of index.css. Pure additions, no overrides.
-   ═══════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 :root {
-  /* Motion verbs — canonical definitions live here */
+  /* Motion verbs â€” canonical definitions live here */
   --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-pop:   cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-glide: cubic-bezier(0.4, 0, 0.2, 1);
@@ -12,7 +12,7 @@
   --dur-pop:   180ms;
   --dur-glide: 320ms;
 
-  /* Text vars (--text-secondary/dim/ghost) are canonical in index.css :root — not redefined here */
+  /* Text vars (--text-secondary/dim/ghost) are canonical in index.css :root â€” not redefined here */
 
   /* Elevation */
   --elev-1: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 2px rgba(0,0,0,0.4);
@@ -20,7 +20,7 @@
   --elev-3: 0 24px 60px -12px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
 }
 
-/* ─── Reduced motion kill-switch ──────────────────────────────────── */
+/* â”€â”€â”€ Reduced motion kill-switch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -32,12 +32,12 @@
   .perf-fallback { display: block !important; }
 }
 
-/* ─── Performance mode: Low (data-perf="low" on <html>) ───────────── */
+/* â”€â”€â”€ Performance mode: Low (data-perf="low" on <html>) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Set via settingsStore.setPerfMode('low'). Disables GPU-heavy layers  */
 /* while keeping all UI functionality and interactive transitions.       */
 :root[data-perf="low"] body::before,
 :root[data-perf="low"] body::after {
-  /* Kill full-screen scanline overlay + ambient radial — main compositor cost */
+  /* Kill full-screen scanline overlay + ambient radial â€” main compositor cost */
   display: none !important;
 }
 :root[data-perf="low"] .perf-3d {
@@ -49,7 +49,7 @@
 :root[data-perf="low"] .card-v3,
 :root[data-perf="low"] .modal-v3-scrim,
 :root[data-perf="low"] [style*="backdrop-filter"] {
-  /* Remove blur — most expensive compositing operation on slow hardware */
+  /* Remove blur â€” most expensive compositing operation on slow hardware */
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -62,7 +62,7 @@
   animation-iteration-count: 1 !important;
 }
 
-/* ─── Focus rings (visible, accessible) ───────────────────────────── */
+/* â”€â”€â”€ Focus rings (visible, accessible) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px #08090c, 0 0 0 4px #3b8bff;
@@ -72,9 +72,9 @@
   box-shadow: 0 0 0 2px #08090c, 0 0 0 4px #ff3b3b;
 }
 
-/* ─── v3 Primitives (used by ui/ components) ──────────────────────── */
+/* â”€â”€â”€ v3 Primitives (used by ui/ components) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-  /* ── Surface elevations ──────────────────────────── */
+  /* â”€â”€ Surface elevations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .surface-z1 {
     background: var(--surface-1);
     border: 1px solid var(--border);
@@ -94,7 +94,7 @@
     box-shadow: var(--elev-3);
   }
 
-  /* ── v3 Button (collapsed sole button system for Nimbus Console) ── */
+  /* â”€â”€ v3 Button (collapsed sole button system for Nimbus Console) â”€â”€ */
   .btn-v3 {
     position: relative;
     display: inline-flex;
@@ -179,7 +179,7 @@
     border-color: var(--critical);
   }
 
-  /* ── v3 Card (mapped to Nimbus Glass panels) ── */
+  /* â”€â”€ v3 Card (mapped to Nimbus Glass panels) â”€â”€ */
   .card-v3 {
     position: relative;
     background: var(--nb-glass);
@@ -238,7 +238,7 @@
   }
   .card-v3-spotlight:hover::before { opacity: 1; }
 
-  /* ── v3 Badge (full-radius pill, normal case) ── */
+  /* â”€â”€ v3 Badge (full-radius pill, normal case) â”€â”€ */
   .badge-v3 {
     display: inline-flex;
     align-items: center;
@@ -259,7 +259,7 @@
   .badge-v3-amber  { background: rgba(244, 183, 64, 0.08); border-color: rgba(244, 183, 64, 0.2); color: var(--nb-warning); }
   .badge-v3-neutral{ background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.08); color: var(--nb-text-2); }
 
-  /* ── Stat (KPI tile) ───────────────────────────── */
+  /* â”€â”€ Stat (KPI tile) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .stat-v3 {
     display: flex;
     flex-direction: column;
@@ -290,7 +290,7 @@
     color: var(--text-secondary);
   }
 
-  /* ── Modal scrim + container ───────────────────── */
+  /* â”€â”€ Modal scrim + container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .modal-v3-scrim {
     position: fixed;
     inset: 0;
@@ -323,7 +323,7 @@
     animation: tiltIn 0.5s var(--ease-enter) both;
   }
 
-  /* ── Empty state ───────────────────────────────── */
+  /* â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .empty-v3 {
     display: flex;
     flex-direction: column;
@@ -356,7 +356,7 @@
     line-height: 1.6;
   }
 
-  /* ── Section heading ───────────────────────────── */
+  /* â”€â”€ Section heading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .section-eyebrow {
     display: inline-flex;
     align-items: center;
@@ -375,7 +375,7 @@
     background: var(--border-glow);
   }
 
-  /* ── Live indicator (replaces idle-pulse animations) ── */
+  /* â”€â”€ Live indicator (replaces idle-pulse animations) â”€â”€ */
   .live-indicator {
     display: inline-flex;
     align-items: center;
@@ -396,7 +396,7 @@
     animation: pulseSoft 1.4s ease-in-out infinite;
   }
 
-  /* ── Divider with optional label ───────────────── */
+  /* â”€â”€ Divider with optional label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .divider-v3 {
     display: flex;
     align-items: center;

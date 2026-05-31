@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('CyberSim V5 critical path', () => {
-  test('login → start SC-01 → run command → SIEM event → submit flag → tutor input visible', async ({ page }) => {
+test.describe('Parallax V5 critical path', () => {
+  test('login â†’ start SC-01 â†’ run command â†’ SIEM event â†’ submit flag â†’ tutor input visible', async ({ page }) => {
     test.setTimeout(60_000); // Give it enough time
 
     page.on('console', msg => console.log(`BROWSER: ${msg.text()}`));

@@ -1,6 +1,6 @@
-# CyberSim Execution Roadmap (v2.0)
+# Parallax Execution Roadmap (v2.0)
 
-This roadmap focuses on transforming the fully coded CyberSim project into a verifiable, end-to-end operational platform.
+This roadmap focuses on transforming the fully coded Parallax project into a verifiable, end-to-end operational platform.
 
 ## Agent Division of Labor
 

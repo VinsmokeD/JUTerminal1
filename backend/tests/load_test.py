@@ -1,5 +1,5 @@
 """
-Load Testing Suite for CyberSim Platform
+Load Testing Suite for Parallax Platform
 Tests terminal latency, SIEM events, and concurrent session handling.
 
 Run with:
@@ -21,8 +21,8 @@ if "pytest" in sys.modules:
 from locust import HttpUser, task, between
 
 
-class CyberSimUser(HttpUser):
-    """Simulates a student user performing typical CyberSim actions."""
+class ParallaxUser(HttpUser):
+    """Simulates a student user performing typical Parallax actions."""
 
     wait_time = between(1, 3)
 
@@ -88,7 +88,7 @@ class InstructorUser(HttpUser):
     def on_start(self):
         """Authenticate as admin."""
         resp = self.client.post(
-            "/api/auth/login", data={"username": "admin", "password": "CyberSimAdmin!"}
+            "/api/auth/login", data={"username": "admin", "password": "ParallaxAdmin!"}
         )
         if resp.status_code == 200:
             self.token = resp.json().get("access_token")

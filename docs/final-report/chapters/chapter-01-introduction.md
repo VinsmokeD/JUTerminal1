@@ -4,11 +4,11 @@
 
 Cybersecurity education requires both technical practice and operational understanding. Students often learn offensive techniques such as reconnaissance, vulnerability discovery, exploitation methodology, and post-exploitation reasoning separately from defensive analysis topics such as log review, alert triage, incident response, and reporting. This separation can make it difficult for students to understand the cause-and-effect relationship between an attacker action and the evidence observed by a defender.
 
-CyberSim addresses this learning gap through a dual-perspective training platform. It provides a browser-based Red Team workspace where students interact with isolated scenario environments through a Kali-style terminal, and a Blue Team workspace where corresponding telemetry, SIEM events, notes, and response activities are analyzed. The platform is designed for university training, so all offensive learning activities are constrained to deliberately vulnerable Docker containers and internal Docker networks.
+Parallax addresses this learning gap through a dual-perspective training platform. It provides a browser-based Red Team workspace where students interact with isolated scenario environments through a Kali-style terminal, and a Blue Team workspace where corresponding telemetry, SIEM events, notes, and response activities are analyzed. The platform is designed for university training, so all offensive learning activities are constrained to deliberately vulnerable Docker containers and internal Docker networks.
 
 ## 1.2 Motivation
 
-The motivation for CyberSim is to make cybersecurity training more realistic, connected, and safe. Traditional exercises may emphasize either attack execution or defensive monitoring, but students need to see both perspectives in one controlled environment. CyberSim makes this relationship visible by linking terminal actions, scenario progress, SIEM telemetry, notes, scoring, AI hints, and debrief reports.
+The motivation for Parallax is to make cybersecurity training more realistic, connected, and safe. Traditional exercises may emphasize either attack execution or defensive monitoring, but students need to see both perspectives in one controlled environment. Parallax makes this relationship visible by linking terminal actions, scenario progress, SIEM telemetry, notes, scoring, AI hints, and debrief reports.
 
 The project is also motivated by classroom needs. Instructors need a way to monitor student progress, evaluate methodology adherence, review evidence, and export grade-ready data. Students need a guided environment where they can practice without accidentally targeting real systems or receiving unsafe instructions.
 
@@ -23,11 +23,11 @@ Cybersecurity students lack an integrated training environment that combines:
 - Instructor visibility and grading support.
 - Post-mission debriefs that explain cause and effect.
 
-Existing tools often solve only part of this problem. CyberSim proposes a unified platform that connects Red Team and Blue Team workflows in a single browser-based application.
+Existing tools often solve only part of this problem. Parallax proposes a unified platform that connects Red Team and Blue Team workflows in a single browser-based application.
 
 ## 1.4 Project Aim
 
-The aim of CyberSim is to design and implement a dual-perspective cybersecurity training platform that allows students to practice Red Team and Blue Team workflows safely inside Docker-isolated scenarios while receiving structured guidance, scoring, telemetry, and debrief reports.
+The aim of Parallax is to design and implement a dual-perspective cybersecurity training platform that allows students to practice Red Team and Blue Team workflows safely inside Docker-isolated scenarios while receiving structured guidance, scoring, telemetry, and debrief reports.
 
 ## 1.5 Project Objectives
 
@@ -85,7 +85,7 @@ Hardware requirements:
 
 ## 1.9 Limitations and Assumptions
 
-CyberSim assumes a local or demo Docker host with enough resources to run the core stack and selected scenario profiles. The platform is optimized for a university demonstration and classroom lab, not for large-scale multi-tenant production without future scaling work.
+Parallax assumes a local or demo Docker host with enough resources to run the core stack and selected scenario profiles. The platform is optimized for a university demonstration and classroom lab, not for large-scale multi-tenant production without future scaling work.
 
 The AI hint system can operate in fallback mode when the external AI key is unavailable. This keeps the platform usable, but live AI quality depends on valid provider configuration and rate/budget controls.
 
@@ -93,7 +93,7 @@ The AI hint system can operate in fallback mode when the external AI key is unav
 
 Expected project outputs include:
 
-- Browser-based CyberSim application.
+- Browser-based Parallax application.
 - Red Team and Blue Team workspaces.
 - Three scenario environments.
 - Scenario notes, hints, scoring, and reports.
@@ -103,7 +103,7 @@ Expected project outputs include:
 
 ## 1.11 Project Schedule and Methodology
 
-CyberSim was developed incrementally through phases covering planning, infrastructure, backend foundation, frontend workspaces, scenario engine, terminal proxy, SIEM, AI monitor, reports, scoring, instructor analytics, readiness, and scenario depth. The documentation package follows the KASIT product-based structure and adds a commercial-grade technical documentation layer.
+Parallax was developed incrementally through phases covering planning, infrastructure, backend foundation, frontend workspaces, scenario engine, terminal proxy, SIEM, AI monitor, reports, scoring, instructor analytics, readiness, and scenario depth. The documentation package follows the KASIT product-based structure and adds a commercial-grade technical documentation layer.
 
 ## 1.12 Report Outline
 

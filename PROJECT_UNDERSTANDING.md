@@ -1,7 +1,7 @@
-# CyberSim Project Complete Architecture & Ecosystem Guide
+# Parallax Project Complete Architecture & Ecosystem Guide
 
 ## 1. Project Concept
-**CyberSim** is a dual-perspective, browser-based cybersecurity training platform designed for university students. It operates entirely safely through isolated Docker containers. The platform offers two primary workspaces:
+**Parallax** is a dual-perspective, browser-based cybersecurity training platform designed for university students. It operates entirely safely through isolated Docker containers. The platform offers two primary workspaces:
 - **Red Team Space**: A terminal (powered by xterm.js) that directly interfaces with a Kali Linux sandbox container to execute real pentesting techniques against deliberately vulnerable mock infrastructure.
 - **Blue Team Space**: A live SIEM (Security Information and Event Management) feed reacting dynamically to the Red Team's terminal actions. 
 
@@ -43,42 +43,42 @@ How code gets written without you intervening:
 2. **Directive Handoff**: Antigravity synthesizes the objective and writes it into `CLAUDE_HANDOFF.md`.
 3. **Claude Execution**: Claude executes the directive, editing files, and making commits automatically for small sets. Crucially, Claude must run a definitive terminal check to prove the code works.
 4. **State Saving**: Claude signals it is finished by issuing a `STATE_SAVE`.
-5. **Validation Tracker**: All agents update `CONTINUOUS_STATE.md`. Antigravity then marks the phase as `✅ Done` in `phases.md` and begins orchestrating the next objective.
+5. **Validation Tracker**: All agents update `CONTINUOUS_STATE.md`. Antigravity then marks the phase as `âœ… Done` in `phases.md` and begins orchestrating the next objective.
 
 ---
 
 ## 4. Technical Architecture & Folder Structure
 ```text
-cybersim/
-├── frontend/ (React / Vite / Tailwind)
-│   ├── src/components/terminal/   # Houses xterm.js syncing WS streams to Docker
-│   ├── src/components/siem/       # Reads Blue Team alerts from Redis Pub/Sub
-│   └── src/store/                 # Zustand state management handling WS reactivity
-│
-├── backend/ (FastAPI / Python 3.11)
-│   ├── src/main.py                # App entrypoint tying all subsystems together
-│   ├── src/sandbox/               # The Docker SDK manager converting WebSocket to Python `docker exec` streams
-│   ├── src/siem/                  # Event Engine mapping specific attacker actions to Redis-published IT alerts
-│   ├── src/scenarios/             # Scenario State Machine validating milestones
-│   └── src/ai/                    # OpenRouter (DeepSeek) integration examining the terminal buffer
-│
-├── infrastructure/ (The Sandbox Physics)
-│   ├── docker/scenarios/          # Extremely isolated internal bridge networks. Subnets (172.20.X.X) per level
-│   │   ├── sc01 (Web App)         # Target 1: NovaMed Vulnerable Web Node
-│   │   ├── sc02 (Act. Directory)  # Target 2: Nexora AD Domain Controller
-│   │   └── sc03...                # Remaining Scenarios
-│   └── nginx/                     # Reverse proxy separating /api and /ws layers
-│
-├── docs/ (Global Nervous System)
-│   ├── architecture/
-│   │   ├── phases.md              # The absolute step-by-step master progression tracker
-│   │   ├── CONTINUOUS_STATE.md    # The Global Brain / Cross-Agent Memory log
-│   │   └── agent-alignment-and-efficiency-update.md # Rules definition for efficient token usage
-│   └── scenarios/                 # Specific logic definitions and constraints to be processed by engines
-│
-├── .env.example                   # Security mappings and API tokens
-├── docker-compose.yml             # System skeleton initializing the microservices
-└── CLAUDE_HANDOFF.md              # The orchestration bridge for Antigravity-to-Claude async messaging
+parallax/
+â”œâ”€â”€ frontend/ (React / Vite / Tailwind)
+â”‚   â”œâ”€â”€ src/components/terminal/   # Houses xterm.js syncing WS streams to Docker
+â”‚   â”œâ”€â”€ src/components/siem/       # Reads Blue Team alerts from Redis Pub/Sub
+â”‚   â””â”€â”€ src/store/                 # Zustand state management handling WS reactivity
+â”‚
+â”œâ”€â”€ backend/ (FastAPI / Python 3.11)
+â”‚   â”œâ”€â”€ src/main.py                # App entrypoint tying all subsystems together
+â”‚   â”œâ”€â”€ src/sandbox/               # The Docker SDK manager converting WebSocket to Python `docker exec` streams
+â”‚   â”œâ”€â”€ src/siem/                  # Event Engine mapping specific attacker actions to Redis-published IT alerts
+â”‚   â”œâ”€â”€ src/scenarios/             # Scenario State Machine validating milestones
+â”‚   â””â”€â”€ src/ai/                    # OpenRouter (DeepSeek) integration examining the terminal buffer
+â”‚
+â”œâ”€â”€ infrastructure/ (The Sandbox Physics)
+â”‚   â”œâ”€â”€ docker/scenarios/          # Extremely isolated internal bridge networks. Subnets (172.20.X.X) per level
+â”‚   â”‚   â”œâ”€â”€ sc01 (Web App)         # Target 1: NovaMed Vulnerable Web Node
+â”‚   â”‚   â”œâ”€â”€ sc02 (Act. Directory)  # Target 2: Nexora AD Domain Controller
+â”‚   â”‚   â””â”€â”€ sc03...                # Remaining Scenarios
+â”‚   â””â”€â”€ nginx/                     # Reverse proxy separating /api and /ws layers
+â”‚
+â”œâ”€â”€ docs/ (Global Nervous System)
+â”‚   â”œâ”€â”€ architecture/
+â”‚   â”‚   â”œâ”€â”€ phases.md              # The absolute step-by-step master progression tracker
+â”‚   â”‚   â”œâ”€â”€ CONTINUOUS_STATE.md    # The Global Brain / Cross-Agent Memory log
+â”‚   â”‚   â””â”€â”€ agent-alignment-and-efficiency-update.md # Rules definition for efficient token usage
+â”‚   â””â”€â”€ scenarios/                 # Specific logic definitions and constraints to be processed by engines
+â”‚
+â”œâ”€â”€ .env.example                   # Security mappings and API tokens
+â”œâ”€â”€ docker-compose.yml             # System skeleton initializing the microservices
+â””â”€â”€ CLAUDE_HANDOFF.md              # The orchestration bridge for Antigravity-to-Claude async messaging
 ```
 
 ---

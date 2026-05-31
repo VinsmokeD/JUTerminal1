@@ -1,36 +1,36 @@
-name: cybersim
+name: parallax
 
-# ═══════════════════════════════════════════════════════════════════
-#  CyberSim — Single-Node Docker Compose
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  Parallax â€” Single-Node Docker Compose
 #  Scenarios: SC-01 (Web App), SC-02 (Active Directory), SC-03 (Phishing)
 #  Bring up core: docker-compose up -d
 #  Bring up a scenario: docker-compose --profile sc01 up -d
-# ═══════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-# Shared label applied to every CyberSim container.
+# Shared label applied to every Parallax container.
 # The docker-safe.ps1 wrapper reads this label before allowing removal.
-x-cybersim-defaults: &cybersim-defaults
+x-parallax-defaults: &parallax-defaults
   labels:
-    com.cybersim.protect: "true"
-    com.cybersim.project: "JUTerminal1"
+    com.parallax.protect: "true"
+    com.parallax.project: "JUTerminal1"
 
 services:
 
-  # ── Core Infrastructure ───────────────────────────────────────────
+  # â”€â”€ Core Infrastructure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   postgres:
-    <<: *cybersim-defaults
+    <<: *parallax-defaults
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-cybersim}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cybersim}
-      POSTGRES_DB: ${POSTGRES_DB:-cybersim}
+      POSTGRES_USER: ${POSTGRES_USER:-parallax}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parallax}
+      POSTGRES_DB: ${POSTGRES_DB:-parallax}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "127.0.0.1:5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cybersim"]
+      test: ["CMD-SHELL", "pg_isready -U parallax"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -43,7 +43,7 @@ services:
           memory: 512m
 
   redis:
-    <<: *cybersim-defaults
+    <<: *parallax-defaults
     image: redis:7-alpine
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
@@ -64,7 +64,7 @@ services:
           memory: 256m
 
   elasticsearch:
-    <<: *cybersim-defaults
+    <<: *parallax-defaults
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2
     environment:
       - discovery.type=single-node
@@ -88,9 +88,9 @@ services:
         limits:
           memory: 2g
 
-  # ── SIEM Pipeline ─────────────────────────────────────────────────
+  # â”€â”€ SIEM Pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   filebeat:
-    <<: *cybersim-defaults
+    <<: *parallax-defaults
     image: docker.elastic.co/beats/filebeat:8.13.2
     user: root
     # --strict.perms=false required on Windows Docker Desktop:
@@ -116,9 +116,9 @@ services:
           cpus: '0.3'
           memory: 256m
 
-  # ── Application ───────────────────────────────────────────────────
+  # â”€â”€ Application â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   backend:
-    <<: *cybersim-defaults
+    <<: *parallax-defaults
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -129,13 +129,13 @@ services:
       - OPENROUTER_MODEL=${OPENROUTER_MODEL:-google/gemini-2.0-flash-001}
       - OPENROUTER_MAX_TOKENS=${OPENROUTER_MAX_TOKENS:-500}
       - AI_CALL_COOLDOWN_SECONDS=${AI_CALL_COOLDOWN_SECONDS:-10}
-      - POSTGRES_URL=postgresql+asyncpg://${POSTGRES_USER:-cybersim}:${POSTGRES_PASSWORD:-cybersim}@postgres:5432/${POSTGRES_DB:-cybersim}
+      - POSTGRES_URL=postgresql+asyncpg://${POSTGRES_USER:-parallax}:${POSTGRES_PASSWORD:-parallax}@postgres:5432/${POSTGRES_DB:-parallax}
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=${JWT_SECRET}
       - ENVIRONMENT=${ENVIRONMENT:-development}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost}
       - DOCKER_SOCKET=/var/run/docker.sock
-      - KALI_IMAGE=${KALI_IMAGE:-cybersim-kali:latest}
+      - KALI_IMAGE=${KALI_IMAGE:-parallax-kali:latest}
       - MAX_CONCURRENT_SESSIONS=${MAX_CONCURRENT_SESSIONS:-10}
       - CONTAINER_CPU_LIMIT=${CONTAINER_CPU_LIMIT:-1.0}
       - CONTAINER_MEMORY_LIMIT=${CONTAINER_MEMORY_LIMIT:-512m}
@@ -172,7 +172,7 @@ services:
           memory: 512m
 
   frontend:
-    <<: *cybersim-defaults
+    <<: *parallax-defaults
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -197,7 +197,7 @@ services:
           memory: 512m
 
   nginx:
-    <<: *cybersim-defaults
+    <<: *parallax-defaults
     image: nginx:alpine
     ports:
       - "80:80"
@@ -216,7 +216,7 @@ services:
         limits:
           memory: 128m
 
-  # ── SC-01: NovaMed Web App Pentest ────────────────────────────────
+  # â”€â”€ SC-01: NovaMed Web App Pentest â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Start with: docker-compose --profile sc01 up -d
   sc01-db:
     image: mariadb:11
@@ -230,7 +230,7 @@ services:
       MARIADB_PASSWORD: WebAppPass2024!
     volumes:
       - ./infrastructure/docker/scenarios/sc01/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    # Phase-B hardening: no-new-privileges is safe — MariaDB uses gosu (CAP_SETUID
+    # Phase-B hardening: no-new-privileges is safe â€” MariaDB uses gosu (CAP_SETUID
     # syscall, not setuid-exec) to drop from root to mysql. cap_drop omitted: DB
     # init needs CHOWN/SETUID/SETGID/DAC_OVERRIDE; removing them without full
     # end-to-end DB-init testing risks a silent broken scenario (R3 partial).
@@ -283,9 +283,9 @@ services:
     depends_on:
       - sc01-php
     # Phase-B hardening: pure Apache reverse-proxy; no setuid-exec programs.
-    # Apache drops root→daemon via setuid() syscall (safe under no-new-privileges).
+    # Apache drops rootâ†’daemon via setuid() syscall (safe under no-new-privileges).
     # Remaining caps: NET_BIND_SERVICE (port 80), SETUID/SETGID (privilege drop),
-    # KILL (master→worker SIGQUIT/SIGTERM across UIDs without uid match).
+    # KILL (masterâ†’worker SIGQUIT/SIGTERM across UIDs without uid match).
     security_opt:
       - "no-new-privileges:true"
     cap_drop:
@@ -322,11 +322,11 @@ services:
       - ./infrastructure/docker/scenarios/sc01/waf-nginx.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
       - sc01_waf_logs:/var/log/modsec
     # Phase-B hardening: nginx WAF; entrypoint does chown -R nginx:nginx on log dirs
-    # (CHOWN), nginx drops root→worker via setuid() syscall (SETUID/SETGID), master
+    # (CHOWN), nginx drops rootâ†’worker via setuid() syscall (SETUID/SETGID), master
     # signals workers across UIDs (KILL), and the image's own /90-copy-modsecurity-
     # config.sh writes to root-owned files in the overlay layer (DAC_OVERRIDE).
     # Drops: AUDIT_WRITE, FOWNER, FSETID, MKNOD, NET_RAW, SETFCAP, SETPCAP,
-    # SYS_CHROOT — 14 default caps → 7.
+    # SYS_CHROOT â€” 14 default caps â†’ 7.
     security_opt:
       - "no-new-privileges:true"
     cap_drop:
@@ -358,14 +358,14 @@ services:
           cpus: '0.5'
           memory: 256m
 
-  # ── SC-02: Nexora Active Directory Compromise ─────────────────────
+  # â”€â”€ SC-02: Nexora Active Directory Compromise â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Start with: docker-compose --profile sc02 up -d
   sc02-dc:
     build:
       context: ./infrastructure/docker/scenarios/sc02
       dockerfile: Dockerfile.dc
-    # WS7 hardening note (R3 — fail-open, documented):
-    # Samba AD DC requires SYS_PTRACE (winbindd↔smbd IPC), NET_BIND_SERVICE
+    # WS7 hardening note (R3 â€” fail-open, documented):
+    # Samba AD DC requires SYS_PTRACE (winbinddâ†”smbd IPC), NET_BIND_SERVICE
     # (port 88/389/445/636), SETUID/SETGID/CHOWN (Samba internal privilege drops),
     # SYS_ADMIN (mount for SYSVOL), and DAC_OVERRIDE. Specifying no-new-privileges
     # conflicts with Samba's internal capability management and breaks kerberos.
@@ -404,7 +404,7 @@ services:
     build:
       context: ./infrastructure/docker/scenarios/sc02
       dockerfile: Dockerfile.fileserver
-    # WS7 hardening note (R3 — fail-open, documented):
+    # WS7 hardening note (R3 â€” fail-open, documented):
     # Samba member server requires NET_BIND_SERVICE (445), SETUID/SETGID/CHOWN
     # for Samba's winbind/smbd privilege model, and DAC_OVERRIDE for SYSVOL
     # NTACL traversal. Left without security_opt/cap_drop for same reasons as
@@ -435,7 +435,7 @@ services:
           cpus: '0.5'
           memory: 512m
 
-  # ── SC-03: Orion Logistics Phishing Campaign ──────────────────────
+  # â”€â”€ SC-03: Orion Logistics Phishing Campaign â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # Start with: docker-compose --profile sc03 up -d
   sc03-mailrelay:
     build:
@@ -479,7 +479,7 @@ services:
       - GOPHISH_PHISH_PORT=80
       - GOPHISH_PHISH_SSL_PORT=443
     # Phase-B hardening: GoPhish runs as non-root 'app' user (set in base image).
-    # Pure Go binary — no setuid programs, no privilege-drop exec. Only needs
+    # Pure Go binary â€” no setuid programs, no privilege-drop exec. Only needs
     # NET_BIND_SERVICE for the phishing port 80 (admin :3333 is above 1024).
     security_opt:
       - "no-new-privileges:true"
@@ -511,7 +511,7 @@ services:
       context: ./infrastructure/docker/scenarios/sc03
       dockerfile: Dockerfile.victim
     # WS7 hardening: victim-simulator is a pure Python HTTP server on port 8080
-    # (>1024) — no setuid binaries, no privilege-drop exec, no raw sockets.
+    # (>1024) â€” no setuid binaries, no privilege-drop exec, no raw sockets.
     # Full cap_drop ALL is safe; no cap_add required.
     security_opt:
       - "no-new-privileges:true"
@@ -536,7 +536,7 @@ services:
           cpus: '0.5'
           memory: 512m
 
-# ─────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 volumes:
   postgres_data:
   redis_data:

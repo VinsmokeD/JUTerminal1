@@ -12,14 +12,14 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('[CyberSim ErrorBoundary]', error, info?.componentStack)
+    console.error('[Parallax ErrorBoundary]', error, info?.componentStack)
   }
 
   render() {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center h-full min-h-screen p-8 text-center bg-void">
-          <div className="text-cs-red text-5xl mb-4 select-none">⚠</div>
+          <div className="text-cs-red text-5xl mb-4 select-none">âš </div>
           <h2 className="text-txt-primary text-xl font-bold font-display mb-2">
             Something went wrong
           </h2>

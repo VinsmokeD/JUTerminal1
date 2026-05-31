@@ -13,7 +13,7 @@ import { useSettingsStore } from '../store/settingsStore'
 
 const HeroScene3D = lazy(() => import('../components/canvas/HeroScene3D'))
 
-// ── Magnetic CTA button ────────────────────────────────────────────────────
+// â”€â”€ Magnetic CTA button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MagneticButton({ onClick, className, children }) {
   const { ref, x, y, bind } = useMagnetic({ strength: 0.35 })
   return (
@@ -29,7 +29,7 @@ function MagneticButton({ onClick, className, children }) {
   )
 }
 
-// ── Pin-and-stack card ────────────────────────────────────────────────────
+// â”€â”€ Pin-and-stack card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StackCard({ step, title, desc, color, offset }) {
   return (
     <div
@@ -95,7 +95,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-dvh bg-void text-txt-primary font-display relative">
-      {/* Global cursor spotlight overlay (tier ≥ 2 + !reduced only) */}
+      {/* Global cursor spotlight overlay (tier â‰¥ 2 + !reduced only) */}
       {!reduced && tier >= 2 && (
         <motion.div
           className="pointer-events-none fixed inset-0 z-30 opacity-70"
@@ -103,15 +103,12 @@ export default function Landing() {
         />
       )}
 
-      {/* ── NAVIGATION ─────────────────────────────────────── */}
+      {/* â”€â”€ NAVIGATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-void/80 border-b border-cs-border backdrop-blur-md font-mono text-xs">
         <button onClick={() => navigate('/')} className="flex items-center gap-3">
-          <div className="w-5 h-5 relative flex items-center justify-center">
-            <span className="absolute inset-0 border border-[#00f3ff] animate-pulse" />
-            <span className="w-2.5 h-2.5 bg-[#ff0055]" />
-          </div>
+          <img src="/brand/parallax-icon.svg" alt="" aria-hidden="true" className="w-7 h-7 flex-shrink-0" />
           <div className="text-sm font-bold text-txt-primary tracking-widest uppercase">
-            CyberSim<span className="text-txt-dim font-normal">.io</span>
+            Parallax<span className="text-txt-dim font-normal">.io</span>
           </div>
         </button>
         <ul className="hidden md:flex items-center gap-8 list-none m-0 p-0">
@@ -126,7 +123,7 @@ export default function Landing() {
         </ul>
       </nav>
 
-      {/* ── HERO ───────────────────────────────────────────── */}
+      {/* â”€â”€ HERO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-32 pb-20 overflow-hidden">
         {tier >= 1 ? (
           <Suspense fallback={<ParticleCanvas />}>
@@ -151,10 +148,10 @@ export default function Landing() {
             className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-2 border border-cs-border/60 rounded-cs font-mono text-[10px] text-txt-secondary mb-8 uppercase tracking-widest"
           >
             <span className="w-2 h-2 rounded-full bg-green-signal animate-pulse shadow-green-glow" />
-            Platform Online — 3 Scenarios Active
+            Platform Online â€” 3 Scenarios Active
           </motion.div>
 
-          {/* Hero headline — word reveal */}
+          {/* Hero headline â€” word reveal */}
           <div className="text-[1.75rem] sm:text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[1.12] tracking-tighter mb-6 font-display" role="heading" aria-level="1">
             <RevealText
               as="div"
@@ -225,8 +222,8 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* ── LIVE DEMO ──────────────────────────────────────── */}
-      {/* aria-hidden: decorative mock terminal/SIEM — not real data */}
+      {/* â”€â”€ LIVE DEMO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* aria-hidden: decorative mock terminal/SIEM â€” not real data */}
       <section className="relative px-6 md:px-12 pb-24 z-10" aria-hidden="true">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -241,7 +238,7 @@ export default function Landing() {
               <span className="w-2.5 h-2.5 rounded-full bg-amber-warn" />
               <span className="w-2.5 h-2.5 rounded-full bg-green-signal" />
             </div>
-            <div className="text-txt-dim tracking-wider uppercase">CYBERSIM COMMAND CENTER // SESSION: ACTIVE</div>
+            <div className="text-txt-dim tracking-wider uppercase">PARALLAX COMMAND CENTER // SESSION: ACTIVE</div>
             <div className="flex gap-1.5">
               <span className="px-2 py-0.5 rounded-cs-sm font-mono text-[9px] font-bold text-cs-red bg-cs-red/10 border border-cs-red/20">RED TEAM</span>
               <span className="px-2 py-0.5 rounded-cs-sm font-mono text-[9px] font-bold text-cs-blue bg-cs-blue/10 border border-cs-blue/20">BLUE TEAM</span>
@@ -253,7 +250,7 @@ export default function Landing() {
               <div className="flex items-center justify-between px-4 py-2 border-b border-cs-border bg-surface-1/40 font-mono text-[9px] text-cs-red tracking-wider">
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-cs-red animate-pulse" />
-                  KALI TERMINAL — ENFORCED METHODOLOGY GATES
+                  KALI TERMINAL â€” ENFORCED METHODOLOGY GATES
                 </div>
                 <div>METHODOLOGY: PTES</div>
               </div>
@@ -283,11 +280,11 @@ export default function Landing() {
               </div>
               <div className="p-3 space-y-1">
                 {[
-                  { time: '14:03:44', sev: 'MED',  msg: 'Port scan detected — SYN packets to 1024+ ports', mitre: 'T1046' },
-                  { time: '14:03:52', sev: 'INFO', msg: 'Service version probe — nmap fingerprinting', mitre: 'T1046' },
-                  { time: '14:04:01', sev: 'INFO', msg: 'Routine health check — GET /api/health [noise]', noise: true },
-                  { time: '14:06:11', sev: 'MED',  msg: 'Directory brute-force — 400+ 404s in 30s', mitre: 'T1083' },
-                  { time: '14:06:44', sev: 'HIGH', msg: 'Sensitive path probed — /backup/ returned 200', mitre: 'T1083' },
+                  { time: '14:03:44', sev: 'MED',  msg: 'Port scan detected â€” SYN packets to 1024+ ports', mitre: 'T1046' },
+                  { time: '14:03:52', sev: 'INFO', msg: 'Service version probe â€” nmap fingerprinting', mitre: 'T1046' },
+                  { time: '14:04:01', sev: 'INFO', msg: 'Routine health check â€” GET /api/health [noise]', noise: true },
+                  { time: '14:06:11', sev: 'MED',  msg: 'Directory brute-force â€” 400+ 404s in 30s', mitre: 'T1083' },
+                  { time: '14:06:44', sev: 'HIGH', msg: 'Sensitive path probed â€” /backup/ returned 200', mitre: 'T1083' },
                 ].map((ev, i) => (
                   <div key={i} className={`flex items-center gap-3 p-1.5 font-mono text-[10px] rounded-cs border border-transparent ${
                     ev.noise ? 'opacity-40 hover:opacity-75' : 'bg-surface-2/40 border-cs-border/40 hover:border-cs-border'
@@ -310,13 +307,13 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* ── STATS ──────────────────────────────────────────── */}
+      {/* â”€â”€ STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="relative px-6 md:px-12 pb-24 z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-[1200px] mx-auto">
           {[
             { value: '3',    label: 'Attack Scenarios',          color: 'text-cs-red' },
             { value: '80+',  label: 'SIEM Event Templates',      color: 'text-cs-blue' },
-            { value: '100%', label: 'Real Tools — No Simulation', color: 'text-green-signal' },
+            { value: '100%', label: 'Real Tools â€” No Simulation', color: 'text-green-signal' },
             { value: '$0',   label: 'Free Tier Stack',            color: 'text-amber-warn' },
           ].map((s, i) => (
             <motion.div
@@ -335,7 +332,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS — pin-and-stack ───────────────────── */}
+      {/* â”€â”€ HOW IT WORKS â€” pin-and-stack â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="relative px-6 md:px-12 py-24 z-10" id="how">
         <div className="text-center mb-16">
           <motion.div
@@ -361,30 +358,30 @@ export default function Landing() {
             viewport={{ once: true }}
             className="text-sm text-txt-secondary max-w-[560px] mx-auto leading-relaxed font-display"
           >
-            CyberSim bridges the gap between isolated tool training and
+            Parallax bridges the gap between isolated tool training and
             real-world security operations by connecting both sides of every engagement.
           </motion.p>
         </div>
 
-        {/* Stack cards — CSS sticky, each offset by ~24px */}
+        {/* Stack cards â€” CSS sticky, each offset by ~24px */}
         <div className="max-w-[680px] mx-auto" style={{ paddingBottom: '6rem' }}>
           {[
             {
               step: '1', offset: 0,
               title: 'Attack the target',
-              desc: 'Launch a real Kali terminal. Run actual tools — nmap, sqlmap, Impacket, Hashcat — against containerized targets with genuine vulnerabilities. No simulations, no mock outputs.',
+              desc: 'Launch a real Kali terminal. Run actual tools â€” nmap, sqlmap, Impacket, Hashcat â€” against containerized targets with genuine vulnerabilities. No simulations, no mock outputs.',
               color: 'text-cs-red border-cs-red/20 bg-cs-red/5',
             },
             {
               step: '2', offset: 1,
               title: 'Follow methodology',
-              desc: 'CyberSim enforces PTES phases. Skip reconnaissance and jump to exploitation? Blocked. Document your findings before advancing. Methodology gating teaches professional discipline.',
+              desc: 'Parallax enforces PTES phases. Skip reconnaissance and jump to exploitation? Blocked. Document your findings before advancing. Methodology gating teaches professional discipline.',
               color: 'text-amber-warn border-amber-warn/20 bg-amber-warn/5',
             },
             {
               step: '3', offset: 2,
               title: 'Detect in real time',
-              desc: "Every attacker command triggers corresponding SIEM alerts within 2 seconds. Blue team sees the same attack from the defender's perspective — WAF alerts, event logs, network anomalies.",
+              desc: "Every attacker command triggers corresponding SIEM alerts within 2 seconds. Blue team sees the same attack from the defender's perspective â€” WAF alerts, event logs, network anomalies.",
               color: 'text-cs-blue border-cs-blue/20 bg-cs-blue/5',
             },
           ].map((c) => (
@@ -393,7 +390,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── SCENARIOS ──────────────────────────────────────── */}
+      {/* â”€â”€ SCENARIOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="relative px-6 md:px-12 py-24 z-10" id="scenarios">
         <div className="text-center mb-16">
           <motion.div
@@ -458,7 +455,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── FRAMEWORKS — infinite marquee ──────────────────── */}
+      {/* â”€â”€ FRAMEWORKS â€” infinite marquee â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="relative px-6 md:px-12 py-24 z-10" id="frameworks">
         <div className="text-center mb-12">
           <motion.div
@@ -508,7 +505,7 @@ export default function Landing() {
         </Marquee>
       </section>
 
-      {/* ── CTA ────────────────────────────────────────────── */}
+      {/* â”€â”€ CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="relative px-6 md:px-12 py-24 text-center z-10 max-w-[1200px] mx-auto">
         <div
           className="absolute inset-0 z-0 opacity-40"
@@ -541,7 +538,7 @@ export default function Landing() {
             className="text-sm text-txt-secondary max-w-[500px] mx-auto mb-10 leading-relaxed font-display"
           >
             Every attacker action has a defensive consequence.
-            CyberSim makes that connection visible.
+            Parallax makes that connection visible.
           </motion.p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <MagneticButton onClick={goToPlatform} className="btn-v3 btn-v3-red text-xs">
@@ -552,10 +549,10 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* ── FOOTER ─────────────────────────────────────────── */}
+      {/* â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <footer className="px-6 md:px-12 py-12 border-t border-cs-border flex flex-col md:flex-row justify-between items-center gap-6 relative z-10">
         <div className="font-mono text-xs text-txt-dim">
-          CyberSim © 2026 — Built for cybersecurity students. $0 infrastructure cost.
+          Parallax Â© 2026 â€” Built for cybersecurity students. $0 infrastructure cost.
         </div>
         <div className="flex items-center gap-6">
           <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="font-mono text-xs text-txt-dim hover:text-txt-secondary transition-colors">GitHub</a>

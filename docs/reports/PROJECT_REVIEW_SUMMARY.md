@@ -1,16 +1,16 @@
-# 🎓 CYBERSIM — COMPLETE PROJECT REVIEW & STRATEGIC GUIDANCE
+# ðŸŽ“ PARALLAX â€” COMPLETE PROJECT REVIEW & STRATEGIC GUIDANCE
 
 **Generated**: 2026-04-10 18:30:00 UTC  
-**Project Status**: 80% Complete — Ready for Phase 2 Development  
+**Project Status**: 80% Complete â€” Ready for Phase 2 Development  
 **Estimated Time to Completion**: 1-2 weeks (25-30 hours autonomous Claude work)
 
 ---
 
-## 📋 Table of Contents
+## ðŸ“‹ Table of Contents
 
-1. [What You Have — Already Built](#what-you-have)
-2. [What You Need — Remaining Work](#what-you-need)
-3. [How CyberSim Differs from Competitors](#how-cybersim-differs)
+1. [What You Have â€” Already Built](#what-you-have)
+2. [What You Need â€” Remaining Work](#what-you-need)
+3. [How Parallax Differs from Competitors](#how-parallax-differs)
 4. [Technical Architecture Review](#technical-architecture)
 5. [Scenario Maturity Assessment](#scenario-assessment)
 6. [Development Prompts & Workflow](#development-workflow)
@@ -20,51 +20,51 @@
 
 ---
 
-## What You Have — Already Built ✅
+## What You Have â€” Already Built âœ…
 
 ### Core Infrastructure
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Docker Infrastructure** | ✅ 100% | 5 scenario networks, isolated bridge mode, security hardened |
-| **FastAPI Backend** | ✅ 100% | Async/await, all routers, database integration, Redis pub/sub |
-| **React Frontend** | ✅ 100% | Red/Blue workspaces, SIEM feed, terminal UI, guided notebook |
-| **Terminal Proxy** | ✅ 100% | Real PTY passthrough, WebSocket duplex, history replay on refresh |
-| **SIEM Engine** | ✅ 100% | Event mapping, real-time pub/sub, severity categorization |
-| **AI Monitor** | ✅ 100% | Gemini Flash integration, context-aware hints, rate limiting |
-| **Database** | ✅ 100% | PostgreSQL async, session persistence, command logging |
-| **Authentication** | ✅ 100% | JWT auth, role-based access (student/instructor) |
-| **Scoring System** | ✅ 100% | Methodology tracking, hint penalties, phase progression |
+| **Docker Infrastructure** | âœ… 100% | 5 scenario networks, isolated bridge mode, security hardened |
+| **FastAPI Backend** | âœ… 100% | Async/await, all routers, database integration, Redis pub/sub |
+| **React Frontend** | âœ… 100% | Red/Blue workspaces, SIEM feed, terminal UI, guided notebook |
+| **Terminal Proxy** | âœ… 100% | Real PTY passthrough, WebSocket duplex, history replay on refresh |
+| **SIEM Engine** | âœ… 100% | Event mapping, real-time pub/sub, severity categorization |
+| **AI Monitor** | âœ… 100% | Gemini Flash integration, context-aware hints, rate limiting |
+| **Database** | âœ… 100% | PostgreSQL async, session persistence, command logging |
+| **Authentication** | âœ… 100% | JWT auth, role-based access (student/instructor) |
+| **Scoring System** | âœ… 100% | Methodology tracking, hint penalties, phase progression |
 
 ### Advanced Features
 
 | Feature | Status | Implementation |
 |---------|--------|-----------------|
-| **Raw PTY Terminal** | ✅ Implemented | Bash-native command editing, history, tab completion |
-| **Real Docker Targets** | ✅ SC-01/02/03 | PHP webapp, Samba4 AD, GoPhish configured |
-| **Progressive Hints** | ✅ All scenarios | L1→L2→L3, step-by-step arrays, context-aware |
-| **Dual Perspective** | ✅ Implemented | Red/Blue simultaneous, real-time event sync |
-| **Background Noise** | ✅ Implemented | Benign traffic simulation, gray/low-weight display |
-| **Methodology Gating** | ✅ Implemented | Hard phase locks, prevents premature escalation |
-| **Kill Chain Timeline** | ✅ Implemented | SVG dual-axis (attacks vs detections) |
-| **Debrief Reports** | ✅ Implemented | Timeline + markdown export + PDF |
-| **Instructor Dashboard** | ✅ Implemented | Student tracking, role-gated access |
-| **Discovery Tracker** | ✅ Implemented | Parses nmap, gobuster, sqlmap, bloodhound, impacket output |
-| **Terminal Re-attach** | ✅ Implemented | Redis history replay on browser refresh |
+| **Raw PTY Terminal** | âœ… Implemented | Bash-native command editing, history, tab completion |
+| **Real Docker Targets** | âœ… SC-01/02/03 | PHP webapp, Samba4 AD, GoPhish configured |
+| **Progressive Hints** | âœ… All scenarios | L1â†’L2â†’L3, step-by-step arrays, context-aware |
+| **Dual Perspective** | âœ… Implemented | Red/Blue simultaneous, real-time event sync |
+| **Background Noise** | âœ… Implemented | Benign traffic simulation, gray/low-weight display |
+| **Methodology Gating** | âœ… Implemented | Hard phase locks, prevents premature escalation |
+| **Kill Chain Timeline** | âœ… Implemented | SVG dual-axis (attacks vs detections) |
+| **Debrief Reports** | âœ… Implemented | Timeline + markdown export + PDF |
+| **Instructor Dashboard** | âœ… Implemented | Student tracking, role-gated access |
+| **Discovery Tracker** | âœ… Implemented | Parses nmap, gobuster, sqlmap, bloodhound, impacket output |
+| **Terminal Re-attach** | âœ… Implemented | Redis history replay on browser refresh |
 
 ### Scenario Content
 
 | Scenario | Spec | Docker | Hints | SIEM Events | Status |
 |----------|------|--------|-------|-------------|--------|
-| **SC-01 Web App** | ✅ Complete | ✅ Functional | ✅ 18 hints | ✅ 15 events | 85% Ready |
-| **SC-02 AD** | ✅ Complete | ⚠️ Skeleton | ✅ 18 hints | ✅ 12 events | 60% Ready |
-| **SC-03 Phishing** | ✅ Complete | ⚠️ Partial | ✅ 15 hints | ✅ 10 events | 70% Ready |
-| **SC-04 Cloud** | ✅ Complete | ❌ Missing | ✅ 9 hints | ✅ 8 events | 50% Ready |
-| **SC-05 Ransomware** | ✅ Complete | ❌ Missing | ✅ 10 hints | ✅ 9 events | 40% Ready |
+| **SC-01 Web App** | âœ… Complete | âœ… Functional | âœ… 18 hints | âœ… 15 events | 85% Ready |
+| **SC-02 AD** | âœ… Complete | âš ï¸ Skeleton | âœ… 18 hints | âœ… 12 events | 60% Ready |
+| **SC-03 Phishing** | âœ… Complete | âš ï¸ Partial | âœ… 15 hints | âœ… 10 events | 70% Ready |
+| **SC-04 Cloud** | âœ… Complete | âŒ Missing | âœ… 9 hints | âœ… 8 events | 50% Ready |
+| **SC-05 Ransomware** | âœ… Complete | âŒ Missing | âœ… 10 hints | âœ… 9 events | 40% Ready |
 
 ---
 
-## What You Need — Remaining Work 🚧
+## What You Need â€” Remaining Work ðŸš§
 
 ### Critical Path (Blocking Features)
 
@@ -98,70 +98,70 @@
 
 ---
 
-## How CyberSim Differs from Competitors 🏆
+## How Parallax Differs from Competitors ðŸ†
 
 ### vs. HackTheBox
 
-| Feature | CyberSim | HackTheBox |
+| Feature | Parallax | HackTheBox |
 |---------|----------|-----------|
-| **Cost** | 🆓 Free | 💰 $15-20/month |
-| **Terminal** | ✅ Real PTY (Docker) | ✅ Real PTY (VPN) |
-| **Deployment** | 🏠 Local | ☁️ Cloud-only |
-| **Dual Perspective** | ✅ YES (unique) | ❌ NO |
-| **SIEM Training** | ✅ YES | ❌ NO |
-| **AI Hints** | ✅ Context-aware | ❌ Static resources |
-| **Methodology** | ✅ Enforced phases | ❌ Free-form |
+| **Cost** | ðŸ†“ Free | ðŸ’° $15-20/month |
+| **Terminal** | âœ… Real PTY (Docker) | âœ… Real PTY (VPN) |
+| **Deployment** | ðŸ  Local | â˜ï¸ Cloud-only |
+| **Dual Perspective** | âœ… YES (unique) | âŒ NO |
+| **SIEM Training** | âœ… YES | âŒ NO |
+| **AI Hints** | âœ… Context-aware | âŒ Static resources |
+| **Methodology** | âœ… Enforced phases | âŒ Free-form |
 
 ### vs. TryHackMe
 
-| Feature | CyberSim | TryHackMe |
+| Feature | Parallax | TryHackMe |
 |---------|----------|-----------|
-| **Cost** | 🆓 Free | 💰 $30-50/month |
-| **Terminal** | ✅ Real PTY (Docker) | ✅ Real PTY (VPN) |
-| **Deployment** | 🏠 Local | ☁️ Cloud-only |
-| **Dual Perspective** | ✅ YES (unique) | ❌ Usually offense-only |
-| **SIEM Training** | ✅ YES | ⚠️ Basic |
-| **AI Hints** | ✅ Context-aware | ⚠️ Limited |
-| **Methodology** | ✅ Enforced phases | ⚠️ Suggested |
+| **Cost** | ðŸ†“ Free | ðŸ’° $30-50/month |
+| **Terminal** | âœ… Real PTY (Docker) | âœ… Real PTY (VPN) |
+| **Deployment** | ðŸ  Local | â˜ï¸ Cloud-only |
+| **Dual Perspective** | âœ… YES (unique) | âŒ Usually offense-only |
+| **SIEM Training** | âœ… YES | âš ï¸ Basic |
+| **AI Hints** | âœ… Context-aware | âš ï¸ Limited |
+| **Methodology** | âœ… Enforced phases | âš ï¸ Suggested |
 
 ### vs. Commercial Platforms (Immersive Labs)
 
-| Feature | CyberSim | Immersive Labs |
+| Feature | Parallax | Immersive Labs |
 |---------|----------|----------------|
-| **Cost** | 🆓 Free | 💰 $50-100+/month |
-| **Open Source** | ✅ YES | ❌ Proprietary |
-| **Customizable** | ✅ YES | ⚠️ Limited |
-| **University Friendly** | ✅ YES | ⚠️ Expensive |
-| **Dual Perspective** | ✅ YES | ✅ YES |
-| **AI Guidance** | ✅ YES | ✅ YES |
+| **Cost** | ðŸ†“ Free | ðŸ’° $50-100+/month |
+| **Open Source** | âœ… YES | âŒ Proprietary |
+| **Customizable** | âœ… YES | âš ï¸ Limited |
+| **University Friendly** | âœ… YES | âš ï¸ Expensive |
+| **Dual Perspective** | âœ… YES | âœ… YES |
+| **AI Guidance** | âœ… YES | âœ… YES |
 
-**CyberSim's Unique Value**:
+**Parallax's Unique Value**:
 1. **FREE & OPEN-SOURCE** (no licensing fees)
-2. **DUAL-PERSPECTIVE** (Red + Blue simultaneous — not available elsewhere)
+2. **DUAL-PERSPECTIVE** (Red + Blue simultaneous â€” not available elsewhere)
 3. **AI-POWERED HINTS** (context-aware, not generic)
 4. **UNIVERSITY-OPTIMIZED** (runs locally, scales easily)
 5. **PRODUCTION-GRADE CODEBASE** (academics can extend and publish)
 
 ---
 
-## Technical Architecture Review 🏗
+## Technical Architecture Review ðŸ—
 
 ### Terminal Architecture
 
 ```
-Keystroke → Browser xterm.js
-           ↓
+Keystroke â†’ Browser xterm.js
+           â†“
     WebSocket /ws/{session_id}
-           ↓
+           â†“
     Redis PUBLISH terminal:{session_id}:input
-           ↓
-    Backend pulls from Redis → Docker exec PTY
-           ↓
+           â†“
+    Backend pulls from Redis â†’ Docker exec PTY
+           â†“
     Container bash handles: line editing, history, completion
-           ↓
-    stdout → Redis PUBLISH terminal:{session_id}:output
-           ↓
-    WebSocket → xterm.js display
+           â†“
+    stdout â†’ Redis PUBLISH terminal:{session_id}:output
+           â†“
+    WebSocket â†’ xterm.js display
 ```
 
 **Key insight**: This is **production-grade duplex terminal handling**. No line-buffering, no simulation. Real PTY, real shell.
@@ -170,17 +170,17 @@ Keystroke → Browser xterm.js
 
 ```
 Terminal command: nmap -p 1-1000 172.20.1.20
-           ↓
+           â†“
 Backend parses command
-           ↓
+           â†“
 Lookup in sc01_events.json: find all triggered events
-           ↓
+           â†“
 For each event:
   - Format: substitute {src_ip}, {target_ip}, timestamp
   - Redis PUBLISH siem:{session_id}:feed
   - Write to PostgreSQL siem_events table
-           ↓
-WebSocket listeners receive → display in SIEM feed (Red & Blue)
+           â†“
+WebSocket listeners receive â†’ display in SIEM feed (Red & Blue)
 ```
 
 **Key insight**: Events are **deterministic**. Same command always triggers same events. Realistic & consistent.
@@ -189,18 +189,18 @@ WebSocket listeners receive → display in SIEM feed (Red & Blue)
 
 ```
 User submits command
-           ↓
+           â†“
 Backend collects context:
   - Scenario knowledge (all targets + vulns + attack paths)
   - Student discovery (what they've found so far)
   - Command history (what they've tried)
   - Note summaries (what they've documented)
   - Behavioral signals (phase, time spent, hints used)
-           ↓
+           â†“
 Call Gemini Flash with full context
-           ↓
-Response: ≤150 tokens, always a question (never direct exploit)
-           ↓
+           â†“
+Response: â‰¤150 tokens, always a question (never direct exploit)
+           â†“
 Display hint with level (L1/L2/L3)
 ```
 
@@ -210,108 +210,108 @@ Display hint with level (L1/L2/L3)
 
 ## Scenario Maturity Assessment
 
-### SC-01: NovaMed Healthcare (Web App) — 85% Ready
+### SC-01: NovaMed Healthcare (Web App) â€” 85% Ready
 
 **What works**:
-- ✅ PHP/Apache webapp with real OWASP Top 10 vulnerabilities
-- ✅ MySQL database with sensitive data
-- ✅ ModSecurity WAF blocking malicious traffic
-- ✅ Red objective: achieve RCE via chained SQLi+LFI+upload
-- ✅ Blue objective: monitor WAF + DB audit logs
-- ✅ SIEM events comprehensive (15 templates)
-- ✅ Hints progressive (18 hints across 6 phases)
+- âœ… PHP/Apache webapp with real OWASP Top 10 vulnerabilities
+- âœ… MySQL database with sensitive data
+- âœ… ModSecurity WAF blocking malicious traffic
+- âœ… Red objective: achieve RCE via chained SQLi+LFI+upload
+- âœ… Blue objective: monitor WAF + DB audit logs
+- âœ… SIEM events comprehensive (15 templates)
+- âœ… Hints progressive (18 hints across 6 phases)
 
 **What needs**:
-- ⚠️ Fine-tune vulnerability exploitability (ensure sqlmap works on actual forms)
-- ⚠️ Add more realistic error messages in webapp
-- ⚠️ Test full RCE chain end-to-end
+- âš ï¸ Fine-tune vulnerability exploitability (ensure sqlmap works on actual forms)
+- âš ï¸ Add more realistic error messages in webapp
+- âš ï¸ Test full RCE chain end-to-end
 
 **Est. effort to 100%**: 1-2 hours
 
-### SC-02: Nexora Financial (Active Directory) — 60% Ready
+### SC-02: Nexora Financial (Active Directory) â€” 60% Ready
 
 **What works**:
-- ✅ Scenario spec complete
-- ✅ Hints created (18 hints)
-- ✅ SIEM event templates drafted (12 events)
+- âœ… Scenario spec complete
+- âœ… Hints created (18 hints)
+- âœ… SIEM event templates drafted (12 events)
 
 **What needs**:
-- ❌ **CRITICAL**: Complete Samba4 DC Dockerfile
+- âŒ **CRITICAL**: Complete Samba4 DC Dockerfile
   - Domain: nexora.local
   - Users: admin, jsmith, svc_backup (Kerberoastable), it.admin
   - Kerberos config with RC4 enabled
   - Audit logging for Events 4625, 4768, 4769, etc.
-- ❌ **CRITICAL**: Complete file server Dockerfile
+- âŒ **CRITICAL**: Complete file server Dockerfile
   - Join domain
   - Create Finance + Public shares
   - ACL setup for lateral movement
-- ⚠️ Verify Kerberoasting actually works
-- ⚠️ Test DCSync exploitation
+- âš ï¸ Verify Kerberoasting actually works
+- âš ï¸ Test DCSync exploitation
 
 **Est. effort to 100%**: 3-4 hours
 
-### SC-03: Orion Logistics (Phishing) — 70% Ready
+### SC-03: Orion Logistics (Phishing) â€” 70% Ready
 
 **What works**:
-- ✅ Scenario spec complete
-- ✅ Hints created (15 hints)
-- ✅ Basic GoPhish setup
-- ✅ SIEM event templates (10 events)
+- âœ… Scenario spec complete
+- âœ… Hints created (15 hints)
+- âœ… Basic GoPhish setup
+- âœ… SIEM event templates (10 events)
 
 **What needs**:
-- ⚠️ Complete GoPhish server configuration
-- ⚠️ Phishing template library (multiple campaigns)
-- ⚠️ Windows endpoint simulation for callback
-- ⚠️ Macro-in-Office-document for attachment delivery
-- ⚠️ Test full campaign → callback flow
+- âš ï¸ Complete GoPhish server configuration
+- âš ï¸ Phishing template library (multiple campaigns)
+- âš ï¸ Windows endpoint simulation for callback
+- âš ï¸ Macro-in-Office-document for attachment delivery
+- âš ï¸ Test full campaign â†’ callback flow
 
 **Est. effort to 100%**: 2-3 hours
 
-### SC-04: StratoStack Cloud (AWS) — 50% Ready
+### SC-04: StratoStack Cloud (AWS) â€” 50% Ready
 
 **What works**:
-- ✅ Scenario spec complete
-- ✅ Hints created (9 hints)
-- ✅ LocalStack base image available
-- ✅ SIEM event templates drafted (8 events)
+- âœ… Scenario spec complete
+- âœ… Hints created (9 hints)
+- âœ… LocalStack base image available
+- âœ… SIEM event templates drafted (8 events)
 
 **What needs**:
-- ❌ **CRITICAL**: LocalStack init script
+- âŒ **CRITICAL**: LocalStack init script
   - Create S3 bucket with **public-read** ACL
   - Upload "api-keys.txt" file
   - Create IAM role with overly permissive S3:* policy
   - Create Lambda function with HTTP request capability
   - Enable CloudTrail logging
-- ⚠️ Test AWS CLI commands against endpoint
-- ⚠️ Verify S3 enumeration works
-- ⚠️ Verify privilege escalation via Lambda
+- âš ï¸ Test AWS CLI commands against endpoint
+- âš ï¸ Verify S3 enumeration works
+- âš ï¸ Verify privilege escalation via Lambda
 
 **Est. effort to 100%**: 2-3 hours
 
-### SC-05: Veridian Ransomware (IR) — 40% Ready
+### SC-05: Veridian Ransomware (IR) â€” 40% Ready
 
 **What works**:
-- ✅ Scenario spec complete
-- ✅ Hints created (10 hints)
-- ✅ SIEM event templates drafted (9 events)
+- âœ… Scenario spec complete
+- âœ… Hints created (10 hints)
+- âœ… SIEM event templates drafted (9 events)
 
 **What needs**:
-- ❌ **CRITICAL**: Event log generator
+- âŒ **CRITICAL**: Event log generator
   - Create Windows Security Event logs with realistic ransomware attack
-  - Timeline: Initial access (4625 failed logins) → Privilege escalation (4672) → Lateral movement (4688) → Defense evasion (1102) → Impact (file modifications)
+  - Timeline: Initial access (4625 failed logins) â†’ Privilege escalation (4672) â†’ Lateral movement (4688) â†’ Defense evasion (1102) â†’ Impact (file modifications)
   - Pre-generate 1-2 hour attack window with realistic timestamps
-- ❌ **CRITICAL**: Sysmon event generation
-  - Process creation chains (cmd.exe → powershell → notepad creating .LOCKED files)
+- âŒ **CRITICAL**: Sysmon event generation
+  - Process creation chains (cmd.exe â†’ powershell â†’ notepad creating .LOCKED files)
   - Network connections for C2 simulation
   - File creation events for dummy "encrypted" files
-- ⚠️ Blue Team log analysis setup
-- ⚠️ Verify kill chain identification works
+- âš ï¸ Blue Team log analysis setup
+- âš ï¸ Verify kill chain identification works
 
 **Est. effort to 100%**: 2-3 hours
 
 ---
 
-## Development Workflow: 7 Ready-to-Use Prompts 💡
+## Development Workflow: 7 Ready-to-Use Prompts ðŸ’¡
 
 I've created **7 comprehensive Claude prompts** in the file: `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md`
 
@@ -332,47 +332,47 @@ I've created **7 comprehensive Claude prompts** in the file: `CLAUDE_PROMPTS_FOR
 6. Move to Prompt 2
 
 **Prompts in order**:
-1. ⏳ SC-02 Complete AD Targets (3h)
-2. ⏳ SC-04 Complete Cloud Targets (2h)
-3. ⏳ SC-05 Complete IR Targets (2h)
-4. ⏳ SIEM Event Maps Enhancement (4-6h)
-5. ⏳ End-to-End Integration Testing (3-4h)
-6. ⏳ Performance Optimization (4h)
-7. ⏳ Blue Team Playbooks (3h)
+1. â³ SC-02 Complete AD Targets (3h)
+2. â³ SC-04 Complete Cloud Targets (2h)
+3. â³ SC-05 Complete IR Targets (2h)
+4. â³ SIEM Event Maps Enhancement (4-6h)
+5. â³ End-to-End Integration Testing (3-4h)
+6. â³ Performance Optimization (4h)
+7. â³ Blue Team Playbooks (3h)
 
 **Total: 25-30 hours autonomous work**
 
 ---
 
-## Success Criteria & Timeline ✅
+## Success Criteria & Timeline âœ…
 
 ### MVP Readiness (Current)
 
 **What you have now**:
-- ✅ 80% architecture complete
-- ✅ All core infrastructure working
-- ✅ SC-01 fully functional
-- ✅ SC-02/03 partially complete
-- ✅ SC-04/05 framework ready
+- âœ… 80% architecture complete
+- âœ… All core infrastructure working
+- âœ… SC-01 fully functional
+- âœ… SC-02/03 partially complete
+- âœ… SC-04/05 framework ready
 
 **Ready for classroom pilot when**:
-- ✅ SC-02/04/05 targets complete
-- ✅ Terminal + SIEM verified working
-- ✅ Scoring accurate
-- ✅ Reports generate
+- âœ… SC-02/04/05 targets complete
+- âœ… Terminal + SIEM verified working
+- âœ… Scoring accurate
+- âœ… Reports generate
 
 **Timeline**: 3-4 days of Claude development
 
 ### Production Readiness (Recommended)
 
 **Additional requirements**:
-- ✅ 50+ integration tests passing
-- ✅ Load tested (100 concurrent users)
-- ✅ Performance benchmarks met (≤100ms latency)
-- ✅ Blue Team playbooks complete
-- ✅ Documentation complete
-- ✅ Security audit passed
-- ✅ Zero critical bugs for 2 weeks
+- âœ… 50+ integration tests passing
+- âœ… Load tested (100 concurrent users)
+- âœ… Performance benchmarks met (â‰¤100ms latency)
+- âœ… Blue Team playbooks complete
+- âœ… Documentation complete
+- âœ… Security audit passed
+- âœ… Zero critical bugs for 2 weeks
 
 **Timeline**: 1-2 weeks total
 
@@ -391,7 +391,7 @@ I've created **7 comprehensive Claude prompts** in the file: `CLAUDE_PROMPTS_FOR
 
 ---
 
-## Deployment Recommendations 🚀
+## Deployment Recommendations ðŸš€
 
 ### Recommended: Local Classroom Deployment
 
@@ -401,11 +401,11 @@ I've created **7 comprehensive Claude prompts** in the file: `CLAUDE_PROMPTS_FOR
 - Auto-cleanup after 60 min idle
 
 **Advantages**:
-- ✅ Zero cost
-- ✅ Full control over scenarios
-- ✅ Students learn Docker/containers (educational value)
-- ✅ Faster than cloud alternatives
-- ✅ No connectivity requirements
+- âœ… Zero cost
+- âœ… Full control over scenarios
+- âœ… Students learn Docker/containers (educational value)
+- âœ… Faster than cloud alternatives
+- âœ… No connectivity requirements
 
 **Deployment time**: 30 minutes per machine
 
@@ -417,51 +417,51 @@ I've created **7 comprehensive Claude prompts** in the file: `CLAUDE_PROMPTS_FOR
 - Shared database + Redis
 
 **Advantages**:
-- ✅ Scales to thousands of students
-- ✅ Automatic backups
-- ✅ Always-on availability
+- âœ… Scales to thousands of students
+- âœ… Automatic backups
+- âœ… Always-on availability
 
 **Disadvantages**:
-- ❌ $500-2000/month infrastructure cost
-- ❌ More complex to manage
-- ❌ Network latency (VPN)
+- âŒ $500-2000/month infrastructure cost
+- âŒ More complex to manage
+- âŒ Network latency (VPN)
 
 **Recommended for**: Large universities or commercial deployment
 
 ---
 
-## Key References & Quick Links 📚
+## Key References & Quick Links ðŸ“š
 
 ### Critical Architecture Documents
-1. **MASTER_BLUEPRINT.md** — Architecture guardrails & constraints
-2. **CONTINUOUS_STATE.md** — Change tracking (Claude updates this)
-3. **PROJECT_UNDERSTANDING.md** — Project vision & multi-agent structure
-4. **GEMINI.md** — Data schemas & behavioral rules
+1. **MASTER_BLUEPRINT.md** â€” Architecture guardrails & constraints
+2. **CONTINUOUS_STATE.md** â€” Change tracking (Claude updates this)
+3. **PROJECT_UNDERSTANDING.md** â€” Project vision & multi-agent structure
+4. **GEMINI.md** â€” Data schemas & behavioral rules
 
 ### Scenario Specifications
-1. **docs/scenarios/SC-01-webapp-pentest.yaml** — Web app pentest spec
-2. **docs/scenarios/SC-02-ad-compromise.yaml** — AD scenario spec
-3. **docs/scenarios/SC-03-phishing.yaml** — Phishing scenario spec
+1. **docs/scenarios/SC-01-webapp-pentest.yaml** â€” Web app pentest spec
+2. **docs/scenarios/SC-02-ad-compromise.yaml** â€” AD scenario spec
+3. **docs/scenarios/SC-03-phishing.yaml** â€” Phishing scenario spec
 
 ### Development Resources
-1. **CLAUDE_PROMPTS_FOR_DEVELOPMENT.md** — 7 ready-to-use prompts
-2. **EXPERT_REVIEW_AND_STRATEGIC_RECOMMENDATIONS.md** — This review
-3. **QUICK_START_CONTINUATION_GUIDE.md** — Step-by-step continuation
-4. **/memories/session/cybersim_full_project_review.md** — Technical details
+1. **CLAUDE_PROMPTS_FOR_DEVELOPMENT.md** â€” 7 ready-to-use prompts
+2. **EXPERT_REVIEW_AND_STRATEGIC_RECOMMENDATIONS.md** â€” This review
+3. **QUICK_START_CONTINUATION_GUIDE.md** â€” Step-by-step continuation
+4. **/memories/session/parallax_full_project_review.md** â€” Technical details
 
 ### Code Examples
-1. **backend/src/scenarios/hints/sc01_hints.json** — Hint array format
-2. **backend/src/siem/events/sc01_events.json** — Event template format
-3. **backend/src/ws/routes.py** — WebSocket implementation
-4. **frontend/src/pages/RedWorkspace.jsx** — Red Team UI
+1. **backend/src/scenarios/hints/sc01_hints.json** â€” Hint array format
+2. **backend/src/siem/events/sc01_events.json** â€” Event template format
+3. **backend/src/ws/routes.py** â€” WebSocket implementation
+4. **frontend/src/pages/RedWorkspace.jsx** â€” Red Team UI
 
 ---
 
-## ✨ What Makes CyberSim Special
+## âœ¨ What Makes Parallax Special
 
 ### 1. Dual-Perspective Learning (Unique)
 
-Most platforms teach attack OR defense separately. CyberSim teaches both **simultaneously**, showing:
+Most platforms teach attack OR defense separately. Parallax teaches both **simultaneously**, showing:
 - **How an attack manifests** (Red Team terminal)
 - **How it appears in SIEM** (Blue Team feed)
 - **Causal relationship** (timeline visualization)
@@ -470,7 +470,7 @@ This is fundamentally different and more educational.
 
 ### 2. Real Tools, Real Targets, Real Exploitation
 
-Students don't just "click next" — they use **real pentesting tools** (nmap, sqlmap, bloodhound, impacket) on **real vulnerable software** (PHP webapp, Samba4 AD, GoPhish). The vulnerabilities are **genuinely exploitable**, not staged or simplified.
+Students don't just "click next" â€” they use **real pentesting tools** (nmap, sqlmap, bloodhound, impacket) on **real vulnerable software** (PHP webapp, Samba4 AD, GoPhish). The vulnerabilities are **genuinely exploitable**, not staged or simplified.
 
 ### 3. AI-Powered Hints (Context-Aware)
 
@@ -480,7 +480,7 @@ The AI monitor knows:
 - What methodology phase you should be in
 - What hints you've already received
 
-Hints are **never generic** — they're always relevant to your specific progress.
+Hints are **never generic** â€” they're always relevant to your specific progress.
 
 ### 4. Methodology Enforcement (Hard Phase Locks)
 
@@ -501,14 +501,14 @@ This teaches **how to think like a pentester**, not just techniques.
 
 ---
 
-## Final Recommendation 🎯
+## Final Recommendation ðŸŽ¯
 
 **You're at a pivotal moment**. The platform is architecturally sound and functionally mature. The remaining 20% is:
 
-1. **Complete the targets** (SC-02/04/05 Dockerfiles) — 7-8 hours
-2. **Expand SIEM coverage** — 4-6 hours
-3. **Run integration tests** — 3-4 hours
-4. **Polish & optimize** — 4-6 hours
+1. **Complete the targets** (SC-02/04/05 Dockerfiles) â€” 7-8 hours
+2. **Expand SIEM coverage** â€” 4-6 hours
+3. **Run integration tests** â€” 3-4 hours
+4. **Polish & optimize** â€” 4-6 hours
 
 **Next action**:
 1. Copy Prompt 1 from `CLAUDE_PROMPTS_FOR_DEVELOPMENT.md`
@@ -520,24 +520,24 @@ This teaches **how to think like a pentester**, not just techniques.
 
 ---
 
-## 📞 Need Help?
+## ðŸ“ž Need Help?
 
 - **Architecture questions**: See `docs/architecture/MASTER_BLUEPRINT.md`
 - **How does X work?**: Search `CONTINUOUS_STATE.md` for recent changes
-- **Development stuck**: Check `EXPERT_REVIEW_AND_STRATEGIC_RECOMMENDATIONS.md` → "Technical Debt" section
+- **Development stuck**: Check `EXPERT_REVIEW_AND_STRATEGIC_RECOMMENDATIONS.md` â†’ "Technical Debt" section
 - **Prompts unclear**: Reference existing implementation in `backend/src/` or `frontend/src/`
 
 ---
 
-**CyberSim is an exceptional educational platform.**  
+**Parallax is an exceptional educational platform.**  
 **You've done 80% of the hard work.**  
 **The remaining 20% is within reach.**
 
-**Let's finish strong. 🚀**
+**Let's finish strong. ðŸš€**
 
 ---
 
-*Generated by System Analysis • 2026-04-10 18:30:00 UTC*  
-*Project: CyberSim — Dual-Perspective Cybersecurity Training Platform*  
+*Generated by System Analysis â€¢ 2026-04-10 18:30:00 UTC*  
+*Project: Parallax â€” Dual-Perspective Cybersecurity Training Platform*  
 *Status: 80% Complete, Ready for Phase 2 Development*  
 *Estimated Completion: 1-2 weeks*

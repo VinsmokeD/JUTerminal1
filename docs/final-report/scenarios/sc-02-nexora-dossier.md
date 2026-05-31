@@ -10,7 +10,7 @@
 | Estimated duration | 150 minutes |
 | Primary focus | Directory-service security, authentication telemetry, lateral-movement reasoning, and SOC correlation |
 
-SC-02 is the directory-services scenario in CyberSim. It represents a fictional financial organization with a domain-controller service and a file-server service. The scenario teaches how identity enumeration, service-account abuse concepts, authentication anomalies, and privileged-access attempts appear in a defensive event stream.
+SC-02 is the directory-services scenario in Parallax. It represents a fictional financial organization with a domain-controller service and a file-server service. The scenario teaches how identity enumeration, service-account abuse concepts, authentication anomalies, and privileged-access attempts appear in a defensive event stream.
 
 This dossier documents the scenario design without exposing a complete solution path, lab-only passwords, hashes, or exact command sequences.
 
@@ -37,7 +37,7 @@ Blue Team students should learn to:
 | Nexora domain controller | Identity service | Samba4 Active Directory style domain service on the SC-02 internal network |
 | Nexora file server | Shared resource host | SMB-style file service containing fictional business artifacts |
 | Filebeat and Elasticsearch | Telemetry path | Forward selected authentication and service logs for Blue Team triage |
-| CyberSim backend | Scenario engine | Evaluates phase progress, notes, scoring, and SIEM mappings |
+| Parallax backend | Scenario engine | Evaluates phase progress, notes, scoring, and SIEM mappings |
 
 The scenario is deployed only on the SC-02 internal Docker network.
 

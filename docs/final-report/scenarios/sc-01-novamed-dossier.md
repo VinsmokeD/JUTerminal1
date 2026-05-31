@@ -10,7 +10,7 @@
 | Estimated duration | 240 minutes |
 | Primary focus | Web application security, OWASP-style testing, WAF telemetry, and healthcare-data handling |
 
-SC-01 is the web application scenario in CyberSim. It represents a fictional healthcare portal with a web tier, WAF layer, and database-backed application state. The scenario teaches students how web reconnaissance, input validation weaknesses, authorization mistakes, and file-access anomalies appear from both Red Team and Blue Team perspectives.
+SC-01 is the web application scenario in Parallax. It represents a fictional healthcare portal with a web tier, WAF layer, and database-backed application state. The scenario teaches students how web reconnaissance, input validation weaknesses, authorization mistakes, and file-access anomalies appear from both Red Team and Blue Team perspectives.
 
 The report version of this dossier intentionally avoids solution commands, flags, and lab-only secrets. It documents the scenario design, learning intent, telemetry, and evidence expectations.
 

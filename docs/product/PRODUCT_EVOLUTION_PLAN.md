@@ -1,8 +1,8 @@
-# CyberSim Product Evolution Plan
+# Parallax Product Evolution Plan
 
 ## Product North Star
 
-CyberSim should become the learning operating system for cybersecurity exercises where students understand the full scene:
+Parallax should become the learning operating system for cybersecurity exercises where students understand the full scene:
 
 - what the attacker tried,
 - what changed inside the sandbox,
@@ -15,7 +15,7 @@ The product should not compete as another vulnerable VM or capture-the-flag boar
 
 ## Product Promise
 
-CyberSim teaches the cognitive link between Red Team behavior and Blue Team visibility in a safe, local, Docker-isolated university lab.
+Parallax teaches the cognitive link between Red Team behavior and Blue Team visibility in a safe, local, Docker-isolated university lab.
 
 Every feature should strengthen at least one of these loops:
 
@@ -85,7 +85,7 @@ Target capabilities:
 
 The core innovation is showing cause and effect.
 
-For each Red Team command, CyberSim should explain:
+For each Red Team command, Parallax should explain:
 
 - what action was attempted,
 - what target/system effect it implies,
@@ -143,7 +143,7 @@ Safety rules:
 
 ### 6. Learning Analytics
 
-CyberSim should prove learning, not just activity.
+Parallax should prove learning, not just activity.
 
 Target analytics:
 

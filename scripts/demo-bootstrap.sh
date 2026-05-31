@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_DIR="${APP_DIR:-/opt/cybersim}"
+APP_DIR="${APP_DIR:-/opt/parallax}"
 REPO_URL="${REPO_URL:-https://github.com/VinsmokeD/JUTerminal1.git}"
 REPO_REF="${REPO_REF:-main}"
-CYBERSIM_DOMAIN="${CYBERSIM_DOMAIN:-}"
+PARALLAX_DOMAIN="${PARALLAX_DOMAIN:-}"
 OPENROUTER_API_KEY="${OPENROUTER_API_KEY:-your_openrouter_api_key_here}"
 
 if [[ "${EUID}" -ne 0 ]]; then
@@ -41,8 +41,8 @@ configure_firewall() {
 }
 
 resolve_domain() {
-  if [[ -n "${CYBERSIM_DOMAIN}" ]]; then
-    printf '%s\n' "${CYBERSIM_DOMAIN}"
+  if [[ -n "${PARALLAX_DOMAIN}" ]]; then
+    printf '%s\n' "${PARALLAX_DOMAIN}"
     return
   fi
 
@@ -80,17 +80,17 @@ write_env_file() {
   postgres_password="$(openssl rand -hex 24)"
 
   cat > "${APP_DIR}/.env" <<ENV
-CYBERSIM_DOMAIN=${domain}
+PARALLAX_DOMAIN=${domain}
 
 OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
 OPENROUTER_MODEL=deepseek/deepseek-chat-v3-0324
 OPENROUTER_MAX_TOKENS=150
 AI_CALL_COOLDOWN_SECONDS=10
 
-POSTGRES_USER=cybersim
+POSTGRES_USER=parallax
 POSTGRES_PASSWORD=${postgres_password}
-POSTGRES_DB=cybersim
-POSTGRES_URL=postgresql+asyncpg://cybersim:${postgres_password}@postgres:5432/cybersim
+POSTGRES_DB=parallax
+POSTGRES_URL=postgresql+asyncpg://parallax:${postgres_password}@postgres:5432/parallax
 
 REDIS_URL=redis://redis:6379/0
 
@@ -99,7 +99,7 @@ JWT_EXPIRY_HOURS=8
 
 DOCKER_SOCKET=/var/run/docker.sock
 SCENARIO_NETWORK_PREFIX=172.20
-KALI_IMAGE=cybersim-kali:latest
+KALI_IMAGE=parallax-kali:latest
 MAX_CONCURRENT_SESSIONS=5
 CONTAINER_CPU_LIMIT=0.5
 CONTAINER_MEMORY_LIMIT=512m
@@ -132,7 +132,7 @@ main() {
   write_env_file "${domain}"
 
   echo
-  echo "CyberSim demo bootstrap complete."
+  echo "Parallax demo bootstrap complete."
   echo "App dir: ${APP_DIR}"
   echo "Domain: ${domain}"
   echo

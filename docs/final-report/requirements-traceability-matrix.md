@@ -1,6 +1,6 @@
 # Requirements Traceability Matrix
 
-This matrix connects CyberSim requirements to implementation modules, test evidence, report chapters, and diagrams. It is the backbone for Chapter 3 and the appendices.
+This matrix connects Parallax requirements to implementation modules, test evidence, report chapters, and diagrams. It is the backbone for Chapter 3 and the appendices.
 
 ## Functional Requirements
 

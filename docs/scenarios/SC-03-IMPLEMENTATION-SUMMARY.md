@@ -1,6 +1,6 @@
-# SC-03 Implementation Summary — Orion Logistics Phishing
+# SC-03 Implementation Summary â€” Orion Logistics Phishing
 
-## Mission Status: ✅ COMPLETE
+## Mission Status: âœ… COMPLETE
 
 All deliverables for SC-03 (Orion Logistics Phishing Campaign) have been successfully implemented, validated, and documented.
 
@@ -60,8 +60,8 @@ All deliverables for SC-03 (Orion Logistics Phishing Campaign) have been success
 - Resource limits: 0.5 CPU, 512MB RAM per service
 - Network isolation: internal bridge, 172.20.3.0/24, no gateway
 - Port mappings:
-  - 3333 (GoPhish admin) — optional external exposure
-  - 80 (GoPhish phishing pages) — optional external exposure
+  - 3333 (GoPhish admin) â€” optional external exposure
+  - 80 (GoPhish phishing pages) â€” optional external exposure
   - 25 (SMTP relay & victim)
   - 8080 (Victim simulator API)
 
@@ -90,11 +90,11 @@ All deliverables for SC-03 (Orion Logistics Phishing Campaign) have been success
 #### **victim-simulator.py**
 - Flask application handling victim simulation
 - Endpoints:
-  - `GET /health` — Service health check
-  - `POST /api/receive-email` — Notify of incoming email
-  - `GET /api/campaigns` — Get campaign status
-  - `GET /api/events` — Get all simulated events
-  - `POST /api/reset` — Clear simulation state
+  - `GET /health` â€” Service health check
+  - `POST /api/receive-email` â€” Notify of incoming email
+  - `GET /api/campaigns` â€” Get campaign status
+  - `GET /api/events` â€” Get all simulated events
+  - `POST /api/reset` â€” Clear simulation state
 - Deterministic simulation with realistic timing
 - Threaded background tasks for victim behavior
 - Structured logging for SIEM consumption
@@ -173,25 +173,25 @@ The victim simulator implements realistic phishing kill-chain simulation:
 
 ```
 Email Received (at t=0)
-    ↓ (2-5 min delay)
+    â†“ (2-5 min delay)
 Email Opened by User
-    ↓ (30s-2min delay)
+    â†“ (30s-2min delay)
 Phishing Link Clicked
-    ↓
+    â†“
 Credential Page Visited
-    ↓ (if macro-enabled document)
+    â†“ (if macro-enabled document)
 Document Opened (winword.exe)
-    ↓
+    â†“
 Macro Executes (obfuscated PowerShell)
-    ↓ (5-30s delay)
+    â†“ (5-30s delay)
 Reverse Shell Callback (TCP 4444)
-    ↓
+    â†“
 C2 Commands Executed (whoami, ipconfig, systeminfo)
 ```
 
 ### Realistic Timing
 
-- Email open: 120-300 seconds (2-5 minutes) — realistic user response time
+- Email open: 120-300 seconds (2-5 minutes) â€” realistic user response time
 - Link click: 30-120 seconds after email open
 - Macro execution: 10-60 seconds after document open
 - Callback beacon: 5-30 seconds after macro execution
@@ -199,11 +199,11 @@ C2 Commands Executed (whoami, ipconfig, systeminfo)
 ### SIEM Integration Points
 
 **Red Team Activities** trigger events:
-- `theHarvester` queries → Domain enumeration events (T1598)
-- `nmap` port scans → OSINT port scan events (T1046)
-- GoPhish campaign creation → Campaign preparation events
-- Email sending → Campaign launch/dispatch events
-- User interactions → Email open/click events
+- `theHarvester` queries â†’ Domain enumeration events (T1598)
+- `nmap` port scans â†’ OSINT port scan events (T1046)
+- GoPhish campaign creation â†’ Campaign preparation events
+- Email sending â†’ Campaign launch/dispatch events
+- User interactions â†’ Email open/click events
 
 **Blue Team Detection** via:
 - Email gateway alerts (suspicious sender, macro attachment)
@@ -216,9 +216,9 @@ C2 Commands Executed (whoami, ipconfig, systeminfo)
 
 ```
 sc03-net (internal: true)
-├─ sc03-phish (172.20.3.10) — GoPhish admin + phishing pages
-├─ sc03-mailrelay (172.20.3.20) — SMTP relay
-└─ sc03-victim (172.20.3.30) — Victim endpoint + simulator
+â”œâ”€ sc03-phish (172.20.3.10) â€” GoPhish admin + phishing pages
+â”œâ”€ sc03-mailrelay (172.20.3.20) â€” SMTP relay
+â””â”€ sc03-victim (172.20.3.30) â€” Victim endpoint + simulator
 
 No internet access
 No gateway route to host network
@@ -227,7 +227,7 @@ No communication with other scenario networks (sc01-net, sc02-net)
 
 ---
 
-## Integration with CyberSim Platform
+## Integration with Parallax Platform
 
 ### Red Team Workflow
 1. **OSINT Phase**: Kali container performs recon (nmap, DNS, SMTP probing)
@@ -264,26 +264,26 @@ No communication with other scenario networks (sc01-net, sc02-net)
 ## File Manifest
 
 ### Infrastructure
-- `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` ✨ Enhanced
-- `infrastructure/docker/scenarios/sc03/init-gophish.sh` ✨ New
-- `infrastructure/docker/scenarios/sc03/Dockerfile.mailrelay` ✨ New
-- `infrastructure/docker/scenarios/sc03/init-mailrelay.sh` ✨ New
-- `infrastructure/docker/scenarios/sc03/postfix-main.cf` ✨ New
-- `infrastructure/docker/scenarios/sc03/Dockerfile.victim` ✨ New
-- `infrastructure/docker/scenarios/sc03/init-victim.sh` ✨ New
-- `infrastructure/docker/scenarios/sc03/victim-simulator.py` ✨ New
-- `infrastructure/docker/scenarios/sc03/postfix-victim.cf` ✨ New
+- `infrastructure/docker/scenarios/sc03/Dockerfile.gophish` âœ¨ Enhanced
+- `infrastructure/docker/scenarios/sc03/init-gophish.sh` âœ¨ New
+- `infrastructure/docker/scenarios/sc03/Dockerfile.mailrelay` âœ¨ New
+- `infrastructure/docker/scenarios/sc03/init-mailrelay.sh` âœ¨ New
+- `infrastructure/docker/scenarios/sc03/postfix-main.cf` âœ¨ New
+- `infrastructure/docker/scenarios/sc03/Dockerfile.victim` âœ¨ New
+- `infrastructure/docker/scenarios/sc03/init-victim.sh` âœ¨ New
+- `infrastructure/docker/scenarios/sc03/victim-simulator.py` âœ¨ New
+- `infrastructure/docker/scenarios/sc03/postfix-victim.cf` âœ¨ New
 
 ### Configuration
-- `docker-compose.yml` ✨ Updated SC-03 section
-- `.env.example` ✨ (no changes needed)
+- `docker-compose.yml` âœ¨ Updated SC-03 section
+- `.env.example` âœ¨ (no changes needed)
 
 ### Backend
-- `backend/src/siem/events/sc03_events.json` ✨ Rewritten (40+ events)
+- `backend/src/siem/events/sc03_events.json` âœ¨ Rewritten (40+ events)
 
 ### Documentation
-- `docs/scenarios/SC-03-IMPLEMENTATION-SUMMARY.md` ✨ This file
-- `docs/architecture/CONTINUOUS_STATE.md` ✨ Updated
+- `docs/scenarios/SC-03-IMPLEMENTATION-SUMMARY.md` âœ¨ This file
+- `docs/architecture/CONTINUOUS_STATE.md` âœ¨ Updated
 
 ---
 
@@ -291,20 +291,20 @@ No communication with other scenario networks (sc01-net, sc02-net)
 
 All components tested and verified:
 
-- ✅ Dockerfile.gophish builds successfully
-- ✅ Dockerfile.mailrelay builds successfully
-- ✅ Dockerfile.victim builds successfully
-- ✅ init-gophish.sh syntax valid (bash -n check)
-- ✅ init-mailrelay.sh syntax valid
-- ✅ init-victim.sh syntax valid
-- ✅ victim-simulator.py syntax valid (Python)
-- ✅ docker-compose.yml syntax valid
-- ✅ Network configuration correct (internal: true, 172.20.3.0/24)
-- ✅ Health checks configured for all 3 services
-- ✅ Dependencies configured (phish & victim depend on mailrelay)
-- ✅ Resource limits enforced (0.5 CPU, 512MB RAM each)
-- ✅ SIEM event mapping comprehensive (40+ events, 7 categories)
-- ✅ All Windows Event formats (email events, callback alerts) properly structured
+- âœ… Dockerfile.gophish builds successfully
+- âœ… Dockerfile.mailrelay builds successfully
+- âœ… Dockerfile.victim builds successfully
+- âœ… init-gophish.sh syntax valid (bash -n check)
+- âœ… init-mailrelay.sh syntax valid
+- âœ… init-victim.sh syntax valid
+- âœ… victim-simulator.py syntax valid (Python)
+- âœ… docker-compose.yml syntax valid
+- âœ… Network configuration correct (internal: true, 172.20.3.0/24)
+- âœ… Health checks configured for all 3 services
+- âœ… Dependencies configured (phish & victim depend on mailrelay)
+- âœ… Resource limits enforced (0.5 CPU, 512MB RAM each)
+- âœ… SIEM event mapping comprehensive (40+ events, 7 categories)
+- âœ… All Windows Event formats (email events, callback alerts) properly structured
 
 ---
 
@@ -358,19 +358,19 @@ docker-compose --profile sc03 down
 ## Learning Objectives Covered
 
 ### Red Team (Phishing Campaign Flow)
-- T1598 — Phishing (email, web, voice)
-- T1598.003 — Spearphishing Link
-- T1598.001 — Spearphishing Attachment
-- T1596 — Search Open Websites/Domains
-- T1583.006 — Acquire Infrastructure — Web Services
-- T1566 — Phishing
-- T1566.002 — Phishing — Business Email Compromise
-- T1566.001 — Phishing — Spearphishing Attachment
-- T1204.002 — User Execution — Malicious File
-- T1203 — Exploitation for Client Execution
-- T1027 — Obfuscated Files or Information
-- T1071.001 — Application Layer Protocol — Web Protocols
-- T1059.001 — Command and Scripting Interpreter — PowerShell
+- T1598 â€” Phishing (email, web, voice)
+- T1598.003 â€” Spearphishing Link
+- T1598.001 â€” Spearphishing Attachment
+- T1596 â€” Search Open Websites/Domains
+- T1583.006 â€” Acquire Infrastructure â€” Web Services
+- T1566 â€” Phishing
+- T1566.002 â€” Phishing â€” Business Email Compromise
+- T1566.001 â€” Phishing â€” Spearphishing Attachment
+- T1204.002 â€” User Execution â€” Malicious File
+- T1203 â€” Exploitation for Client Execution
+- T1027 â€” Obfuscated Files or Information
+- T1071.001 â€” Application Layer Protocol â€” Web Protocols
+- T1059.001 â€” Command and Scripting Interpreter â€” PowerShell
 
 ### Blue Team (Detection & Response)
 - Email gateway filtering (sender reputation, attachment scanning)
@@ -384,15 +384,15 @@ docker-compose --profile sc03 down
 
 ## Success Criteria
 
-✅ **Complete if**:
+âœ… **Complete if**:
 1. All 3 containers reach `Up (healthy)` status
 2. GoPhish admin panel accessible (port 3333)
 3. Mail relay accepts SMTP on port 25
 4. Victim simulator API responds (port 8080 /health)
 5. Campaign creation possible in GoPhish
-6. Email flow from GoPhish → Relay → Victim works
+6. Email flow from GoPhish â†’ Relay â†’ Victim works
 7. Victim simulator generates deterministic events
-8. SIEM events cover full attack chain (OSINT → delivery → execution → callback)
+8. SIEM events cover full attack chain (OSINT â†’ delivery â†’ execution â†’ callback)
 9. Network isolation enforced (no host/internet access)
 10. Resource limits applied (0.5 CPU, 512MB RAM each)
 
@@ -403,26 +403,26 @@ docker-compose --profile sc03 down
 | Aspect | SC-02 (AD) | SC-03 (Phishing) |
 |--------|-----------|-----------------|
 | **Services** | 2 (DC, File Server) | 3 (GoPhish, Relay, Victim) |
-| **Attack Path** | Internal: recon → kerberos → lateral → dcsync | External: OSINT → campaign → delivery → callback |
+| **Attack Path** | Internal: recon â†’ kerberos â†’ lateral â†’ dcsync | External: OSINT â†’ campaign â†’ delivery â†’ callback |
 | **Red Team Role** | Penetration tester | Social engineer |
 | **Blue Team Role** | Domain monitoring | Email/endpoint monitoring |
 | **Key Vulns** | RC4 encryption, Kerberoastable SPN | Macro, typosquat, no MFA |
 | **SIEM Events** | 100+ AD audit events | 40+ phishing/endpoint events |
-| **Integration** | Terminal → SMB recon | Campaign builder → email delivery |
+| **Integration** | Terminal â†’ SMB recon | Campaign builder â†’ email delivery |
 
 ---
 
 ## Next Phase Recommendations
 
-1. **Phase 2a — Multi-recipient campaigns**: Support simultaneous sends to 5-10 victims
-2. **Phase 2b — Payload variants**: Macro obfuscation techniques (VBA encoding, XML injection)
-3. **Phase 2c — Blue Team hardening**: Add DMARC/SPF checking, attachment sandboxing
-4. **Phase 3 — Multi-scenario linking**: SC-01 → SC-03 (web app compromise → phishing pivot)
-5. **Phase 4 — Automated scoring**: Pretext quality rating based on urgency, sender credibility, call-to-action clarity
+1. **Phase 2a â€” Multi-recipient campaigns**: Support simultaneous sends to 5-10 victims
+2. **Phase 2b â€” Payload variants**: Macro obfuscation techniques (VBA encoding, XML injection)
+3. **Phase 2c â€” Blue Team hardening**: Add DMARC/SPF checking, attachment sandboxing
+4. **Phase 3 â€” Multi-scenario linking**: SC-01 â†’ SC-03 (web app compromise â†’ phishing pivot)
+5. **Phase 4 â€” Automated scoring**: Pretext quality rating based on urgency, sender credibility, call-to-action clarity
 
 ---
 
-**Status**: ✅ Implementation Complete  
+**Status**: âœ… Implementation Complete  
 **Date**: 2026-04-10  
 **Author**: Claude Code  
 **Testing**: All verification steps passed  

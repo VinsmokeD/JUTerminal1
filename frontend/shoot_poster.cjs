@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
 (async () => {
-  const fileUrl = 'file:///C:/Users/mmjal/Documents/JUTerminal1/docs/final-report/presentation/cybersim_poster_a2.html';
+  const fileUrl = 'file:///C:/Users/mmjal/Documents/JUTerminal1/docs/final-report/presentation/parallax_poster_a2.html';
   let browser, used='';
   for (const ch of ['msedge','chrome']) {
     try { browser = await chromium.launch({ channel: ch }); used=ch; break; }

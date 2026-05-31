@@ -1,9 +1,9 @@
-# Evidence Index — CyberSim Phase 8 QA Lock
+# Evidence Index â€” Parallax Phase 8 QA Lock
 
 **Generated:** 2026-05-26  
-**Phase:** 8 — Evidence Bundle & QA Lockdown  
+**Phase:** 8 â€” Evidence Bundle & QA Lockdown  
 **Compiled by:** Antigravity Agent  
-**Status:** ✅ LOCKED
+**Status:** âœ… LOCKED
 
 ---
 
@@ -11,8 +11,8 @@
 
 | # | Artifact | Path | Size | SHA-256 (first 16 chars) |
 |---|----------|------|------|--------------------------|
-| 1 | Graduation Report (DOCX) | `docs/final-report/formal-report/cybersim-graduation-report.docx` | 1,229,155 B | `5406D1FE718D4D63` |
-| 2 | Graduation Report (PDF) | `docs/final-report/formal-report/cybersim-graduation-report.pdf` | 1,794,941 B | `102E77D4C34987C9` |
+| 1 | Graduation Report (DOCX) | `docs/final-report/formal-report/parallax-graduation-report.docx` | 1,229,155 B | `5406D1FE718D4D63` |
+| 2 | Graduation Report (PDF) | `docs/final-report/formal-report/parallax-graduation-report.pdf` | 1,794,941 B | `102E77D4C34987C9` |
 | 3 | Render Verification | `docs/final-report/formal-report/render-verification.md` | 3,793 B | `2FFE5BD4B27959` |
 | 4 | MANIFEST.sha256 | `MANIFEST.sha256` (project root) | 30 entries | self-referential |
 
@@ -24,13 +24,13 @@ Full hashes: see [`MANIFEST.sha256`](../../../MANIFEST.sha256).
 
 | Chapter | File | Lines | Size |
 |---------|------|-------|------|
-| Ch. 1 — Introduction | `chapters/chapter-01-introduction.md` | 74 | 6,904 B |
-| Ch. 2 — Related Systems | `chapters/chapter-02-related-existing-systems.md` | 65 | 8,431 B |
-| Ch. 3 — Requirements | `chapters/chapter-03-requirements.md` | 117 | 7,007 B |
-| Ch. 4 — System Design | `chapters/chapter-04-system-design.md` | 197 | 20,085 B |
-| Ch. 5 — Implementation | `chapters/chapter-05-implementation.md` | 118 | 10,943 B |
-| Ch. 6 — Testing & Installation | `chapters/chapter-06-testing-and-installation.md` | 104 | 6,003 B |
-| Ch. 7 — Conclusions | `chapters/chapter-07-conclusions-and-future-work.md` | 68 | 6,957 B |
+| Ch. 1 â€” Introduction | `chapters/chapter-01-introduction.md` | 74 | 6,904 B |
+| Ch. 2 â€” Related Systems | `chapters/chapter-02-related-existing-systems.md` | 65 | 8,431 B |
+| Ch. 3 â€” Requirements | `chapters/chapter-03-requirements.md` | 117 | 7,007 B |
+| Ch. 4 â€” System Design | `chapters/chapter-04-system-design.md` | 197 | 20,085 B |
+| Ch. 5 â€” Implementation | `chapters/chapter-05-implementation.md` | 118 | 10,943 B |
+| Ch. 6 â€” Testing & Installation | `chapters/chapter-06-testing-and-installation.md` | 104 | 6,003 B |
+| Ch. 7 â€” Conclusions | `chapters/chapter-07-conclusions-and-future-work.md` | 68 | 6,957 B |
 | References | `references.md` | 49 | 2,726 B |
 
 ---
@@ -41,10 +41,10 @@ All exported from Mermaid source under `docs/final-report/diagrams/`.
 
 | Figure # | Caption | PNG File | Size |
 |----------|---------|----------|------|
-| Fig 4.1 | CyberSim System Context | `diagrams/export/png/c4-context.png` | 89,839 B |
-| Fig 4.2 | CyberSim Container Architecture | `diagrams/export/png/c4-container.png` | 69,511 B |
-| Fig 4.3 | CyberSim DFD Level 0 | `diagrams/export/png/dfd-level-0.png` | 46,256 B |
-| Fig 4.4 | CyberSim Core ERD | `diagrams/export/png/erd-core-schema.png` | 176,843 B |
+| Fig 4.1 | Parallax System Context | `diagrams/export/png/c4-context.png` | 89,839 B |
+| Fig 4.2 | Parallax Container Architecture | `diagrams/export/png/c4-container.png` | 69,511 B |
+| Fig 4.3 | Parallax DFD Level 0 | `diagrams/export/png/dfd-level-0.png` | 46,256 B |
+| Fig 4.4 | Parallax Core ERD | `diagrams/export/png/erd-core-schema.png` | 176,843 B |
 | Fig 4.5 | Docker Network & Service Topology | `diagrams/export/png/docker-topology.png` | 59,984 B |
 | Fig 4.6 | Red-to-Blue Event Sequence | `diagrams/export/png/red-blue-event-sequence.png` | 37,963 B |
 | Fig 4.7 | UML Use Case Diagram | `diagrams/export/png/uml-use-case.png` | 160,172 B |
@@ -62,11 +62,11 @@ All exported from Mermaid source under `docs/final-report/diagrams/`.
 
 ## 4. UI Screenshots (System Evidence)
 
-All screenshots captured from live CyberSim frontend. Located under `evidence/screenshots/`.
+All screenshots captured from live Parallax frontend. Located under `evidence/screenshots/`.
 
 | Screenshot | Description | Size |
 |-----------|-------------|------|
-| `landing-page.png` | CyberSim login/splash screen | 1,563,181 B |
+| `landing-page.png` | Parallax login/splash screen | 1,563,181 B |
 | `auth-page.png` | Authentication flow UI | 1,879,266 B |
 | `dashboard-scenarios.png` | Scenario selection dashboard | 2,222,604 B |
 | `red-workspace-terminal.png` | Red Team terminal workspace (xterm.js) | 2,132,215 B |
@@ -97,14 +97,14 @@ All screenshots captured from live CyberSim frontend. Located under `evidence/sc
 
 | Check | Result | Notes |
 |-------|--------|-------|
-| Placeholder text (TODO/TBD/Lorem) | ✅ PASS | Zero matches across all 7 chapters |
-| SC-04/SC-05 scope leakage | ✅ PASS | Only in Ch. 7 future work (correct) |
-| Leaked credentials / hardcoded secrets | ✅ PASS | Zero matches; `NexoraAdmin` in scenario dossier is fictional training account |
-| Inline citation markers `[N]` | ✅ N/A | Report uses end-of-document bibliography style; no numeric inline cites |
-| Diagram count vs embedded count | ✅ PASS | 16 PNGs on disk, 16 figures in report |
-| DOCX file integrity | ✅ PASS | 1,229,155 bytes, SHA-256 locked |
-| PDF file integrity | ✅ PASS | 1,794,941 bytes, SHA-256 locked |
-| KASIT formatting compliance | ✅ PASS | See `render-verification.md` |
+| Placeholder text (TODO/TBD/Lorem) | âœ… PASS | Zero matches across all 7 chapters |
+| SC-04/SC-05 scope leakage | âœ… PASS | Only in Ch. 7 future work (correct) |
+| Leaked credentials / hardcoded secrets | âœ… PASS | Zero matches; `NexoraAdmin` in scenario dossier is fictional training account |
+| Inline citation markers `[N]` | âœ… N/A | Report uses end-of-document bibliography style; no numeric inline cites |
+| Diagram count vs embedded count | âœ… PASS | 16 PNGs on disk, 16 figures in report |
+| DOCX file integrity | âœ… PASS | 1,229,155 bytes, SHA-256 locked |
+| PDF file integrity | âœ… PASS | 1,794,941 bytes, SHA-256 locked |
+| KASIT formatting compliance | âœ… PASS | See `render-verification.md` |
 
 ---
 
@@ -114,10 +114,10 @@ To re-verify any artifact after this lock:
 
 ```powershell
 # Re-hash the report files and compare to MANIFEST.sha256
-(Get-FileHash "docs\final-report\formal-report\cybersim-graduation-report.docx" -Algorithm SHA256).Hash
+(Get-FileHash "docs\final-report\formal-report\parallax-graduation-report.docx" -Algorithm SHA256).Hash
 # Expected: 5406D1FE718D4D63C39A96D4DCE8B1D02120DA04894555D24165FC48552FC57D
 
-(Get-FileHash "docs\final-report\formal-report\cybersim-graduation-report.pdf" -Algorithm SHA256).Hash
+(Get-FileHash "docs\final-report\formal-report\parallax-graduation-report.pdf" -Algorithm SHA256).Hash
 # Expected: 102E77D4C34987C9E1211E7BE0307A5F2B8526E64F77F4F076B22D3ED6116DF6
 ```
 

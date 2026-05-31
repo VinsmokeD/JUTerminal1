@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-CyberSim Graduation Report Compiler – v2 (Premium Edition)
+Parallax Graduation Report Compiler â€“ v2 (Premium Edition)
 ===========================================================
-Produces a fully KASIT-compliant, CyberSim-themed DOCX + PDF with:
-  • Styled chapter title-page blocks (dark accent bar + chapter number)
-  • Sidebar accent rules on H2/H3 via paragraph left-border shading
-  • Rich alternating-row tables with header fill
-  • Captions above tables / below figures per KASIT spec
-  • Callout / code-block paragraphs in mono with light-grey fill
-  • All 16 figures embedded at their anchor points
-  • Front matter with Roman numerals + body with Arabic restart
-  • Full TOC / LOF / LOT generated via Word COM (if available)
-  • Falls back gracefully when Word COM is unavailable
+Produces a fully KASIT-compliant, Parallax-themed DOCX + PDF with:
+  â€¢ Styled chapter title-page blocks (dark accent bar + chapter number)
+  â€¢ Sidebar accent rules on H2/H3 via paragraph left-border shading
+  â€¢ Rich alternating-row tables with header fill
+  â€¢ Captions above tables / below figures per KASIT spec
+  â€¢ Callout / code-block paragraphs in mono with light-grey fill
+  â€¢ All 16 figures embedded at their anchor points
+  â€¢ Front matter with Roman numerals + body with Arabic restart
+  â€¢ Full TOC / LOF / LOT generated via Word COM (if available)
+  â€¢ Falls back gracefully when Word COM is unavailable
 """
 
 from __future__ import annotations
@@ -42,11 +42,11 @@ CHAPTERS_DIR = BASE / "docs" / "final-report" / "chapters"
 DIAGRAMS_DIR = BASE / "docs" / "final-report" / "diagrams" / "export" / "png"
 REFERENCES_MD = BASE / "docs" / "final-report" / "references.md"
 OUT_DIR = BASE / "docs" / "final-report" / "formal-report"
-OUT_DOCX = OUT_DIR / "cybersim-graduation-report.docx"
-OUT_PDF = OUT_DIR / "cybersim-graduation-report.pdf"
+OUT_DOCX = OUT_DIR / "parallax-graduation-report.docx"
+OUT_PDF = OUT_DIR / "parallax-graduation-report.pdf"
 
 # ---------------------------------------------------------------------------
-# CyberSim Brand Palette
+# Parallax Brand Palette
 # ---------------------------------------------------------------------------
 # Primary dark navy (chapter title blocks, table headers)
 BRAND_DARK = RGBColor(0x0D, 0x1B, 0x2A)        # #0D1B2A  deep navy
@@ -244,7 +244,7 @@ def _configure_document(doc: Document) -> None:
     section.header_distance = Cm(1.0)
     section.footer_distance = Cm(1.0)
 
-    # Normal style — Times New Roman 12pt
+    # Normal style â€” Times New Roman 12pt
     style = doc.styles["Normal"]
     font = style.font
     font.name = "Times New Roman"
@@ -256,8 +256,8 @@ def _configure_document(doc: Document) -> None:
 
 
 def _configure_heading_styles(doc: Document) -> None:
-    """Override Heading 1/2/3 styles to match CyberSim theme."""
-    # Heading 1 — Chapter heading (handled manually as title block)
+    """Override Heading 1/2/3 styles to match Parallax theme."""
+    # Heading 1 â€” Chapter heading (handled manually as title block)
     h1 = doc.styles["Heading 1"]
     h1.font.name = "Times New Roman"
     h1.font.size = Pt(14)
@@ -302,7 +302,7 @@ def add_styled_heading1(doc: Document, text: str,
     Chapter title block: dark navy bar with white CHAPTER N text, then
     the chapter title below in BRAND_ACCENT color.
     """
-    # ── Dark bar with "CHAPTER N" ──────────────────────────────────────────
+    # â”€â”€ Dark bar with "CHAPTER N" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if chapter_num:
         bar = doc.add_paragraph()
         bar_run = bar.add_run(f"  CHAPTER {chapter_num}")
@@ -315,7 +315,7 @@ def add_styled_heading1(doc: Document, text: str,
         bar.paragraph_format.space_after = Pt(0)
         bar.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
-    # ── Chapter title ──────────────────────────────────────────────────────
+    # â”€â”€ Chapter title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     title_clean = re.sub(r"^CHAPTER\s+\d+\s*[:\-]?\s*", "", text, flags=re.IGNORECASE).strip()
     # If nothing left (e.g. the whole string was consumed), fall back
     if not title_clean:
@@ -385,7 +385,7 @@ def add_code_block(doc: Document, text: str) -> None:
 
 
 def add_figure_caption(doc: Document, text: str) -> None:
-    """Figure caption below image — italic, centered, smaller, slate color."""
+    """Figure caption below image â€” italic, centered, smaller, slate color."""
     p = doc.add_paragraph()
     run = p.add_run(text)
     run.font.name = "Times New Roman"
@@ -397,7 +397,7 @@ def add_figure_caption(doc: Document, text: str) -> None:
 
 
 def add_table_caption(doc: Document, text: str) -> None:
-    """Table caption above table — italic, left-aligned, slate color."""
+    """Table caption above table â€” italic, left-aligned, slate color."""
     p = doc.add_paragraph()
     run = p.add_run(text)
     run.font.name = "Times New Roman"
@@ -459,7 +459,7 @@ def add_styled_table(doc: Document, headers: list[str],
             p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
             set_spacing(p, before_pt=2, after_pt=2)
 
-    # Column widths — distribute equally
+    # Column widths â€” distribute equally
     total_width = Cm(15.0)
     col_width = int(total_width / n_cols)
     for col in table.columns:
@@ -608,22 +608,22 @@ def _clean_inline(text: str) -> str:
 
 
 # ===========================================================================
-# FIGURE MAP — resolves ![...](../diagrams/export/png/xxx.png) to local Path
+# FIGURE MAP â€” resolves ![...](../diagrams/export/png/xxx.png) to local Path
 # ===========================================================================
 
 FIGURE_CAPTIONS: dict[str, str] = {
     # Original 16 diagrams (redesigned)
-    "c4-context.png": "Figure 4.1: CyberSim System Context (C4 Level 1)",
-    "c4-container.png": "Figure 4.2: CyberSim Container Architecture (C4 Level 2)",
-    "dfd-level-0.png": "Figure 4.3: CyberSim Data Flow Diagram (Level 0)",
-    "erd-core-schema.png": "Figure 4.4: CyberSim Core Entity-Relationship Diagram",
+    "c4-context.png": "Figure 4.1: Parallax System Context (C4 Level 1)",
+    "c4-container.png": "Figure 4.2: Parallax Container Architecture (C4 Level 2)",
+    "dfd-level-0.png": "Figure 4.3: Parallax Data Flow Diagram (Level 0)",
+    "erd-core-schema.png": "Figure 4.4: Parallax Core Entity-Relationship Diagram",
     "docker-topology.png": "Figure 4.5: Docker Network and Service Topology",
     "red-blue-event-sequence.png": "Figure 4.6: Red-to-Blue Event Sequence (WebSocket + SIEM Pipeline)",
     "uml-use-case.png": "Figure 4.7: UML Use Case Diagram (All Actors and Use Cases)",
     "auth-sequence.png": "Figure 4.8: Authentication Sequence (Registration, Login, JWT Flow)",
     "session-lifecycle-state.png": "Figure 4.9: Session Lifecycle State Machine",
     "scenario-phase-state-machine.png": "Figure 4.10: Scenario Phase State Machine (Gated Methodology)",
-    "deployment-architecture.png": "Figure 4.11: CyberSim Deployment Architecture (Docker Networks)",
+    "deployment-architecture.png": "Figure 4.11: Parallax Deployment Architecture (Docker Networks)",
     "system-component-interaction.png": "Figure 4.12: System Component Interaction Map",
     "ai-safety-pipeline.png": "Figure 5.1: AI Safety Pipeline (10-Stage Socratic Guard)",
     "report-generation-pipeline.png": "Figure 5.2: Report Generation Pipeline",
@@ -754,7 +754,7 @@ def build_cover_page(doc: Document) -> None:
 
     # Accent divider
     div = doc.add_paragraph()
-    div_r = div.add_run("─" * 48)
+    div_r = div.add_run("â”€" * 48)
     div_r.font.color.rgb = BRAND_ACCENT
     div_r.font.size = Pt(10)
     div.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -763,7 +763,7 @@ def build_cover_page(doc: Document) -> None:
     # Project Title Block
     title_bg = doc.add_paragraph()
     set_para_shading(title_bg, BRAND_DARK)
-    t_run = title_bg.add_run("  CyberSim  ")
+    t_run = title_bg.add_run("  Parallax  ")
     t_run.font.name = "Times New Roman"
     t_run.font.size = Pt(28)
     t_run.font.bold = True
@@ -782,7 +782,7 @@ def build_cover_page(doc: Document) -> None:
 
     # Accent divider
     div2 = doc.add_paragraph()
-    d2r = div2.add_run("─" * 48)
+    d2r = div2.add_run("â”€" * 48)
     d2r.font.color.rgb = BRAND_ACCENT
     d2r.font.size = Pt(10)
     div2.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -790,7 +790,7 @@ def build_cover_page(doc: Document) -> None:
 
     # Authors / supervisors
     for label, value in [
-        ("Graduation Project — 2025/2026", ""),
+        ("Graduation Project â€” 2025/2026", ""),
         ("Submitted in partial fulfillment of the requirements", ""),
         ("for the Bachelor's Degree in Computer Science", ""),
     ]:
@@ -806,7 +806,7 @@ def build_cover_page(doc: Document) -> None:
 
     # Year block
     year = doc.add_paragraph()
-    y_run = year.add_run("Academic Year 2025 – 2026")
+    y_run = year.add_run("Academic Year 2025 â€“ 2026")
     y_run.font.name = "Times New Roman"
     y_run.font.size = Pt(12)
     y_run.font.bold = True
@@ -820,7 +820,7 @@ def build_cover_page(doc: Document) -> None:
 def build_abstract(doc: Document) -> None:
     add_styled_heading1(doc, "ABSTRACT", None)
     abstract_text = (
-        "CyberSim is a browser-based cybersecurity training platform designed for university "
+        "Parallax is a browser-based cybersecurity training platform designed for university "
         "students. It provides a dual-perspective learning environment where students practice "
         "Red Team offensive techniques against isolated Docker scenario containers and "
         "simultaneously observe the Blue Team defensive telemetry generated by their actions. "
@@ -850,7 +850,7 @@ def build_abstract(doc: Document) -> None:
 
 
 def build_toc_page(doc: Document) -> None:
-    """TOC placeholder — Word COM will populate."""
+    """TOC placeholder â€” Word COM will populate."""
     add_styled_heading1(doc, "TABLE OF CONTENTS", None)
     p = doc.add_paragraph()
     add_field(p, 'TOC \\o "1-3" \\h \\z \\u')
@@ -905,7 +905,7 @@ def build_references_section(doc: Document) -> None:
 
 
 # ===========================================================================
-# WORD COM → PDF
+# WORD COM â†’ PDF
 # ===========================================================================
 
 def convert_to_pdf_via_com(docx_path: Path, pdf_path: Path) -> bool:
@@ -926,7 +926,7 @@ try {{
     Write-Output "PDF_FAIL: $_"
 }}
 """
-    tmp_ps = Path(os.environ.get("TEMP", ".")) / "cybersim_pdf.ps1"
+    tmp_ps = Path(os.environ.get("TEMP", ".")) / "parallax_pdf.ps1"
     tmp_ps.write_text(ps_script, encoding="utf-8")
     result = subprocess.run(
         ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(tmp_ps)],
@@ -948,14 +948,14 @@ def main() -> None:
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    print("CyberSim Report Compiler v2 - Premium Edition")
+    print("Parallax Report Compiler v2 - Premium Edition")
     print("=" * 55)
 
     doc = Document()
     _configure_document(doc)
     _configure_heading_styles(doc)
 
-    # ── FRONT MATTER (Roman numerals) ────────────────────────────────────
+    # â”€â”€ FRONT MATTER (Roman numerals) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     print("  Building cover page...")
     build_cover_page(doc)
     print("  Building abstract...")
@@ -968,7 +968,7 @@ def main() -> None:
     # Switch to Arabic numbering for body
     set_page_number_restart(doc, fmt="decimal", start=1)
 
-    # ── CHAPTERS ─────────────────────────────────────────────────────────
+    # â”€â”€ CHAPTERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     table_counter = [0]
     figure_counter = [0]
 
@@ -984,17 +984,17 @@ def main() -> None:
         if i < len(CHAPTER_FILES) - 1:
             add_page_break(doc)
 
-    # ── REFERENCES ───────────────────────────────────────────────────────
+    # â”€â”€ REFERENCES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     print("  Building references...")
     build_references_section(doc)
 
-    # ── SAVE DOCX ────────────────────────────────────────────────────────
+    # â”€â”€ SAVE DOCX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     print(f"  Saving DOCX -> {OUT_DOCX.name}")
     doc.save(str(OUT_DOCX))
     size_docx = OUT_DOCX.stat().st_size
     print(f"  [OK] DOCX saved: {size_docx:,} bytes")
 
-    # ── CONVERT TO PDF ───────────────────────────────────────────────────
+    # â”€â”€ CONVERT TO PDF â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     print("  Converting to PDF via Word COM...")
     if convert_to_pdf_via_com(OUT_DOCX, OUT_PDF):
         size_pdf = OUT_PDF.stat().st_size

@@ -1,19 +1,19 @@
 # Tooling and Skill Usage Log
 
-This file records which newly available plugins, MCP tools, and skills were useful for the CyberSim documentation pass. It is intentionally practical: tools are listed only when they shaped the documentation work or produced evidence.
+This file records which newly available plugins, MCP tools, and skills were useful for the Parallax documentation pass. It is intentionally practical: tools are listed only when they shaped the documentation work or produced evidence.
 
 ## Tools Used In This Pass
 
 | Tool or Skill | How it was used | Documentation result |
 | --- | --- | --- |
-| Canva connector | Confirmed the selected report design `DAHKeHjt8IY`, page count, A4 dimensions, current edit/view URLs, and placeholder text. | Added a Canva rewrite brief so the visual report can be converted from generic business content into CyberSim-specific report pages. |
-| Repomix | Packed the main source areas with `npx repomix@latest --compress` into `.tmp/final-report/repomix-cybersim.xml`. | Created a source inventory evidence record with file count, token count, and documentation ownership notes. |
+| Canva connector | Confirmed the selected report design `DAHKeHjt8IY`, page count, A4 dimensions, current edit/view URLs, and placeholder text. | Added a Canva rewrite brief so the visual report can be converted from generic business content into Parallax-specific report pages. |
+| Repomix | Packed the main source areas with `npx repomix@latest --compress` into `.tmp/final-report/repomix-parallax.xml`. | Created a source inventory evidence record with file count, token count, and documentation ownership notes. |
 | Node REPL MCP | Checked available Node packages and confirmed Playwright availability while Mermaid was not bundled. | Selected `npx @mermaid-js/mermaid-cli` as the rendering path rather than assuming local Mermaid support. |
 | Mermaid CLI | Rendered six Mermaid sources into SVG and PNG exports. | Produced print and Canva-ready diagrams under `docs/final-report/diagrams/export/`. |
 | Academic paper skill | Applied report structure discipline: claim support, citation traceability, chapter architecture, and final-review expectations. | Strengthened Chapter 4, reference planning, and production checklist expectations. |
 | Academic paper reviewer skill | Used as a documentation QA rubric: evidence-based claims, reviewer-style weaknesses, traceability, and actionability. | Added clearer evidence and review requirements for the final documentation bundle. |
 | Canvas design skill | Applied a visual philosophy approach to the Canva companion and diagram package. | Added a page rewrite brief and reinforced the "visual companion, formal report remains handbook-compliant" split. |
-| Color expert skill | Used to keep the CyberSim palette role-based and print-friendly. | Added a Mermaid theme file using black, gold, green, navy, red, cyan, amber, and neutral surfaces. |
+| Color expert skill | Used to keep the Parallax palette role-based and print-friendly. | Added a Mermaid theme file using black, gold, green, navy, red, cyan, amber, and neutral surfaces. |
 | Hand-drawn diagrams skill | Used for diagram routing discipline and validation thinking. | Kept Mermaid as the formal vector source for report figures; reserved Excalidraw for later explanatory sketches if needed. |
 | Verification-before-completion skill | Applied evidence-before-claim rules. | Added fresh verification commands and kept unrun tests separate from completed checks. |
 

@@ -48,7 +48,7 @@ _SIMULATED_ROWS: dict[str, dict[str, list[dict]]] = {
         ],
         "default": [
             {"artifact": "mail_queue", "value": "simulated campaign messages", "risk": "review"},
-            {"artifact": "beacon_log", "value": "/var/log/cybersim/beacons.jsonl", "risk": "high"},
+            {"artifact": "beacon_log", "value": "/var/log/parallax/beacons.jsonl", "risk": "high"},
         ],
     },
 }

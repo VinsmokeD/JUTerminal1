@@ -1,4 +1,4 @@
-# CyberSim HUD Redesign (Phase V4) Verification Audit Report
+# Parallax HUD Redesign (Phase V4) Verification Audit Report
 
 **Date:** 2026-05-24  
 **Audit Executed By:** Senior Examiner AI (Antigravity)  
@@ -24,32 +24,32 @@ The following automated verification checks were executed locally:
   ```text
   vite v5.4.21 building for production...
   transforming...
-  ✓ 949 modules transformed.
+  âœ“ 949 modules transformed.
   rendering chunks...
   computing gzip size...
-  dist/index.html                                     1.36 kB │ gzip:   0.66 kB
-  dist/assets/MissionReadinessOverlay-LcAfv9l9.css    4.35 kB │ gzip:   1.68 kB
-  dist/assets/index-GnJHjxin.css                     96.65 kB │ gzip:  18.46 kB
-  dist/assets/Stat-BcdrlVgs.js                        0.45 kB │ gzip:   0.27 kB
-  dist/assets/settingsStore-BirPlW6v.js               1.22 kB │ gzip:   0.54 kB
-  dist/assets/Settings-BqZTFlQD.js                    4.68 kB │ gzip:   1.68 kB
-  dist/assets/HeroScene3D-DL4T9toC.js                 5.35 kB │ gzip:   2.37 kB
-  dist/assets/KillChainView-BMuD55n7.js               7.09 kB │ gzip:   2.68 kB
-  dist/assets/Profile-DmAYsVGl.js                     8.38 kB │ gzip:   2.35 kB
-  dist/assets/RedWorkspace-DHqyUQ9X.js               21.33 kB │ gzip:   7.10 kB
-  dist/assets/purify.es-CLGrRn1w.js                  25.32 kB │ gzip:   9.62 kB
-  dist/assets/InstructorDashboard-BiGzzKwh.js        29.79 kB │ gzip:   7.30 kB
-  dist/assets/Debrief-BJDw_EYJ.js                    32.16 kB │ gzip:   9.40 kB
-  dist/assets/vendor-ui-DQ_rTDiH.js                  42.16 kB │ gzip:  16.78 kB
-  dist/assets/BlueWorkspace-JlyOcG_V.js              60.17 kB │ gzip:  19.06 kB
-  dist/assets/MissionReadinessOverlay-CGlGyLzp.js    82.78 kB │ gzip:  26.87 kB
-  dist/assets/index.es-CCcLKkPJ.js                  150.80 kB │ gzip:  51.61 kB
-  dist/assets/vendor-react-DLKkGc6X.js              160.25 kB │ gzip:  52.34 kB
-  dist/assets/html2canvas.esm-CBrSDip1.js           201.42 kB │ gzip:  48.03 kB
-  dist/assets/vendor-xterm-DWX2dM_j.js              286.27 kB │ gzip:  71.49 kB
-  dist/assets/jspdf.es.min-Bh9oqba9.js              390.31 kB │ gzip: 128.75 kB
-  dist/assets/index-bjw9pouP.js                     685.76 kB │ gzip: 187.59 kB
-  ✓ built in 6.39s
+  dist/index.html                                     1.36 kB â”‚ gzip:   0.66 kB
+  dist/assets/MissionReadinessOverlay-LcAfv9l9.css    4.35 kB â”‚ gzip:   1.68 kB
+  dist/assets/index-GnJHjxin.css                     96.65 kB â”‚ gzip:  18.46 kB
+  dist/assets/Stat-BcdrlVgs.js                        0.45 kB â”‚ gzip:   0.27 kB
+  dist/assets/settingsStore-BirPlW6v.js               1.22 kB â”‚ gzip:   0.54 kB
+  dist/assets/Settings-BqZTFlQD.js                    4.68 kB â”‚ gzip:   1.68 kB
+  dist/assets/HeroScene3D-DL4T9toC.js                 5.35 kB â”‚ gzip:   2.37 kB
+  dist/assets/KillChainView-BMuD55n7.js               7.09 kB â”‚ gzip:   2.68 kB
+  dist/assets/Profile-DmAYsVGl.js                     8.38 kB â”‚ gzip:   2.35 kB
+  dist/assets/RedWorkspace-DHqyUQ9X.js               21.33 kB â”‚ gzip:   7.10 kB
+  dist/assets/purify.es-CLGrRn1w.js                  25.32 kB â”‚ gzip:   9.62 kB
+  dist/assets/InstructorDashboard-BiGzzKwh.js        29.79 kB â”‚ gzip:   7.30 kB
+  dist/assets/Debrief-BJDw_EYJ.js                    32.16 kB â”‚ gzip:   9.40 kB
+  dist/assets/vendor-ui-DQ_rTDiH.js                  42.16 kB â”‚ gzip:  16.78 kB
+  dist/assets/BlueWorkspace-JlyOcG_V.js              60.17 kB â”‚ gzip:  19.06 kB
+  dist/assets/MissionReadinessOverlay-CGlGyLzp.js    82.78 kB â”‚ gzip:  26.87 kB
+  dist/assets/index.es-CCcLKkPJ.js                  150.80 kB â”‚ gzip:  51.61 kB
+  dist/assets/vendor-react-DLKkGc6X.js              160.25 kB â”‚ gzip:  52.34 kB
+  dist/assets/html2canvas.esm-CBrSDip1.js           201.42 kB â”‚ gzip:  48.03 kB
+  dist/assets/vendor-xterm-DWX2dM_j.js              286.27 kB â”‚ gzip:  71.49 kB
+  dist/assets/jspdf.es.min-Bh9oqba9.js              390.31 kB â”‚ gzip: 128.75 kB
+  dist/assets/index-bjw9pouP.js                     685.76 kB â”‚ gzip: 187.59 kB
+  âœ“ built in 6.39s
   ```
 
 ### b. Backend Unit/Integration Tests
@@ -69,33 +69,33 @@ The following automated verification checks were executed locally:
 * **Output:**
   ```text
   ======================================================
-    CyberSim Demo Readiness Check  
+    Parallax Demo Readiness Check  
   ======================================================
     Backend:  http://localhost:8001
     Frontend: http://localhost:3000
     Time:     2026-05-24 10:00:04
   
   Core Services (docker compose)
-    ✔    docker: backend — running
-    ✔    docker: elasticsearch — healthy
-    ✔    docker: filebeat — running
-    ✔    docker: frontend — running
-    ✔    docker: postgres — healthy
-    ✔    docker: redis — healthy
+    âœ”    docker: backend â€” running
+    âœ”    docker: elasticsearch â€” healthy
+    âœ”    docker: filebeat â€” running
+    âœ”    docker: frontend â€” running
+    âœ”    docker: postgres â€” healthy
+    âœ”    docker: redis â€” healthy
   
   Backend API
-    ✔  Backend /health — 0.1.0
-    ✔    postgres
-    ✔    redis — active_sessions=0
-    ✔    elasticsearch — yellow
-    ✔    openrouter
+    âœ”  Backend /health â€” 0.1.0
+    âœ”    postgres
+    âœ”    redis â€” active_sessions=0
+    âœ”    elasticsearch â€” yellow
+    âœ”    openrouter
   
   Frontend
-    ✔  Frontend serves HTML — http://localhost:3000
+    âœ”  Frontend serves HTML â€” http://localhost:3000
   
-  ──────────────────────────────────────────────────────
-    ALL 12 CHECKS PASSED — ready to demo!
-  ──────────────────────────────────────────────────────
+  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    ALL 12 CHECKS PASSED â€” ready to demo!
+  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   ```
 
 ---
@@ -114,7 +114,7 @@ The following files were modified/added as part of the HUD Redesign and their fu
 | `frontend/src/App.jsx` | [MODIFY] | Wraps application routing inside the `HudEnvironment` provider layer. |
 | `frontend/src/components/dashboard/ScenarioCard.jsx` | [MODIFY] | Customizes scenario cards to use `.card-v3` glowing corners. |
 | `frontend/src/pages/Dashboard.jsx` | [MODIFY] | Redesigns scenario search/briefing with Framer Motion entry animations. |
-| `frontend/src/components/nav/CyberSimNav.jsx` | [MODIFY] | Applies custom brackets to the global navigation items and badges. |
+| `frontend/src/components/nav/ParallaxNav.jsx` | [MODIFY] | Applies custom brackets to the global navigation items and badges. |
 | `frontend/src/components/terminal/Terminal.jsx` | [MODIFY] | Aligns terminal border glows dynamically with focused team roles. |
 | `frontend/src/pages/Landing.jsx` | [MODIFY] | Redesigns landing grids, scenarios checklist, and CTA to HUD layout. |
 | `frontend/src/pages/Auth.jsx` | [MODIFY] | Overhauls auth input fields to use diagonal corner boxes. |
@@ -151,7 +151,7 @@ The following files were modified/added as part of the HUD Redesign and their fu
 
 ### e. SIEM Logging Hybrid Model
 * **Status:** `NOTE`
-* **Finding:** The prompt claims "No Fakes — results must come from real executions". However, on the Blue Team side, the SIEM feed uses synthetic telemetry (generated by `daemon-noise.py` and matched via regex command triggers in `command_bridge.py`) alongside real logs. This is pedagogically necessary to simulate AD noise and WAF alerts, but contradicts the "No Fakes" claim.
+* **Finding:** The prompt claims "No Fakes â€” results must come from real executions". However, on the Blue Team side, the SIEM feed uses synthetic telemetry (generated by `daemon-noise.py` and matched via regex command triggers in `command_bridge.py`) alongside real logs. This is pedagogically necessary to simulate AD noise and WAF alerts, but contradicts the "No Fakes" claim.
 
 ---
 

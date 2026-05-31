@@ -4,7 +4,7 @@ This file summarizes the operating context for future coding agents and maintain
 
 ## Project Identity
 
-CyberSim is a local, Docker-isolated cybersecurity training platform. Its current MVP has three scenarios: SC-01, SC-02, and SC-03.
+Parallax is a local, Docker-isolated cybersecurity training platform. Its current MVP has three scenarios: SC-01, SC-02, and SC-03.
 
 ## Source of Truth
 

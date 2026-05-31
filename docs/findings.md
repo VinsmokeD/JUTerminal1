@@ -14,7 +14,7 @@
 - **Reference**: [Sigma](https://github.com/SigmaHQ/sigma) - Industry standard for defining detection rules (can be used for SIEM event mapping).
 
 ## Constraints & Discoveries
-- CyberSim Architecture: React (Vite) + FastAPI (Python) + Docker.
+- Parallax Architecture: React (Vite) + FastAPI (Python) + Docker.
 - Existing `claude.md` defines current project state (Phase 1 Infrastructure Complete).
 - OpenRouter (DeepSeek) integration for AI monitoring.
 - Need to implement Layer 1 SOPs in `architecture/` for Terminal, SIEM, and Scenario Engines.

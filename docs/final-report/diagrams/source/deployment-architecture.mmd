@@ -7,7 +7,7 @@ flowchart TB
     classDef storage fill:#1A5276,stroke:#2E86C1,stroke-width:2px,color:#FFFFFF
 
     subgraph HOST["  Local Docker Host (16 GB RAM)  "]
-        subgraph CORE_NET["  bridge: cybersim-net  "]
+        subgraph CORE_NET["  bridge: parallax-net  "]
             NGX["Nginx\n:80/:443"]
             FE["React Vite SPA\n:3000"]
             BE["FastAPI\n:8001"]

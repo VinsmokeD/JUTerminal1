@@ -1,4 +1,4 @@
-# CyberSim Platform Redesign — Full Design Spec
+# Parallax Platform Redesign â€” Full Design Spec
 
 **Date:** 2026-04-10  
 **Approach:** Layered Experience (Approach C)  
@@ -7,7 +7,7 @@
 
 ---
 
-## 1. AI Brain — Context-Aware Adaptive Tutor
+## 1. AI Brain â€” Context-Aware Adaptive Tutor
 
 ### Problem
 The AI monitor currently receives only: scenario_id, role, phase, methodology, current_action, hint_level. It has no knowledge of the target environment, student history, notes, or behavioral patterns.
@@ -24,7 +24,7 @@ phase: 2
 phase_duration_minutes: 14
 methodology: ptes
 skill_level: beginner          # from user profile
-mode: learn                     # "learn" or "challenge" — student toggleable
+mode: learn                     # "learn" or "challenge" â€” student toggleable
 
 target_environment:             # loaded from scenario YAML
   network: 172.20.1.0/24
@@ -60,16 +60,16 @@ hint_level_requested: null
 
 ### Backend Implementation
 
-- **New file:** `backend/src/ai/context_builder.py` — assembles full AI payload
-- **New file:** `backend/src/ai/discovery_tracker.py` — parses terminal output to track what student has found
-- **Modified:** `backend/src/ai/monitor.py` — uses full payload instead of minimal context
-- **Modified:** `backend/src/ws/routes.py` — passes full context on each AI call
+- **New file:** `backend/src/ai/context_builder.py` â€” assembles full AI payload
+- **New file:** `backend/src/ai/discovery_tracker.py` â€” parses terminal output to track what student has found
+- **Modified:** `backend/src/ai/monitor.py` â€” uses full payload instead of minimal context
+- **Modified:** `backend/src/ws/routes.py` â€” passes full context on each AI call
 - **Data sources:**
-  - `target_environment` → scenario YAML files
-  - `discovered_*` → parsed from Redis terminal history via discovery_tracker
-  - `command_history` → Redis capped list (already exists)
-  - `notes_summary` → Postgres notes table
-  - `behavioral signals` → Redis timestamps + counters
+  - `target_environment` â†’ scenario YAML files
+  - `discovered_*` â†’ parsed from Redis terminal history via discovery_tracker
+  - `command_history` â†’ Redis capped list (already exists)
+  - `notes_summary` â†’ Postgres notes table
+  - `behavioral signals` â†’ Redis timestamps + counters
 
 ### Mode Toggle
 
@@ -81,11 +81,11 @@ hint_level_requested: null
 ### Discovery Tracker Logic
 
 Parses command output for key patterns:
-- `nmap` output → extract open ports and service versions
-- `gobuster` output → extract discovered paths
-- `sqlmap` output → mark vuln as discovered
-- `bloodhound` output → extract users, SPNs, relationships
-- `curl` headers → extract server info
+- `nmap` output â†’ extract open ports and service versions
+- `gobuster` output â†’ extract discovered paths
+- `sqlmap` output â†’ mark vuln as discovered
+- `bloodhound` output â†’ extract users, SPNs, relationships
+- `curl` headers â†’ extract server info
 - Generic keyword matching: `vulnerable`, `injectable`, `cracked`, `found`
 
 ---
@@ -99,10 +99,10 @@ Beginners land on scenario selection with zero explanation. Terms like PTES, OWA
 
 Single screen after first login:
 
-> "Welcome to CyberSim. How would you describe your experience?"
-> - **Beginner** — "I know what cybersecurity is but haven't done hands-on work"
-> - **Intermediate** — "I've used tools like nmap, maybe done CTFs"
-> - **Experienced** — "I'm comfortable with pentest methodology and SIEM analysis"
+> "Welcome to Parallax. How would you describe your experience?"
+> - **Beginner** â€” "I know what cybersecurity is but haven't done hands-on work"
+> - **Intermediate** â€” "I've used tools like nmap, maybe done CTFs"
+> - **Experienced** â€” "I'm comfortable with pentest methodology and SIEM analysis"
 
 Stored as `skill_level` on user profile. Changeable anytime in settings.
 
@@ -171,48 +171,48 @@ Toggle between **Guided** (template) and **Freeform** modes.
 ### Auto-Evidence Capture
 
 When significant command output is detected, a toast appears:
-> "nmap found 4 open ports — Save as evidence?" [Save] [Dismiss]
+> "nmap found 4 open ports â€” Save as evidence?" [Save] [Dismiss]
 
 Triggers:
-- `nmap` scan completion → ports summary
-- `sqlmap` injection found → vuln confirmation
-- `gobuster` paths found → directory listing
-- `hashcat` crack → credential discovery
+- `nmap` scan completion â†’ ports summary
+- `sqlmap` injection found â†’ vuln confirmation
+- `gobuster` paths found â†’ directory listing
+- `hashcat` crack â†’ credential discovery
 - Keywords: `vulnerable`, `injected`, `cracked`, `pwned`, `found`
 
 ### AI Note-Coaching
 
 AI monitors note-taking behavior:
-- No notes after 5 commands → nudge to document
-- Notes without #finding tags → suggest tagging confirmed vulns
-- Sparse notes at phase change → warn about incomplete documentation
+- No notes after 5 commands â†’ nudge to document
+- Notes without #finding tags â†’ suggest tagging confirmed vulns
+- Sparse notes at phase change â†’ warn about incomplete documentation
 
 ### Guided Report Builder (Debrief)
 
 **Red Team Report:**
-1. Executive Summary — auto-generated from findings, student edits narrative
-2. Scope & Methodology — pre-filled from session
-3. Findings Table — from #finding notes + CVSS helper
-4. Attack Narrative — timeline from command log, student adds "why"
-5. Evidence — compiled #evidence notes
-6. Recommendations — remediation templates
+1. Executive Summary â€” auto-generated from findings, student edits narrative
+2. Scope & Methodology â€” pre-filled from session
+3. Findings Table â€” from #finding notes + CVSS helper
+4. Attack Narrative â€” timeline from command log, student adds "why"
+5. Evidence â€” compiled #evidence notes
+6. Recommendations â€” remediation templates
 
 **Blue Team Report:**
-1. Incident Summary — from SIEM events triaged
-2. Detection Timeline — from flagged events
-3. IOC List — from Investigation panel
-4. Root Cause Analysis — guided template
-5. Containment Actions — from playbook checklist
-6. Recommendations — hardening templates
+1. Incident Summary â€” from SIEM events triaged
+2. Detection Timeline â€” from flagged events
+3. IOC List â€” from Investigation panel
+4. Root Cause Analysis â€” guided template
+5. Containment Actions â€” from playbook checklist
+6. Recommendations â€” hardening templates
 
-**Export:** Markdown + PDF with CyberSim branding header.
+**Export:** Markdown + PDF with Parallax branding header.
 
 ### New Files
-- `backend/src/notes/templates.py` — phase-aware templates per scenario/role
-- `backend/src/reports/pdf_generator.py` — PDF export with branding
-- `frontend/src/components/notes/GuidedNotebook.jsx` — template-aware notebook
-- `frontend/src/components/notes/AutoEvidence.jsx` — toast + auto-capture
-- `frontend/src/pages/ReportBuilder.jsx` — structured report page (replaces simple Debrief)
+- `backend/src/notes/templates.py` â€” phase-aware templates per scenario/role
+- `backend/src/reports/pdf_generator.py` â€” PDF export with branding
+- `frontend/src/components/notes/GuidedNotebook.jsx` â€” template-aware notebook
+- `frontend/src/components/notes/AutoEvidence.jsx` â€” toast + auto-capture
+- `frontend/src/pages/ReportBuilder.jsx` â€” structured report page (replaces simple Debrief)
 
 ---
 
@@ -233,10 +233,10 @@ Replace the passive SiemFeed with an interactive console:
 ### Investigation Workflow
 
 Upgrade from simple IOC text input to structured workflow:
-- **IOC extraction** — click any IP, hash, domain, or email in SIEM events to extract
-- **IOC enrichment** — simulated enrichment panel shows basic context (is this IP internal/external? is this hash known malicious?)
-- **Investigation timeline** — auto-builds as student flags events and extracts IOCs
-- **Containment actions** — structured checklist with radio buttons: "Block IP at firewall", "Isolate host", "Disable account", "Preserve logs"
+- **IOC extraction** â€” click any IP, hash, domain, or email in SIEM events to extract
+- **IOC enrichment** â€” simulated enrichment panel shows basic context (is this IP internal/external? is this hash known malicious?)
+- **Investigation timeline** â€” auto-builds as student flags events and extracts IOCs
+- **Containment actions** â€” structured checklist with radio buttons: "Block IP at firewall", "Isolate host", "Disable account", "Preserve logs"
 
 ### Blue Team AI Context
 
@@ -248,11 +248,11 @@ The AI receives Blue-Team-specific context:
 - Time spent on each NIST phase
 
 ### New/Modified Files
-- `frontend/src/components/siem/SiemConsole.jsx` — replaces SiemFeed.jsx, adds query/filter/expand
-- `frontend/src/components/siem/EventDetail.jsx` — expanded event view with field explanations
-- `frontend/src/components/siem/CorrelationView.jsx` — grouped event display
-- `frontend/src/components/investigation/InvestigationWorkflow.jsx` — replaces simple InvestigationPanel
-- `frontend/src/components/investigation/IocCard.jsx` — enriched IOC display
+- `frontend/src/components/siem/SiemConsole.jsx` â€” replaces SiemFeed.jsx, adds query/filter/expand
+- `frontend/src/components/siem/EventDetail.jsx` â€” expanded event view with field explanations
+- `frontend/src/components/siem/CorrelationView.jsx` â€” grouped event display
+- `frontend/src/components/investigation/InvestigationWorkflow.jsx` â€” replaces simple InvestigationPanel
+- `frontend/src/components/investigation/IocCard.jsx` â€” enriched IOC display
 
 ---
 
@@ -260,11 +260,11 @@ The AI receives Blue-Team-specific context:
 
 ### Visual Identity
 
-- **Logo:** Shield icon with terminal cursor inside. Text: "CyberSim" in Inter font
+- **Logo:** Shield icon with terminal cursor inside. Text: "Parallax" in Inter font
 - **Color system:**
-  - Primary: Cyan (#06b6d4) — links, active states, Blue Team accent
-  - Red Team accent: Rose (#f43f5e) — Red Team indicators
-  - Blue Team accent: Teal (#14b8a6) — Blue Team indicators
+  - Primary: Cyan (#06b6d4) â€” links, active states, Blue Team accent
+  - Red Team accent: Rose (#f43f5e) â€” Red Team indicators
+  - Blue Team accent: Teal (#14b8a6) â€” Blue Team indicators
   - Surface: Slate-900 (#0f172a) for cards, Slate-950 (#020617) for backgrounds
   - Text: Slate-100 (#f1f5f9) primary, Slate-400 (#94a3b8) secondary
 - **Typography:** Inter for UI, JetBrains Mono for terminal/code
@@ -272,7 +272,7 @@ The AI receives Blue-Team-specific context:
 
 ### Dashboard Redesign
 
-- Hero section with CyberSim logo, tagline: "Learn to attack. Learn to defend."
+- Hero section with Parallax logo, tagline: "Learn to attack. Learn to defend."
 - Scenario cards with cover images (abstract network diagrams), difficulty badges, duration
 - Progress indicators showing completion percentage per scenario
 - Quick-resume bar for active sessions
@@ -299,7 +299,7 @@ The AI receives Blue-Team-specific context:
 
 ```
 +--------------------------------------------------+
-| [CyberSim] SC-01 NovaMed | Phase: 2 Enum | Learn | Score: 85 | Timer: 14:23 | [Debrief] |
+| [Parallax] SC-01 NovaMed | Phase: 2 Enum | Learn | Score: 85 | Timer: 14:23 | [Debrief] |
 +----------------------------------+-----------------+
 |                                  |  AI Tutor       |
 |  Kali Terminal (60%)             |  [Learn/Challenge toggle]
@@ -308,10 +308,10 @@ The AI receives Blue-Team-specific context:
 |                                  +-----------------+
 |                                  |  SIEM Peek      |
 |                                  |  (last 5 events)|
-|                                  |  [Open full →]  |
+|                                  |  [Open full â†’]  |
 +----------------------------------+-----------------+
 |  Notebook (Guided/Freeform)      | Learning Context|
-|  [#finding] [#evidence] [#ioc]   | Phase 2 — PTES  |
+|  [#finding] [#evidence] [#ioc]   | Phase 2 â€” PTES  |
 |  Template or freeform...         | Tools: nmap...  |
 +----------------------------------+-----------------+
 ```
@@ -325,7 +325,7 @@ The AI receives Blue-Team-specific context:
 
 ```
 +--------------------------------------------------+
-| [CyberSim] SC-01 NovaMed | NIST: Detect | Learn | Score: 72 | 3 CRITICAL | [Close Incident] |
+| [Parallax] SC-01 NovaMed | NIST: Detect | Learn | Score: 72 | 3 CRITICAL | [Close Incident] |
 +----------------------------------+-----------------+
 |                                  |  IR Playbook    |
 |  SIEM Console (60%)              |  [ ] Step 1...  |
@@ -337,7 +337,7 @@ The AI receives Blue-Team-specific context:
 |                                  |  Guidance...    |
 +----------------------------------+-----------------+
 |  Investigation Workflow           | NIST Guidance   |
-|  IOCs: [172.20.1.10] [hash...]   | Phase 2—Detect  |
+|  IOCs: [172.20.1.10] [hash...]   | Phase 2â€”Detect  |
 |  Containment: [x] Block IP       | Instructions... |
 +----------------------------------+-----------------+
 ```
@@ -358,8 +358,8 @@ The AI receives Blue-Team-specific context:
 
 1. **Add mode awareness:** Detect `mode: learn` vs `mode: challenge` and adjust response style
 2. **Add skill level awareness:** `skill_level: beginner` gets simpler vocabulary, more explanation
-3. **Add full target knowledge:** AI knows all services, vulns, attack paths — can give precise guidance
-4. **Add discovery tracking:** AI knows what student found vs. what's hidden — nudges toward unexplored areas
+3. **Add full target knowledge:** AI knows all services, vulns, attack paths â€” can give precise guidance
+4. **Add discovery tracking:** AI knows what student found vs. what's hidden â€” nudges toward unexplored areas
 5. **Add note-coaching:** AI monitors documentation habits and nudges
 6. **Add step-by-step capability (Learn mode):** In Learn mode, AI can explain concepts and suggest specific next actions (still no raw commands with all flags)
 7. **Add Blue Team parity:** Equal depth of guidance for SOC analysis, not just pentesting
@@ -441,23 +441,23 @@ CREATE TABLE siem_triage (
 
 ```
 Terminal command submitted
-    │
-    ├──► Redis terminal:{id}:history (existing)
-    │
-    ├──► Discovery Tracker
-    │       ├── parse output for services, paths, vulns
-    │       └── update Redis discovery:{id}:services, discovery:{id}:paths, discovery:{id}:vulns
-    │
-    ├──► Context Builder (assembles payload)
-    │       ├── Read target_environment from scenario YAML cache
-    │       ├── Read discovered_* from Redis
-    │       ├── Read command_history from Redis (last 20)
-    │       ├── Read notes from Postgres
-    │       ├── Compute behavioral signals from Redis timestamps
-    │       └── Return full AI context dict
-    │
-    └──► AI Monitor (existing, now uses full context)
-            ├── Format context as structured prompt
-            ├── Call Gemini with mode-aware system prompt
-            └── Return hint/guidance
+    â”‚
+    â”œâ”€â”€â–º Redis terminal:{id}:history (existing)
+    â”‚
+    â”œâ”€â”€â–º Discovery Tracker
+    â”‚       â”œâ”€â”€ parse output for services, paths, vulns
+    â”‚       â””â”€â”€ update Redis discovery:{id}:services, discovery:{id}:paths, discovery:{id}:vulns
+    â”‚
+    â”œâ”€â”€â–º Context Builder (assembles payload)
+    â”‚       â”œâ”€â”€ Read target_environment from scenario YAML cache
+    â”‚       â”œâ”€â”€ Read discovered_* from Redis
+    â”‚       â”œâ”€â”€ Read command_history from Redis (last 20)
+    â”‚       â”œâ”€â”€ Read notes from Postgres
+    â”‚       â”œâ”€â”€ Compute behavioral signals from Redis timestamps
+    â”‚       â””â”€â”€ Return full AI context dict
+    â”‚
+    â””â”€â”€â–º AI Monitor (existing, now uses full context)
+            â”œâ”€â”€ Format context as structured prompt
+            â”œâ”€â”€ Call Gemini with mode-aware system prompt
+            â””â”€â”€ Return hint/guidance
 ```

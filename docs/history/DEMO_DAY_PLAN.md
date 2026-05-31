@@ -1,10 +1,10 @@
 # Demo-Day Deployment Plan
 
-**Goal:** A working public URL for your graduation defense. You + 1–2 jury members click around live for ~20 minutes. Then you tear it down.
+**Goal:** A working public URL for your graduation defense. You + 1â€“2 jury members click around live for ~20 minutes. Then you tear it down.
 
 **Not a goal:** Public users, real students, security audits, GDPR, monitoring, backups. We are deliberately skipping all of it.
 
-**Lead time:** 1–3 weeks. Plenty.
+**Lead time:** 1â€“3 weeks. Plenty.
 
 ---
 
@@ -12,14 +12,14 @@
 
 | Thing | Choice |
 |-------|--------|
-| Host | **Hetzner CCX13** — 2 dedicated vCPU, 8 GB RAM, €13/mo, kill it after defense |
-| Domain | **`yourname.de.cool` or similar** from Porkbun (~$3/yr) — or skip and use `sslip.io` (free) |
-| HTTPS | **Caddy** — auto Let's Encrypt, zero config beyond hostname |
-| DNS | **Cloudflare DNS-only** (orange cloud OFF — WebSockets hate the proxy) |
-| Deploy mechanism | `git pull && docker compose up -d` — manual is fine for one-shot demo |
-| Time budget | **3–4 hours** total spread across 3 sessions |
+| Host | **Hetzner CCX13** â€” 2 dedicated vCPU, 8 GB RAM, â‚¬13/mo, kill it after defense |
+| Domain | **`yourname.de.cool` or similar** from Porkbun (~$3/yr) â€” or skip and use `sslip.io` (free) |
+| HTTPS | **Caddy** â€” auto Let's Encrypt, zero config beyond hostname |
+| DNS | **Cloudflare DNS-only** (orange cloud OFF â€” WebSockets hate the proxy) |
+| Deploy mechanism | `git pull && docker compose up -d` â€” manual is fine for one-shot demo |
+| Time budget | **3â€“4 hours** total spread across 3 sessions |
 
-Total cost: **~$15 for the month** (€13 VPS + $3 domain). Cancel both after defense.
+Total cost: **~$15 for the month** (â‚¬13 VPS + $3 domain). Cancel both after defense.
 
 ---
 
@@ -29,8 +29,8 @@ The plan has been converted into checked-in files so the VPS setup is copy/paste
 
 ```bash
 # On the VPS as root
-CYBERSIM_DOMAIN=demo.yourname.cool bash scripts/demo-bootstrap.sh
-cd /opt/cybersim
+PARALLAX_DOMAIN=demo.yourname.cool bash scripts/demo-bootstrap.sh
+cd /opt/parallax
 nano .env
 bash scripts/demo-deploy.sh
 ```
@@ -51,7 +51,7 @@ You need three things and nothing else: (1) a stable IP that doesn't change when
 
 ---
 
-## Phase 1 — Local rehearsal first (do this before buying anything)
+## Phase 1 â€” Local rehearsal first (do this before buying anything)
 
 **Time: 30 min.** Make sure the full stack runs cleanly on your laptop end-to-end. If it breaks here it'll break on the VPS too.
 
@@ -64,42 +64,42 @@ docker compose ps                  # everything should be healthy after ~60s
 
 Then in a browser:
 1. Open http://localhost (frontend)
-2. Register an account → log in → pick SC-01 → run one full attack flow → reach Debrief
+2. Register an account â†’ log in â†’ pick SC-01 â†’ run one full attack flow â†’ reach Debrief
 3. Repeat for SC-02 and SC-03
 4. While all three sessions are open, watch `docker stats` in another terminal. Note peak RAM.
 
-If peak RAM is over ~6 GB, you'll need CCX23 (16 GB) instead of CCX13 (8 GB). Most likely it's 4–5 GB and CCX13 is fine.
+If peak RAM is over ~6 GB, you'll need CCX23 (16 GB) instead of CCX13 (8 GB). Most likely it's 4â€“5 GB and CCX13 is fine.
 
 ---
 
-## Phase 2 — Domain + VPS (day 1, ~1 hour)
+## Phase 2 â€” Domain + VPS (day 1, ~1 hour)
 
 ### 2a. Buy a domain (10 min)
-- Go to Porkbun.com → search a `.cool` / `.app` / `.dev` name → ~$3–10/yr first year
-- After buying, in the dashboard set nameservers to Cloudflare's (`maya.ns.cloudflare.com` / `chad.ns.cloudflare.com` — Cloudflare will tell you the exact pair)
-- Sign up at cloudflare.com → "Add a site" → free plan → it gives you those nameservers
+- Go to Porkbun.com â†’ search a `.cool` / `.app` / `.dev` name â†’ ~$3â€“10/yr first year
+- After buying, in the dashboard set nameservers to Cloudflare's (`maya.ns.cloudflare.com` / `chad.ns.cloudflare.com` â€” Cloudflare will tell you the exact pair)
+- Sign up at cloudflare.com â†’ "Add a site" â†’ free plan â†’ it gives you those nameservers
 
-**Alternative: skip the domain entirely.** Use `sslip.io` — a hostname like `1-2-3-4.sslip.io` resolves to IP `1.2.3.4` automatically, free, gives you valid TLS certs. Less memorable but $0.
+**Alternative: skip the domain entirely.** Use `sslip.io` â€” a hostname like `1-2-3-4.sslip.io` resolves to IP `1.2.3.4` automatically, free, gives you valid TLS certs. Less memorable but $0.
 
 ### 2b. Order Hetzner box (15 min)
 - Sign up at hetzner.cloud (needs ID verification, can take a few hours)
-- Create project → "Add Server"
+- Create project â†’ "Add Server"
   - Location: closest to where the demo audience will be (Helsinki for EU, Ashburn for US-East, Hillsboro for US-West)
   - Image: **Ubuntu 24.04**
   - Type: **CCX13** (or CCX23 if your local rehearsal showed >6 GB peak)
   - SSH key: paste your public key (generate with `ssh-keygen -t ed25519` on Windows PowerShell if you don't have one)
-  - Name: `cybersim-demo`
+  - Name: `parallax-demo`
 - Note the public IPv4. That's where everything lives.
 
 ### 2c. Point DNS at it (5 min)
 In Cloudflare dashboard for your domain:
-- `A` record: `demo` → `<your-hetzner-ip>` → **Proxy status: DNS only (grey cloud)**
-- `A` record: `@` → same IP → DNS only (so the apex works too)
+- `A` record: `demo` â†’ `<your-hetzner-ip>` â†’ **Proxy status: DNS only (grey cloud)**
+- `A` record: `@` â†’ same IP â†’ DNS only (so the apex works too)
 - Wait 1 min, verify: `nslookup demo.yourname.cool` returns the right IP
 
 ---
 
-## Phase 3 — Server bootstrap (day 1, ~30 min)
+## Phase 3 â€” Server bootstrap (day 1, ~30 min)
 
 SSH in:
 ```bash
@@ -121,29 +121,29 @@ ufw allow 443/tcp
 ufw --force enable
 
 # Create deploy dir
-mkdir -p /opt/cybersim
-cd /opt/cybersim
+mkdir -p /opt/parallax
+cd /opt/parallax
 git clone https://github.com/VinsmokeD/JUTerminal1.git .
 ```
 
 ---
 
-## Phase 4 — Swap Nginx for Caddy + production env (day 1, ~45 min)
+## Phase 4 â€” Swap Nginx for Caddy + production env (day 1, ~45 min)
 
 The current `docker-compose.yml` uses Nginx on port 80. We swap to Caddy because Caddy gives you HTTPS automatically without you wrestling with certbot.
 
 ### 4a. Create the Caddyfile
 
 ```bash
-mkdir -p /opt/cybersim/infrastructure/caddy
-nano /opt/cybersim/infrastructure/caddy/Caddyfile
+mkdir -p /opt/parallax/infrastructure/caddy
+nano /opt/parallax/infrastructure/caddy/Caddyfile
 ```
 
 Paste (replace the hostname with yours):
 
 ```caddyfile
 demo.yourname.cool {
-    # WebSocket endpoint — must come first
+    # WebSocket endpoint â€” must come first
     handle /ws/* {
         reverse_proxy backend:8000
     }
@@ -153,7 +153,7 @@ demo.yourname.cool {
         reverse_proxy backend:8000
     }
 
-    # Everything else → frontend
+    # Everything else â†’ frontend
     handle {
         reverse_proxy frontend:80
     }
@@ -171,7 +171,7 @@ demo.yourname.cool {
 Create an override file (don't touch the main `docker-compose.yml`):
 
 ```bash
-nano /opt/cybersim/docker-compose.demo.yml
+nano /opt/parallax/docker-compose.demo.yml
 ```
 
 Paste:
@@ -194,7 +194,7 @@ services:
       - frontend
       - backend
 
-  # Disable nginx — Caddy replaces it
+  # Disable nginx â€” Caddy replaces it
   nginx:
     profiles: ["disabled"]
 
@@ -213,9 +213,9 @@ nano .env
 Edit these values:
 ```
 GEMINI_API_KEY=<paste your real key from Google AI Studio>
-JWT_SECRET=<run: openssl rand -hex 32 — paste output>
-POSTGRES_PASSWORD=<run: openssl rand -hex 24 — paste output>
-POSTGRES_URL=postgresql://cybersim:<that_password>@postgres:5432/cybersim
+JWT_SECRET=<run: openssl rand -hex 32 â€” paste output>
+POSTGRES_PASSWORD=<run: openssl rand -hex 24 â€” paste output>
+POSTGRES_URL=postgresql://parallax:<that_password>@postgres:5432/parallax
 MAX_CONCURRENT_SESSIONS=5
 ```
 
@@ -224,7 +224,7 @@ Leave everything else default.
 ### 4d. Bring it up
 
 ```bash
-cd /opt/cybersim
+cd /opt/parallax
 docker compose -f docker-compose.yml -f docker-compose.demo.yml \
     --profile sc01 --profile sc02 --profile sc03 \
     up -d --build
@@ -237,12 +237,12 @@ After ~3 minutes, hit `https://demo.yourname.cool` in your browser. Caddy will h
 
 If it doesn't work, the three usual suspects:
 - DNS hasn't propagated yet (wait 5 min, try `dig demo.yourname.cool` from your laptop)
-- Cloudflare is proxying (orange cloud) — turn it off
-- Firewall blocks 80/443 — `ufw status` should show them open
+- Cloudflare is proxying (orange cloud) â€” turn it off
+- Firewall blocks 80/443 â€” `ufw status` should show them open
 
 ---
 
-## Phase 5 — Rehearsal (day 2 + 3, ~30 min each)
+## Phase 5 â€” Rehearsal (day 2 + 3, ~30 min each)
 
 **Rehearsal 1 (a week before defense):**
 1. From your laptop browser, do a full SC-01 run end-to-end on the public URL
@@ -256,32 +256,32 @@ Pass criteria:
 - SIEM events appear within 2 seconds of attack command
 - No "WebSocket disconnected" toasts during normal use
 
-**Rehearsal 2 (2–3 days before defense):**
+**Rehearsal 2 (2â€“3 days before defense):**
 - Repeat the above with the exact demo script you'll perform live
-- Time yourself — make sure your story fits the slot
+- Time yourself â€” make sure your story fits the slot
 - Take screenshots of every page in case something breaks mid-demo (you can fall back to slide-mode)
 
 If anything fails in rehearsal: see "Common failures" below.
 
 ---
 
-## Phase 6 — Day-of-defense protocol
+## Phase 6 â€” Day-of-defense protocol
 
 **Morning of:**
-1. SSH in 2 hours before: `docker compose ps` — everything healthy?
+1. SSH in 2 hours before: `docker compose ps` â€” everything healthy?
 2. If anything is in restart loop: `docker compose restart <service>` once. If still bad, `docker compose down && up -d`.
-3. Hit the URL from your phone (on cellular, not your laptop's wifi) → confirm the world can reach it
+3. Hit the URL from your phone (on cellular, not your laptop's wifi) â†’ confirm the world can reach it
 4. Open the demo flow once yourself end-to-end so it's primed (Docker image caches are warm, no first-time lag)
 
 **During the demo:**
-- Keep an SSH terminal open in a hidden window with `docker stats` — if RAM creeps past 7 GB, that's your warning signal
-- Have a slide-deck backup of every screen — if the live demo blows up, you pivot to slides and finish the story
-- Don't let jury members run wild — give them a guided suggestion: "try `nmap -sV 172.20.1.20` to fingerprint the target"
+- Keep an SSH terminal open in a hidden window with `docker stats` â€” if RAM creeps past 7 GB, that's your warning signal
+- Have a slide-deck backup of every screen â€” if the live demo blows up, you pivot to slides and finish the story
+- Don't let jury members run wild â€” give them a guided suggestion: "try `nmap -sV 172.20.1.20` to fingerprint the target"
 
 **After the demo (same day or next):**
 - Hetzner: delete the server (~30 sec, billing stops immediately, you only pay prorated to the hour)
 - Porkbun: keep the domain or let it expire
-- Cloudflare: keep the zone — free anyway
+- Cloudflare: keep the zone â€” free anyway
 
 ---
 
@@ -296,7 +296,7 @@ If anything fails in rehearsal: see "Common failures" below.
 | Out-of-memory during demo | `docker compose stop sc02-dc sc02-fileserver` if you're not demoing AD right then. Frees ~1.5 GB instantly |
 | Frontend shows old version after redeploy | `docker compose build --no-cache frontend && docker compose up -d frontend` |
 | Terminal is laggy | Switch to ethernet from wifi. If still laggy, restart the session (close + reopen workspace) |
-| Scenario container won't start | `docker compose logs sc01-webapp` — usually a port collision; `docker compose down --remove-orphans` then up |
+| Scenario container won't start | `docker compose logs sc01-webapp` â€” usually a port collision; `docker compose down --remove-orphans` then up |
 
 ---
 
@@ -305,9 +305,9 @@ If anything fails in rehearsal: see "Common failures" below.
 Cheap insurance, take 20 minutes to set up:
 
 1. On your demo laptop, install `cloudflared`: `winget install cloudflare.cloudflared`
-2. The night before: `cloudflared tunnel login` → creates a tunnel → `cloudflared tunnel --url http://localhost:80`
+2. The night before: `cloudflared tunnel login` â†’ creates a tunnel â†’ `cloudflared tunnel --url http://localhost:80`
 3. Run `docker compose up -d` locally on your laptop
-4. If the public URL dies mid-demo, you flip to the tunnel URL on screen — same UI, served from your laptop, takes 10 seconds
+4. If the public URL dies mid-demo, you flip to the tunnel URL on screen â€” same UI, served from your laptop, takes 10 seconds
 
 You won't need it. But knowing it's there lets you breathe.
 
@@ -320,7 +320,7 @@ You won't need it. But knowing it's there lets you breathe.
 | Database backups | Demo data is throwaway. Nuke and restart. |
 | Rate limiting | Three jury members can't DoS you |
 | Email verification | One demo account, you create it manually |
-| Monitoring/alerting | You're the monitoring — you're watching the screen |
+| Monitoring/alerting | You're the monitoring â€” you're watching the screen |
 | Auto-deploy / CI | Manual `git pull && docker compose up` is fine for one shot |
 | Container egress lock-down | Box is firewalled at the perimeter; doesn't matter |
 | Production secrets manager | `.env` on a server you'll delete in 24 hours is fine |
@@ -336,12 +336,12 @@ If anyone in the jury asks "how would you scale this?", you point them at [DEPLO
 
 | Item | Cost |
 |------|------|
-| Hetzner CCX13 prorated to ~3 weeks of use | ~€10 |
-| Porkbun domain (1 year minimum) | $3–10 |
+| Hetzner CCX13 prorated to ~3 weeks of use | ~â‚¬10 |
+| Porkbun domain (1 year minimum) | $3â€“10 |
 | Cloudflare | $0 |
 | Let's Encrypt cert | $0 |
 | Gemini API (demo-scale calls) | $0 (free tier) |
-| **Total out-of-pocket** | **~$15–25** |
+| **Total out-of-pocket** | **~$15â€“25** |
 
 Cheaper than your defense ceremony coffee.
 
@@ -352,7 +352,7 @@ Cheaper than your defense ceremony coffee.
 - [ ] **This week:** Do Phase 1 (local rehearsal). Note peak RAM.
 - [ ] **Next week, day 1:** Phase 2 (domain + VPS), Phase 3 (bootstrap), Phase 4 (Caddy + .env). ~2 hours total.
 - [ ] **Following weekend:** Phase 5 rehearsal #1.
-- [ ] **2–3 days before defense:** Phase 5 rehearsal #2 with full demo script.
+- [ ] **2â€“3 days before defense:** Phase 5 rehearsal #2 with full demo script.
 - [ ] **Day of:** Phase 6 morning checks. Demo. Tear down after.
 
 Done. Don't over-engineer it.

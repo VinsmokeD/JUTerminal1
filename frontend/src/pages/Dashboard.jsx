@@ -4,17 +4,17 @@ import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem } from '../lib/motion'
 import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
-import CyberSimNav from '../components/nav/CyberSimNav'
+import ParallaxNav from '../components/nav/ParallaxNav'
 import ParticleCanvas from '../components/canvas/ParticleCanvas'
 import ScenarioCard from '../components/dashboard/ScenarioCard'
 import { SkeletonCard, Button, EmptyState } from '../components/ui'
 import api from '../lib/api'
 
 const METHODOLOGY_OPTIONS = [
-  { value: 'ptes', label: 'PTES', desc: 'Penetration Testing Execution Standard — the industry-standard methodology for structured pentesting' },
-  { value: 'owasp', label: 'OWASP', desc: 'OWASP Testing Guide — focused on web application security testing with specific test case IDs' },
-  { value: 'issaf', label: 'ISSAF', desc: 'Information Systems Security Assessment Framework — comprehensive assessment methodology' },
-  { value: 'custom', label: 'Custom', desc: "Your own approach — the platform adapts to you but won't enforce phase gates" },
+  { value: 'ptes', label: 'PTES', desc: 'Penetration Testing Execution Standard â€” the industry-standard methodology for structured pentesting' },
+  { value: 'owasp', label: 'OWASP', desc: 'OWASP Testing Guide â€” focused on web application security testing with specific test case IDs' },
+  { value: 'issaf', label: 'ISSAF', desc: 'Information Systems Security Assessment Framework â€” comprehensive assessment methodology' },
+  { value: 'custom', label: 'Custom', desc: "Your own approach â€” the platform adapts to you but won't enforce phase gates" },
 ]
 
 const NETWORK_DIAGRAMS = {
@@ -170,7 +170,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-dvh bg-void text-txt-primary font-display">
       {/* Nav */}
-      <CyberSimNav
+      <ParallaxNav
         rightContent={
           userRole === 'instructor' && (
             <button onClick={() => navigate('/instructor')} className="text-cs-blue hover:text-cs-blue/80 text-sm font-mono transition-colors">
@@ -329,7 +329,7 @@ export default function Dashboard() {
           {scenariosLoading
             ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
             : filteredScenarios.map(sc => {
-                const summary = sc.description || SCENARIO_SUMMARIES[sc.id] || 'Hands-on mission in an isolated CyberSim training network.'
+                const summary = sc.description || SCENARIO_SUMMARIES[sc.id] || 'Hands-on mission in an isolated Parallax training network.'
                 return (
                   <motion.div key={sc.id} variants={cardVariants} className="h-full">
                     <ScenarioCard
@@ -448,8 +448,8 @@ export default function Dashboard() {
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { v: 'red', label: 'Red Team', desc: 'Attacker — execute the pentest', color: 'cs-red', icon: 'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' },
-                    { v: 'blue', label: 'Blue Team', desc: 'Defender — SOC analyst / incident response', color: 'cs-blue', icon: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z' },
+                    { v: 'red', label: 'Red Team', desc: 'Attacker â€” execute the pentest', color: 'cs-red', icon: 'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z' },
+                    { v: 'blue', label: 'Blue Team', desc: 'Defender â€” SOC analyst / incident response', color: 'cs-blue', icon: 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z' },
                   ].map(r => (
                     <button key={r.v} onClick={() => setRole(r.v)}
                       className={`min-w-0 p-4 rounded-cs border-2 text-left transition-all ${role === r.v

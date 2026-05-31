@@ -72,7 +72,7 @@ export default function InstructorDashboard() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `cybersim-grades-${format}-${new Date().toISOString().slice(0, 10)}.csv`
+      link.download = `parallax-grades-${format}-${new Date().toISOString().slice(0, 10)}.csv`
       link.click()
       URL.revokeObjectURL(url)
     } catch (err) {
@@ -177,7 +177,7 @@ export default function InstructorDashboard() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `cybersim-sessions-${new Date().toISOString().slice(0, 10)}.csv`
+    link.download = `parallax-sessions-${new Date().toISOString().slice(0, 10)}.csv`
     link.click()
     URL.revokeObjectURL(url)
   }, [filtered])
@@ -188,7 +188,7 @@ export default function InstructorDashboard() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `cybersim-${sessionId}.md`
+    link.download = `parallax-${sessionId}.md`
     link.click()
     URL.revokeObjectURL(url)
   }, [])
@@ -203,7 +203,7 @@ export default function InstructorDashboard() {
             <div className="absolute left-0 top-0 h-[9px] w-[9px] rounded-[2px] bg-cs-red shadow-red-glow" />
             <div className="absolute bottom-0 right-0 h-[9px] w-[9px] rounded-[2px] bg-cs-blue shadow-blue-glow" />
           </div>
-          <span className="font-display font-bold text-txt-primary">CyberSim</span>
+          <span className="font-display font-bold text-txt-primary">Parallax</span>
         </div>
         <div className="h-5 w-px bg-cs-border" />
         <Badge tone="blue">Instructor</Badge>
@@ -390,7 +390,7 @@ export default function InstructorDashboard() {
                                 </>
                               )}
                               <Button onClick={() => downloadReport(s.session_id)} variant="ghost" size="sm">
-                                ↓ Report
+                                â†“ Report
                               </Button>
                             </div>
                           </td>
@@ -595,7 +595,7 @@ export default function InstructorDashboard() {
                           <div className="space-y-1">
                             {flag.reasons.map((r, ri) => (
                               <div key={ri} className="text-[11px] text-cs-red/90 flex items-start gap-1 font-mono">
-                                <span className="text-[10px]">⚠️</span>
+                                <span className="text-[10px]">âš ï¸</span>
                                 <span>{r}</span>
                               </div>
                             ))}

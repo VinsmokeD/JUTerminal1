@@ -1,8 +1,8 @@
-# Diagram Catalog — CyberSim Final Report
+# Diagram Catalog â€” Parallax Final Report
 
-> **Updated 2026-05-31 (WS9):** All 22 diagrams re-rendered with updated CyberSim dark theme.
+> **Updated 2026-05-31 (WS9):** All 22 diagrams re-rendered with updated Parallax dark theme.
 
-This catalog registers all 22 architecture diagrams for the CyberSim graduation report.
+This catalog registers all 22 architecture diagrams for the Parallax graduation report.
 
 ## Rendering Setup
 
@@ -14,9 +14,9 @@ This catalog registers all 22 architecture diagrams for the CyberSim graduation 
 | PNG Resolution | 2400 px width, scale 2.5 (high-DPI print quality) |
 | SVG export path | `docs/final-report/diagrams/export/svg/` (22 files) |
 | PNG export path | `docs/final-report/diagrams/export/png/` (22 files) |
-| Last rendered | 2026-05-31 — all 22/22 OK |
+| Last rendered | 2026-05-31 â€” all 22/22 OK |
 
-## CyberSim Dark Theme Palette (WS9 update)
+## Parallax Dark Theme Palette (WS9 update)
 
 - **Background**: `#0A0F1C` (void navy)
 - **Primary fill**: `#0D1423` with `#EAF1FB` text
@@ -31,8 +31,8 @@ This catalog registers all 22 architecture diagrams for the CyberSim graduation 
 
 | # | Figure | Title | Source MMD | PNG | Chapter |
 |---|--------|-------|-----------|-----|---------|
-| 1 | Fig 4.1 | CyberSim System Context (C4 L1) | `c4-context.mmd` | `c4-context.png` | Ch 4 |
-| 2 | Fig 4.2 | CyberSim Container Architecture (C4 L2) | `c4-container.mmd` | `c4-container.png` | Ch 4 |
+| 1 | Fig 4.1 | Parallax System Context (C4 L1) | `c4-context.mmd` | `c4-context.png` | Ch 4 |
+| 2 | Fig 4.2 | Parallax Container Architecture (C4 L2) | `c4-container.mmd` | `c4-container.png` | Ch 4 |
 | 3 | Fig 4.3 | Data Flow Diagram Level 0 | `dfd-level-0.mmd` | `dfd-level-0.png` | Ch 4 |
 | 4 | Fig 4.4 | Core Entity-Relationship Diagram | `erd-core-schema.mmd` | `erd-core-schema.png` | Ch 4, Appendix |
 | 5 | Fig 4.5 | Docker Network & Service Topology | `docker-topology.mmd` | `docker-topology.png` | Ch 4 |
@@ -105,4 +105,4 @@ This catalog registers all 22 architecture diagrams for the CyberSim graduation 
 | Scale factor | 2.5 | 2x Retina-quality rendering |
 | Font | Segoe UI / Arial | Fallback sans-serif for all OS |
 | Background | White (#FFFFFF) | KASIT print compliance |
-| Primary theme | CyberSim brand (inline init) | Consistent with report brand |
+| Primary theme | Parallax brand (inline init) | Consistent with report brand |
