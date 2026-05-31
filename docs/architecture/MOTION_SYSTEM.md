@@ -113,7 +113,22 @@ Single source of truth, mirrors the CSS vars in `v3-design.css :root`. **Extend,
 - ❌ Don't animate per-keystroke or per-scroll-pixel through React state.
 - ❌ Don't hardcode easings/durations inline — import from `motion.js`.
 
-## 8. Decisions on record
+## 8. Empirical perf measurements (Phase F — 2026-05-31)
+
+| Test | Environment | Tier | avg frame | p95 frame | Verdict |
+|------|-------------|------|-----------|-----------|---------|
+| Playwright headless + 4× CPU throttle | Software rasterizer (SwiftShader) | 3 (bloom, 1400 pts) | ~121ms | ~167ms | ⚠️ Not representative — SW rasterizer serializes GPU work onto CPU |
+| Playwright headless + 4× CPU throttle | Software rasterizer | 2 (no bloom, 900 pts) | ~60ms | ~100ms | ⚠️ Same limitation |
+| Algorithm analysis | O(N×20) line check/frame at stride=2 | 3 | ~14K distance ops | – | ✅ Low CPU, GPU-limited |
+| Auto FPS downgrade loop | Real hardware (any) | any | triggers at <50fps sustained | 2 consecutive seconds | ✅ Catches borderline GPUs |
+
+**Headless WebGL limitation:** Playwright uses software rasterization (SwiftShader/ANGLE SW) which serialises all GPU draw calls onto the CPU — timing reflects CPU+driver overhead, not real GPU throughput. CPU throttling does affect JS particle/line math but not the renderer. These numbers are unsuitable for GPU-FPS validation.
+
+**Real-hardware gate:** The `PerfTier` auto-downgrade loop (raised from 38fps → 50fps threshold in this phase) is the live safety net. It fires every second, detects sustained <50fps for 2 consecutive seconds, and drops tier (3→2→1→0) automatically. A mid-tier GPU that drops below 50fps on tier 3 bloom will be downgraded to tier 2 within 2–4 seconds of page load. **Actual GPU benchmarking requires running the dev server on a machine with a discrete or integrated GPU and measuring via browser DevTools Performance → Frames.**
+
+**Pending real-hardware validation:** Until tested on a mid-range Intel/AMD iGPU or low-end dGPU (GTX 1050 equivalent), the FPS claim for tier-3 bloom is "gated by auto-downgrade" rather than "validated 60fps."
+
+## 9. Decisions on record
 - **Vanilla three.js, not R3F.** Protects the existing `HeroScene3D` investment; Phase 4 may spike
   R3F for *one isolated* new scene only if it clearly wins. Default = stay vanilla.
 - **`lenis` ships in the eager main bundle** (SmoothScrollProvider mounts in `App.jsx`). It is
