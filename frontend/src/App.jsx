@@ -12,6 +12,7 @@ import SmoothScrollProvider from './components/motion/SmoothScrollProvider'
 import ReticleCursor from './components/motion/ReticleCursor'
 import BootHandshake from './components/shell/BootHandshake'
 import CurtainTransition from './components/motion/CurtainTransition'
+import ScrollToTop from './components/motion/ScrollToTop'
 
 // Lazy-load post-auth + heavy pages so the public entry (Landing/Auth) ships lean
 const Onboarding = lazy(() => import('./pages/Onboarding'))
@@ -23,25 +24,17 @@ const InstructorDashboard = lazy(() => import('./pages/InstructorDashboard'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Profile = lazy(() => import('./pages/Profile'))
 
-function LoadingSpinner() {
+// Matches the BootHandshake logo so auth-check and boot sequence are one
+// continuous visual rather than two different spinners.
+function BootLogo() {
   return (
-    <div className="flex items-center justify-center w-full h-screen bg-void">
-      <div className="text-center space-y-4">
-        <div className="w-12 h-12 mx-auto relative">
-          <div className="absolute top-0 left-0 w-5 h-5 rounded bg-cs-red shadow-red-glow animate-pulse" />
-          <div className="absolute bottom-0 right-0 w-5 h-5 rounded bg-cs-blue shadow-blue-glow animate-pulse"
-            style={{ animationDelay: '0.5s' }} />
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-void">
+      <div className="flex items-center gap-3 select-none">
+        <div className="w-6 h-6 relative flex-shrink-0">
+          <span className="absolute top-0 left-0 w-[10px] h-[10px] bg-cs-red shadow-[0_0_12px_#ff3b3b]" />
+          <span className="absolute bottom-0 right-0 w-[10px] h-[10px] bg-cs-blue shadow-[0_0_12px_#4CC2FF]" />
         </div>
-        <div>
-          <p className="text-txt-primary font-bold font-display">CyberSim</p>
-          <p className="text-txt-dim text-xs font-mono mt-0.5">Loading environment...</p>
-        </div>
-        <div className="flex items-center justify-center gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="w-1.5 h-1.5 rounded-full bg-cs-blue animate-bounce"
-              style={{ animationDelay: `${i * 0.15}s`, animationDuration: '0.9s' }} />
-          ))}
-        </div>
+        <span className="font-display font-bold text-txt-primary tracking-[0.15em] text-sm">CYBERSIM</span>
       </div>
     </div>
   )
@@ -110,6 +103,7 @@ function AppContent() {
 
   return (
     <SmoothScrollProvider>
+      <ScrollToTop />
       <ReticleCursor />
       <SessionManager>
         <ToastContainer />
@@ -118,15 +112,15 @@ function AppContent() {
           <Routes location={location} key={location.pathname}>
             <Route path="/"          element={<RouteGuard allowOnlyUnauth><RoutePage><Landing /></RoutePage></RouteGuard>} />
             <Route path="/auth"      element={<RouteGuard allowOnlyUnauth><RoutePage><Auth /></RoutePage></RouteGuard>} />
-            <Route path="/onboarding" element={<RouteGuard requireAuth><RoutePage><ErrorBoundary><Suspense fallback={<LoadingSpinner />}><Onboarding /></Suspense></ErrorBoundary></RoutePage></RouteGuard>} />
-            <Route path="/dashboard"  element={<RouteGuard requireAuth requireOnboarding><RoutePage><ErrorBoundary><Suspense fallback={<LoadingSpinner />}><Dashboard /></Suspense></ErrorBoundary></RoutePage></RouteGuard>} />
+            <Route path="/onboarding" element={<RouteGuard requireAuth><RoutePage><ErrorBoundary><Suspense fallback={<BootLogo />}><Onboarding /></Suspense></ErrorBoundary></RoutePage></RouteGuard>} />
+            <Route path="/dashboard"  element={<RouteGuard requireAuth requireOnboarding><RoutePage><ErrorBoundary><Suspense fallback={<BootLogo />}><Dashboard /></Suspense></ErrorBoundary></RoutePage></RouteGuard>} />
             <Route
               path="/session/:sessionId/red"
               element={
                 <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <RoutePage>
-                      <Suspense fallback={<LoadingSpinner />}><RedWorkspace /></Suspense>
+                      <Suspense fallback={<BootLogo />}><RedWorkspace /></Suspense>
                     </RoutePage>
                   </ErrorBoundary>
                 </RouteGuard>
@@ -138,7 +132,7 @@ function AppContent() {
                 <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <RoutePage>
-                      <Suspense fallback={<LoadingSpinner />}><BlueWorkspace /></Suspense>
+                      <Suspense fallback={<BootLogo />}><BlueWorkspace /></Suspense>
                     </RoutePage>
                   </ErrorBoundary>
                 </RouteGuard>
@@ -150,7 +144,7 @@ function AppContent() {
                 <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <RoutePage>
-                      <Suspense fallback={<LoadingSpinner />}><Debrief /></Suspense>
+                      <Suspense fallback={<BootLogo />}><Debrief /></Suspense>
                     </RoutePage>
                   </ErrorBoundary>
                 </RouteGuard>
@@ -162,7 +156,7 @@ function AppContent() {
                 <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <RoutePage>
-                      <Suspense fallback={<LoadingSpinner />}><InstructorDashboard /></Suspense>
+                      <Suspense fallback={<BootLogo />}><InstructorDashboard /></Suspense>
                     </RoutePage>
                   </ErrorBoundary>
                 </RouteGuard>
@@ -174,7 +168,7 @@ function AppContent() {
                 <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <RoutePage>
-                      <Suspense fallback={<LoadingSpinner />}><Settings /></Suspense>
+                      <Suspense fallback={<BootLogo />}><Settings /></Suspense>
                     </RoutePage>
                   </ErrorBoundary>
                 </RouteGuard>
@@ -186,7 +180,7 @@ function AppContent() {
                 <RouteGuard requireAuth>
                   <ErrorBoundary>
                     <RoutePage>
-                      <Suspense fallback={<LoadingSpinner />}><Profile /></Suspense>
+                      <Suspense fallback={<BootLogo />}><Profile /></Suspense>
                     </RoutePage>
                   </ErrorBoundary>
                 </RouteGuard>
@@ -208,7 +202,7 @@ export default function App() {
     checkAuth().finally(() => setIsChecking(false))
   }, [checkAuth])
 
-  if (isChecking) return <LoadingSpinner />
+  if (isChecking) return <BootLogo />
 
   return (
     <BrowserRouter>

@@ -66,8 +66,9 @@ export default function BootHandshake({ children }) {
 
   return (
     <>
-      {/* Content always in DOM — hidden until boot completes */}
-      <div style={{ visibility: done ? 'visible' : 'hidden', height: done ? 'auto' : '100vh', overflow: done ? 'unset' : 'hidden' }}>
+      {/* display:none until boot completes — prevents IntersectionObserver from
+          firing on hidden content and playing hero reveals behind the curtain */}
+      <div style={done ? undefined : { display: 'none' }}>
         {children}
       </div>
 
