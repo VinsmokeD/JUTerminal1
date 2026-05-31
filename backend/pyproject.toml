@@ -23,3 +23,13 @@ markers = [
 omit = [
     "src/main.py",
 ]
+
+[tool.coverage.report]
+# Honest floor; raise gradually as coverage improves
+fail_under = 55
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]

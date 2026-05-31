@@ -66,11 +66,18 @@ def _load_rules() -> list[dict]:
 
 
 async def queue_event(session_id: str, event: dict) -> None:
+    import time as _time
+
     if _event_queue is None:
         redis = get_redis()
         await redis.publish(f"siem:{session_id}:feed", json.dumps(event))
     else:
         await _event_queue.put((session_id, event))
+    try:
+        r = get_redis()
+        await r.set("metrics:siem_last_event_ts", str(_time.time()), ex=3600)
+    except Exception:
+        pass
 
 
 async def _batch_flush() -> None:

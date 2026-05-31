@@ -54,6 +54,26 @@ _ACTIVE_SESSIONS_KEY = "cybersim:active_sessions"  # Redis hash: session_id → 
 
 router = APIRouter()
 
+_WS_CONNECTIONS_KEY = "cybersim:ws_connections"
+
+
+async def _increment_ws_counter() -> None:
+    try:
+        r = get_redis_client()
+        await r.incr(_WS_CONNECTIONS_KEY)
+    except Exception:
+        pass
+
+
+async def _decrement_ws_counter() -> None:
+    try:
+        r = get_redis_client()
+        val = await r.decr(_WS_CONNECTIONS_KEY)
+        if val < 0:
+            await r.set(_WS_CONNECTIONS_KEY, 0)
+    except Exception:
+        pass
+
 
 def _active_session_payload(session_state: dict[str, Any]) -> str:
     """Return the Redis active-session value used by SIEM, noise, and cleanup."""
@@ -370,6 +390,7 @@ async def _handle_terminal_command(
 @router.websocket("/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     await websocket.accept()
+    await _increment_ws_counter()
 
     # Expect first message to be auth token
     try:
@@ -948,3 +969,4 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         except (WebSocketDisconnect, RuntimeError):
             pass
         unregister_terminal_output_listener(session_id, terminal_output_queue)
+        await _decrement_ws_counter()

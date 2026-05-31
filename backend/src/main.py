@@ -176,3 +176,40 @@ async def readiness():
         content={"status": overall, "checks": checks, "version": "0.1.0"},
         status_code=200 if overall == "ok" else 503,
     )
+
+
+@app.get("/api/metrics")
+async def metrics():
+    """Operational metrics: active sessions, WS connections, AI latency, SIEM lag."""
+    import time as _time
+
+    result: dict = {
+        "active_sessions": 0,
+        "ws_connections": 0,
+        "ai_latency_p50_ms": None,
+        "siem_lag_seconds": None,
+        "timestamp": _time.time(),
+    }
+    try:
+        from src.cache.redis import _get as _get_redis
+
+        r = _get_redis()
+        result["active_sessions"] = int(await r.hlen("cybersim:active_sessions") or 0)
+        ws_raw = await r.get("cybersim:ws_connections")
+        result["ws_connections"] = max(0, int(ws_raw or 0))
+
+        # AI latency: stored by monitor.py as a rolling sample
+        latency_raw = await r.lrange("metrics:ai_latency_ms", 0, 9)
+        if latency_raw:
+            samples = [float(v) for v in latency_raw if v]
+            if samples:
+                result["ai_latency_p50_ms"] = round(sorted(samples)[len(samples) // 2], 1)
+
+        # SIEM lag: time since last event was published
+        last_event_raw = await r.get("metrics:siem_last_event_ts")
+        if last_event_raw:
+            result["siem_lag_seconds"] = round(_time.time() - float(last_event_raw), 1)
+    except Exception:
+        pass
+
+    return result
