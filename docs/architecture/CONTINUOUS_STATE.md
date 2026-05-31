@@ -1455,3 +1455,22 @@ pm run build and ran unit tests successfully.
   - Stale `phase/0-ground-truth-baseline` branch still exists locally + remotely — left in place (merged baseline reference, not harmful; WS10 can delete after tagging `v1.0.0-rc1`).
 * **Verification**: `npm --prefix frontend run verify` → build ✓ (5.61s), 46/46 tests ✅. `git status` clean (only CONTINUOUS_STATE.md pending this commit). CI YAML validated via `docker compose config` path.
 
+---
+
+### [2026-05-31] - Claude Sonnet 4.6 (WS1 — Flag discovery nudge: backend scan + frontend highlight/prefill)
+
+* **Status**: COMPLETE ✅ — 340 backend / 46 frontend tests green. Committed c57b96a.
+* **Why**: WS1 of MASTER_FINALIZATION_PLAN.md — "flags should be clear when a user finds them and hinted that this is a flag." Terminal output was not scanned for flag-shaped strings; a student who read the answer on screen got no signal to capture it.
+* **Where** (6 files, commit c57b96a):
+  - `backend/src/scenarios/output_patterns.py` — added `scan_flag_candidates()`: scans completed PTY lines via `re.search` against each scenario flag's `value_pattern`; emits `{flag_id, description, matched_text, points}`; skips already-captured flags; deduplicates per `(session, flag)` with a 10-min TTL; uses a separate line buffer key from `scan_output_chunk`; flag patterns compiled once per scenario via `@lru_cache`. Also added `cache_get` import.
+  - `backend/src/ws/routes.py` — `_terminal_output_to_ws()`: calls `scan_flag_candidates` alongside `scan_output_chunk`; emits `type="flag_candidate"` WS frames. Errors caught and logged; never drops the terminal stream.
+  - `backend/tests/test_output_patterns.py` — 6 new `@pytest.mark.asyncio` tests: LFI line fires FLAG-SC01-1; admin password fires FLAG-SC01-2; DB pass fires FLAG-SC01-3; already-captured flag suppressed; dedup suppresses repeat nudge; unrelated nmap output produces no candidate. All 13 tests pass.
+  - `frontend/src/hooks/useWebSocket.js` — `case 'flag_candidate':` dispatches `CustomEvent('terminal:flag_candidate', {detail: {...msg.data, sessionId}})`.
+  - `frontend/src/components/terminal/Terminal.jsx` — listens for `terminal:flag_candidate`; accumulates nudge chips (one per `flag_id`, already-captured suppressed). Each chip: amber `🚩 Flag detected`, description, `+N pts`, **Capture** button (dispatches `flag:prefill`), dismiss ✕. `role="alert"` + `aria-live="polite"`.
+  - `frontend/src/components/workspace/FlagSubmitWidget.jsx` — removed all `console.log`/`console.warn` debug noise; added `flag:prefill` listener: auto-opens popover, prefills input with `matched_text`, triggers 1.8s amber glow on the SUBMIT FLAG button.
+* **What & How**:
+  - No auto-capture: the student must still manually submit via FlagSubmitWidget to preserve the learning loop. The nudge only fires on a line the terminal actually produced.
+  - `already_captured` flags are skipped at the backend level (not emitted as candidates), keeping the WS payload minimal and the frontend handler simple.
+  - Frontend uses the same `CustomEvent` bus pattern as all other WS-to-component communication in this codebase.
+* **Verification**: `python -m pytest tests/test_output_patterns.py -v` → 13/13 ✅. Full suite → 340 passed ✅. `npm --prefix frontend run verify` → build ✓ (6.69s), 46/46 ✅.
+
