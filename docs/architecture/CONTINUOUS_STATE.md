@@ -1666,3 +1666,30 @@ pm run build and ran unit tests successfully.
   - Rate-limit 429 flakiness in `test_ws_integration.py` + `integration_test.py` is pre-existing (auth endpoints share in-memory rate-limit state across test runs); not caused by WS2. Fresh run: 353 passed.
 * **Verification**: `python -m pytest tests/test_output_patterns.py tests/test_command_siem_bridge.py -q` â†’ 62/62 âœ…. `git status` clean after commit.
 
+
+---
+
+## [WS11] Landing page — Figma Make premium port
+
+**Status:** Complete · `npm run build` exit 0 (969 modules, ~6.7s) · committed d77547b · pushed origin/master.
+
+**Why:** Replace the previous Landing with the finished Figma Make design
+("Attack. Defend. Simultaneously.") — cinematic scroll hero, glass nav,
+3D-tilt pillars, sticky causal-loop diagram, scenarios, mentor pipeline,
+evidence stats, gradient CTA, JU/KASIT footer.
+
+**Files modified (where):**
+- `frontend/src/pages/Landing.jsx` — REPLACED (backup at `Landing.backup.jsx`, untracked).
+  Full TSX→JSX port of `parallax-site.tsx` + inlined `ParallaxMark`/`ParallaxWordmark`
+  (from `parallax-logo.tsx`) and `UniLogos` (from `uni-logos.tsx`).
+- `frontend/src/App.jsx` — pageVariants now y/blur (was scale/blur); added `willChange` to RoutePage motion.div.
+- `frontend/src/index.css` — prepended Orbitron/Inter/JetBrains Mono @import; appended GPU hints (.glass, [data-framer-component], html scroll-behavior, .fixed contain).
+- `frontend/public/brand/uj-logo.png`, `kasit-logo.png` — copied from design imports (JUlogoQs.png / ITNew.png).
+
+**What/how it operates (technical):**
+- `motion/react` → `framer-motion` (hook names identical). All TS annotations/interfaces/`as const`/`React.CSSProperties` stripped.
+- Inline styles preserved verbatim per port decision — no Tailwind refactor.
+- Auth wiring: `go = () => navigate(token ? '/dashboard' : '/auth')` via `useAuthStore`; wired on nav "Launch", hero + CTA "Launch the demo" buttons.
+- Reduced motion (`useReducedMotionSafe`): hero scroll-zoom→static mark, loop SVG paths→fully drawn (pathLength 1), marquee→static row, pillar 3D tilt→disabled; in-view reveals retained.
+- Perf tier (`usePerfTier`): tier 0 skips AmbientGlows and the marquee.
+- Removed the old `HeroScene3D` lazy import (not in this design).
