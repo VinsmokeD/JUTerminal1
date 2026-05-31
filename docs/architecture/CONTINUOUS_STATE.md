@@ -13,6 +13,29 @@
 
 ## Recent entries (rolling tail — see archive for older history)
 
+### [2026-05-31] - Claude Sonnet 4.6 (WS10 — Final verification + release gate)
+
+* **Status**: COMPLETE ✅ — all gates green; tagged `v1.0.0-rc1`; evidence captured.
+* **Why**: WS10 is the final release gate for the CyberSim platform per `MASTER_FINALIZATION_PLAN.md`.
+* **Where** (5 files changed this session):
+  - `frontend/index.html` — Google Fonts changed from blocking `<link rel="stylesheet">` to non-blocking `<link rel="preload" as="style" onload="...">` + `<noscript>` fallback. Eliminates the 949ms render-blocking penalty Lighthouse identified.
+  - `frontend/nginx-spa.conf` — Added `/assets/` location with `Cache-Control: public, max-age=31536000, immutable` (content-hashed filenames are safe for 1-year immutable cache). Added `Cache-Control: no-cache` on `location /` so `index.html` is always revalidated.
+  - `frontend/src/components/ui/Toast.jsx:102` — Added `role="log"` to the notifications container div. Fixes `aria-prohibited-attr` Lighthouse failure: `aria-label` is not valid on a generic `div`; `role="log"` makes it valid.
+  - `frontend/tailwind.config.js:47` — `txt-dim` lightened from `#6E798E` → `#8E9CB5` (contrast 3.4:1 → 5.6:1 against `surface-3 #1B2438`; now passes WCAG AA 4.5:1 for small text).
+  - `backend/tests/{test_command_siem_bridge,test_output_patterns,unit_test_scenarios}.py` — Black reformatting only (no logic change).
+* **What & How**: Full verification sequence executed:
+  1. `docker compose config --quiet` ✅
+  2. `docker compose up -d` → all 13 containers running/healthy ✅
+  3. Backend pytest: **358 passed, 1 skipped** ✅
+  4. Frontend `npm --prefix frontend run verify`: build green (6.2s), **46 Vitest tests passed** ✅
+  5. `scripts/verify-network-isolation.sh`: **6/6 scenario containers internet-isolated** ✅
+  6. `/health` API: `{"status":"ok","version":"0.1.0"}` ✅
+  7. `/api/metrics` endpoint: active_sessions/ws_connections/ai_latency live ✅ (required backend restart to pick up WS6 source change)
+  8. Lighthouse on `http://localhost:80`: **perf 91 / a11y 100** ✅ (was 74/89 before fixes; gates ≥90/≥95 met)
+  9. Screenshots captured: `docs/final-report/evidence/screenshots/{landing-1440x900,landing-hero-loaded,auth-1440x900}.png`
+  10. Tagged `v1.0.0-rc1` on master.
+* **Verification**: All checks above ran empirically. `npm run verify` confirms no regressions. Lighthouse JSON reports stored at `docs/final-report/evidence/lighthouse-landing{,-v2}.json`.
+
 ### [2026-05-31] - Claude Sonnet 4.6 (Motion Polish Phase F — empirical 60fps gate + FPS downgrade hardening)
 
 * **Status**: COMPLETE ✅ (with documented caveat) — build green (7.05s), 46/46. FPS downgrade threshold raised 38→50fps. Perf matrix recorded in MOTION_SYSTEM.md.
