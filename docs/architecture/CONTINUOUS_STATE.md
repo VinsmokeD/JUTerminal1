@@ -1747,3 +1747,13 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - `frontend/src/pages/Dashboard.jsx`:
     - **Filter bar restructured** — was single flex row causing chip+search overlap. Now two rows: Row 1 = "Filters" label left + search right (max-w-260px); Row 2 = category chips | divider | difficulty chips (flex-wrap). No more `md:flex-row` conflict.
 * **Verification**: `npm run build` → ✓ 6.79s. Dev server on :4201 for live testing.
+
+### [2026-05-31] - Claude Sonnet 4.6 (Hero + Nav + Loop polish)
+
+* **Status**: COMPLETE ✅ — build passes (✓ 6.62s, 0 errors).
+* **Why**: Three remaining Landing bugs: marks blocking click targets on hero, nav "Launch" button clipped on narrower viewports, Loop section heading hidden behind fixed nav on anchor jump.
+* **Where** (`frontend/src/pages/Landing.jsx`):
+  - Hero marks: added `pointerEvents:'none'` + `zIndex:0` to the mark cluster `motion.div` — marks are purely decorative, clicks always reach the headline buttons.
+  - Nav: wrapped in Fragment + `<style>` for `.lp-nav-links` responsive hide at ≤680px; nav gets `maxWidth: min(920px, calc(100vw-32px))`, `flexWrap:'nowrap'`; Launch button gets `flexShrink:0` + `whiteSpace:'nowrap'` — Launch is always the last visible item regardless of viewport width. Fixed stray extra `)` syntax error from the refactor.
+  - Loop section: added `scrollMarginTop:'80px'` so `#loop` anchor navigation lands 80px below viewport top (clears fixed nav height).
+* **Verification**: `npm run build` → ✓ 6.62s.

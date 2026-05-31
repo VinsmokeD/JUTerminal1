@@ -259,97 +259,110 @@ function Nav({ go }) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
   return (
-    <motion.nav
-      initial={{ y: -80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      style={{
-        position: 'fixed',
-        top: 16,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 50,
-        padding: scrolled ? '10px 20px' : '12px 24px',
-        background: scrolled ? 'rgba(10,14,23,0.78)' : 'rgba(10,14,23,0.4)',
-        backdropFilter: 'blur(18px) saturate(140%)',
-        WebkitBackdropFilter: 'blur(18px) saturate(140%)',
-        border: `1px solid ${C.line}`,
-        borderRadius: 999,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 24,
-        transition: 'padding 0.3s ease, background 0.3s ease',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <ParallaxMark size={22} />
-        <span
-          style={{
-            fontFamily: display,
-            fontWeight: 800,
-            fontSize: 13,
-            color: C.text,
-            letterSpacing: '0.2em',
-          }}
-        >
-          PARALLAX
-        </span>
-      </div>
-      <span style={{ width: 1, height: 16, background: C.line }} />
-      <div style={{ display: 'flex', gap: 4 }}>
-        {[
-          ['Platform', '#platform'],
-          ['Loop', '#loop'],
-          ['Scenarios', '#scenarios'],
-          ['Mentor', '#mentor'],
-          ['Evidence', '#evidence'],
-        ].map(([label, href]) => (
-          <a
-            key={label}
-            href={href}
-            style={{
-              fontFamily: body,
-              fontSize: 13,
-              color: C.text2,
-              textDecoration: 'none',
-              padding: '6px 12px',
-              borderRadius: 999,
-              transition: 'color 0.2s, background 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = C.text
-              e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = C.text2
-              e.currentTarget.style.background = 'transparent'
-            }}
-          >
-            {label}
-          </a>
-        ))}
-      </div>
-      <span style={{ width: 1, height: 16, background: C.line }} />
-      <button
-        onClick={go}
+    <>
+      <style>{`
+        .lp-nav-links { display: flex; gap: 4px; overflow: hidden; }
+        @media (max-width: 680px) { .lp-nav-links { display: none; } .lp-nav-sep { display: none !important; } }
+      `}</style>
+      <motion.nav
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         style={{
-          fontFamily: mono,
-          fontSize: 11,
-          color: C.bg,
-          background: C.text,
-          padding: '8px 16px',
+          position: 'fixed',
+          top: 16,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 50,
+          padding: scrolled ? '10px 20px' : '12px 24px',
+          background: scrolled ? 'rgba(10,14,23,0.78)' : 'rgba(10,14,23,0.4)',
+          backdropFilter: 'blur(18px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+          border: `1px solid ${C.line}`,
           borderRadius: 999,
-          border: 'none',
-          cursor: 'pointer',
-          letterSpacing: '0.15em',
-          textTransform: 'uppercase',
-          fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 20,
+          transition: 'padding 0.3s ease, background 0.3s ease',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
+          maxWidth: 'min(920px, calc(100vw - 32px))',
+          width: 'max-content',
+          flexWrap: 'nowrap',
         }}
       >
-        Launch
-      </button>
-    </motion.nav>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <ParallaxMark size={22} />
+          <span
+            style={{
+              fontFamily: display,
+              fontWeight: 800,
+              fontSize: 13,
+              color: C.text,
+              letterSpacing: '0.2em',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            PARALLAX
+          </span>
+        </div>
+        <span className="lp-nav-sep" style={{ width: 1, height: 16, background: C.line, flexShrink: 0 }} />
+        <div className="lp-nav-links">
+          {[
+            ['Platform', '#platform'],
+            ['Loop', '#loop'],
+            ['Scenarios', '#scenarios'],
+            ['Mentor', '#mentor'],
+            ['Evidence', '#evidence'],
+          ].map(([label, href]) => (
+            <a
+              key={label}
+              href={href}
+              style={{
+                fontFamily: body,
+                fontSize: 13,
+                color: C.text2,
+                textDecoration: 'none',
+                padding: '6px 10px',
+                borderRadius: 999,
+                transition: 'color 0.2s, background 0.2s',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = C.text
+                e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = C.text2
+                e.currentTarget.style.background = 'transparent'
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+        <span className="lp-nav-sep" style={{ width: 1, height: 16, background: C.line, flexShrink: 0 }} />
+        <button
+          onClick={go}
+          style={{
+            fontFamily: mono,
+            fontSize: 11,
+            color: C.bg,
+            background: C.text,
+            padding: '8px 18px',
+            borderRadius: 999,
+            border: 'none',
+            cursor: 'pointer',
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            fontWeight: 600,
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Launch
+        </button>
+      </motion.nav>
+    </>
   )
 }
 
@@ -432,7 +445,7 @@ function Hero({ go, reduced, tier }) {
         <GhostGrid />
         {tier > 0 && <AmbientGlows />}
 
-        <motion.div style={markStyle}>
+        <motion.div style={{ ...markStyle, pointerEvents: 'none', zIndex: 0 }}>
           <FloatingMark size={420} x="50%" y="50%" delay={0} opacity={1} />
           <FloatingMark size={120} x="22%" y="30%" delay={0.15} opacity={0.35} />
           <FloatingMark size={80} x="78%" y="74%" delay={0.25} opacity={0.3} />
@@ -913,7 +926,7 @@ function Loop({ reduced }) {
     <section
       id="loop"
       ref={ref}
-      style={{ position: 'relative', background: C.bg, padding: '140px 0 120px' }}
+      style={{ position: 'relative', background: C.bg, padding: '140px 0 120px', scrollMarginTop: '80px' }}
     >
       <div style={{ width: '100%', maxWidth: 1280, margin: '0 auto', padding: '0 32px' }}>
         <SectionHead
