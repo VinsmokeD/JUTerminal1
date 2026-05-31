@@ -1476,6 +1476,34 @@ pm run build and ran unit tests successfully.
 
 ---
 
+### [2026-05-31] - Claude Sonnet 4.6 (WS8+WS9 — Doc consolidation + 22 diagrams + defense deck)
+
+* **Status**: COMPLETE ✅ — WS8 docs consolidated; WS9 diagrams 22/22 re-rendered + .pptx built.
+
+* **WS8 — Documentation truth pass + consolidation**
+  - 9 superseded plan docs moved to `docs/history/` with one-line stub redirects:
+    `MASTER_ENHANCEMENT_PLAN`, `EXECUTION_ROADMAP_V2`, `DESIGN_V5_ENHANCEMENT_PLAN`,
+    `MOTION_3D_MASTER_PLAN`, `GRADUATION_DOCUMENTATION_MASTER_PLAN`, `PHASE_V4_PLAN`,
+    `HUD_V4_AUDIT`, `DEMO_DAY_PLAN`, `DEPLOYMENT_PLAN`.
+  - `docs/architecture/MASTER_BLUEPRINT.md` — removed SC-04/05 forward reference; updated MVP table.
+  - `CONTINUE_HERE.md` — header updated to point to `MASTER_FINALIZATION_PLAN.md` as the active plan; WS10 noted as next step.
+  - `docs/INDEX.md` — fully refreshed: core docs, subsystem docs, scenario content, operations, history archive. SC-04/05 mentioned only as "removed, will never be added."
+  - Score: README already at 98/100 ✅; MASTER_ENHANCEMENT_PLAN had 98/100 at line 156 ✅.
+
+* **WS9 — Diagrams, PDF, poster, defense deck**
+  - `docs/final-report/diagrams/mermaid-theme.json` — updated to CyberSim dark spec: `#0A0F1C` background, `#00F0FF` cyan accent, `#C8A94A` gold, `#1FA268` green, `#EAF1FB` ink. Font: Rajdhani/Segoe UI.
+  - All 22 `.mmd` → SVG + PNG re-rendered with updated theme (mmdc v11.15.0). 22/22 OK.
+    SVG: `docs/final-report/diagrams/export/svg/`  PNG: `docs/final-report/diagrams/export/png/`
+  - `docs/final-report/diagrams/catalog.md` — updated rendering spec + palette table.
+  - `scripts/build_defense_deck.py` — NEW: 120-line python-pptx builder. 12 slides with speaker notes, dark CyberSim theme (exact hex palette), full content: title, problem, solution, architecture, red workspace, blue workspace, AI safety model (OWASP L0–L4), 3 scenarios, security/isolation, results/metrics, live demo flow, Q&A.
+  - `docs/final-report/presentation/cybersim-defense-deck.pptx` — NEW: 70,162 bytes. 12 slides with speaker notes.
+  - PDF/DOCX: `cybersim-graduation-report.pdf` (960,684 B) + `.docx` (521,452 B) already built by previous agent (WS Phase 9A). Not rebuilt — content unchanged.
+  - Poster: `docs/final-report/presentation/cybersim_poster_a2.html` already exists (WS Phase 9B). Verified present.
+
+* **Verification**: `npm --prefix frontend run verify` → build ✓, 46/46. `docker compose config --quiet` → OK. 22/22 diagrams rendered OK. PPTX 70KB generated.
+
+---
+
 ### [2026-05-31] - Claude Sonnet 4.6 (WS3–WS7 — AI tutor, Debrief truth, UI/UX, backend metrics/degradation, Docker hardening)
 
 * **Status**: COMPLETE ✅ — 358 tests passing (316 unit + 42 integration); `npm run verify` build ✓ 46/46; `docker compose config --quiet` ✅.
