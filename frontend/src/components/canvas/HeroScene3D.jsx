@@ -45,14 +45,14 @@ export default function HeroScene3D({ className = '' }) {
     const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 200)
     camera.position.set(0, 0, 60)
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: tier === 3,
-      alpha: true,
-      powerPreference: 'high-performance',
-    })
     // Tier-3 bloom composites over an opaque void clear (avoids alpha+bloom
     // fringing); lower tiers keep the transparent canvas.
     const useBloom = tier === 3
+    const renderer = new THREE.WebGLRenderer({
+      antialias: tier === 3,
+      alpha: !useBloom,
+      powerPreference: 'high-performance',
+    })
     renderer.setClearColor(useBloom ? 0x08090c : 0x000000, useBloom ? 1 : 0)
     const dpr = Math.min(window.devicePixelRatio || 1, tier === 3 ? 2 : 1.5)
     renderer.setPixelRatio(dpr)

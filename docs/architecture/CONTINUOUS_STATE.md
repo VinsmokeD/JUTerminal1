@@ -1280,3 +1280,21 @@ pm run build and ran unit tests successfully.
   - Verified file counts in the active Obsidian vault (643 items).
   - Verified node/link counts in clean graph (363 nodes, 330 links).
 
+---
+
+### [2026-05-31] - Antigravity (UI Scroll and WebGL Background Fixes)
+
+* **Status**: Complete — Landing page scrolling restored and WebGL white background bug fixed.
+* **Why**: The user reported that document scrolling with the mouse was broken and a "white thing" (the WebGL 3D scene container background) was showing in the background instead of rendering cleanly.
+* **Where** (3 files modified/updated):
+  - `frontend/src/index.css` — Changed the height constraint of `html, body, #root` from `height: 100%` to `min-height: 100%`.
+  - `frontend/src/components/canvas/HeroScene3D.jsx` — Updated `WebGLRenderer` instantiation to set `alpha: !useBloom` to prevent Three.js UnrealBloomPass rendering a solid white canvas background when bloom is active.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Appended this status log.
+* **What & How**:
+  - Changing `html, body, #root` to `min-height: 100%` allows the document viewport to scroll naturally under Lenis smooth scroll on public/shell pages. Workspaces (`/session/**`) remain unaffected as they enforce `100vh` height at the layout container level.
+  - Initializing `WebGLRenderer` with `alpha: false` when `useBloom` is active avoids WebGL alpha compositing glitches in post-processing passes (which otherwise turns transparent areas solid white in some browsers/WebGL layers).
+* **Verification**:
+  - Built the production bundle using `npm run build` which succeeded cleanly in 5.92s.
+  - Ran `npm run lint` on the frontend which returned zero warnings or errors.
+  - Started the local development server to serve the frontend on `http://localhost:3001/`.
+
