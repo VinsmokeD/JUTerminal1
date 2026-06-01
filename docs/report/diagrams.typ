@@ -560,3 +560,337 @@
   // kali -> first node (proxied)
   line((-4.6, 0), (1.4, y0), stroke: (paint: c-red, thickness: 0.8pt), mark: (end: ">"))
 })
+
+// ============================================================================
+// 16. C4 CONTEXT DIAGRAM — system high-level context.
+// ============================================================================
+#let c4-context-diagram() = canvas(length: 1.0cm, {
+  import draw: *
+  // Center: Platform
+  rect((-2.5, -1.2), (2.5, 1.2), stroke: 1.2pt + c-violet, fill: c-violet.transparentize(94%), radius: 4pt)
+  content((0, 0.35), text(font: font-display, size: 10pt, fill: c-navy, weight: 800)[PARALLAX PLATFORM])
+  content((0, -0.4), text(font: font-body, size: 7.5pt, fill: c-slate)[Cybersecurity Training System])
+
+  // Left: Actors
+  let actors = (
+    (3.2, "Red Operator", c-red),
+    (1.1, "Blue Analyst", c-blue),
+    (-1.1, "Instructor", c-navy),
+    (-3.2, "Admin / Operator", c-slate),
+  )
+  for (y, label, color) in actors {
+    rect((-7.8, y - 0.7), (-4.8, y + 0.7), stroke: 0.8pt + color, fill: color.transparentize(94%), radius: 2pt)
+    content((-6.3, y), text(font: font-mono, size: 7.5pt, fill: color, weight: 600)[#label])
+    flow((-4.8, y), (-2.5, y * 0.3), color: color)
+  }
+
+  // Right: External Systems
+  let external = (
+    (2.2, "AI Provider", "Gemini / OpenRouter", c-violet),
+    (0.0, "Docker Engine", "Container Runtime", c-blue),
+    (-2.2, "UJ / KASIT", "Grading / Course Context", c-green),
+  )
+  for (y, name, desc, color) in external {
+    rect((4.8, y - 0.75), (7.8, y + 0.75), stroke: 0.8pt + color, fill: color.transparentize(94%), radius: 2pt)
+    content((6.3, y + 0.18), text(font: font-mono, size: 7.5pt, fill: color, weight: 600)[#name])
+    content((6.3, y - 0.28), text(font: font-body, size: 6.5pt, fill: c-slate)[#desc])
+    flow((2.5, y * 0.3), (4.8, y), color: color)
+  }
+})
+
+// ============================================================================
+// 17. C4 CONTAINER DIAGRAM — container level architecture.
+// ============================================================================
+#let c4-container-diagram() = canvas(length: 1.0cm, {
+  import draw: *
+  // Browser (top)
+  rect((-2.0, 4.2), (2.0, 5.2), stroke: 0.8pt + c-navy, fill: c-navy.transparentize(94%), radius: 2pt)
+  content((0, 4.7), text(font: font-mono, size: 8pt, fill: c-navy, weight: 600)[STUDENT BROWSER])
+
+  // Nginx Proxy
+  rect((-2.0, 2.2), (2.0, 3.2), stroke: 0.8pt + c-violet, fill: c-violet.transparentize(94%), radius: 2pt)
+  content((0, 2.7), text(font: font-mono, size: 8pt, fill: c-violet, weight: 600)[NGINX PROXY])
+  flow((0, 4.2), (0, 3.2), color: c-slate)
+
+  // Frontend & Backend
+  rect((-6.5, 0.0), (-2.5, 1.2), stroke: 0.8pt + c-blue, fill: c-blue.transparentize(94%), radius: 2pt)
+  content((-4.5, 0.75), text(font: font-mono, size: 8pt, fill: c-blue, weight: 600)[REACT FRONTEND])
+  content((-4.5, 0.3), text(font: font-body, size: 6.5pt, fill: c-slate)[SPA (Vite, Zustand)])
+
+  rect((2.5, 0.0), (6.5, 1.2), stroke: 0.8pt + c-red, fill: c-red.transparentize(94%), radius: 2pt)
+  content((4.5, 0.75), text(font: font-mono, size: 8pt, fill: c-red, weight: 600)[FASTAPI BACKEND])
+  content((4.5, 0.3), text(font: font-body, size: 6.5pt, fill: c-slate)[API & WebSocket Server])
+
+  flow((-1.0, 2.2), (-4.5, 1.2), color: c-slate)
+  flow((1.0, 2.2), (4.5, 1.2), color: c-slate)
+  flow((-2.5, 0.6), (2.5, 0.6), label: "WS/REST", color: c-violet)
+
+  // Datastores & Telemetry
+  rect((-6.5, -2.4), (-2.5, -1.2), stroke: 0.8pt + c-green, fill: c-green.transparentize(94%), radius: 2pt)
+  content((-4.5, -1.65), text(font: font-mono, size: 8pt, fill: c-green, weight: 600)[DATA STORES])
+  content((-4.5, -2.1), text(font: font-body, size: 6.5pt, fill: c-slate)[PostgreSQL & Redis])
+
+  rect((2.5, -2.4), (6.5, -1.2), stroke: 0.8pt + c-amber, fill: c-amber.transparentize(94%), radius: 2pt)
+  content((4.5, -1.65), text(font: font-mono, size: 8pt, fill: c-amber, weight: 600)[ELASTICSEARCH / SIEM])
+  content((4.5, -2.1), text(font: font-body, size: 6.5pt, fill: c-slate)[Filebeat Log Shipper])
+
+  flow((4.5, 0.0), (4.5, -1.2), color: c-slate)
+  flow((-4.5, 0.0), (-4.5, -1.2), color: c-slate)
+  flow((3.5, 0.0), (-2.5, -1.8), color: c-slate) // backend to DB
+  flow((5.5, -1.2), (5.5, 0.0), color: c-slate) // ES to backend
+
+  // Scenario networks (isolated)
+  rect((-6.5, -5.0), (6.5, -3.8), stroke: (paint: c-red, thickness: 1pt, dash: "dashed"), fill: c-red.transparentize(96%), radius: 3pt)
+  content((0, -4.4), text(font: font-display, size: 9pt, fill: c-red, weight: 800)[SCENARIO CONTAINER SANDBOXES (SC-01 / SC-02 / SC-03)])
+  
+  flow((4.5, -3.8), (4.5, -2.4), label: "audit logs", color: c-amber, dashed: true)
+  flow((3.0, 0.0), (0.0, -3.8), label: "Docker SDK / PTY", color: c-red)
+})
+
+// ============================================================================
+// 18. SYSTEM COMPONENT INTERACTION — detailed components and layers.
+// ============================================================================
+#let system-component-interaction-diagram() = canvas(length: 1.0cm, {
+  import draw: *
+  // Frontend box
+  rect((-7.0, -4.2), (-2.8, 3.8), stroke: 0.8pt + c-blue, fill: c-blue.transparentize(96%), radius: 4pt)
+  content((-4.9, 3.4), text(font: font-mono, size: 8.5pt, fill: c-blue, weight: 700)[FRONTEND])
+  let fe_comps = (
+    ( 2.4, "TerminalPanel\n(xterm.js)"),
+    ( 1.1, "SiemFeed\n(EventTable)"),
+    (-0.2, "NotesPanel"),
+    (-1.5, "HintPanel\n(AI Tutor)"),
+    (-2.8, "DebriefPage"),
+  )
+  for (y, label) in fe_comps {
+    rect((-6.6, y - 0.45), (-3.2, y + 0.45), stroke: 0.6pt + c-blue, fill: c-blue.transparentize(92%), radius: 2pt)
+    content((-4.9, y), text(font: font-body, size: 7.5pt, fill: c-navy)[#label])
+  }
+
+  // Backend box
+  rect((-2.0, -4.2), (2.2, 3.8), stroke: 0.8pt + c-violet, fill: c-violet.transparentize(96%), radius: 4pt)
+  content((0.1, 3.4), text(font: font-mono, size: 8.5pt, fill: c-violet, weight: 700)[BACKEND (FastAPI)])
+  let be_comps = (
+    ( 2.4, "/ws/session\n(WebSocket)"),
+    ( 1.1, "Scenario Engine\n+ Gatekeeper"),
+    (-0.2, "Sandbox Manager\n(Docker API)"),
+    (-1.5, "SIEM Engine\n(command bridge)"),
+    (-2.8, "AI Monitor\n(context builder)"),
+  )
+  for (y, label) in be_comps {
+    rect((-1.6, y - 0.45), (1.8, y + 0.45), stroke: 0.6pt + c-violet, fill: c-violet.transparentize(92%), radius: 2pt)
+    content((0.1, y), text(font: font-body, size: 7.5pt, fill: c-navy)[#label])
+  }
+
+  // Data / Daemon
+  let right_comps = (
+    ( 2.4, "PostgreSQL", c-green),
+    ( 0.8, "Redis DB", c-green),
+    (-0.8, "Elasticsearch", c-amber),
+    (-2.4, "Docker Daemon", c-red),
+  )
+  for (y, label, color) in right_comps {
+    rect((3.2, y - 0.5), (6.8, y + 0.5), stroke: 0.8pt + color, fill: color.transparentize(92%), radius: 2pt)
+    content((5.0, y), text(font: font-mono, size: 8pt, fill: color, weight: 600)[#label])
+  }
+
+  // Connections
+  flow((-3.2, 2.4), (-1.6, 2.4), color: c-slate) // terminal -> WS route
+  flow((-3.2, 1.1), (-1.6, 1.1), color: c-slate) // siem -> engine
+  flow((-3.2, -1.5), (-1.6, -2.8), color: c-slate) // hints -> AI monitor
+  
+  flow((1.8, 2.4), (3.2, 2.4), color: c-slate) // WS -> postgres
+  flow((1.8, 1.1), (3.2, 0.8), color: c-slate) // scenario -> redis
+  flow((1.8, -0.2), (3.2, -2.4), color: c-slate) // sandbox -> docker
+  flow((1.8, -1.5), (3.2, -0.8), color: c-slate) // SIEM -> Elastic
+})
+
+// ============================================================================
+// 19. DOCKER TOPOLOGY & DEPLOYMENT — isolated scenario subnets.
+// ============================================================================
+#let docker-topology-diagram() = canvas(length: 1.0cm, {
+  import draw: *
+  // Docker Host Box
+  rect((-6.5, -4.5), (6.5, 4.0), stroke: 1.2pt + c-navy, fill: c-paper, radius: 6pt)
+  content((0, 3.65), text(font: font-display, size: 10pt, fill: c-navy, weight: 800)[LOCAL DOCKER HOST (16 GB RAM)])
+
+  // Core network box
+  rect((-6.0, 0.6), (6.0, 3.2), stroke: 0.8pt + c-blue, fill: c-blue.transparentize(96%), radius: 4pt)
+  content((0, 2.85), text(font: font-mono, size: 8.5pt, fill: c-blue, weight: 700)[parallax-net (Core bridge network)])
+  
+  let core_nodes = (
+    (-4.5, 1.5, "Nginx\n:80/:443", c-violet),
+    (-1.5, 1.5, "React SPA\n:3000", c-blue),
+    ( 1.5, 1.5, "FastAPI\n:8001", c-blue),
+    ( 4.5, 1.5, "Datastores\nPG/Redis/ES", c-green),
+  )
+  for (x, y, label, color) in core_nodes {
+    rect((x - 1.2, y - 0.45), (x + 1.2, y + 0.45), stroke: 0.6pt + color, fill: color.transparentize(92%), radius: 2pt)
+    content((x, y), text(font: font-body, size: 7.5pt, fill: c-navy)[#label])
+  }
+
+  // Scenario networks (isolated)
+  let subnets = (
+    (-4.2, "sc01-net (172.20.1.0/24)", "NovaMed Web App\nModSec WAF + MySQL", c-amber),
+    ( 0.0, "sc02-net (172.20.2.0/24)", "Samba AD DC\nLDAP / Kerberos", c-red),
+    ( 4.2, "sc03-net (172.20.3.0/24)", "Postfix SMTP\nGoPhish + Victim", c-amber),
+  )
+  for (x, label, details, color) in subnets {
+    rect((x - 1.9, -3.8), (x + 1.9, -0.2), stroke: 0.8pt + color, fill: color.transparentize(96%), radius: 4pt)
+    content((x, -0.6), text(font: font-mono, size: 7.5pt, fill: color, weight: 700)[#label])
+    content((x, -2.0), text(font: font-body, size: 7pt, fill: c-navy)[#details])
+    
+    // Line from backend to scenario nodes (exec channel)
+    flow((1.5, 1.05), (x, -0.2), color: c-slate, dashed: true)
+  }
+})
+
+// ============================================================================
+// 20. RED TEAM METHODOLOGY FLOW — pentest phases and note gates.
+// ============================================================================
+#let red-team-methodology-diagram() = canvas(length: 1.0cm, {
+  import draw: *
+  let steps = (
+    (-6.5, "Reconnaissance", "Nmap host discovery\nrobots.txt, WHOIS", "Save RECON note", c-slate),
+    (-2.2, "Scanning", "Nmap service scan\nNikto, Directory enum", "Save SCAN note", c-blue),
+    ( 2.2, "Exploitation", "Sqlmap (SQLi), LFI\nWebshell upload", "Capture Flag", c-red),
+    ( 6.5, "Post-Exploit", "Privilege escalation\nLateral movement", "Evidence collection", c-violet),
+  )
+  for (x, name, desc, note, color) in steps {
+    rect((x - 1.8, -1.8), (x + 1.8, 1.8), stroke: 0.8pt + color, fill: color.transparentize(94%), radius: 4pt)
+    content((x, 1.3), text(font: font-mono, size: 8.5pt, fill: color, weight: 700)[#name])
+    content((x, 0.3), text(font: font-body, size: 7pt, fill: c-navy)[#desc])
+    line((x - 1.4, -0.5), (x + 1.4, -0.5), stroke: 0.5pt + c-rule)
+    content((x, -1.1), text(font: font-mono, size: 7pt, fill: color, weight: 600)[#note])
+    
+    if x < 6.0 {
+      flow((x + 1.8, 0), (x + 2.5, 0), color: c-slate)
+      // Draw gate symbol (rhombus/diamond)
+      let gx = x + 2.15
+      line(
+        (gx, 0.35), (gx + 0.35, 0), (gx, -0.35), (gx - 0.35, 0),
+        close: true,
+        stroke: 0.6pt + c-violet, fill: c-violet.transparentize(85%)
+      )
+      content((gx, 0), text(font: font-mono, size: 5pt, fill: c-violet)[GATE])
+    }
+  }
+})
+
+// ============================================================================
+// 21. BLUE TEAM INCIDENT RESPONSE WORKFLOW.
+// ============================================================================
+#let blue-team-ir-workflow-diagram() = canvas(length: 1.0cm, {
+  import draw: *
+  let stages = (
+    ( 3.0, "1. Triage", "Review alert severity · Check MITRE ATT&CK tag", c-red),
+    ( 1.0, "2. Investigation", "Query raw logs · Extract IOCs · Timeline reconstruct", c-blue),
+    (-1.0, "3. Containment", "Isolate container · Block source IP · Kill process", c-green),
+    (-3.0, "4. Reporting", "Document evidence in notes · View timeline · Finalize report", c-violet),
+  )
+  for (y, label, desc, color) in stages {
+    rect((-5.5, y - 0.65), (5.5, y + 0.65), stroke: 0.8pt + color, fill: color.transparentize(94%), radius: 2pt)
+    content((-5.1, y + 0.22), text(font: font-mono, size: 8.5pt, fill: color, weight: 700)[#label], anchor: "west")
+    content((-5.1, y - 0.24), text(font: font-body, size: 7.5pt, fill: c-navy)[#desc], anchor: "west")
+    
+    if y > -3.0 {
+      flow((0, y - 0.65), (0, y - 1.35), color: c-slate)
+    }
+  }
+})
+
+// ============================================================================
+// 22. SCORING AND DEBRIEF FLOW — inputs/penalties to score and outputs.
+// ============================================================================
+#let scoring-and-debrief-flow-diagram() = canvas(length: 1.0cm, {
+  import draw: *
+  // Inputs (left)
+  let inputs = (
+    ( 2.4, "Flag Captures (+25)", c-green),
+    ( 1.2, "Phase Completions (+15)", c-green),
+    ( 0.0, "IR Notes Quality (+10)", c-blue),
+    (-1.2, "Containment Actions (+10)", c-blue),
+    (-2.4, "Triage Accuracy (+5)", c-violet),
+  )
+  for (y, label, color) in inputs {
+    rect((-7.0, y - 0.4), (-3.2, y + 0.4), stroke: 0.6pt + color, fill: color.transparentize(94%), radius: 2pt)
+    content((-5.1, y), text(font: font-mono, size: 7pt, fill: color, weight: 600)[#label])
+    flow((-3.2, y), (-1.2, y * 0.3), color: color)
+  }
+
+  // Center Score Engine
+  circle((0, 0), radius: 1.1, stroke: 1.2pt + c-navy, fill: c-navy.transparentize(94%))
+  content((0, 0.25), text(font: font-display, size: 8pt, fill: c-navy, weight: 800)[SCORE ENGINE])
+  content((0, -0.28), text(font: font-mono, size: 6.5pt, fill: c-slate)[Real-time])
+
+  // Outputs (right)
+  let outputs = (
+    ( 2.4, "Timeline (SVG)", c-violet),
+    ( 1.2, "Radar (NIST CSF)", c-blue),
+    ( 0.0, "Score Breakdown", c-navy),
+    (-1.2, "Red-Blue Correlation", c-amber),
+    (-2.4, "Markdown Export", c-green),
+  )
+  for (y, label, color) in outputs {
+    rect((3.2, y - 0.4), (7.0, y + 0.4), stroke: 0.6pt + color, fill: color.transparentize(94%), radius: 2pt)
+    content((5.1, y), text(font: font-mono, size: 7pt, fill: color, weight: 600)[#label])
+    flow((1.2, y * 0.3), (3.2, y), color: color)
+  }
+})
+
+// ============================================================================
+// 23. SCENARIO SC-01 FLOW — red team attack vs target vs blue team logs.
+// ============================================================================
+#let scenario-sc01-flow-diagram() = canvas(length: 1.0cm, {
+  import draw: *
+  // Red Team Track
+  content((-5.2, 3.6), text(font: font-mono, size: 8.5pt, fill: c-red, weight: 700, tracking: 0.15em)[RED TEAM ATTACK])
+  let red_steps = (
+    ( 2.5, "1. Enumeration", "nmap / dirb / nikto"),
+    ( 0.9, "2. SQL Injection", "Bypass login via sqlmap"),
+    (-0.7, "3. Traversal (LFI)", "Read /etc/passwd config"),
+    (-2.3, "4. Web Shell RCE", "Upload payload & exec"),
+  )
+  for (y, label, desc) in red_steps {
+    rect((-7.3, y - 0.6), (-3.1, y + 0.6), stroke: 0.8pt + c-red, fill: c-red.transparentize(94%), radius: 2pt)
+    content((-5.2, y + 0.2), text(font: font-mono, size: 8pt, fill: c-red, weight: 600)[#label])
+    content((-5.2, y - 0.22), text(font: font-body, size: 6.5pt, fill: c-slate)[#desc])
+    if y > -2.0 { flow((-5.2, y - 0.6), (-5.2, y - 1.0), color: c-red) }
+  }
+
+  // Target Node (Center)
+  rect((-1.8, -3.1), (1.8, 3.1), stroke: (paint: c-green, thickness: 1pt, dash: "dashed"), fill: c-green.transparentize(97%), radius: 4pt)
+  content((0, 2.75), text(font: font-mono, size: 8.5pt, fill: c-green, weight: 700)[NOVAMED TARGET])
+  
+  let target_nodes = (
+    ( 1.7, "ModSecurity WAF", c-amber),
+    ( 0.0, "Apache PHP Web", c-green),
+    (-1.7, "MySQL Database", c-green),
+  )
+  for (y, label, color) in target_nodes {
+    rect((-1.5, y - 0.45), (1.5, y + 0.45), stroke: 0.8pt + color, fill: color.transparentize(94%), radius: 2pt)
+    content((0, y), text(font: font-mono, size: 7.5pt, fill: color, weight: 600)[#label])
+  }
+
+  // Blue Team Track
+  content((5.2, 3.6), text(font: font-mono, size: 8.5pt, fill: c-blue, weight: 700, tracking: 0.15em)[BLUE TEAM SOC])
+  let blue_steps = (
+    ( 2.5, "1. Detection", "WAF log / Auth failures"),
+    ( 0.9, "2. Triage", "Identify SQLi / LFI pattern"),
+    (-0.7, "3. Response", "Block IP / isolate container"),
+    (-2.3, "4. Mitigation", "Remediate SQLi & patches"),
+  )
+  for (y, label, desc) in blue_steps {
+    rect((3.1, y - 0.6), (7.3, y + 0.6), stroke: 0.8pt + c-blue, fill: c-blue.transparentize(94%), radius: 2pt)
+    content((5.2, y + 0.2), text(font: font-mono, size: 8pt, fill: c-blue, weight: 600)[#label])
+    content((5.2, y - 0.22), text(font: font-body, size: 6.5pt, fill: c-slate)[#desc])
+    if y > -2.0 { flow((5.2, y - 0.6), (5.2, y - 1.0), color: c-blue) }
+  }
+
+  // Cross-track flow arrows
+  flow((-3.1, 2.5), (-1.5, 1.7), color: c-slate) // attack to WAF
+  flow((-3.1, 0.9), (-1.5, 0.0), color: c-slate) // SQLi to Apache
+  flow((1.5, 1.7), (3.1, 2.5), color: c-slate) // WAF alert to detection
+  flow((1.5, 0.0), (3.1, 0.9), color: c-slate) // Apache log to detection
+})
+

@@ -49,6 +49,10 @@ The actors and their goals are summarized in the use-case model:
   #use-case()
 ]
 
+#fig(caption: "PARALLAX C4 system context diagram: high-level boundaries and interactions")[
+  #c4-context-diagram()
+]
+
 == The causal loop
 The system's central idea is a single loop closed between an attacker workspace,
 a defender SIEM, and an AI mentor. The mentor watches without intervening; the
@@ -71,6 +75,14 @@ realtime state; telemetry rides Filebeat into Elasticsearch @elasticsearch
 
 #fig(caption: "Five-layer runtime architecture")[
   #architecture-stack()
+]
+
+#fig(caption: "PARALLAX C4 container diagram: system containers, protocols, and data routes")[
+  #c4-container-diagram()
+]
+
+#fig(caption: "Detailed component interaction model across frontend, backend, and data layers")[
+  #system-component-interaction-diagram()
 ]
 
 == Data flow
@@ -128,6 +140,10 @@ network at a time, never to two at once. Core services share a separate
 
 #fig(caption: "Three isolated scenario networks; dashed barriers are unroutable")[
   #network-isolation()
+]
+
+#fig(caption: "Docker host deployment and isolated container subnet topology")[
+  #docker-topology-diagram()
 ]
 
 == Design decisions

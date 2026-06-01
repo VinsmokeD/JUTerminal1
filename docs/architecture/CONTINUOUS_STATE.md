@@ -1854,3 +1854,18 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - Cleaned up double-prefixing of the "Dr." supervisor title by adjusting the expression in the supervised-by block.
 * **Verification**:
   - Ran `typst compile --font-path fonts main-academic.typ parallax-report-academic.pdf` which succeeded with exit 0.
+
+### [2026-06-01] - Antigravity (Academic Report Edition — diagrams expansion)
+
+* **Status**: COMPLETE ✅ — recreated all 9 missing diagrams from the old report/Mermaid source files as native Typst CeTZ vector diagrams and integrated them fully in the academic report.
+* **Why**: The user requested that we look at the old report and its diagrams, recreate them in the same vector style of the new report's design system, and add them fully to the academic report (`main-academic.typ`).
+* **Where**:
+  - `docs/report/diagrams.typ` — Added 9 new CetZ diagram macros: `c4-context-diagram`, `c4-container-diagram`, `system-component-interaction-diagram`, `docker-topology-diagram`, `red-team-methodology-diagram`, `blue-team-ir-workflow-diagram`, `scoring-and-debrief-flow-diagram`, and `scenario-sc01-flow-diagram`.
+  - `docs/report/chapters/ch03-architecture.typ` — Embedded C4 Context, C4 Container, System Component Interaction, and Docker Network Topology diagrams.
+  - `docs/report/chapters/ch05-scenarios.typ` — Embedded Red Team methodology flow, Blue Team Incident Response workflow, SC-01 Attack-Defense correlation flow, and Scoring & Debrief flow diagrams.
+  - `docs/report/parallax-report-academic.pdf` — Recompiled output PDF including all these diagrams.
+* **What & How**:
+  - Designed the CetZ coordinate maps, rectangles, lines, closed loops, and text anchors for each diagram to match the established aesthetic system (thin lines, c-red/c-blue/c-violet theme color codes, mono tags).
+  - Used closed `line` loops rather than `polygon` shapes for diamond gate symbols to avoid internal CetZ polygon assertions.
+* **Verification**:
+  - Ran `typst compile --font-path fonts main-academic.typ parallax-report-academic.pdf` which completed with exit 0.

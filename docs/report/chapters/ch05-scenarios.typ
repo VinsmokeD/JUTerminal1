@@ -18,6 +18,14 @@ incident-response lifecycle.
   #phase-ladder()
 ]
 
+#fig(caption: "Red-Team offensive methodology flow and notes check-gates")[
+  #red-team-methodology-diagram()
+]
+
+#fig(caption: "Blue-Team incident response workflow: from SIEM alert to reporting")[
+  #blue-team-ir-workflow-diagram()
+]
+
 == Scenario blueprint
 The three scenarios span web, identity, and human-factor attack surfaces:
 
@@ -64,6 +72,10 @@ a primitive extension check. *Red objective:* reach the database tier.
 *Blue objective:* correlate the ModSecurity audit log with the Apache access log
 to reconstruct the request that triggered the alert.
 
+#fig(caption: "SC-01 NovaMed attack-defense telemetry correlation flow")[
+  #scenario-sc01-flow-diagram()
+]
+
 == SC-02 — Nexora Active Directory #tag("Advanced", color: c-red)
 A Samba4 Active Directory domain controller (`nexora.local`) and a member file
 server, with low-privilege users (`jsmith`) and service accounts pre-seeded in
@@ -109,6 +121,10 @@ campaign.
 Each session starts at 100 points and moves with the student's adherence to
 methodology and reliance on help. The model rewards genuine milestone capture and
 penalizes shortcutting:
+
+#fig(caption: "Scoring engine data ingestion and debrief visualization pipeline")[
+  #scoring-and-debrief-flow-diagram()
+]
 
 #fig(caption: "Scoring penalties and bonuses (standard / experienced learner)")[
   #table(
