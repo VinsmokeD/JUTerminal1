@@ -209,9 +209,14 @@ system:
   `sans-serif` — these are the cross-platform *fallbacks* in the theme's font stacks; the primary
   Inter / Orbitron / JetBrains Mono all resolve from `fonts/`. The theme font stacks were left
   unedited per the hard constraint.
-- One `layout did not converge within 5 attempts` from the introspective running header
-  (`query(heading…)` + page counter). Output is correct (headers, TOC, figure numbers all render);
-  resolving it would require editing the theme header, which the constraints forbid.
+- The earlier `layout did not converge within 5 attempts` warning is **resolved**. Its real cause
+  was `fig()` reading and writing the same counter inside `context` (`counter(figure).get()+1`
+  then `.update()`), which also made every figure render an identical number (all `3 · 5`,
+  `4 · 5`, …). Replaced with a stepped per-chapter counter (`_fig`) reset by `chapter()`, plus a
+  `_chap` state for the printed chapter label so appendix figures carry their letter (`B · 1`,
+  `F · 1`). Figures now number sequentially per chapter and the build emits no convergence warning.
+- `chapter()` titles now set `hyphenate: false` so long headings no longer break mid-word
+  ("Re-lated Work" → "Related Work").
 
 **Build instructions (for the authors):**
 ```
