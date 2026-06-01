@@ -13,6 +13,74 @@
 
 ## Recent entries (rolling tail â€” see archive for older history)
 
+### [2026-06-01] - Claude Opus 4.8 (Typst report EXPANSION — full depth restored: 25pp -> 45pp, +8 diagrams, full appendices)
+
+* **Status**: COMPLETE ✅ — `docs/report/parallax-report.pdf` now 45 pp, compiles exit 0. Pushed to PR branch.
+* **Why**: User found the tight 25pp migration too thin ("many stuff are missing"); requested full detail and all diagrams, comparable to the 137pp package.
+* **Where**: restructured `docs/report/` into `chapters/*.typ` (14 files) + shell `main.typ`; expanded `diagrams.typ` and `refs.bib` reused.
+  - `main.typ` — now front matter (cover, expanded abstract+keywords, TOC, List of Abbreviations) + `#include` of 8 chapters + 6 appendices + bibliography.
+  - `chapters/ch01..ch08` — full chapters (each re-imports theme/components/diagrams).
+  - `chapters/appendix-a..f` — repo layout, reproduce, **full API ref (~60 endpoints/13 groups)**, **full DB schema (10 tables)**, **requirements traceability (FR+NFR)**, **deployment & operations (prereqs, env vars, Caddy prod)**.
+  - `diagrams.typ` — +8 macros: `seq-diagram` helper, `auth-sequence`, `red-blue-sequence`, `session-lifecycle`, `dfd-level0`, `erd-core`, `report-pipeline`, `instructor-analytics`, parametric `sc-topology` (SC-01/02/03). ~16 macros total, still zero raster.
+* **What & How**: Read the source reference docs (api-reference, database-reference, technical-architecture-atlas, security-and-safety-case, scenario-design-dossier, testing-and-verification-evidence, deployment-and-operations-manual, requirements-traceability-matrix) and converted to Typst with the design primitives, correcting claims against code. cetz fixes: escaped `[1..\*]` (emphasis parse), added self-message self-loop in `seq-diagram` (zero-length line div-by-zero). Validated `#include`+per-file-`#import` pattern works.
+  - Further code-wins corrections folded in: `CONTAINER_CPU_LIMIT` default **1.0** (deployment doc said 0.5); `OPENROUTER_MODEL` default **gemini-2.0-flash-001** (doc said deepseek-chat-v3); test/build figures reconciled to latest 358/359 + 971 modules (evidence doc was stale 78/544). MITRE technique IDs per scenario (T1558.003, T1003.006, T1566.001, T1204.002, T1071.001), target IPs, and scoring model (100 base; gate −5; hints −5/−10/−20; flags +25/+30/+35) added.
+* **Verification**: exit 0; 45 pp; pdftotext QA: Suricata/DeepSeek/"150 token"/"python 3.12" = 0; gemini-2.0 ×3, ModSecurity ×8, T1558, gate-violation, 359 present; ~31 figure/table captions. Visual PNG check: chapter openers single (no dup), threat swim-lane + stat tiles + sequence/topology/ERD diagrams render in palette. Branch `docs/report-typst-migration` updated + pushed.
+
+### [2026-06-01] - Claude Opus 4.8 (Typst report migration — new design system, all diagrams redrawn, claims corrected vs code)
+
+* **Status**: COMPLETE ✅ — `docs/report/parallax-report.pdf` (24 pp) compiles clean (exit 0); scoped branch for PR.
+* **Why**: Migrate the PARALLAX graduation report from the DOCX/PDF package into a new Typst design system (5 handoff files in ~/Downloads/typst-report), same content corrected/tightened/redrawn, code as source of truth.
+* **Where** (new, all under `docs/report/` + one workflow):
+  - `theme.typ`, `components.typ`, `diagrams.typ`, `main.typ`, `HANDOFF.md` — installed from handoff (`.typ.txt`→`.typ`).
+  - `refs.bib` — NEW IEEE bibliography (KASIT, OWASP, MITRE, NIST, PTES, Docker, FastAPI, React, Vite, Postgres, Redis, Elastic, OpenRouter, related platforms).
+  - `MIGRATION_LOG.md` — NEW: section map, figure dispositions, 12 corrected claims, open questions, final status.
+  - `fonts/` — NEW: vendored static Inter/Orbitron/JetBrains Mono (OFL); Typst 0.14 lacks variable-font support.
+  - `main.typ` — full rewrite: 9 chapters + appendices A/B, document metadata, citations via @key, all 8 diagram macros.
+  - `.github/workflows/report.yml` — NEW CI: compiles report with `--font-path docs/report/fonts`, uploads PDF artifact.
+* **What & How**:
+  - Toolchain: Typst 0.14.2 (winget). Compile-compat fixes (not design changes): `outline()` lost `fill:` (Typst 0.14); guarded `int(num)` for appendix letters + added `label:` params to `chapter()`/`fig()`; guarded the theme header's empty-array `query(...).last()` on front matter; pinned **cetz 0.3.4** (0.3.1 has a `bezier` coordinate panic); replaced an unsupported cetz side-keyed `stroke:(left:)` with a filled accent bar. Suppressed the duplicate level-1 heading via `#show heading.where(level:1): none` in main.typ (theme's H1 rule was "fallback only" but fired alongside `chapter()`). Disabled hyphenation on the cover title (was "PARAL-LAX").
+  - **Claims corrected against code (code wins):** AI model default `google/gemini-2.0-flash-001` (not DeepSeek); token cap mode-dependent 300/400/500 (not 150); **no Suricata** — detection = ModSecurity WAF + Filebeat→Elasticsearch + backend SIEM engine (fixed causal-loop/architecture-stack/latency diagrams); Python **3.11** (not 3.12); frontend framer-motion **12.40**, `xterm` **5.3**, three.js **0.169**; backend FastAPI 0.111/SQLAlchemy 2.0 async/Redis 5.0; replaced fabricated `tests/mentor/test_guardrails.py`+"47 prompts" with real `tests/ai/test_credential_redaction.py`+`test_response_sanitization.py`; **358 pass/359 collected/1 skip**; CIDRs 172.20.1-3.0/24 internal + 172.30.0.0/24 core (template was correct); scenario targets verified (MariaDB/PHP/Apache/ModSec; Samba AD; GoPhish/Postfix/victim).
+  - Diagrams: 6 canonical macros all used + 2 new (`use-case`, `phase-ladder`); 0 raster; 13 `#fig` blocks.
+* **Verification**: `typst compile --font-path fonts main.typ parallax-report.pdf` → exit 0; 24 pp. pdftotext QA: Suricata/DeepSeek/"150 token"/"python 3.12" = 0 hits; gemini-2.0/ModSecurity/172.20.1.0/24/358/framer-motion-12 present. Visual check (PNG @110ppi): cover one-line PARALLAX, single chapter openers (no dup), diagrams render in palette, tables crisp.
+* **Open/known**: page count 24 vs old 137 = deliberate (13 DOCX appendices + 22 full-page rasters kept in `docs/final-report/`; documented, exceeds ±20% guard); `~8s` reset documented-not-benchmarked; per-stage latency illustrative; one benign `layout did not converge` (introspective header) + font-fallback warnings (macOS/generic names). `gh` not installed → branch pushed, PR opened via web link.
+
+### [2026-06-01] - Claude Sonnet 4.6 (Full documentation cleanup — remove stale artifacts, update all docs to final state)
+
+* **Status**: COMPLETE ✅ — all stale screenshots/evidences/artifacts deleted; all documentation index files updated to reflect the June 2026 final project state.
+* **Why**: User requested full documentation finalization: remove all old screenshots, old evidence files, old artifacts (cybersim-branded deck, stale test outputs, load-test CSVs, poster preview), and update every documentation index/checklist/README to match the current fully-verified project.
+* **Where** (files changed):
+  - `docs/final-report/evidence/screenshots/README.md` — all 10 screenshot statuses reset to ⏳ Pending new capture; capture rules clarified (Parallax branding, 1440×900).
+  - `docs/final-report/evidence/test-output/README.md` — stale evidence note added; status column added; known build-pass noted.
+  - `docs/final-report/report-production-checklist.md` — Phase 1 frontend build confirmed ✅; Phase 5 deck/screenshots marked pending (old artifacts removed); Phase 6 DOCX/PDF/QA gates marked complete; screenshot item clarified as pending fresh capture.
+  - `docs/final-report/README.md` — deliverables status table fully updated: formal report DOCX+PDF ✅ Complete; all appendices ✅; evidence bundle ⏳ pending; defense deck/poster ⏳ pending; formal-report folder map updated.
+  - `docs/final-report/CHANGELOG-DOCS.md` — new [2026-06-01] entry added covering: report compilation, chapter updates, full-app verification, brand rollout, and all removed artifacts.
+* **What & How (deleted artifacts)**:
+  - `docs/final-report/evidence/screenshots/` — 14 stale PNG screenshots deleted (ai-tutor-panel, api-docs, auth-page, auth-1440x900, blue-workspace-siem, dashboard-scenarios, debrief-killchain, debug-auth-fail, docker-services, instructor-dashboard, landing-page, landing-1440x900, landing-hero-loaded, red-workspace-terminal). These were captured 2026-05-23 against an older UI; fresh captures required before defense.
+  - `docs/final-report/evidence/test-output/documentation-phase-04-verification.md` — stale 2026-05-23 doc-phase verification.
+  - `docs/final-report/evidence/test-output/documentation-phase-05-verification.md` — stale 2026-05-23 Gemini-agent verification.
+  - `docs/final-report/evidence/lighthouse-landing-v2.json` — stale Lighthouse audit JSON.
+  - `docs/final-report/presentation/_poster_preview.png` — old placeholder artifact.
+  - `docs/final-report/presentation/cybersim-defense-deck.pptx` — old CyberSim-branded deck artifact.
+  - `docs/testing_results/loadtest_baseline_*.csv` + `loadtest_optimized_*.csv` (8 files) — stale Locust load-test run data.
+* **Verification**: PowerShell Remove-Item confirmed 27 files deleted (all exit "Deleted: …"). Four documentation index files rewritten with accurate current status. CHANGELOG-DOCS.md entry prepended. CONTINUOUS_STATE.md updated (this entry).
+
+### [2026-06-01] - Claude Opus 4.8 (Final graduation report DOCX/PDF — full content, all 22 diagrams, all appendices)
+
+* **Status**: COMPLETE ✅ — `parallax-graduation-report.docx` (~9.3 MB) + `.pdf` (137 pages) compiled, all gates green.
+* **Why**: User requested the DOCX documentation report be fully finalized — every diagram embedded, all missing front matter/appendices added, all technical documentation included, ready as the final version (Figma handles visual design separately).
+* **Where** (files changed/created):
+  - `scripts/compile_report_v3.py` — CREATED. Final-edition compiler superseding v2. Adds: Declaration + Acknowledgments + List of Abbreviations front matter; appendix-aware table captioning (`Table A.1`…); generic `render_markdown()` for appendices; mermaid code-fence skipping; centered `PAGE` footer; Word-COM TOC/LOF/LOT update before PDF export; reordered `FIGURE_CAPTIONS` so figure numbers match in-text appearance order (Fig 3.1 use-case; 4.1–4.11; 5.1–5.6; 6.1–6.4).
+  - `docs/final-report/chapters/chapter-03-requirements.md` — added Fig 3.1 (use-case) reference after the functional-requirements table.
+  - `docs/final-report/chapters/chapter-04-system-design.md` — new §4.12 "Supplementary Design Models" with Figs 4.7 (auth-sequence), 4.8 (session-lifecycle), 4.9 (scenario-phase), 4.10 (deployment), 4.11 (component-interaction); renumbered old §4.12–4.15 → 4.13–4.16; extended the figure-integration table.
+  - `docs/final-report/chapters/chapter-05-implementation.md` — new §5.12 "Implementation Process Models" with Figs 5.1–5.6 (red methodology, blue IR, AI safety, scoring/debrief, report pipeline, instructor analytics); summary renumbered to §5.13.
+  - `docs/final-report/chapters/chapter-06-testing-and-installation.md` — new §6.12 "Scenario Lab Topologies and Attack-Defense Flow" with Figs 6.1–6.4 (SC-01/02/03 topologies + SC-01 correlation); summary renumbered to §6.13.
+  - `docs/final-report/formal-report/render-verification.md` — rewritten for v3 (structure, 22-figure table, QA gates, reproduce steps).
+  - `docs/final-report/report-production-checklist.md` — Phase 2/3/4 items marked complete.
+  - `docs/final-report/formal-report/cybersim-graduation-report.{docx,pdf}` — DELETED (stale old-name artifacts, superseded by parallax-named build).
+  - `backend/.venv` — installed `python-docx` 1.2.0 + `lxml` (build dependency).
+* **What & How**: Chapters previously referenced only 6 of 22 rendered diagrams; the other 16 were embedded by adding topical sections + image refs so every figure now has a caption and an in-text reference. The v3 compiler folds the 13 technical docs into Appendices A–M (traceability matrix, API ref, DB ref, architecture atlas, security/safety case, scenario dossier, testing evidence, deployment/ops manual, student/instructor/maintainer manuals, accessibility notes, limitations). Front matter now includes cover, declaration, acknowledgments, abstract, TOC, LOF, LOT, abbreviations. Roman→Arabic page-number restart retained.
+* **Verification**: Compiler ran clean (7 chapters + 13 appendices). Inspected output DOCX with python-docx: `word/media/` = 22 images; 22 figure captions present (Fig 3.1, 4.1–4.11, 5.1–5.6, 6.1–6.4); 52 tables. QA scan: 0 TODO/TBD/FIXME/Lorem, 0 "[Source not found]"/"Figure missing" markers, 0 leaked secrets (regex over `docs/final-report`); SC-04/SC-05 confined to Ch 7 future work (correct). Word COM updated TOC/LOF/LOT and exported a 137-page PDF (PDF `/Type /Page` count = 137).
+
 ### [2026-06-01] - Claude Opus 4.8 (Full-app verification + finalize to master)
 
 * **Status**: COMPLETE - all routes verified vs live backend; tree cleaned; finalized to master.
@@ -1771,3 +1839,18 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - Nav: wrapped in Fragment + `<style>` for `.lp-nav-links` responsive hide at ≤680px; nav gets `maxWidth: min(920px, calc(100vw-32px))`, `flexWrap:'nowrap'`; Launch button gets `flexShrink:0` + `whiteSpace:'nowrap'` — Launch is always the last visible item regardless of viewport width. Fixed stray extra `)` syntax error from the refactor.
   - Loop section: added `scrollMarginTop:'80px'` so `#loop` anchor navigation lands 80px below viewport top (clears fixed nav height).
 * **Verification**: `npm run build` → ✓ 6.62s.
+
+### [2026-06-01] - Antigravity (Academic Report Edition — logos, supervisor, and degree text cover page)
+
+* **Status**: COMPLETE ✅ — new academic report source `docs/report/main-academic.typ` created and compiled successfully to `docs/report/parallax-report-academic.pdf`.
+* **Why**: The user requested a new version of the graduation report that does not modify the original directly, incorporating the University of Jordan logo, the KASIT college logo, the Parallax logo, the specific supervisor "Dr. Abdel Latif Abu-Dalhoum", and the B.Sc. submission text on the cover page.
+* **Where**:
+  - `docs/report/logos/` — Created directory and copied `uj-logo.png`, `kasit-logo.png`, `parallax-icon.svg`, and `parallax-stacked-dark.svg`.
+  - `docs/report/main-academic.typ` (NEW) — Created a new entry point that defines an `academic-cover` page and includes the rest of the chapters, references, and appendices.
+  - `docs/report/parallax-report-academic.pdf` (NEW) — Compiled academic report PDF.
+* **What & How**:
+  - Implemented the `academic-cover` function in `main-academic.typ` to layout the University of Jordan and KASIT logos horizontally at the top, a centered Parallax icon, the large title "PARALLAX", the project subtitle, and the specific degree text: "Project Submitted in partial fulfillment for the degree of Bachelor of Science in Cybersecurity".
+  - Configured a grid to arrange the authors Mahmoud Allabadi and Rashed Alkurdi on the left with their student IDs, and supervisor Dr. Abdel Latif Abu-Dalhoum on the right.
+  - Cleaned up double-prefixing of the "Dr." supervisor title by adjusting the expression in the supervised-by block.
+* **Verification**:
+  - Ran `typst compile --font-path fonts main-academic.typ parallax-report-academic.pdf` which succeeded with exit 0.
