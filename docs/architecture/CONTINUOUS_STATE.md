@@ -13,6 +13,13 @@
 
 ## Recent entries (rolling tail â€” see archive for older history)
 
+### [2026-06-01] - Claude Opus 4.8 (Full-app verification + finalize to master)
+
+* **Status**: COMPLETE - all routes verified vs live backend; tree cleaned; finalized to master.
+* **Verification**: npm run build GREEN (971 modules, all page chunks). Live smoke test (backend :8001) of every route via QA user + SC-01 sessions: Landing (Loop pin holds 200vh, completes ~74%, clean release), Auth, Onboarding, Dashboard (live data), Settings, Profile, Instructor (student role-redirect), Red workspace (RoE -> terminal/PTES/notebook/AI/SIEM), Blue workspace (SIEM/SOC checklist/IR notebook/AI), Debrief (100/100, 6 tabs). Zero console errors anywhere.
+* **Cleanup**: removed Landing.backup.jsx; reverted local vite.config.js dev-port tweak.
+* **Finalize**: fast-forwarded master to feat/premium-theme-convergence; pushed origin master + feature branch.
+
 ### [2026-05-31] - Claude Sonnet 4.6 (Logo rollout complete — all CSS placeholders replaced, og-image created)
 
 * **Status**: COMPLETE -- zero CSS placeholder logo instances remain in frontend/src.
