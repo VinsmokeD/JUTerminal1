@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import {
   motion,
   useScroll,
@@ -40,6 +40,28 @@ const BLUE = '#4CC2FF'
 const VIOLET = '#9B7DFF'
 const NAVY = '#0A0E17'
 const WHITE = '#F0F4FF'
+
+/* ─────────────────── count-up hook ─────────────────── */
+
+function useCountUp(target, duration = 1.6, inView) {
+  const [val, setVal] = useState(0)
+  useEffect(() => {
+    if (!inView) return
+    const n = parseFloat(target)
+    if (isNaN(n)) return
+    let raf
+    const start = performance.now()
+    const tick = (t) => {
+      const p = Math.min((t - start) / (duration * 1000), 1)
+      const eased = 1 - Math.pow(1 - p, 3)
+      setVal(Math.round(n * eased))
+      if (p < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [inView, target, duration])
+  return isNaN(parseFloat(target)) ? target : val + (target.includes('%') ? '%' : '')
+}
 
 /* ─────────────────── logo atoms (inline SVG — tone aware) ─────────────────── */
 
@@ -252,17 +274,30 @@ function AmbientGlows() {
 
 function Nav({ go }) {
   const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const links = [
+    ['Platform', '#platform'],
+    ['Loop', '#loop'],
+    ['Scenarios', '#scenarios'],
+    ['Mentor', '#mentor'],
+    ['Evidence', '#evidence'],
+  ]
+
   return (
     <>
       <style>{`
-        .lp-nav-links { display: flex; gap: 4px; overflow: hidden; }
-        @media (max-width: 680px) { .lp-nav-links { display: none; } .lp-nav-sep { display: none !important; } }
+        .lp-nav-links { display: flex; gap: 2px; overflow: hidden; }
+        @media (max-width: 1100px) { .lp-nav-links { display: none; } .lp-nav-sep { display: none !important; } }
+        .lp-hamburger { display: none; }
+        @media (max-width: 1100px) { .lp-hamburger { display: flex; } }
       `}</style>
       <motion.nav
         initial={{ y: -80, opacity: 0 }}
@@ -274,7 +309,7 @@ function Nav({ go }) {
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 50,
-          padding: scrolled ? '10px 20px' : '12px 24px',
+          padding: scrolled ? '10px 18px' : '10px 20px',
           background: scrolled ? 'rgba(10,14,23,0.78)' : 'rgba(10,14,23,0.4)',
           backdropFilter: 'blur(18px) saturate(140%)',
           WebkitBackdropFilter: 'blur(18px) saturate(140%)',
@@ -282,12 +317,13 @@ function Nav({ go }) {
           borderRadius: 999,
           display: 'flex',
           alignItems: 'center',
-          gap: 20,
+          gap: 16,
           transition: 'padding 0.3s ease, background 0.3s ease',
           boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
-          maxWidth: 'min(920px, calc(100vw - 32px))',
+          maxWidth: 'calc(100vw - 32px)',
           width: 'max-content',
           flexWrap: 'nowrap',
+          pointerEvents: 'auto',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
@@ -305,24 +341,20 @@ function Nav({ go }) {
             PARALLAX
           </span>
         </div>
+
         <span className="lp-nav-sep" style={{ width: 1, height: 16, background: C.line, flexShrink: 0 }} />
+
         <div className="lp-nav-links">
-          {[
-            ['Platform', '#platform'],
-            ['Loop', '#loop'],
-            ['Scenarios', '#scenarios'],
-            ['Mentor', '#mentor'],
-            ['Evidence', '#evidence'],
-          ].map(([label, href]) => (
+          {links.map(([label, href]) => (
             <a
               key={label}
               href={href}
               style={{
                 fontFamily: body,
-                fontSize: 13,
+                fontSize: 12,
                 color: C.text2,
                 textDecoration: 'none',
-                padding: '6px 10px',
+                padding: '5px 10px',
                 borderRadius: 999,
                 transition: 'color 0.2s, background 0.2s',
                 whiteSpace: 'nowrap',
@@ -340,7 +372,33 @@ function Nav({ go }) {
             </a>
           ))}
         </div>
+
+        {/* Hamburger button — visible at <1100px */}
+        <button
+          className="lp-hamburger"
+          onClick={() => setMenuOpen((v) => !v)}
+          style={{
+            background: 'none',
+            border: `1px solid ${C.line}`,
+            borderRadius: 8,
+            padding: '6px 10px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            flexShrink: 0,
+          }}
+        >
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              style={{ display: 'block', width: 18, height: 1.5, background: C.text2, borderRadius: 2 }}
+            />
+          ))}
+        </button>
+
         <span className="lp-nav-sep" style={{ width: 1, height: 16, background: C.line, flexShrink: 0 }} />
+
         <button
           onClick={go}
           style={{
@@ -348,7 +406,7 @@ function Nav({ go }) {
             fontSize: 11,
             color: C.bg,
             background: C.text,
-            padding: '8px 18px',
+            padding: '8px 16px',
             borderRadius: 999,
             border: 'none',
             cursor: 'pointer',
@@ -357,11 +415,66 @@ function Nav({ go }) {
             fontWeight: 600,
             flexShrink: 0,
             whiteSpace: 'nowrap',
+            pointerEvents: 'auto',
           }}
         >
           Launch
         </button>
       </motion.nav>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -8, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -8, scale: 0.97 }}
+          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            position: 'fixed',
+            top: 72,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 49,
+            background: 'rgba(10,14,23,0.96)',
+            backdropFilter: 'blur(24px)',
+            border: `1px solid ${C.line}`,
+            borderRadius: 16,
+            padding: '12px 8px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            minWidth: 200,
+            maxWidth: 'calc(100vw - 32px)',
+          }}
+        >
+          {links.map(([label, href]) => (
+            <a
+              key={label}
+              href={href}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                fontFamily: body,
+                fontSize: 14,
+                color: C.text2,
+                textDecoration: 'none',
+                padding: '10px 16px',
+                borderRadius: 10,
+                transition: 'color 0.2s, background 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = C.text
+                e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = C.text2
+                e.currentTarget.style.background = 'transparent'
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </motion.div>
+      )}
     </>
   )
 }
@@ -389,12 +502,19 @@ function FloatingMark({ size, x, y, delay = 0, opacity = 1 }) {
 
 function Hero({ go, reduced, tier }) {
   const ref = useRef(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const { scrollYProgress: rawProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+
+  // Smooth out the raw scroll progress to avoid jank
+  const scrollYProgress = useSpring(rawProgress, { stiffness: 100, damping: 30, mass: 0.5 })
+
   const scale = useTransform(scrollYProgress, [0, 1], [1, 6])
-  const opacity = useTransform(scrollYProgress, [0, 0.6, 1], [1, 0.5, 0])
+  // Headline stays readable until ~85% through the zoom
+  const opacity = useTransform(scrollYProgress, [0, 0.5, 0.85], [1, 0.8, 0])
   const blur = useTransform(scrollYProgress, [0, 1], [0, 12])
   const blurFilter = useTransform(blur, (b) => `blur(${b}px)`)
   const yText = useTransform(scrollYProgress, [0, 1], [0, -120])
+  // Scroll cue fades out early
+  const scrollCueOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0])
 
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
@@ -404,8 +524,9 @@ function Hero({ go, reduced, tier }) {
   useEffect(() => {
     if (reduced) return
     const onMove = (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 30
-      const y = (e.clientY / window.innerHeight - 0.5) * 30
+      // Cap at ±20 to avoid sloshy feel on widescreens
+      const x = (e.clientX / window.innerWidth - 0.5) * 20
+      const y = (e.clientY / window.innerHeight - 0.5) * 20
       mouseX.set(x)
       mouseY.set(y)
     }
@@ -413,10 +534,9 @@ function Hero({ go, reduced, tier }) {
     return () => window.removeEventListener('mousemove', onMove)
   }, [mouseX, mouseY, reduced])
 
-  // Reduced-motion: static mark cluster + static headline (skip scroll-zoom / parallax)
   const markStyle = reduced
-    ? { position: 'absolute', inset: 0 }
-    : { position: 'absolute', inset: 0, scale, opacity, filter: blurFilter, x: sx, y: sy }
+    ? { position: 'absolute', inset: 0, willChange: 'transform' }
+    : { position: 'absolute', inset: 0, scale, opacity, filter: blurFilter, x: sx, y: sy, willChange: 'transform' }
 
   const headlineLayout = {
     position: 'relative',
@@ -440,6 +560,8 @@ function Hero({ go, reduced, tier }) {
           height: '100vh',
           width: '100%',
           overflow: 'hidden',
+          // Ensure nothing in hero creates a stacking context above nav's z-index:50
+          zIndex: 1,
         }}
       >
         <GhostGrid />
@@ -470,7 +592,8 @@ function Hero({ go, reduced, tier }) {
             style={{
               fontFamily: display,
               fontWeight: 800,
-              fontSize: 'clamp(56px, 9vw, 144px)',
+              // Smaller cap so buttons stay above fold at 1440×900
+              fontSize: 'clamp(48px, 7.5vw, 108px)',
               lineHeight: 0.95,
               letterSpacing: '-0.035em',
               margin: 0,
@@ -502,7 +625,7 @@ function Hero({ go, reduced, tier }) {
               fontSize: 'clamp(15px, 1.3vw, 20px)',
               color: C.text2,
               maxWidth: 620,
-              marginTop: 36,
+              marginTop: 24,
               lineHeight: 1.55,
             }}
           >
@@ -515,7 +638,7 @@ function Hero({ go, reduced, tier }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
-            style={{ display: 'flex', gap: 14, marginTop: 44 }}
+            style={{ display: 'flex', gap: 14, marginTop: 28 }}
           >
             <button
               onClick={go}
@@ -530,6 +653,8 @@ function Hero({ go, reduced, tier }) {
                 border: 'none',
                 cursor: 'pointer',
                 letterSpacing: '0.02em',
+                position: 'relative',
+                zIndex: 2,
               }}
             >
               Launch the demo →
@@ -546,36 +671,45 @@ function Hero({ go, reduced, tier }) {
                 padding: '13px 28px',
                 borderRadius: 999,
                 textDecoration: 'none',
+                position: 'relative',
+                zIndex: 2,
               }}
             >
               See how it works
             </a>
           </motion.div>
 
+          {/* Scroll cue — fades out once user starts scrolling */}
           <motion.div
-            animate={reduced ? {} : { y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             style={{
               position: 'absolute',
               bottom: 32,
               left: '50%',
-              transform: 'translateX(-50%)',
+              x: '-50%',
+              opacity: reduced ? 0 : scrollCueOpacity,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               gap: 8,
+              pointerEvents: 'none',
             }}
           >
-            <Label color={C.dim} size={9}>
-              Scroll
-            </Label>
-            <div
-              style={{
-                width: 1,
-                height: 28,
-                background: `linear-gradient(180deg, ${C.dim}, transparent)`,
-              }}
-            />
+            <motion.div
+              animate={reduced ? {} : { y: [0, 8, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}
+            >
+              <Label color={C.dim} size={9}>
+                Scroll
+              </Label>
+              <div
+                style={{
+                  width: 1,
+                  height: 28,
+                  background: `linear-gradient(180deg, ${C.dim}, transparent)`,
+                }}
+              />
+            </motion.div>
           </motion.div>
         </motion.div>
       </div>
@@ -599,11 +733,15 @@ function Marquee({ reduced, tier }) {
     'Socratic AI',
   ]
 
-  // perf tier 0 → skip the marquee entirely
+  const [hovered, setHovered] = useState(false)
+
   if (tier === 0) return null
 
+  const duration = hovered ? 80 : 38
   const animate = reduced ? {} : { x: ['0%', '-50%'] }
-  const transition = reduced ? {} : { duration: 38, repeat: Infinity, ease: 'linear' }
+  const transition = reduced
+    ? {}
+    : { duration, ease: 'linear', repeat: Infinity }
 
   return (
     <div
@@ -615,11 +753,21 @@ function Marquee({ reduced, tier }) {
         background: C.bg2,
         overflow: 'hidden',
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <motion.div
         animate={animate}
         transition={transition}
-        style={{ display: 'flex', gap: 64, whiteSpace: 'nowrap', width: 'max-content' }}
+        style={{
+          display: 'flex',
+          gap: 64,
+          whiteSpace: 'nowrap',
+          width: 'max-content',
+          // Force GPU layer to prevent first-paint gap
+          transform: 'translateZ(0)',
+          willChange: 'transform',
+        }}
       >
         {[...items, ...items, ...items].map((t, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 64 }}>
@@ -770,6 +918,7 @@ function PillarCard({ pillar, index, reduced }) {
   const inView = useInView(ref, { once: true, margin: '-100px' })
   const cardRef = useRef(null)
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const [hovered, setHovered] = useState(false)
 
   return (
     <motion.div
@@ -784,16 +933,28 @@ function PillarCard({ pillar, index, reduced }) {
               const r = cardRef.current.getBoundingClientRect()
               const x = (e.clientX - r.left) / r.width - 0.5
               const y = (e.clientY - r.top) / r.height - 0.5
-              setTilt({ x: x * 6, y: y * -6 })
+              // ±10deg for visible 3D feel
+              setTilt({ x: x * 10, y: y * -10 })
             }
       }
-      onMouseLeave={reduced ? undefined : () => setTilt({ x: 0, y: 0 })}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setTilt({ x: 0, y: 0 })
+        setHovered(false)
+      }}
       style={{ perspective: 1200 }}
     >
       <motion.div
         ref={cardRef}
-        animate={{ rotateY: tilt.x, rotateX: tilt.y }}
-        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+        animate={{
+          rotateY: tilt.x,
+          rotateX: tilt.y,
+          z: hovered ? 30 : 0,
+          boxShadow: hovered
+            ? `0 30px 60px -20px ${pillar.color}40`
+            : '0 0 0 0 transparent',
+        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         style={{
           position: 'relative',
           padding: 36,
@@ -804,9 +965,13 @@ function PillarCard({ pillar, index, reduced }) {
           overflow: 'hidden',
           minHeight: 380,
           transformStyle: 'preserve-3d',
+          willChange: 'transform',
         }}
       >
-        <div
+        {/* Glow halo — scales up on hover */}
+        <motion.div
+          animate={{ scale: hovered ? 1.2 : 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           style={{
             position: 'absolute',
             top: -100,
@@ -815,6 +980,7 @@ function PillarCard({ pillar, index, reduced }) {
             height: 300,
             background: `radial-gradient(circle, ${pillar.color}28, transparent 60%)`,
             pointerEvents: 'none',
+            transformOrigin: 'center center',
           }}
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24, height: '100%' }}>
@@ -879,191 +1045,213 @@ function PillarCard({ pillar, index, reduced }) {
   )
 }
 
-/* ─────────────────── LOOP / CINEMATIC SCROLL-LOCK ─────────────────── */
+/* ─────────────────── LOOP / SCROLL-DRIVEN STICKY PIN ─────────────────── */
 
 function Loop({ reduced }) {
   const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-10%' })
-  const [phase, setPhase] = useState(0) // 0=idle 1=red 2=blue 3=ai 4=done
-  const overlayRef = useRef(null)
 
-  useEffect(() => {
-    if (!inView || phase !== 0) return
+  // Outer section is 300vh — the sticky inner pins for that full height
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
 
-    // Lock scroll — transparent overlay captures wheel/touch events
-    if (!reduced) {
-      const el = document.createElement('div')
-      el.style.cssText = 'position:fixed;inset:0;z-index:9998;cursor:default;'
-      el.addEventListener('wheel', (e) => e.preventDefault(), { passive: false })
-      el.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false })
-      document.body.appendChild(el)
-      overlayRef.current = el
-    }
+  // Sequence is compressed into the first ~74% of the pinned scroll; the
+  // remaining 0.74 → 1.0 is a HOLD where the fully-drawn loop stays pinned
+  // and visible before the page releases and scrolls on.
 
-    const unlock = () => {
-      if (overlayRef.current && document.body.contains(overlayRef.current)) {
-        document.body.removeChild(overlayRef.current)
-        overlayRef.current = null
+  // Red attack arc — draws first, fully completes before blue starts
+  const redPathLength = useTransform(scrollYProgress, [0.04, 0.26], [0, 1])
+  const redOpacity = useTransform(scrollYProgress, [0, 0.08], [0, 1])
+
+  // Blue defend arc — only begins after the red arc has finished drawing
+  const bluePathLength = useTransform(scrollYProgress, [0.30, 0.52], [0, 1])
+  const blueOpacity = useTransform(scrollYProgress, [0.28, 0.36], [0, 1])
+
+  // Violet AI return arc — reveals last, then holds
+  const aiPathLength = useTransform(scrollYProgress, [0.56, 0.74], [0, 1])
+  const aiOpacity = useTransform(scrollYProgress, [0.54, 0.64], [0, 0.6])
+
+  // One full revolution that completes as the sequence finishes, then holds
+  const markRotate = useTransform(scrollYProgress, [0, 0.74], [0, 360])
+
+  // Node lighting follows each arc as it draws
+  const redNodeOpacity = useTransform(scrollYProgress, [0.06, 0.16], [0.12, 1])
+  const blueNodeOpacity = useTransform(scrollYProgress, [0.30, 0.40], [0.12, 1])
+  const aiNodeOpacity = useTransform(scrollYProgress, [0.56, 0.66], [0.12, 1])
+
+  // Caption reveals — each appears with its phase and stays for the hold
+  const cap1Opacity = useTransform(scrollYProgress, [0.08, 0.18], [0, 1])
+  const cap1Y = useTransform(scrollYProgress, [0.08, 0.18], [12, 0])
+  const cap2Opacity = useTransform(scrollYProgress, [0.32, 0.42], [0, 1])
+  const cap2Y = useTransform(scrollYProgress, [0.32, 0.42], [12, 0])
+  const cap3Opacity = useTransform(scrollYProgress, [0.56, 0.66], [0, 1])
+  const cap3Y = useTransform(scrollYProgress, [0.56, 0.66], [12, 0])
+
+  // For reduced motion, show everything statically
+  const s = reduced
+    ? {
+        redPathLength: 1, redOpacity: 1,
+        bluePathLength: 1, blueOpacity: 1,
+        aiPathLength: 1, aiOpacity: 1,
+        markRotate: 0,
+        redNodeOpacity: 1, blueNodeOpacity: 1, aiNodeOpacity: 1,
+        cap1Opacity: 1, cap1Y: 0, cap2Opacity: 1, cap2Y: 0, cap3Opacity: 1, cap3Y: 0,
       }
-    }
-
-    setPhase(1)
-    const t1 = setTimeout(() => setPhase(2), 1900)
-    const t2 = setTimeout(() => setPhase(3), 3800)
-    const t3 = setTimeout(() => { setPhase(4); unlock() }, 5400)
-
-    return () => {
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
-      unlock()
-    }
-  }, [inView, phase, reduced])
-
-  const isRed  = reduced || phase >= 1
-  const isBlue = reduced || phase >= 2
-  const isAI   = reduced || phase >= 3
+    : {
+        redPathLength, redOpacity,
+        bluePathLength, blueOpacity,
+        aiPathLength, aiOpacity,
+        markRotate,
+        redNodeOpacity, blueNodeOpacity, aiNodeOpacity,
+        cap1Opacity, cap1Y, cap2Opacity, cap2Y, cap3Opacity, cap3Y,
+      }
 
   return (
     <section
       id="loop"
       ref={ref}
-      style={{ position: 'relative', background: C.bg, padding: '140px 0 120px', scrollMarginTop: '80px' }}
+      style={{
+        position: 'relative',
+        // 300vh drives how long the sticky inner stays pinned
+        minHeight: reduced ? 'auto' : '300vh',
+        background: C.bg,
+        scrollMarginTop: '80px',
+      }}
     >
-      <div style={{ width: '100%', maxWidth: 1280, margin: '0 auto', padding: '0 32px' }}>
-        <SectionHead
-          index="02"
-          kicker="The loop"
-          title={
-            <>
-              <span style={{ color: C.red }}>One keystroke</span> →{' '}
-              <span style={{ color: C.blue }}>one alert.</span>
-            </>
-          }
-        />
+      <div
+        style={{
+          position: reduced ? 'relative' : 'sticky',
+          top: 0,
+          height: reduced ? 'auto' : '100vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: reduced ? '140px 0 120px' : '0',
+        }}
+      >
+        <div style={{ width: '100%', maxWidth: 1280, margin: '0 auto', padding: '0 32px' }}>
+          {/* Title stays full opacity for entire pinned duration */}
+          <SectionHead
+            index="02"
+            kicker="The loop"
+            title={
+              <>
+                <span style={{ color: C.red }}>One keystroke</span> →{' '}
+                <span style={{ color: C.blue }}>one alert.</span>
+              </>
+            }
+          />
 
-        <div style={{ marginTop: 72, position: 'relative', height: 340 }}>
-          <svg viewBox="0 0 1200 340" width="100%" height="100%" style={{ display: 'block', overflow: 'visible' }}>
-            {/* Red attack arc */}
-            <motion.path
-              d="M 120 170 Q 600 -60 1080 170"
-              stroke={C.red}
-              strokeWidth="1.5"
-              fill="none"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: isRed ? 1 : 0, opacity: isRed ? 1 : 0 }}
-              transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
-            />
-            {/* Blue defend arc */}
-            <motion.path
-              d="M 1080 170 Q 600 400 120 170"
-              stroke={C.blue}
-              strokeWidth="1.5"
-              fill="none"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: isBlue ? 1 : 0, opacity: isBlue ? 1 : 0 }}
-              transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
-            />
-            {/* Violet return arc */}
-            <motion.path
-              d="M 400 290 Q 600 370 800 290"
-              stroke={C.violet}
-              strokeWidth="1"
-              strokeDasharray="4 6"
-              fill="none"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: isAI ? 1 : 0, opacity: isAI ? 0.6 : 0 }}
-              transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
-            />
+          <div style={{ marginTop: 'clamp(28px, 5vh, 56px)', position: 'relative', height: 'clamp(260px, 38vh, 340px)' }}>
+            <svg viewBox="0 0 1200 340" width="100%" height="100%" style={{ display: 'block', overflow: 'visible' }}>
+              {/* Red attack arc — draws first */}
+              <motion.path
+                d="M 120 170 Q 600 -60 1080 170"
+                stroke={C.red}
+                strokeWidth="1.5"
+                fill="none"
+                style={{
+                  pathLength: s.redPathLength,
+                  opacity: s.redOpacity,
+                }}
+              />
+              {/* Blue defend arc — starts after red is done */}
+              <motion.path
+                d="M 1080 170 Q 600 400 120 170"
+                stroke={C.blue}
+                strokeWidth="1.5"
+                fill="none"
+                style={{
+                  pathLength: s.bluePathLength,
+                  opacity: s.blueOpacity,
+                }}
+              />
+              {/* Violet AI return arc */}
+              <motion.path
+                d="M 400 290 Q 600 370 800 290"
+                stroke={C.violet}
+                strokeWidth="1"
+                strokeDasharray="4 6"
+                fill="none"
+                style={{
+                  pathLength: s.aiPathLength,
+                  opacity: s.aiOpacity,
+                }}
+              />
 
-            <NodeDot cx={120}  cy={170} color={C.red}    label="KALI"     lit={isRed} />
-            <NodeDot cx={400}  cy={60}  color={C.red}    label="EXPLOIT"  lit={isRed} />
-            <NodeDot cx={800}  cy={60}  color={C.red}    label="PAYLOAD"  lit={isRed} />
-            <NodeDot cx={1080} cy={170} color={C.blue}   label="SURICATA" lit={isBlue} />
-            <NodeDot cx={800}  cy={290} color={C.blue}   label="ELASTIC"  lit={isBlue} />
-            <NodeDot cx={400}  cy={290} color={C.blue}   label="SIEM"     lit={isBlue} />
-          </svg>
+              <LoopNodeDot cx={120}  cy={170} color={C.red}    label="KALI"     litOpacity={s.redNodeOpacity} />
+              <LoopNodeDot cx={400}  cy={60}  color={C.red}    label="EXPLOIT"  litOpacity={s.redNodeOpacity} />
+              <LoopNodeDot cx={800}  cy={60}  color={C.red}    label="PAYLOAD"  litOpacity={s.redNodeOpacity} />
+              <LoopNodeDot cx={1080} cy={170} color={C.blue}   label="SURICATA" litOpacity={s.blueNodeOpacity} />
+              <LoopNodeDot cx={800}  cy={290} color={C.blue}   label="ELASTIC"  litOpacity={s.blueNodeOpacity} />
+              <LoopNodeDot cx={400}  cy={290} color={C.blue}   label="SIEM"     litOpacity={s.blueNodeOpacity} />
+            </svg>
 
-          {/* Centre mark */}
-          <motion.div
-            style={{ position: 'absolute', left: '50%', top: '50%', x: '-50%', y: '-50%' }}
-            animate={{ rotate: isAI ? 180 : 0, scale: isAI ? 1.15 : 1 }}
-            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <ParallaxMark size={76} />
-          </motion.div>
-        </div>
+            {/* Centre mark — full revolution */}
+            <motion.div
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                x: '-50%',
+                y: '-50%',
+                rotate: s.markRotate,
+                willChange: 'transform',
+              }}
+            >
+              <ParallaxMark size={76} />
+            </motion.div>
+          </div>
 
-        {/* Phase captions */}
-        <div style={{ marginTop: 56, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: isRed ? 1 : 0, y: isRed ? 0 : 12 }}
-            transition={{ duration: 0.7 }}
-            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
-          >
-            <Label color={C.red}>01 · Attack</Label>
-            <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
-              Student executes against an isolated container
-            </div>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: isBlue ? 1 : 0, y: isBlue ? 0 : 12 }}
-            transition={{ duration: 0.7 }}
-            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
-          >
-            <Label color={C.blue}>02 · Detect</Label>
-            <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
-              Telemetry surfaces as a SIEM signal in {'<'}2s
-            </div>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: isAI ? 1 : 0, y: isAI ? 0 : 12 }}
-            transition={{ duration: 0.7 }}
-            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
-          >
-            <Label color={C.violet}>03 · Learn</Label>
-            <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
-              Socratic AI nudges, never solves
-            </div>
-          </motion.div>
+          {/* Phase captions */}
+          <div style={{ marginTop: 'clamp(24px, 4vh, 48px)', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}>
+            <motion.div
+              style={{ opacity: s.cap1Opacity, y: s.cap1Y, display: 'flex', flexDirection: 'column', gap: 10 }}
+            >
+              <Label color={C.red}>01 · Attack</Label>
+              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
+                Student executes against an isolated container
+              </div>
+            </motion.div>
+            <motion.div
+              style={{ opacity: s.cap2Opacity, y: s.cap2Y, display: 'flex', flexDirection: 'column', gap: 10 }}
+            >
+              <Label color={C.blue}>02 · Detect</Label>
+              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
+                Telemetry surfaces as a SIEM signal in {'<'}2s
+              </div>
+            </motion.div>
+            <motion.div
+              style={{ opacity: s.cap3Opacity, y: s.cap3Y, display: 'flex', flexDirection: 'column', gap: 10 }}
+            >
+              <Label color={C.violet}>03 · Learn</Label>
+              <div style={{ fontFamily: body, fontWeight: 600, fontSize: 18, color: C.text, lineHeight: 1.35 }}>
+                Socratic AI nudges, never solves
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
-function NodeDot({ cx, cy, color, label, lit }) {
+function LoopNodeDot({ cx, cy, color, label, litOpacity }) {
   return (
-    <g>
-      <motion.circle
-        cx={cx} cy={cy} r="7"
-        fill={color}
-        initial={{ opacity: 0.12 }}
-        animate={{ opacity: lit ? 1 : 0.12 }}
-        transition={{ duration: 0.7 }}
-      />
-      <motion.circle
-        cx={cx} cy={cy} r="16"
-        fill="none" stroke={color}
-        initial={{ strokeOpacity: 0.08 }}
-        animate={{ strokeOpacity: lit ? 0.35 : 0.08 }}
-        transition={{ duration: 0.7 }}
-      />
-      <motion.text
-        x={cx} y={cy - 27}
+    <motion.g style={{ opacity: litOpacity }}>
+      <circle cx={cx} cy={cy} r="7" fill={color} />
+      <circle cx={cx} cy={cy} r="16" fill="none" stroke={color} strokeOpacity="0.35" />
+      <text
+        x={cx}
+        y={cy - 27}
         fill={color}
         fontFamily={mono}
         fontSize="11"
         textAnchor="middle"
         letterSpacing="3"
-        initial={{ opacity: 0.15 }}
-        animate={{ opacity: lit ? 1 : 0.15 }}
-        transition={{ duration: 0.7 }}
       >
         {label}
-      </motion.text>
-    </g>
+      </text>
+    </motion.g>
   )
 }
 
@@ -1164,125 +1352,134 @@ function ScenarioCard({ s, index }) {
         borderColor: hovered ? s.accent + '55' : C.line,
         borderRadius: 18,
         overflow: 'hidden',
-        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
-        transition: 'transform 0.4s cubic-bezier(0.22,1,0.36,1), border-color 0.3s',
+        transition: 'border-color 0.3s',
+        boxShadow: hovered ? `0 20px 40px -10px ${s.accent}30` : 'none',
       }}
     >
-      <div
-        style={{
-          padding: '28px 28px 0',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
+      {/* Sprung lift via framer-motion instead of CSS transform */}
+      <motion.div
+        animate={{ y: hovered ? -8 : 0 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       >
-        <Label color={C.dim}>{s.id}</Label>
-        <span
-          style={{
-            fontFamily: mono,
-            fontSize: 10,
-            color: s.levelColor,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            padding: '4px 10px',
-            border: `1px solid ${s.levelColor}55`,
-            borderRadius: 999,
-            background: `${s.levelColor}10`,
-          }}
-        >
-          {s.level}
-        </span>
-      </div>
-
-      <div style={{ padding: '16px 28px 24px' }}>
         <div
           style={{
-            fontFamily: body,
-            fontWeight: 700,
-            fontSize: 28,
-            color: C.text,
-            letterSpacing: '-0.01em',
+            padding: '28px 28px 0',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
         >
-          {s.name}
+          <Label color={C.dim}>{s.id}</Label>
+          {/* Accent badge — subtle scale on hover */}
+          <motion.span
+            animate={{ scale: hovered ? 1.05 : 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            style={{
+              fontFamily: mono,
+              fontSize: 10,
+              color: s.levelColor,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              padding: '4px 10px',
+              border: `1px solid ${s.levelColor}55`,
+              borderRadius: 999,
+              background: `${s.levelColor}10`,
+              display: 'inline-block',
+            }}
+          >
+            {s.level}
+          </motion.span>
         </div>
-        <div style={{ fontFamily: body, fontSize: 14, color: C.text2, marginTop: 4 }}>{s.sub}</div>
-      </div>
 
-      <div
-        style={{
-          margin: '0 28px',
-          borderTop: `1px solid ${C.line}`,
-          paddingTop: 24,
-          paddingBottom: 24,
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 20,
-        }}
-      >
-        <div>
-          <Label color={C.red} size={9}>
-            RED
-          </Label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10 }}>
-            {s.red.map((t) => (
-              <span
-                key={t}
-                style={{ fontFamily: mono, fontSize: 11, color: C.text2, letterSpacing: '0.06em' }}
-              >
-                {t}
-              </span>
-            ))}
+        <div style={{ padding: '16px 28px 24px' }}>
+          <div
+            style={{
+              fontFamily: body,
+              fontWeight: 700,
+              fontSize: 28,
+              color: C.text,
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {s.name}
           </div>
+          <div style={{ fontFamily: body, fontSize: 14, color: C.text2, marginTop: 4 }}>{s.sub}</div>
         </div>
-        <div>
-          <Label color={C.blue} size={9}>
-            BLUE
-          </Label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10 }}>
-            {s.blue.map((t) => (
-              <span
-                key={t}
-                style={{ fontFamily: mono, fontSize: 11, color: C.text2, letterSpacing: '0.06em' }}
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      <div
-        style={{
-          padding: '20px 28px',
-          borderTop: `1px solid ${C.line}`,
-          background: 'rgba(0,0,0,0.2)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div>
-          <div style={{ fontFamily: mono, fontSize: 10, color: C.violet, letterSpacing: '0.18em' }}>
-            MITRE
+        <div
+          style={{
+            margin: '0 28px',
+            borderTop: `1px solid ${C.line}`,
+            paddingTop: 24,
+            paddingBottom: 24,
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 20,
+          }}
+        >
+          <div>
+            <Label color={C.red} size={9}>RED</Label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10 }}>
+              {s.red.map((t) => (
+                <span key={t} style={{ fontFamily: mono, fontSize: 11, color: C.text2, letterSpacing: '0.06em' }}>
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
-          <div style={{ fontFamily: mono, fontSize: 11, color: C.text, marginTop: 4 }}>
-            {s.mitre}
+          <div>
+            <Label color={C.blue} size={9}>BLUE</Label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 10 }}>
+              {s.blue.map((t) => (
+                <span key={t} style={{ fontFamily: mono, fontSize: 11, color: C.text2, letterSpacing: '0.06em' }}>
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-        <div style={{ fontFamily: mono, fontSize: 10, color: C.dim, letterSpacing: '0.15em' }}>
-          {s.net}
+
+        <div
+          style={{
+            padding: '20px 28px',
+            borderTop: `1px solid ${C.line}`,
+            background: 'rgba(0,0,0,0.2)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <div>
+            <div style={{ fontFamily: mono, fontSize: 10, color: C.violet, letterSpacing: '0.18em' }}>
+              MITRE
+            </div>
+            <div style={{ fontFamily: mono, fontSize: 11, color: C.text, marginTop: 4 }}>
+              {s.mitre}
+            </div>
+          </div>
+          <div style={{ fontFamily: mono, fontSize: 10, color: C.dim, letterSpacing: '0.15em' }}>
+            {s.net}
+          </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
 
 /* ─────────────────── MENTOR ─────────────────── */
 
-function Mentor({ tier }) {
+function Mentor({ reduced, tier }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
+
+  const steps = [
+    { label: 'Command Submitted', color: C.text2, ms: '0ms' },
+    { label: 'Context Builder', color: C.violet, ms: '+12ms' },
+    { label: 'PII Redaction', color: C.amber, ms: '+4ms' },
+    { label: 'DeepSeek · OpenRouter', color: C.blue, ms: '+820ms' },
+    { label: '≤150 Token Response', color: C.green, ms: '+8ms' },
+  ]
+
   return (
     <section id="mentor" style={{ padding: '180px 24px', background: C.bg, position: 'relative' }}>
       {tier > 0 && <AmbientGlows />}
@@ -1309,13 +1506,7 @@ function Mentor({ tier }) {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              { label: 'Command Submitted', color: C.text2, ms: '0ms' },
-              { label: 'Context Builder', color: C.violet, ms: '+12ms' },
-              { label: 'PII Redaction', color: C.amber, ms: '+4ms' },
-              { label: 'DeepSeek · OpenRouter', color: C.blue, ms: '+820ms' },
-              { label: '≤150 Token Response', color: C.green, ms: '+8ms' },
-            ].map((step, i) => (
+            {steps.map((step, i) => (
               <motion.div
                 key={step.label}
                 initial={{ opacity: 0, x: -30 }}
@@ -1332,13 +1523,30 @@ function Mentor({ tier }) {
                   position: 'relative',
                 }}
               >
-                <span
+                {/* Pulsing indicator dot — staggered wave by row index */}
+                <motion.span
+                  animate={
+                    reduced
+                      ? {}
+                      : {
+                          scale: [1, 1.4, 1],
+                          boxShadow: [
+                            `0 0 12px ${step.color}`,
+                            `0 0 20px ${step.color}`,
+                            `0 0 12px ${step.color}`,
+                          ],
+                        }
+                  }
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
                   style={{
                     width: 6,
                     height: 6,
                     borderRadius: 99,
                     background: step.color,
                     boxShadow: `0 0 12px ${step.color}`,
+                    display: 'block',
+                    flexShrink: 0,
+                    willChange: 'transform',
                   }}
                 />
                 <span
@@ -1360,67 +1568,74 @@ function Mentor({ tier }) {
             ))}
           </div>
 
+          {/* Hint card with floating animation */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={inView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.4 }}
-            style={{
-              background: C.surface,
-              border: `1px solid ${C.line}`,
-              borderRadius: 16,
-              padding: 28,
-              backdropFilter: 'blur(20px)',
-            }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-              <ParallaxMark size={20} />
-              <Label color={C.violet} size={10}>
-                Hint · Concept
-              </Label>
-            </div>
-            <div
+            <motion.div
+              animate={reduced ? {} : { y: [0, -6, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               style={{
-                fontFamily: mono,
-                fontSize: 12,
-                color: C.dim,
-                marginBottom: 12,
-                letterSpacing: '0.05em',
+                background: C.surface,
+                border: `1px solid ${C.line}`,
+                borderRadius: 16,
+                padding: 28,
+                backdropFilter: 'blur(20px)',
+                willChange: 'transform',
               }}
             >
-              $ sqlmap --batch -u "http://172.20.1.10/login.php"
-            </div>
-            <div
-              style={{
-                fontFamily: body,
-                fontSize: 16,
-                color: C.text,
-                lineHeight: 1.55,
-                marginBottom: 18,
-              }}
-            >
-              The target appears protected by a Web Application Firewall. Consider what categories of
-              payloads typically evade signature-based filters — encoding, comments, or alternate
-              vectors like IDOR.
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {['NUDGE', 'CONCEPT', 'EXAMPLE'].map((t, i) => (
-                <span
-                  key={t}
-                  style={{
-                    fontFamily: mono,
-                    fontSize: 9,
-                    color: i === 1 ? C.violet : C.dim,
-                    letterSpacing: '0.2em',
-                    padding: '4px 10px',
-                    borderRadius: 999,
-                    border: `1px solid ${i === 1 ? C.violet : C.line}`,
-                    background: i === 1 ? `${C.violet}14` : 'transparent',
-                  }}
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+                <ParallaxMark size={20} />
+                <Label color={C.violet} size={10}>
+                  Hint · Concept
+                </Label>
+              </div>
+              <div
+                style={{
+                  fontFamily: mono,
+                  fontSize: 12,
+                  color: C.dim,
+                  marginBottom: 12,
+                  letterSpacing: '0.05em',
+                }}
+              >
+                $ sqlmap --batch -u "http://172.20.1.10/login.php"
+              </div>
+              <div
+                style={{
+                  fontFamily: body,
+                  fontSize: 16,
+                  color: C.text,
+                  lineHeight: 1.55,
+                  marginBottom: 18,
+                }}
+              >
+                The target appears protected by a Web Application Firewall. Consider what categories of
+                payloads typically evade signature-based filters — encoding, comments, or alternate
+                vectors like IDOR.
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {['NUDGE', 'CONCEPT', 'EXAMPLE'].map((t, i) => (
+                  <span
+                    key={t}
+                    style={{
+                      fontFamily: mono,
+                      fontSize: 9,
+                      color: i === 1 ? C.violet : C.dim,
+                      letterSpacing: '0.2em',
+                      padding: '4px 10px',
+                      borderRadius: 999,
+                      border: `1px solid ${i === 1 ? C.violet : C.line}`,
+                      background: i === 1 ? `${C.violet}14` : 'transparent',
+                    }}
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
@@ -1430,7 +1645,7 @@ function Mentor({ tier }) {
 
 /* ─────────────────── EVIDENCE / STATS ─────────────────── */
 
-function Evidence() {
+function Evidence({ reduced }) {
   const stats = [
     { v: '358', l: 'Pytest cases · passing', c: C.text },
     { v: '<2s', l: 'Attack → SIEM latency', c: C.violet },
@@ -1469,7 +1684,7 @@ function Evidence() {
           }}
         >
           {stats.map((s, i) => (
-            <StatTile key={i} s={s} i={i} />
+            <StatTile key={i} s={s} i={i} reduced={reduced} />
           ))}
         </div>
       </div>
@@ -1477,9 +1692,11 @@ function Evidence() {
   )
 }
 
-function StatTile({ s, i }) {
+function StatTile({ s, i, reduced }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true })
+  const countVal = useCountUp(s.v, 1.6, reduced ? true : inView)
+
   return (
     <motion.div
       ref={ref}
@@ -1508,7 +1725,8 @@ function StatTile({ s, i }) {
           textShadow: s.c !== C.text ? `0 0 40px ${s.c}40` : 'none',
         }}
       >
-        {s.v}
+        {/* Count-up for numeric values; non-numeric (e.g. <2s) shows immediately */}
+        {reduced ? s.v : countVal}
       </div>
       <Label color={C.text2}>{s.l}</Label>
     </motion.div>
@@ -1732,15 +1950,16 @@ export default function Landing() {
   const go = () => navigate(token ? '/dashboard' : '/auth')
 
   return (
-    <div style={{ background: C.bg, color: C.text, minHeight: '100vh', position: 'relative' }}>
+    // contain: layout paint isolates repaints to this subtree
+    <div style={{ background: C.bg, color: C.text, minHeight: '100vh', position: 'relative', contain: 'layout paint' }}>
       <Nav go={go} />
       <Hero go={go} reduced={reduced} tier={tier} />
       <Marquee reduced={reduced} tier={tier} />
       <Platform reduced={reduced} tier={tier} />
       <Loop reduced={reduced} />
       <Scenarios tier={tier} />
-      <Mentor tier={tier} />
-      <Evidence />
+      <Mentor reduced={reduced} tier={tier} />
+      <Evidence reduced={reduced} />
       <CTA go={go} />
       <Footer />
     </div>

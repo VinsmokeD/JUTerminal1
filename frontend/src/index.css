@@ -86,7 +86,11 @@
     margin: 0;
     padding: 0;
     max-width: 100vw;
-    overflow-x: hidden;
+    /* `clip` hides horizontal overflow WITHOUT creating a scroll container.
+       `hidden` would force overflow-y to `auto`, turning the page root into a
+       non-scrolling scroll container that breaks `position: sticky` pins
+       (e.g. the Landing "Loop" section). `clip` keeps sticky working. */
+    overflow-x: clip;
   }
 
   body {

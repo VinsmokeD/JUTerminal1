@@ -469,14 +469,17 @@
 * **What & How**:
   - Updated WorkspaceTopBar and ParallaxNav to improve dashboard navigation and Active Mission pill behavior.
   - Built the /restart session endpoint which invokes stop_scenario_container and clears the terminal history from Redis, allowing users to safely bounce their sandbox environments.
-  - Patched the phase advancement logic bug in engine.py where a truthy intersection of equired & used_tools erroneously passed the requirement when alternative tools were present. Explicitly expanded the DB query and enforced a logical AND/OR evaluation.
+  - Patched the phase advancement logic bug in engine.py where a truthy intersection of 
+equired & used_tools erroneously passed the requirement when alternative tools were present. Explicitly expanded the DB query and enforced a logical AND/OR evaluation.
   - Refined Layer 2 Regex in security.py by adding LEARN_MODE_PATTERNS to catch IPv4 leakage and flagless tool disclosure specifically when the AI is in learn mode.
 
 ### [2026-05-27 21:52:00 +03:00] - Antigravity (Run fully on docker start)
 * **Status**: Complete - Added restart policies and brought up the full project stack.
 * **Why**: The user requested that the project run fully when the docker daemon starts.
 * **Where**:
-  - docker-compose.yml - Appended estart: unless-stopped to postgres, edis, elasticsearch, ilebeat, and sc01-db.
+  - docker-compose.yml - Appended 
+estart: unless-stopped to postgres, 
+edis, elasticsearch, ilebeat, and sc01-db.
 * **What & How**:
   - Modified the Compose file so the core infrastructure services automatically start with the Docker host.
   - Rebuilt and started the full suite of containers including SC01, SC02, and SC03 using docker compose --profile sc01 --profile sc02 --profile sc03 up -d. All containers resolved as healthy.
@@ -486,18 +489,22 @@
 * **Why**: The user provided a structured prompt set to resolve six discrete session and routing bugs to prepare for graduation project defense.
 * **Where**:
   - rontend/src/components/ui/SessionManager.jsx - Created SessionActivityContext and useSessionActivity hook.
-  - rontend/src/components/terminal/Terminal.jsx - Wrapped xterm onData to trigger esetActivity (throttled).
-  - rontend/src/pages/Auth.jsx - Read and validated whitelisted eturnUrl (starts with /) on successful login.
+  - rontend/src/components/terminal/Terminal.jsx - Wrapped xterm onData to trigger 
+esetActivity (throttled).
+  - rontend/src/pages/Auth.jsx - Read and validated whitelisted 
+eturnUrl (starts with /) on successful login.
   - rontend/src/store/authStore.js - Updated logout() to call clearSession() on Zustand useSessionStore and updated checkAuth to logout on API failure.
   - rontend/src/components/workspace/WorkspaceTopBar.jsx - Converted the back button style to tn-v3 btn-v3-subtle, added in-progress badge info, and renamed endpoint triggers.
   - rontend/src/pages/RedWorkspace.jsx & rontend/src/pages/BlueWorkspace.jsx - Mount-registered setLastVisitedRole('red' | 'blue') to the store and forwarded completed_at to the top-bar.
   - rontend/src/components/nav/ParallaxNav.jsx - Handled routing for Active Mission pill to support lastVisitedRole navigation and fixed the logo to point to /dashboard when authenticated.
   - ackend/src/sessions/routes.py - Renamed container endpoint to /restart-sandbox and implemented a logical /restart endpoint that snapshots current runs to metadata.runs[] and resets progress variables.
-  - rontend/src/pages/Dashboard.jsx - Implemented confirm-modal-gated estartScenario action and updated card controls/text to "Terminate Mission".
+  - rontend/src/pages/Dashboard.jsx - Implemented confirm-modal-gated 
+estartScenario action and updated card controls/text to "Terminate Mission".
   - rontend/src/pages/Debrief.jsx - Appended a "Retry this scenario" button that triggers a logical session reset.
 * **What & How**:
   - Hooked up xterm typing events directly to React Context to reset the inactivity timer.
-  - Hardened JWT auth checks: if user enters the page with an expired token, the app immediately intercepts, logs out, and redirects to /auth with a valid eturnUrl query parameter.
+  - Hardened JWT auth checks: if user enters the page with an expired token, the app immediately intercepts, logs out, and redirects to /auth with a valid 
+eturnUrl query parameter.
   - Implemented the snapshotting scenario restart logic in DB and Redis, clearing commands from the current run while maintaining historical debrief reports.
   - Verified compilation via 
 pm run build and ran unit tests successfully.
