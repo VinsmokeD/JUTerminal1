@@ -6,6 +6,13 @@
 
 #import "theme.typ": *
 
+// Figure numbering state. `_chap` holds the current chapter label as it should
+// PRINT ("3", "A"); `_fig` is the per-chapter figure counter, reset by chapter().
+// (Replaces an earlier get()+update() pattern inside `context`, which produced
+// identical numbers on every figure and caused layout non-convergence.)
+#let _chap = state("px-chap", "0")
+#let _fig  = counter("px-fig")
+
 // ---------- Chapter opener ---------------------------------------------------
 // Use INSTEAD of "= Heading". Renders the violet label + Orbitron title block.
 // Usage:
@@ -14,9 +21,14 @@
   pagebreak(weak: true)
   // Manually update the level-1 heading counter so headers/TOC stay in sync.
   // Appendices use letter nums ("A", "B") — only numeric chapters drive the counter.
-  if num.match(regex("^[0-9]+$")) != none {
+  let numeric = num.match(regex("^[0-9]+$")) != none
+  if numeric {
     counter(heading).update(int(num))
   }
+  // Record how this chapter's figures should be prefixed ("3", "A") and reset
+  // the per-chapter figure counter so numbering restarts at 1 each chapter.
+  _chap.update(if numeric { str(int(num)) } else { num })
+  _fig.update(0)
   // Invisible H1 anchor so the running header picks up the title.
   heading(level: 1, outlined: true, bookmarked: true, title)
   // Optional reference target so prose can use @label instead of hard numbers.
@@ -28,7 +40,7 @@
       CHAPTER #num
     ]
     v(10pt)
-    text(font: font-display, size: 34pt, fill: c-navy, weight: 800, tracking: -0.01em)[#title]
+    text(font: font-display, size: 34pt, fill: c-navy, weight: 800, tracking: -0.01em, hyphenate: false)[#title]
     v(14pt)
     line(length: 100%, stroke: 0.5pt + c-rule)
     v(16pt)
@@ -85,12 +97,10 @@
   align(center, {
     block(stroke: 0.5pt + c-rule, inset: 8pt, body)
     v(6pt)
+    // Step the per-chapter figure counter, then display "Figure <chap> · <n>".
+    _fig.step()
     text(font: font-body, size: 8.5pt, fill: c-slate, style: "italic")[
-      #context {
-        let n = counter(figure).get().first() + 1
-        counter(figure).update(n)
-        [Figure #counter(heading).display() · #n  —  #caption]
-      }
+      #context [Figure #_chap.get() · #_fig.display() — #caption]
     ]
     // Optional reference target so prose can use @fig-key.
     if label != none { [#metadata("figure") #label] }
