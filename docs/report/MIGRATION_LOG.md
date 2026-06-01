@@ -152,11 +152,38 @@ actual implementation. **Code won in every case.**
 
 ---
 
-## Final status (phases 2–4 complete)
+## Expansion pass (2026-06-01, requested) — full depth restored
+
+The first migration was deliberately tight (25 pp). On request, the report was
+expanded to carry the full depth of the 137-page package, expressed in the design
+system:
+
+- **Restructured** into per-chapter files under `chapters/*.typ` (each re-imports
+  the design modules); `main.typ` is now a shell (front matter + `#include`s +
+  bibliography) and adds a **List of Abbreviations**.
+- **8 new diagram macros** added to `diagrams.typ` (total ~16): a `seq-diagram`
+  helper, `auth-sequence`, `red-blue-sequence`, `session-lifecycle`, `dfd-level0`,
+  `erd-core`, `report-pipeline`, `instructor-analytics`, and a parametric
+  `sc-topology` (used for SC-01/02/03). Still **zero raster** figures.
+- **Folded in the full technical reference** as Appendices A–F: repository layout,
+  reproduce-the-evaluation, **full API surface** (~60 endpoints / 13 groups),
+  **full database schema** (all 10 tables with columns), **requirements
+  traceability** (FR + NFR), and **deployment & operations** (prereqs, env vars,
+  Caddy production). Chapters 3–7 expanded with requirements tables, STRIDE,
+  isolation guarantees, scenario topologies + MITRE techniques + scoring model,
+  load/latency evidence, and demo-readiness output.
+- **Result: 45 pp**, compiles exit 0, all drift terms still absent, all corrected
+  claims present, ~31 figures/tables. Additional corrections folded in from the
+  source docs (code wins): `CONTAINER_CPU_LIMIT` default **1.0** (deployment doc
+  said 0.5) and `OPENROUTER_MODEL` default **google/gemini-2.0-flash-001**
+  (deployment doc said deepseek-chat-v3); testing-evidence figures reconciled to
+  the latest run (358/359, 971 frontend modules) rather than the stale 78/544.
+
+## Final status (initial migration — superseded by the expansion above)
 
 **Build:** `typst compile --font-path fonts main.typ parallax-report.pdf` → exit 0.
 
-- **Pages: 25** (current DOCX/PDF: 137). This is a **deliberate** reduction, not lost content,
+- **Pages: 25** (initial tight migration; now 45 after the expansion pass). This is a **deliberate** reduction, not lost content,
   and therefore exceeds the ±20% guard. The 137-page package was inflated by 13 exhaustive
   technical appendices, 22 full-page raster diagrams, and large reference tables. Per the design
   brief ("clarity per page; air over density; do not pad"), the Typst report is a tight primary
