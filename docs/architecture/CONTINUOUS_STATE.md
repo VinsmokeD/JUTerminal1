@@ -1797,3 +1797,35 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - `frontend/src/pages/Landing.jsx` — removed unused `lazy`/`Suspense` imports (eslint 0 warnings).
 * **Branch topology note**: the report work + report-branch mailrelay/lint commits (`fb3e90c`, `f23037b`, `dab6702`) remain on `docs/report-typst-migration` (ahead 3 of origin, unpushed). master now independently carries the demo-critical mailrelay fix + the AI upgrade.
 * **Verification**: backend `printenv OPENROUTER_MODEL` -> `anthropic/claude-sonnet-4.6`; `/health` ok; backend healthy; `eslint src` 0 warnings; `vite build` success. Nothing pushed (left to user).
+
+---
+
+### [2026-06-02] - Claude (Defense prep — security/crypto examiner Q&A)
+
+* **Status**: COMPLETE ✅
+* **Why**: User reported a prior examiner asked another project's team how passwords were encrypted/hashed and where stored; wants a full, code-grounded question analysis for tomorrow's defense.
+* **Where**: `presentation/EXAMINER_QA_SECURITY.md` (NEW) — 15-section study sheet (untracked on master; user to commit if desired).
+* **What & How**: Read the real implementation and wrote answers with file:line citations — `hash_password` bcrypt_sha256 cost-12 + per-user salt (`auth/routes.py:34`), `verify_password` constant-time (`:40`), JWT HS256 8h (`:60`), Postgres `users.password_hash` hash-only (migration 001 / `db/database.py:36`), UUID4 ids, env-only 256-bit JWT_SECRET with prod boot-guards (`config.py:66-85`), Redis rate limits, CORS allowlist, ORM-parameterised queries, and the AI credential-redaction layer mapped to OWASP LLM Top 10 (`ai/security.py`). Covered the classic traps (hash vs encrypt; JWT signed-not-encrypted; platform creds vs deliberately-weak scenario target creds) and honest "what would you improve" answers.
+* **Verification**: All cited line numbers/behaviours read directly from source this session; live JWT_SECRET confirmed 64-hex (256-bit), not the default placeholder. No code changed.
+
+---
+
+### [2026-06-02] - Claude (Security hardening implementation + full technical Q&A)
+
+* **Status**: COMPLETE ✅ — "smart-safe, full" posture chosen by user (defense tomorrow): high-value items live + tested, demo-risky items implemented without endangering the running stack.
+* **Why**: User asked to fully implement the 5 "future work" security items from the prior Q&A, and to expand the examiner Q&A to all technical areas (not just security).
+* **Backend (live + tested)**:
+  - `backend/src/config.py` — added `JWT_ALGORITHM` (HS256 default), `PASSWORD_MIN_LENGTH`, `RATE_LIMIT_FAIL_CLOSED` (default false = fail-open).
+  - `backend/src/auth/routes.py` — (1) password-complexity validator on `UserCreate` (min len + upper/lower/digit → 422); (2) tokens now carry `jti`+`iat`; (3) `is_token_revoked`/`revoke_token` Redis blocklist + `POST /api/auth/logout`; `get_current_user` rejects revoked tokens (fails OPEN on cache error); (4) `enforce_rate_limit` honours `RATE_LIMIT_FAIL_CLOSED`. Kept HS256 (correct for a monolith).
+  - `backend/tests/test_auth_hardening.py` (NEW) — weak-pw rejection + logout-revokes-token.
+  - Fixed two existing tests broken by the new behaviour: `test_ws_integration.py` dup test used 1-char passwords (now strong); `integration_test.py::test_08` was a placeholder that called the (now real) `/logout` on the SHARED module token, revoking it for later tests — rewritten to use a throwaway token and to actually assert revocation.
+* **Infra (opt-in TLS — does NOT touch the running HTTP stack)**:
+  - `infrastructure/nginx/nginx.tls.conf`, `docker-compose.tls.yml`, `scripts/generate-tls-cert.ps1`, `infrastructure/nginx/TLS-README.md` (all NEW); `.gitignore` ignores `infrastructure/nginx/certs/`. TLS 1.2/1.3, HSTS, 80→301→443.
+* **Defense docs**:
+  - `presentation/EXAMINER_QA_TECHNICAL.md` (NEW) — full-stack technical Q&A (architecture, terminal bridge, red→blue SIEM, AI, scenario engine, scoring, data model, Docker isolation, testing, perf) grounded in `sandbox/terminal.py`, `siem/command_bridge.py`, `scoring/engine.py`, etc.
+  - `presentation/EXAMINER_QA_SECURITY.md` (EDITED) — §14 flipped from "future work" to "implemented" so answers stay consistent with the code; headline + rapid-fire updated.
+* **Verification**:
+  - Backend: `pytest -q` → **364 passed, 1 skipped** (was 358; +6 new tests). Diagnosed a real bug along the way (logout revoking the shared test token).
+  - Rebuilt+recreated the live backend → `/api/auth/logout` present, weak-pw register → **422**, healthy, still on `claude-sonnet-4.6`.
+  - TLS overlay: `docker compose -f .. -f docker-compose.tls.yml config` merges cleanly (80+443, nginx.tls.conf overrides base mount); self-signed cert generated; `nginx -t` on the TLS config → **syntax ok** (validated in a throwaway container, running nginx untouched).
+  - Nothing pushed (left to user).
