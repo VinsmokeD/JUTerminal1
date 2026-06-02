@@ -54,3 +54,7 @@ screenshot-temp-env/
 stash.patch
 *.patch
 .superpowers/
+
+# --- Defense deck QA artifacts (2026-06-02): regenerable, do not track ---
+docs/final-report/presentation/_preview/
+docs/final-report/presentation/*.backup.pptx
