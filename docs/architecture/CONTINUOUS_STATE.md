@@ -1782,3 +1782,18 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - `backend/src/config.py` — refreshed the `OPENROUTER_MODEL` doc-comment block with valid IDs (code default left as gemini-flash as a safe cheap fallback; `.env` overrides it).
 * **What & How**: `settings.OPENROUTER_MODEL` is read in `backend/src/ai/monitor.py:324` and `debrief_coach.py` as the OpenRouter `model` field. No code path change — config-only swap. Picked Sonnet 4.6 over Opus 4.8 deliberately: hints are short, so Opus's reasoning edge is invisible, while its higher latency hurts a live demo and its $5/$25 vs $3/$15 pricing is needless. Cost estimate ~$0.015/call → $4 ≈ 250+ hints; existing guards (AI_USER_HOURLY_CALL_LIMIT=50, 10s/60s cooldowns, 100k-tok/user/day) prevent runaway spend.
 * **Verification**: `curl` to `https://openrouter.ai/api/v1/chat/completions` with the live key + `anthropic/claude-sonnet-4.6` → resolved to `anthropic/claude-4.6-sonnet-20260217`, returned valid completion, usage cost $0.000102. No errors.
+
+---
+
+### [2026-06-02] - Claude (master consolidation — make model switch live + port demo-critical fixes)
+
+* **Status**: COMPLETE ✅
+* **Why**: User asked to incorporate + commit the paired agent's OpenRouter upgrade on `master` (the demo branch). The audit surfaced two gaps that would have hurt tomorrow's demo, both now fixed.
+* **Gap 1 — model switch was not actually live**: the running `parallax-backend-1` still had `OPENROUTER_MODEL=google/gemini-2.0-flash-001` because docker-compose injects the value from `.env` at container-create time (`docker-compose.yml:129`). A `.env` edit alone (or `docker compose restart`) does NOT reload it. Recreated via `docker compose up -d backend`; running backend now reports `anthropic/claude-sonnet-4.6`, healthy. (Real health endpoint is `/health`, not `/api/health`.)
+* **Gap 2 — mailrelay fix absent from master**: the SC-03 Postfix chroot fix (`fb3e90c`) lived only on `docs/report-typst-migration`. master's `init-mailrelay.sh` was still the broken version (the running container was already fixed via image rebuild, but a fresh build from master would reintroduce the bug). Cherry-picked onto master as `b155a10` — source now matches runtime.
+* **Where (master)**:
+  - Commit `f0f1db5` — OpenRouter upgrade (`.env.example`, `backend/src/config.py`, `CONTINUOUS_STATE.md`).
+  - Commit `b155a10` — cherry-pick of mailrelay chroot fix.
+  - `frontend/src/pages/Landing.jsx` — removed unused `lazy`/`Suspense` imports (eslint 0 warnings).
+* **Branch topology note**: the report work + report-branch mailrelay/lint commits (`fb3e90c`, `f23037b`, `dab6702`) remain on `docs/report-typst-migration` (ahead 3 of origin, unpushed). master now independently carries the demo-critical mailrelay fix + the AI upgrade.
+* **Verification**: backend `printenv OPENROUTER_MODEL` -> `anthropic/claude-sonnet-4.6`; `/health` ok; backend healthy; `eslint src` 0 warnings; `vite build` success. Nothing pushed (left to user).
