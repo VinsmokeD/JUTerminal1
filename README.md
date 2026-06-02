@@ -12,6 +12,23 @@ The current MVP is intentionally focused on three high-fidelity scenarios:
 
 All attack activity is designed for isolated Docker networks only. Parallax is not a tool for testing real systems.
 
+## New here? Start with the Complete Setup Guide
+
+If you are setting up Parallax on a new machine for the first time, follow
+**[SETUP_GUIDE.md](SETUP_GUIDE.md)** — a zero-to-running, beginner-proof walkthrough
+covering WSL 2, Docker Desktop, the Kali image, the full stack, verification, and
+troubleshooting. It includes a one-command bootstrap:
+
+```powershell
+# Windows (PowerShell), from the repo root after cloning
+.\scripts\setup-windows.ps1
+```
+
+```bash
+# macOS / Linux
+bash scripts/setup.sh
+```
+
 ## Current Verification Status
 
 Last verified locally on 2026-05-14:
@@ -131,6 +148,7 @@ If you do not own a domain yet, omit `PARALLAX_DOMAIN`; the bootstrap script cre
 
 Start with [docs/README.md](docs/README.md). The core maintained docs are:
 
+- [Complete Setup Guide (zero to running)](SETUP_GUIDE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Features](docs/FEATURES.md)
 - [Setup](docs/SETUP.md)

@@ -1903,3 +1903,18 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - Frontend: eslint src 0 warnings, vitest run 46 passed, vite build ok.
 * **Files**: backend siem/command_bridge.py, sessions/routes.py, ws/routes.py, ai/monitor.py, tests/test_command_siem_bridge.py; frontend hooks/useSiemSync.js (new), store/sessionStore.js, pages/RedWorkspace.jsx, pages/BlueWorkspace.jsx, pages/Debrief.jsx, components/workspace/WorkspaceTopBar.jsx, components/workspace/FlagSubmitWidget.jsx, components/terminal/Terminal.jsx.
 * **Deploy**: backend restart (src is volume-mounted -> reloads code), frontend image rebuilt + recreated (serves built bundle). Nothing committed/pushed (left to user).
+
+---
+
+### [2026-06-02] - Claude Opus 4.8 (Teammate onboarding: one-command bootstrap scripts + complete zero-to-running setup guide)
+
+* **Status**: COMPLETE - both bootstrap scripts pass syntax checks (PowerShell AST parse: 0 errors; `bash -n`: 0 errors). No application code touched; docs + tooling only. Working tree was clean and master already in sync with origin before this change.
+* **Why**: User asked to "update the GitHub fully" and produce a complete, beginner-proof setup guide so a group mate can run the entire stack (Docker + scenarios + Kali terminal) on a fresh machine with no issues, accessing everything the same way and more easily.
+* **What/How**:
+  - `scripts/setup-windows.ps1` (NEW) - one-command Windows bootstrap. Verifies docker is installed AND the engine is running (`docker info`) + compose v2; creates `.env` from `.env.example` (idempotent, never overwrites) with a freshly generated 64-char hex JWT secret (RandomNumberGenerator, PS 5.1-safe - avoids `[Convert]::ToHexString` which is PS7-only); optional `-OpenRouterKey`; validates `docker compose config`; builds `parallax-kali:latest`; builds + `up -d` all profiles (sc01/sc02/sc03); polls `http://localhost/health` up to ~2 min; prints URLs + admin creds. Flags: `-SkipKali` (mock terminal), `-CoreOnly` (no scenarios).
+  - `scripts/setup.sh` (NEW) - bash equivalent for Linux/macOS. Env-var driven (`OPENROUTER_KEY`, `SKIP_KALI=1`, `CORE_ONLY=1`); portable JWT gen (openssl or /dev/urandom) + portable in-place sed; same health-poll + summary. `set -euo pipefail`.
+  - `SETUP_GUIDE.md` (NEW, repo root for max discoverability) - 12-section zero-to-running guide. Explicitly clears up the "Kali WSL" confusion: Kali is a Docker image (not a separate WSL distro / manual install); "WSL" = Docker Desktop's WSL2 backend. Covers WSL2 enable, Docker Desktop install + memory sizing (>=6GB for ES), Git/Node/Python, clone (warns off OneDrive/synced paths), one-command path, manual path, verification, smoke test, daily cheat sheet, full troubleshooting (port 80, ES OOM, mock terminal, VPN subnet clash 172.20/172.30, execution policy, CRLF), team-sync, file map, security rules.
+  - `README.md` (EDIT) - added a prominent "New here? Start with the Complete Setup Guide" callout near the top with the one-command snippet, and a link in the Documentation list.
+* **Ground-truth checks before writing** (so the guide is accurate): confirmed all scenario build files, Dockerfiles, nginx/filebeat/postgres-init, and the Kali Dockerfile are git-tracked (nothing critical is gitignored); confirmed ports (nginx 80, frontend 3000:80, backend 8001:8000, ES 9200, pg/redis bound to 127.0.0.1); confirmed Kali image must be built separately or terminal is mock; `.gitattributes` already pins line endings.
+* **Files**: scripts/setup-windows.ps1 (new), scripts/setup.sh (new), SETUP_GUIDE.md (new), README.md (edit), docs/architecture/CONTINUOUS_STATE.md (this entry).
+* **Deploy**: docs/tooling only - no rebuild needed. To be committed + pushed to origin/master per the user's request to update GitHub.
