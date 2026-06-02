@@ -1,0 +1,19 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# OPT-IN TLS overlay — does NOT affect the default `docker compose up`.
+#
+# Usage:
+#   1. scripts/generate-tls-cert.ps1                         # once: self-signed certs
+#   2. docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d nginx
+#
+# nginx then terminates TLS on :443 (HSTS, TLS1.2/1.3) and 301-redirects :80.
+# The default stack (plain `docker compose up`) is untouched and stays on HTTP.
+# ─────────────────────────────────────────────────────────────────────────────
+services:
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Overrides the base nginx.conf mount (same container target) and adds certs.
+      - ./infrastructure/nginx/nginx.tls.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/certs:/etc/nginx/certs:ro

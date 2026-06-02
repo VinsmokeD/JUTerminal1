@@ -43,6 +43,9 @@ Thumbs.db
 *.log
 logs/
 
+# TLS — self-signed certs/keys for the opt-in HTTPS overlay (never commit keys)
+infrastructure/nginx/certs/
+
 # --- Phase 0 hygiene (2026-05-29): dev artifacts that must not be tracked ---
 .gemini_backup/
 graphify-out/
