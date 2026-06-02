@@ -57,6 +57,22 @@ export const useAuthStore = create((set) => ({
   },
 
   logout: (returnUrl = null) => {
+    // Best-effort server-side revocation (adds the token's jti to the backend
+    // Redis blocklist). Raw fetch with keepalive: bypasses the axios 401
+    // interceptor (no recursion) and survives the navigation below. Any error
+    // is ignored — local logout must always proceed.
+    const existingToken = localStorage.getItem('token')
+    if (existingToken) {
+      try {
+        fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${existingToken}` },
+          keepalive: true,
+        }).catch(() => {})
+      } catch {
+        /* ignore */
+      }
+    }
     localStorage.removeItem('token')
     localStorage.removeItem('username')
     localStorage.removeItem('skillLevel')

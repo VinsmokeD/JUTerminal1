@@ -1829,3 +1829,18 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - Rebuilt+recreated the live backend → `/api/auth/logout` present, weak-pw register → **422**, healthy, still on `claude-sonnet-4.6`.
   - TLS overlay: `docker compose -f .. -f docker-compose.tls.yml config` merges cleanly (80+443, nginx.tls.conf overrides base mount); self-signed cert generated; `nginx -t` on the TLS config → **syntax ok** (validated in a throwaway container, running nginx untouched).
   - Nothing pushed (left to user).
+
+---
+
+### [2026-06-02] - Claude ("do all": frontend logout wiring + TLS enabled live + push)
+
+* **Status**: COMPLETE ✅
+* **Why**: User said "do all" to the three open items (push, enable/show TLS, wire frontend logout).
+* **Frontend logout → server-side revocation**:
+  - `frontend/src/store/authStore.js` — `logout()` now fires a best-effort `POST /api/auth/logout` (raw `fetch` + `keepalive`, bypassing the axios 401 interceptor to avoid recursion, surviving the redirect) so the new Redis JWT blocklist is actually used end-to-end. Errors ignored; local logout always proceeds.
+  - Verified: `eslint` 0 warnings, `vitest` 46 passed, `vite build` ok. Rebuilt + recreated the frontend container.
+* **TLS enabled live** (safe — verified non-breaking):
+  - `demo_check.py` targets `:8001` and `:3000` directly (not nginx), and `:3000`/`:8001` access is unchanged, so enabling TLS on nginx only adds 443 + an 80→301→443 redirect.
+  - Brought up `docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d nginx`. Verified live: HTTPS `/health` ok, HTTPS `/api/scenarios/` → 3 (nginx→backend over TLS), HTTP :80 → 301 → https, SPA HTML served over HTTPS. Self-signed cert ⇒ expected first-load browser warning.
+  - Revert to plain HTTP anytime: `docker compose up -d nginx`.
+* **Pushed**: `master` pushed to `origin/master`.
