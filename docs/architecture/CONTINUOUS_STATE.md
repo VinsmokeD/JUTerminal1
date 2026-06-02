@@ -1844,3 +1844,62 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - Brought up `docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d nginx`. Verified live: HTTPS `/health` ok, HTTPS `/api/scenarios/` → 3 (nginx→backend over TLS), HTTP :80 → 301 → https, SPA HTML served over HTTPS. Self-signed cert ⇒ expected first-load browser warning.
   - Revert to plain HTTP anytime: `docker compose up -d nginx`.
 * **Pushed**: `master` pushed to `origin/master`.
+
+---
+
+### [2026-06-02] - Claude (presentation: projector-readability overhaul of defense deck)
+
+* **Status**: COMPLETE ✅
+* **Why**: User asked to make the presentation clearer/bigger so it reads easily on a projector, and to "fix fully and all the slides". The old deck (`cybersim-defense-deck.pptx`, 12 slides) had body text at 11–16pt (unreadable on a projector) plus two real layout bugs.
+* **What was wrong (diagnosed via python-pptx extraction)**:
+  - Body fonts 11–13pt on the dense slides (3,4,5,6,7,8,9,11); scenario bullets at 11pt.
+  - **Slide 10 (Results) grid broken** — 4 of 6 metric cards positioned at top=6.2/7.4 on a 7.5" slide, i.e. partly/fully off-canvas.
+  - **Slide 3** had an empty 6th grid cell (only 5 feature cards, unbalanced 3×2).
+  - Misc: supervisor placeholder; long-arrow glyphs (⟵⟶, ↕) not in Segoe UI.
+* **What/how (where)**:
+  - `docs/final-report/presentation/build_deck.py` (NEW) — single-pass generator that rebuilds the whole deck from scratch with a consistent projector type scale: titles 36–38pt, card headers 20–24pt, body 17–19pt, scenario bullets 15pt, stats 60–64pt, hero 80pt. Brightened the dark-theme accents for projector contrast (cyan/red/blue/gold/green), rounded cards, explicit dark slide background, per-slide page numbers. Fixed the Results grid to a clean 3×2 that fits (rows at y=1.35 & 4.05, h=2.45). Added a 6th feature card ("One Timeline") to balance slide 3. Replaced ⟵⟶ with ←→ and ↕ with ↓ (both in Segoe UI). Moved slide-2 "Never connected" badge below the cards (was overlapping the 4th bullets). Content preserved from the prior deck, trimmed where needed so larger fonts fit.
+  - `docs/final-report/presentation/render_preview.py` (NEW) — offline QA renderer (Pillow + real Segoe UI metrics + word-wrap) that rasterizes each slide to `_preview/*.png` and flags any paragraph whose wrapped height exceeds its box. Used to visually verify all 12 slides.
+  - `docs/final-report/presentation/cybersim-defense-deck.pptx` (REGENERATED); original saved as `cybersim-defense-deck.backup.pptx`.
+* **Verification (empirical)**:
+  - Bounds check: **0 shapes out of slide bounds** (slide-10 bug resolved).
+  - Smallest *content* font now **14pt** (slide-4 connector captions); main body 17–19pt — up from 11–13pt.
+  - Rendered all 12 slides to PNG and inspected each: titles, grids, spacing, and wrapping all clean; no overlaps remaining after the slide-2/slide-4 fixes.
+  - Nothing committed/pushed (left to user).
+
+---
+
+### [2026-06-02] - Claude Opus 4.8 (Reliability pass: mission-end teardown, full SIEM coverage + self-heal, flag nudges, activity-aware AI)
+
+* **Status**: COMPLETE - backend 367 passed (was 364 + 3 new), black-clean; frontend eslint clean, vitest 46 passed, vite build ok; live publish->subscribe + live /end smoke tests green against the running stack.
+* **Why**: User reported four concrete gaps - (1) "End Mission" did not terminate machines/session; (2) SIEM feed sparse ("not full for all activities") and (3) not live until a full page refresh; (4) wanted direct flag-found hints + a submit reminder and user-activity-aware AI replies.
+
+* **Gap 1 - Mission end never tore anything down**:
+  - frontend/src/components/workspace/WorkspaceTopBar.jsx - "End Mission" only did navigate('/debrief'). Now calls POST /sessions/{id}/end (confirm dialog, ending state, label flips to "View Debrief" when already complete) before navigating.
+  - frontend/src/pages/Debrief.jsx - mount safety-net: if the report's session.completed_at is null (reached via command palette / direct link), it calls /end (idempotent) so the sandbox is always torn down.
+  - backend/src/sessions/routes.py::end_session - hardened: idempotent (no re-stamp/re-stop if already complete), persists final_score (incl. time bonus) into session.score, nulls container_id, best-effort stop_scenario_container, and now also clears terminal:{id}:history, the parallax:active_sessions hash entry, and parallax:session:{id}:alive so the noise daemon + SIEM poller stop targeting it. Returns {completed_at, container_stopped, already_completed}.
+
+* **Gap 2 - SIEM "not full for all activities"**:
+  - backend/src/siem/command_bridge.py - added _generic_command_event() + _command_tool() + _TOOL_TECHNIQUE map. create_command_siem_events now emits one LOW-severity endpoint_telemetry "Process execution on operator host: {tool}" event (MITRE technique per tool, default T1059) for every complete command that does NOT trip a bespoke detection rule - so the Blue feed mirrors all attacker activity (EDR-style). High-fidelity rule matches still supersede it (no duplicate). Incomplete shell fragments still emit nothing.
+  - Tests: backend/tests/test_command_siem_bridge.py +3 (generic telemetry fires for benign cmd; specific match supersedes; fragment emits none).
+
+* **Gap 3 - SIEM not live until refresh (root cause: pub/sub has no replay on WS reconnect)**:
+  - frontend/src/hooks/useSiemSync.js (NEW) - polls /sessions/{id}/events every 5s + forces a catch-up fetch on disconnected->connected transitions and on tab re-visibility, merging via the store. Closes the gap where events published during a transient WS drop were lost until a manual refresh.
+  - frontend/src/store/sessionStore.js - dedup now keys by unique id first (eventKeyOf), added mergeSiemEvents() for batch merges that never clobber live events.
+  - Wired useSiemSync(wsSessionId, connectionState) into RedWorkspace.jsx + BlueWorkspace.jsx.
+
+* **Gap 4 - Flag-found direct hint + submit reminder**:
+  - frontend/src/components/terminal/Terminal.jsx - on first detection of a flag candidate: fires an achievement toast, a direct (value-free) ai:hint ("Capture then SUBMIT FLAG..."), and a flag:detected event.
+  - frontend/src/components/workspace/FlagSubmitWidget.jsx - tracks pendingCount; the SUBMIT FLAG button pulses amber with a flag icon while a detected flag is unsubmitted, re-reminds via toast every 30s while closed, and clears on capture / when all flags captured.
+
+* **Activity monitoring + proactive AI replies**:
+  - backend/src/ws/routes.py - added _proactive_activity_nudge() (45s-cooldown, cost-free) + _bump_block_streak(). Detects (a) 3 identical repeated commands, (b) 3 consecutive gate/scope blocks, (c) >180s idle (in _heartbeat) and pushes a targeted ai_hint (source: activity_monitor). Streak resets when a command passes all gates.
+
+* **Reliability bug fixed along the way** (backend/src/ai/monitor.py): the pre-try rate-limit cache_get cooldown reads were unguarded, so a Redis outage propagated and crashed the hint path (caught by test_degradation.py::test_ai_monitor_redis_down_returns_fallback, which only surfaces when OPENROUTER_API_KEY is set - i.e. in the live container, not the host test env). Wrapped them in _safe_cache_get() -> graceful fallback.
+
+* **Verification (live stack, no mocks for final proof)**:
+  - Backend pytest in the backend container against in-network Postgres/Redis (separate test redis db index): 367 passed, 0 failed. (Discovered the container image ships no pyproject.toml, so pytest-asyncio ran strict and skipped the autouse init_services redis fixture - copied the config in for the run; harness-only, not a code issue.)
+  - Live redis.asyncio publish->subscribe roundtrip on siem:{id}:feed -> whoami produced a process_telemetry LOW/T1059 event delivered live (source endpoint_telemetry).
+  - Live HTTP: register->start->/end -> completed_at set, repeat /end returns already_completed=true (idempotent), /sessions/active -> none afterwards.
+  - Frontend: eslint src 0 warnings, vitest run 46 passed, vite build ok.
+* **Files**: backend siem/command_bridge.py, sessions/routes.py, ws/routes.py, ai/monitor.py, tests/test_command_siem_bridge.py; frontend hooks/useSiemSync.js (new), store/sessionStore.js, pages/RedWorkspace.jsx, pages/BlueWorkspace.jsx, pages/Debrief.jsx, components/workspace/WorkspaceTopBar.jsx, components/workspace/FlagSubmitWidget.jsx, components/terminal/Terminal.jsx.
+* **Deploy**: backend restart (src is volume-mounted -> reloads code), frontend image rebuilt + recreated (serves built bundle). Nothing committed/pushed (left to user).

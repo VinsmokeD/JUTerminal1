@@ -171,6 +171,64 @@ def test_new_siem_events_fire_on_expected_commands(cmd, expected_id):
     ],
 )
 def test_benign_commands_produce_no_siem_events(cmd, scenario):
-    """Generic shell commands that carry no attack signal must not emit events."""
+    """Generic shell commands carry no bespoke attack signal (rule matcher)."""
     matches = match_command_events(cmd, scenario)
     assert matches == [], f"{cmd!r} in {scenario} unexpectedly fired: {[e['id'] for e in matches]}"
+
+
+# ── Generic process-execution telemetry (full activity coverage) ─────────────
+
+
+class _CollectDb:
+    def __init__(self):
+        self.added = []
+
+    def add(self, item):
+        self.added.append(item)
+
+
+def _patch_kali_ip(monkeypatch, ip="172.20.1.3"):
+    async def _fake(_session_id: str) -> str:
+        return ip
+
+    monkeypatch.setattr("src.siem.command_bridge.get_kali_ip_for_session", _fake)
+
+
+@pytest.mark.asyncio
+async def test_benign_command_emits_generic_process_telemetry(monkeypatch):
+    """A command with no bespoke detection still yields exactly one low-severity
+    process-execution event so the Blue Team feed reflects every action."""
+    _patch_kali_ip(monkeypatch)
+    db = _CollectDb()
+    events = await create_command_siem_events("whoami", "session-xyz", "SC-01", db)
+
+    assert len(events) == 1
+    ev = events[0]
+    assert ev["source"] == "endpoint_telemetry"
+    assert ev["severity"] == "LOW"
+    assert ev["tool_triggered"] == "process_telemetry"
+    assert ev["mitre_technique"]  # always carries a technique (defaults to T1059)
+    assert ev["source_ip"] == "172.20.1.3"
+    assert db.added and db.added[0].source == "endpoint_telemetry"
+
+
+@pytest.mark.asyncio
+async def test_specific_detection_supersedes_generic_telemetry(monkeypatch):
+    """When a command trips a real rule, only high-fidelity events fire — no
+    duplicate generic process-telemetry event."""
+    _patch_kali_ip(monkeypatch)
+    events = await create_command_siem_events("nmap 172.20.1.20", "s", "SC-01", _CollectDb())
+
+    assert events, "expected at least the high-fidelity recon event"
+    assert all(e["tool_triggered"] != "process_telemetry" for e in events)
+
+
+@pytest.mark.asyncio
+async def test_incomplete_fragment_emits_no_telemetry(monkeypatch):
+    """Shell continuation fragments must not produce telemetry noise."""
+    _patch_kali_ip(monkeypatch)
+    events = await create_command_siem_events(
+        "python3 /opt/impacket/examples/GetUserSPNs.py \\", "s", "SC-02", _CollectDb()
+    )
+
+    assert events == []

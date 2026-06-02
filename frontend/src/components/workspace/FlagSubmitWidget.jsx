@@ -11,7 +11,43 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
   const [message, setMessage] = useState(null) // { type: 'success' | 'error', text: string }
   const [shake, setShake] = useState(false)
   const [glow, setGlow] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0) // detected-but-unsubmitted flags
   const popoverRef = useRef(null)
+  const isOpenRef = useRef(false)
+  useEffect(() => { isOpenRef.current = isOpen }, [isOpen])
+
+  // A flag was detected in terminal output — pulse the button and remind the
+  // student to submit it until they do (or until every flag is captured).
+  useEffect(() => {
+    const onDetected = () => {
+      setPendingCount((c) => c + 1)
+      setGlow(true)
+    }
+    window.addEventListener('flag:detected', onDetected)
+    return () => window.removeEventListener('flag:detected', onDetected)
+  }, [])
+
+  // Periodic "don't forget to submit" reminder while flags are pending + closed.
+  useEffect(() => {
+    if (pendingCount <= 0) return
+    const id = setInterval(() => {
+      if (!isOpenRef.current) {
+        setGlow(true)
+        toast.warning('🚩 Reminder: submit the flag you found via the SUBMIT FLAG button.')
+      }
+    }, 30000)
+    return () => clearInterval(id)
+  }, [pendingCount])
+
+  // Once every available flag is captured, stop reminding.
+  useEffect(() => {
+    if (totalFlags > 0 && flagsCaptured.length >= totalFlags) {
+      setPendingCount(0)
+      setGlow(false)
+    }
+  }, [flagsCaptured.length, totalFlags])
+
+  const hasPending = pendingCount > 0
 
   // Close popover on outside click
   useEffect(() => {
@@ -65,6 +101,7 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
           })
           setFlagValue('')
           onFlagCaptured?.()
+          setPendingCount((c) => Math.max(0, c - 1))
           toast.achievement(`Flag Captured! +${res.data?.points_awarded || 0} pts`)
         }
       } else {
@@ -91,11 +128,18 @@ export default function FlagSubmitWidget({ sessionId, _scenarioId, onFlagCapture
         onClick={() => {
           setIsOpen(!isOpen)
           setMessage(null)
+          if (!isOpen) setGlow(false)
         }}
-        className={`btn-v3 btn-v3-sm font-mono text-[11px] bg-surface-3 border hover:bg-surface-4 text-txt-secondary hover:text-txt-primary flex items-center gap-2 transition-all ${
-          glow ? 'border-amber-warn/70 shadow-[0_0_8px_rgba(245,158,11,0.4)]' : 'border-cs-border'
+        className={`btn-v3 btn-v3-sm font-mono text-[11px] border hover:bg-surface-4 flex items-center gap-2 transition-all ${
+          hasPending
+            ? 'bg-amber-warn/15 border-amber-warn/70 text-amber-warn shadow-[0_0_10px_rgba(245,158,11,0.45)] animate-pulse'
+            : glow
+              ? 'bg-surface-3 border-amber-warn/70 text-txt-secondary shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+              : 'bg-surface-3 border-cs-border text-txt-secondary hover:text-txt-primary'
         }`}
+        title={hasPending ? 'A flag was detected in your output — submit it!' : 'Submit a captured flag'}
       >
+        {hasPending && <span aria-hidden>🚩</span>}
         <span>SUBMIT FLAG</span>
         <span className="text-[10px] text-txt-dim bg-surface-2 px-1.5 py-0.5 rounded-cs-sm border border-cs-border">
           {flagsCaptured.length}/{totalFlags} captured

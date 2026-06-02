@@ -23,6 +23,7 @@ from src.ai.discovery_tracker import track_command as track_discovery
 from src.cache.redis import (
     cache_get,
     cache_set,
+    cache_set_if_absent,
     lpush_capped,
     lrange,
     _get as get_redis_client,
@@ -112,12 +113,63 @@ async def _send_reconnect_history(websocket: WebSocket, session_id: str) -> None
     )
 
 
+def _bump_block_streak(session_state: dict[str, Any]) -> int:
+    """Increment and return the count of consecutive gate/scope-blocked commands."""
+    streak = session_state.get("_block_streak", 0) + 1
+    session_state["_block_streak"] = streak
+    return streak
+
+
+async def _proactive_activity_nudge(
+    session_id: str, session_state: dict[str, Any], signal: str, send_json
+) -> None:
+    """Observe student activity and proactively reply when they appear stuck.
+
+    Cost-free, deterministic guidance so the monitor reacts to behaviour even
+    when no hint was requested. Rate-limited to one nudge per 45s per session so
+    it never competes with the AI tutor or spams the panel.
+    """
+    if not await cache_set_if_absent(f"ai:{session_id}:proactive_cooldown", "1", ttl=45):
+        return
+    if signal == "repeat":
+        text = (
+            "I notice you're repeating the same command. If the output isn't changing, the "
+            "problem is usually the arguments, the target address, or a prerequisite step you "
+            "haven't done yet. Ask yourself what a successful result would actually look like, "
+            "change one variable at a time, or request a hint."
+        )
+    elif signal == "blocked":
+        text = (
+            "Several commands in a row were blocked by the methodology gate. That means this "
+            "phase expects different work first. Review what evidence the current phase asks for, "
+            "document what you've already found, then continue — or request a hint to see which "
+            "step unlocks the next phase."
+        )
+    elif signal == "idle":
+        text = (
+            "You've paused for a while. Re-read your last output and your notes: what is the next "
+            "question you need to answer, and which tool would answer it? Request a hint if you're stuck."
+        )
+    else:
+        return
+    await send_json(
+        {"type": "ai_hint", "data": {"text": text, "level": 0, "source": "activity_monitor"}}
+    )
+
+
 async def _handle_terminal_command(
     session_id: str, session_state: dict[str, Any], command: str, send_json
 ) -> None:
     """Process complete commands without blocking raw PTY keystrokes."""
     if not command.strip():
         return
+
+    # â”€â”€ Activity monitoring: detect repeated identical commands (a stuck signal) â”€
+    recent_cmds: list[str] = session_state.setdefault("_recent_cmds", [])
+    recent_cmds.append(command.strip())
+    del recent_cmds[:-4]  # keep only the last 4
+    if len(recent_cmds) >= 3 and recent_cmds[-1] == recent_cmds[-2] == recent_cmds[-3]:
+        await _proactive_activity_nudge(session_id, session_state, "repeat", send_json)
 
     # â”€â”€ ROE gate: backend hard-check before any processing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async with AsyncSessionLocal() as db:
@@ -181,6 +233,8 @@ async def _handle_terminal_command(
         await send_json({"type": "terminal_output", "data": {"data": warn}})
         if new_score is not None:
             await send_json({"type": "score_update", "data": {"score": new_score}})
+        if _bump_block_streak(session_state) >= 3:
+            await _proactive_activity_nudge(session_id, session_state, "blocked", send_json)
         return
 
     if ptes_phase:
@@ -225,6 +279,8 @@ async def _handle_terminal_command(
             await send_json({"type": "terminal_output", "data": {"data": warn}})
             if new_score is not None:
                 await send_json({"type": "score_update", "data": {"score": new_score}})
+            if _bump_block_streak(session_state) >= 3:
+                await _proactive_activity_nudge(session_id, session_state, "blocked", send_json)
             return
 
     try:
@@ -284,9 +340,14 @@ async def _handle_terminal_command(
         await send_json({"type": "terminal_output", "data": {"data": warn}})
         if new_score is not None:
             await send_json({"type": "score_update", "data": {"score": new_score}})
+        if _bump_block_streak(session_state) >= 3:
+            await _proactive_activity_nudge(session_id, session_state, "blocked", send_json)
         return
 
     from src.scenarios.gatekeeper import _parse_tool as _gt
+
+    # Command passed every gate — clear the consecutive-block streak.
+    session_state["_block_streak"] = 0
 
     tool_name = _gt(command)
     previous_branch = session_state.get("active_branch")
@@ -654,6 +715,18 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         while True:
             await asyncio.sleep(20)
             await _send_json({"type": "ws_ping", "data": {"session_id": session_id}})
+            # Activity monitoring: a long pause after the student has started is a
+            # struggle signal. Nudge once per idle stretch (240s guard), gated by
+            # the shared proactive cooldown so it never spams.
+            try:
+                last = await cache_get(f"session:{session_id}:last_cmd_time")
+                if last and (time.time() - float(last)) > 180:
+                    if await cache_set_if_absent(f"ai:{session_id}:idle_nudged", "1", ttl=240):
+                        await _proactive_activity_nudge(
+                            session_id, session_state, "idle", _send_json
+                        )
+            except Exception:
+                pass
 
     async def _send_hint(level: int) -> None:
         hint_text = None

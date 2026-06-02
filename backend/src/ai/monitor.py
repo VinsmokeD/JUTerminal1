@@ -225,16 +225,30 @@ async def get_ai_hint(
             return _get_fallback_hint(session_state, command, hint_level)
         return None
 
+    # Resilient cooldown read: a Redis outage must degrade to "no cooldown"
+    # (proceed / fall back) rather than propagate and crash the hint path.
+    async def _safe_cache_get(key: str):
+        try:
+            return await cache_get(key)
+        except Exception as _redis_exc:
+            logger.warning(
+                "[AI Monitor] session_id=%s redis_get_failed key=%s: %s",
+                session_id[:8],
+                key,
+                _redis_exc,
+            )
+            return None
+
     # Rate limits: 1 call / 10s for tutor queries, 1 call / 60s for unprompted nudges
     if is_tutor_call:
         cooldown_key = f"ai:{session_id}:tutor_cooldown"
-        last_call = await cache_get(cooldown_key)
+        last_call = await _safe_cache_get(cooldown_key)
         if last_call:
             logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=cooldown_block (tutor)")
             return "AI Tutor is processing. Please wait 10 seconds between requests."
     else:
         cooldown_key = f"ai:{session_id}:nudge_cooldown"
-        last_call = await cache_get(cooldown_key)
+        last_call = await _safe_cache_get(cooldown_key)
         if last_call:
             if _should_emit_static_command_hint(command):
                 logger.info(
@@ -247,7 +261,7 @@ async def get_ai_hint(
     # For unprompted hints, only trigger on meaningful commands
     if not is_tutor_call and command:
         # Also trigger on first command ever and on phase transitions
-        is_first = not (await cache_get(f"ai:{session_id}:last_call"))
+        is_first = not (await _safe_cache_get(f"ai:{session_id}:last_call"))
         if not _should_emit_static_command_hint(command) and not is_first:
             logger.info(f"[AI Monitor] session_id={session_id[:8]} exit=unprompted_nudge_ignored")
             return None

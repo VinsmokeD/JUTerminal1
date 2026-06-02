@@ -215,9 +215,23 @@ export default function Debrief() {
   }
 
   useEffect(() => {
-    api.get(`/reports/${sessionId}/report`)
-      .then((res) => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await api.get(`/reports/${sessionId}/report`)
+        if (cancelled) return
         const { session, score, notes, commands, siem_events, triage, learning_insights } = res.data
+        // Safety net: if the mission reached the debrief without being ended
+        // (e.g. via the command palette or a direct link), terminate the
+        // sandbox machine(s) and finalize the session now. Idempotent backend.
+        if (session && !session.completed_at) {
+          try {
+            const endRes = await api.post(`/sessions/${sessionId}/end`)
+            if (endRes.data?.completed_at) session.completed_at = endRes.data.completed_at
+          } catch {
+            // non-fatal — report still renders
+          }
+        }
         setSession(session)
         setScore(score)
         setNotes(notes || [])
@@ -225,9 +239,14 @@ export default function Debrief() {
         setSiemEvents(siem_events || [])
         setTriage(triage || [])
         setInsights(learning_insights)
-      })
-      .catch(() => navigate('/'))
-      .finally(() => setLoading(false))
+      } catch {
+        if (!cancelled) navigate('/')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
   }, [sessionId, navigate])
 
   const fetchCoaching = useCallback(() => {

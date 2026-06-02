@@ -121,6 +121,97 @@ def _render_raw_log(template: str, command: str, source_ip: str, now: datetime) 
     return rendered.replace('"LIVE"', json.dumps(now.isoformat()))
 
 
+# Tools that map to recognisable MITRE techniques for generic process telemetry.
+# Keeps the operator-host "process execution" feed informative without needing a
+# per-command detection rule. Anything not listed falls back to T1059.
+_TOOL_TECHNIQUE: dict[str, str] = {
+    "nmap": "T1046",
+    "masscan": "T1046",
+    "rustscan": "T1046",
+    "gobuster": "T1595.003",
+    "feroxbuster": "T1595.003",
+    "dirb": "T1595.003",
+    "nikto": "T1595.002",
+    "whatweb": "T1592.002",
+    "curl": "T1071.001",
+    "wget": "T1071.001",
+    "sqlmap": "T1190",
+    "hydra": "T1110",
+    "medusa": "T1110",
+    "hashcat": "T1110.002",
+    "john": "T1110.002",
+    "crackmapexec": "T1021.002",
+    "netexec": "T1021.002",
+    "nxc": "T1021.002",
+    "smbclient": "T1021.002",
+    "evil-winrm": "T1021.006",
+    "impacket-getuserspns": "T1558.003",
+    "getuserspns.py": "T1558.003",
+    "impacket-secretsdump": "T1003.006",
+    "secretsdump.py": "T1003.006",
+    "kerbrute": "T1110.001",
+    "bloodhound": "T1087.002",
+    "bloodhound-python": "T1087.002",
+    "ssh": "T1021.004",
+    "nc": "T1095",
+    "ncat": "T1095",
+    "msfconsole": "T1059",
+    "msfvenom": "T1587.001",
+}
+
+
+def _command_tool(command: str) -> str:
+    """Return the lowercased program name from a command line."""
+    stripped = command.strip()
+    if not stripped:
+        return ""
+    first = stripped.split()[0]
+    # Strip a leading interpreter (python3 foo.py -> foo.py) so the tool name is useful.
+    if first in {"python", "python3", "sudo"} and len(stripped.split()) > 1:
+        first = stripped.split()[1]
+    return first.rsplit("/", 1)[-1].lower()
+
+
+def _generic_command_event(
+    command: str, session_id: str, source_ip: str, now: datetime
+) -> dict[str, Any]:
+    """Build a low-severity operator-host process-execution telemetry event.
+
+    Emitted for commands that don't trip a high-fidelity detection rule so the
+    Blue Team feed reflects every attacker action (endpoint/EDR-style telemetry),
+    not just the handful of commands with a bespoke detection.
+    """
+    tool = _command_tool(command) or "shell"
+    technique = _TOOL_TECHNIQUE.get(tool, "T1059")
+    safe_command = command.strip()[:300]
+    raw_log = json.dumps(
+        {
+            "event": "process_execution",
+            "host": source_ip,
+            "process": tool,
+            "command_line": safe_command,
+            "user": "operator",
+            "@timestamp": now.isoformat(),
+        }
+    )
+    return {
+        "type": "siem_event",
+        "id": str(uuid.uuid4()),
+        "session_id": session_id,
+        "severity": "LOW",
+        "message": f"Process execution on operator host: {tool}",
+        "raw_log": raw_log,
+        "mitre_technique": technique,
+        "source": "endpoint_telemetry",
+        "source_ip": source_ip,
+        "category": "process",
+        "timestamp": now.isoformat(),
+        "created_at": now.isoformat(),
+        "tool_triggered": "process_telemetry",
+        "rule_id": "process-execution",
+    }
+
+
 async def create_command_siem_events(
     command: str,
     session_id: str,
@@ -134,7 +225,29 @@ async def create_command_siem_events(
 
     from src.siem.schemas import SiemEventOut
 
-    for matched in match_command_events(command, scenario_id):
+    matched_events = match_command_events(command, scenario_id)
+
+    # Endpoint telemetry: every complete command yields at least a low-severity
+    # process-execution event so the Blue Team feed mirrors all attacker activity.
+    # High-fidelity detections (below) supersede it when a command trips a rule.
+    if not matched_events and not _is_incomplete_shell_fragment(command):
+        generic = _generic_command_event(command, session_id, source_ip, now)
+        db.add(
+            SiemEvent(
+                id=generic["id"],
+                session_id=session_id,
+                severity=generic["severity"],
+                message=generic["message"],
+                raw_log=generic["raw_log"],
+                mitre_technique=generic["mitre_technique"],
+                source_ip=source_ip,
+                source=generic["source"],
+                created_at=now,
+            )
+        )
+        payloads.append(generic)
+
+    for matched in matched_events:
         event_id = str(uuid.uuid4())
         raw_severity = str(matched.get("severity", "LOW"))
         raw_log = _render_raw_log(str(matched.get("raw_log", command)), command, source_ip, now)

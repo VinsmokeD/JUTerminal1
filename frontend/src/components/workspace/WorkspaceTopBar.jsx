@@ -75,6 +75,23 @@ export default function WorkspaceTopBar({
   const tokens = ROLE_TOKENS[role] || ROLE_TOKENS.red
   const activeBranch = useSessionStore((state) => state.activeBranch)
   const displayScore = useCountUp(score ?? 100)
+  const [ending, setEnding] = useState(false)
+
+  const endMission = async () => {
+    if (ending) return
+    if (!completedAt && !window.confirm(
+      'End this mission? This terminates the sandbox machine(s) and finalizes your report. You can still review the debrief afterwards.'
+    )) return
+    setEnding(true)
+    try {
+      // Idempotent on the backend: stops the container + marks the session complete.
+      if (!completedAt) await api.post(`/sessions/${sessionId}/end`)
+    } catch {
+      // Non-fatal: the debrief mount also runs the teardown as a safety net.
+    } finally {
+      navigate(`/session/${sessionId}/debrief`)
+    }
+  }
 
   return (
     <div
@@ -204,11 +221,12 @@ export default function WorkspaceTopBar({
         </button>
 
         <button
-          onClick={() => navigate(`/session/${sessionId}/debrief`)}
-          className="btn-v3 btn-v3-subtle btn-v3-sm"
-          title="End Mission & View Debrief"
+          onClick={endMission}
+          disabled={ending}
+          className="btn-v3 btn-v3-subtle btn-v3-sm disabled:opacity-60 disabled:cursor-wait"
+          title="End Mission — terminates the sandbox and opens the debrief"
         >
-          End Mission
+          {ending ? 'Ending…' : completedAt ? 'View Debrief' : 'End Mission'}
         </button>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useSessionActivity } from '../ui/SessionManager'
 import TerminalContextMenu from './TerminalContextMenu'
 import TerminalToolbar from './TerminalToolbar'
 import OutputAnnotator from './OutputAnnotator'
+import toast from '../../lib/toast'
 
 /**
  * Real PTY terminal component.
@@ -98,6 +99,21 @@ export default function Terminal({ onData, onCommand, pendingOutput, connectionS
       if (!flag_id || already_captured) return
       setFlagCandidates((prev) => {
         if (prev.some((c) => c.flag_id === flag_id)) return prev
+        // First time we surface this flag: nudge hard so the student submits it.
+        const pts = points > 0 ? ` (+${points} pts)` : ''
+        toast.achievement(`🚩 Flag found in your output${pts} — capture & submit it!`)
+        // Direct, value-free guidance in the AI Tutor panel.
+        window.dispatchEvent(new CustomEvent('ai:hint', {
+          detail: {
+            text: `You just uncovered something that matches a mission flag${pts}. `
+              + `Click "Capture" on the flag banner above the terminal, then press `
+              + `"SUBMIT FLAG" in the top bar to lock in the points. Don't move on without submitting it.`,
+            level: 0,
+            source: 'flag_detected',
+          },
+        }))
+        // Make the SUBMIT FLAG button pulse + start the submit reminder.
+        window.dispatchEvent(new CustomEvent('flag:detected', { detail: { flag_id, points } }))
         return [...prev, { flag_id, description, matched_text, points }]
       })
     }

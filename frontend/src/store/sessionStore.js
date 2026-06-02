@@ -4,6 +4,26 @@ import api from '../lib/api'
 const eventTime = (event) => Date.parse(event?.timestamp || event?.created_at || '') || 0
 const newestFirst = (events = []) => [...events].sort((a, b) => eventTime(b) - eventTime(a))
 
+// A SIEM event id is globally unique; prefer it so the same event delivered by
+// both the live WS push and the polling self-heal merge is deduped reliably
+// regardless of timestamp-field differences between the two payload shapes.
+const eventKeyOf = (event) =>
+  event?.id
+    ? `id:${event.id}`
+    : `${event?.message || 'event'}:${event?.timestamp || event?.created_at || ''}`
+
+const mergeEvents = (existing = [], incoming = []) => {
+  const seen = new Set(existing.map(eventKeyOf))
+  const merged = [...existing]
+  for (const ev of incoming) {
+    const key = eventKeyOf(ev)
+    if (seen.has(key)) continue
+    seen.add(key)
+    merged.push(ev)
+  }
+  return newestFirst(merged).slice(0, 200)
+}
+
 export const useSessionStore = create((set, get) => ({
   scenarios: [],
   currentSession: null,
@@ -68,14 +88,17 @@ export const useSessionStore = create((set, get) => ({
   setSiemEvents: (events) => set({ siemEvents: newestFirst(events || []).slice(0, 200) }),
 
   addSiemEvent: (event) => set((s) => {
-    const eventKey = `${event?.id || event?.message || 'event'}:${event?.timestamp || event?.created_at || ''}`
-    const alreadyPresent = s.siemEvents.some((existing) => {
-      const existingKey = `${existing?.id || existing?.message || 'event'}:${existing?.timestamp || existing?.created_at || ''}`
-      return existingKey === eventKey
-    })
+    const eventKey = eventKeyOf(event)
+    const alreadyPresent = s.siemEvents.some((existing) => eventKeyOf(existing) === eventKey)
     if (alreadyPresent) return s
     return { siemEvents: newestFirst([event, ...s.siemEvents]).slice(0, 200) }
   }),
+
+  // Merge a batch (e.g. from the polling self-heal) without dropping live events
+  // that arrived via WS. Dedup is by unique event id.
+  mergeSiemEvents: (events) => set((s) => ({
+    siemEvents: mergeEvents(s.siemEvents, events || []),
+  })),
 
   addDiscoveries: (newDiscoveries) => set((s) => {
     const d = { ...s.discoveries }

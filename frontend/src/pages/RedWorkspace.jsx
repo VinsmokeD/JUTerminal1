@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useSessionStore } from '../store/sessionStore'
 import { useAuthStore } from '../store/authStore'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { useSiemSync } from '../hooks/useSiemSync'
 import RoeBriefing from '../components/workspace/RoeBriefing'
 import WorkspaceTopBar from '../components/workspace/WorkspaceTopBar'
 import LayoutPicker from '../components/workspace/LayoutPicker'
@@ -56,6 +57,8 @@ export default function RedWorkspace() {
 
   const wsSessionId = session && roeAcked ? sessionId : null
   const { sendRawInput, sendCommand, requestHint, toggleMode, sendTutorQuestion, connectionState } = useWebSocket(wsSessionId)
+  // Self-heal the SIEM feed (covers WS reconnect gaps where pub/sub has no replay)
+  useSiemSync(wsSessionId, connectionState)
 
   const handleFlagSubmit = useCallback(async (flagVal) => {
     if (!flagVal) {
