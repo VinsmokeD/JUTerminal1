@@ -30,11 +30,11 @@ class Settings(BaseSettings):
 
     # OpenRouter AI (OpenAI-compatible)
     OPENROUTER_API_KEY: str = ""
-    # Smarter model choices (set in .env to override):
-    #   google/gemini-2.0-flash-001       â€” fast, smart, affordable (default)
-    #   anthropic/claude-3-5-haiku-20241022 â€” best Socratic quality
-    #   anthropic/claude-3-5-sonnet-20241022 â€” maximum quality, higher cost
-    #   deepseek/deepseek-chat-v3-0324    â€” previous default, still good
+    # Smarter model choices (set in .env to override). Verified OpenRouter IDs Jun 2026:
+    #   anthropic/claude-sonnet-4.6  â€” best Socratic quality + guardrails, fast
+    #   anthropic/claude-opus-4-8    â€” max reasoning, slower/pricier
+    #   anthropic/claude-haiku-4.5   â€” cheap, solid instruction-following
+    #   google/gemini-2.0-flash-001  â€” fast/cheap fallback, weaker guardrails (default)
     OPENROUTER_MODEL: str = "google/gemini-2.0-flash-001"
     OPENROUTER_MAX_TOKENS: int = 500
     AI_CALL_COOLDOWN_SECONDS: int = 10

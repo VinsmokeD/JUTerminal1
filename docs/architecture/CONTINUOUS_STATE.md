@@ -1771,3 +1771,14 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - Nav: wrapped in Fragment + `<style>` for `.lp-nav-links` responsive hide at ≤680px; nav gets `maxWidth: min(920px, calc(100vw-32px))`, `flexWrap:'nowrap'`; Launch button gets `flexShrink:0` + `whiteSpace:'nowrap'` — Launch is always the last visible item regardless of viewport width. Fixed stray extra `)` syntax error from the refactor.
   - Loop section: added `scrollMarginTop:'80px'` so `#loop` anchor navigation lands 80px below viewport top (clears fixed nav height).
 * **Verification**: `npm run build` → ✓ 6.62s.
+
+### [2026-06-02] - Claude Opus 4.8 (AI monitor model upgrade for demo: gemini-flash → claude-sonnet-4.6)
+
+* **Status**: COMPLETE ✅ — live OpenRouter call verified (HTTP 200, reply "OK", cost $0.000102).
+* **Why**: Demo tomorrow; OpenRouter budget effectively untouched ($0.0231 of $4 used). The AI monitor is a Socratic security tutor that must never leak flags/passwords and must ask sharp guiding questions — `google/gemini-2.0-flash-001` has weak instruction-following/guardrail adherence. Upgraded to the model with the best quality-per-latency for short (≤500-tok) live hints.
+* **Where** (3 files):
+  - `.env` — `OPENROUTER_MODEL` → `anthropic/claude-sonnet-4.6`; refreshed option comments with verified Jun-2026 IDs.
+  - `.env.example` — same value + comment refresh (committed template; removed stale 2024 claude-3-5-* / deepseek IDs).
+  - `backend/src/config.py` — refreshed the `OPENROUTER_MODEL` doc-comment block with valid IDs (code default left as gemini-flash as a safe cheap fallback; `.env` overrides it).
+* **What & How**: `settings.OPENROUTER_MODEL` is read in `backend/src/ai/monitor.py:324` and `debrief_coach.py` as the OpenRouter `model` field. No code path change — config-only swap. Picked Sonnet 4.6 over Opus 4.8 deliberately: hints are short, so Opus's reasoning edge is invisible, while its higher latency hurts a live demo and its $5/$25 vs $3/$15 pricing is needless. Cost estimate ~$0.015/call → $4 ≈ 250+ hints; existing guards (AI_USER_HOURLY_CALL_LIMIT=50, 10s/60s cooldowns, 100k-tok/user/day) prevent runaway spend.
+* **Verification**: `curl` to `https://openrouter.ai/api/v1/chat/completions` with the live key + `anthropic/claude-sonnet-4.6` → resolved to `anthropic/claude-4.6-sonnet-20260217`, returned valid completion, usage cost $0.000102. No errors.
