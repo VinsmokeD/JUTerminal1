@@ -6,7 +6,19 @@ echo "[*] Scenario: Orion Logistics Mail Server (SC-03)"
 
 # Initialize Postfix
 echo "[+] Initializing Postfix..."
-postfix -c /etc/postfix new 2>/dev/null || true
+# Disable the chroot jail for all master.cf services. The container drops ALL
+# capabilities and runs with no-new-privileges, so it lacks CAP_SYS_CHROOT;
+# chroot(/var/spool/postfix) would fail ("Operation not permitted") and kill
+# smtpd/pickup before port 25 ever opens. The jail is redundant here anyway:
+# sc03-net is an internal-only Docker network with zero egress.
+postconf -F '*/*/chroot=n'
+# Pre-create the lookup maps referenced by main.cf so smtpd does not log a
+# missing-.db error during the brief window before the real maps are written
+# and reloaded further below. Real contents are populated after start.
+touch /etc/postfix/virtual /etc/postfix/transport
+postmap /etc/postfix/virtual
+postmap /etc/postfix/transport
+postfix -c /etc/postfix check 2>/dev/null || true
 postfix -c /etc/postfix start
 
 # Wait for Postfix to be ready
