@@ -10,6 +10,17 @@ class Settings(BaseSettings):
     # Auth
     JWT_SECRET: str = "change-me-in-production"
     JWT_EXPIRY_HOURS: int = 8
+    # HS256 (symmetric) is correct for this single-backend monolith. Switch to
+    # RS256 (asymmetric: private key signs, services verify with the public key)
+    # only if the backend is ever split into multiple services.
+    JWT_ALGORITHM: str = "HS256"
+    # Password policy enforced on registration (see auth.routes.UserCreate).
+    PASSWORD_MIN_LENGTH: int = 8
+    # Rate-limit posture when the Redis limiter backend is unavailable:
+    #   False (default) -> fail-OPEN: keep serving so a transient cache blip can't
+    #                      lock users out (right for a live classroom/demo).
+    #   True            -> fail-CLOSED: reject the request (hardened production).
+    RATE_LIMIT_FAIL_CLOSED: bool = False
     # Default instructor account seeded on first boot. Override in any shared
     # deployment; the default password is rejected in production (see below).
     ADMIN_USERNAME: str = "admin"

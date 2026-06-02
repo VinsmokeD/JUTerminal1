@@ -1,18 +1,21 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 import hashlib
+import re
+import uuid
 
 import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from src.config import settings
 from src.db.database import get_db, User, Session, CommandLog, Note, SiemEvent
 from src.activity.service import record_activity
+from src.cache.redis import cache_get, cache_set
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -23,6 +26,22 @@ LEGACY_PASSWORD_HASH_PREFIXES = ("bcrypt-sha256$",)
 class UserCreate(BaseModel):
     username: str
     password: str
+
+    @field_validator("password")
+    @classmethod
+    def _enforce_password_policy(cls, value: str) -> str:
+        """Reject weak passwords at registration (NIST-style composition policy)."""
+        if len(value) < settings.PASSWORD_MIN_LENGTH:
+            raise ValueError(
+                f"Password must be at least {settings.PASSWORD_MIN_LENGTH} characters long"
+            )
+        if not re.search(r"[a-z]", value):
+            raise ValueError("Password must contain a lowercase letter")
+        if not re.search(r"[A-Z]", value):
+            raise ValueError("Password must contain an uppercase letter")
+        if not re.search(r"\d", value):
+            raise ValueError("Password must contain a digit")
+        return value
 
 
 class Token(BaseModel):
@@ -58,12 +77,46 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_token(user_id: str, username: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(hours=settings.JWT_EXPIRY_HOURS)
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(hours=settings.JWT_EXPIRY_HOURS)
     return jwt.encode(
-        {"sub": user_id, "username": username, "exp": expire},
+        {
+            "sub": user_id,
+            "username": username,
+            "iat": now,
+            "jti": uuid.uuid4().hex,  # unique token id -> enables server-side revocation
+            "exp": expire,
+        },
         settings.JWT_SECRET,
-        algorithm="HS256",
+        algorithm=settings.JWT_ALGORITHM,
     )
+
+
+def _revocation_key(jti: str) -> str:
+    return f"auth:revoked:{jti}"
+
+
+async def is_token_revoked(jti: str | None) -> bool:
+    """Check the Redis JWT blocklist. Fails OPEN: a cache outage must never lock
+    out otherwise-valid users (the token's own 8h expiry remains the backstop)."""
+    if not jti:
+        return False
+    try:
+        return bool(await cache_get(_revocation_key(jti)))
+    except Exception:
+        return False
+
+
+async def revoke_token(jti: str | None, exp: int | None) -> bool:
+    """Add a token's jti to the blocklist until its natural expiry (TTL-bounded so
+    revoked entries self-clean and Redis can't grow unbounded)."""
+    if not jti or not exp:
+        return False
+    ttl = int(exp - datetime.now(timezone.utc).timestamp())
+    if ttl <= 0:
+        return False  # already expired; nothing to revoke
+    await cache_set(_revocation_key(jti), "1", ttl=ttl)
+    return True
 
 
 async def get_current_user(
@@ -71,10 +124,14 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db),
 ) -> User:
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
         user_id: str = payload.get("sub")
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    if await is_token_revoked(payload.get("jti")):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked"
+        )
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -101,8 +158,14 @@ async def enforce_rate_limit(key: str, limit: int, window: int):
     except HTTPException:
         raise
     except Exception:
-        # Fail-open if Redis encounters connection issues
-        pass
+        # Limiter backend (Redis) is unavailable.
+        if settings.RATE_LIMIT_FAIL_CLOSED:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Rate limiter unavailable; request rejected (fail-closed).",
+            )
+        # Default: fail-open so a transient cache blip can't lock users out.
+        return
 
 
 @router.post("/register", response_model=Token)
@@ -148,6 +211,24 @@ async def login(
         token_type="bearer",
         username=user.username,
     )
+
+
+@router.post("/logout")
+async def logout(
+    token: str = Depends(oauth2_scheme),
+    user: User = Depends(get_current_user),
+):
+    """Revoke the caller's current token via the server-side JWT blocklist.
+
+    Stateless JWTs can't be 'deleted', so logout records the token's jti in a
+    TTL-bounded Redis blocklist; get_current_user rejects it on the next request.
+    """
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    revoked = await revoke_token(payload.get("jti"), payload.get("exp"))
+    return {"detail": "Logged out", "revoked": revoked}
 
 
 async def require_instructor(user: User = Depends(get_current_user)) -> User:

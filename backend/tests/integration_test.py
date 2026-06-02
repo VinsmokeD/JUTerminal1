@@ -252,15 +252,24 @@ async def test_07_session_persists_with_token(client: AsyncClient, auth_token: s
 
 
 @pytest.mark.asyncio
-async def test_08_logout_clears_session(client: AsyncClient, auth_token: str):
+async def test_08_logout_clears_session(client: AsyncClient):
     """âœ“ Logout invalidates token (subsequent requests fail)."""
-    resp = await client.post(
-        "/api/auth/logout",
-        headers={"Authorization": f"Bearer {auth_token}"},
+    # Use a throwaway user so logout doesn't revoke the shared module-scoped token.
+    username = f"logout_user_{int(time.time())}"
+    reg = await client.post(
+        "/api/auth/register",
+        json={"username": username, "password": "LogoutPass123"},
     )
-    # Logout endpoint may or may not exist, but token is still valid until expiry
-    # Test that token structure is valid
-    assert len(auth_token) > 20
+    if reg.status_code == 429:
+        pytest.skip("registration rate-limited in this window")
+    assert reg.status_code == 200
+    token = reg.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Token works -> logout revokes it -> the same token is then rejected.
+    assert (await client.get("/api/auth/me", headers=headers)).status_code == 200
+    assert (await client.post("/api/auth/logout", headers=headers)).status_code == 200
+    assert (await client.get("/api/auth/me", headers=headers)).status_code == 401
 
 
 @pytest.mark.asyncio

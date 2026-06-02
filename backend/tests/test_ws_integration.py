@@ -114,8 +114,8 @@ async def test_register_and_login(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_duplicate_username_rejected(client: AsyncClient):
-    await client.post("/api/auth/register", json={"username": "dup_user", "password": "x"})
-    resp = await client.post("/api/auth/register", json={"username": "dup_user", "password": "y"})
+    await client.post("/api/auth/register", json={"username": "dup_user", "password": "DupUserPass1"})
+    resp = await client.post("/api/auth/register", json={"username": "dup_user", "password": "DupUserPass2"})
     assert resp.status_code == 400
 
 
