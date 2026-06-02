@@ -154,6 +154,58 @@ The implementation follows these constraints:
 - No full raw terminal-output storage as the main durable record.
 - AI output must remain bounded and educational.
 
-## 5.12 Chapter Summary
+## 5.12 Implementation Process Models
+
+The implementation described above is governed by several process flows. These flows show how the platform turns a raw student action into structured, assessable learning evidence, and how the offensive and defensive workflows are kept distinct yet correlated.
+
+### 5.12.1 Red Team Methodology Flow
+
+The Red Team workflow follows a PTES-aligned, gated methodology. Figure 5.1 shows how a student moves through reconnaissance, scanning, exploitation, and post-exploitation phases, with each transition gated by the scenario engine so that progress reflects genuine methodology rather than random commands.
+
+![Figure 5.1 Red Team Methodology Flow](../diagrams/export/png/red-team-methodology-flow.png)
+
+Figure 5.1: Red Team methodology flow.
+
+### 5.12.2 Blue Team Incident Response Workflow
+
+The Blue Team workflow mirrors a simplified incident response lifecycle. Figure 5.2 shows the path from event ingestion and triage, through investigation and correlation, to containment actions and analyst notes, all backed by the SIEM routes and the durable triage and containment tables.
+
+![Figure 5.2 Blue Team Incident Response Workflow](../diagrams/export/png/blue-team-ir-workflow.png)
+
+Figure 5.2: Blue Team incident response workflow.
+
+### 5.12.3 AI Tutor Safety Pipeline
+
+Every AI Tutor request passes through a bounded, multi-stage safety pipeline before any guidance is returned. Figure 5.3 shows context building, redaction, unsafe-pattern filtering, provider call, output validation, and the fallback-hint path that preserves usability when no provider is configured or a rate limit is reached.
+
+![Figure 5.3 AI Tutor Safety Pipeline](../diagrams/export/png/ai-safety-pipeline.png)
+
+Figure 5.3: AI Tutor safety pipeline.
+
+### 5.12.4 Scoring and Debrief Flow
+
+At session end, the platform converts recorded metadata into a score and a debrief. Figure 5.4 shows how command metadata, methodology progress, notes, hint usage, and SIEM triage are aggregated into the scoring model and the post-mission debrief.
+
+![Figure 5.4 Scoring and Debrief Flow](../diagrams/export/png/scoring-and-debrief-flow.png)
+
+Figure 5.4: Scoring and debrief generation flow.
+
+### 5.12.5 Report Generation Pipeline
+
+Figure 5.5 shows the report generation pipeline that assembles session data, learning insights, the Red-to-Blue timeline, and evidence summaries into the report data consumed by the Debrief page and instructor exports.
+
+![Figure 5.5 Report Generation Pipeline](../diagrams/export/png/report-generation-pipeline.png)
+
+Figure 5.5: Report generation pipeline.
+
+### 5.12.6 Instructor Analytics Data Flow
+
+Figure 5.6 shows how per-session data is aggregated into the instructor analytics views: live class status, per-student metrics, AI usage, weak-phase identification, and grade-oriented exports.
+
+![Figure 5.6 Instructor Analytics Data Flow](../diagrams/export/png/instructor-analytics-flow.png)
+
+Figure 5.6: Instructor analytics data flow.
+
+## 5.13 Chapter Summary
 
 Parallax's implementation combines a modern web application, real-time backend services, containerized lab targets, structured scenario definitions, telemetry, AI guidance, and instructor analytics. The result is a safe cybersecurity training environment that demonstrates both offensive methodology and defensive evidence in one workflow.

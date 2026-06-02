@@ -20,75 +20,103 @@ Use the Canva design as the visual companion direction, not as the official form
 
 | Output | Purpose | Status |
 | --- | --- | --- |
-| Formal report DOCX/PDF | University-compliant submission document | Planned |
-| Canva visual report | Examiner-friendly visual companion | Selected design created |
-| Defense deck | Presentation for final defense | Planned |
-| Academic poster | Poster submission and demo-day display | Planned |
-| Technical architecture atlas | Commercial-grade diagram and architecture reference | Started |
-| API reference | Backend route documentation | Started |
-| Database reference | Schema and data lifecycle documentation | Started |
-| Requirements matrix | Requirements, implementation, tests, and evidence mapping | Started |
-| Diagram catalog | Source, export, and caption registry for figures | Six diagrams rendered |
-| Evidence bundle | Test output, screenshots, Docker/API evidence | Started |
-| Canva rewrite brief | Page-by-page Parallax replacement plan for the selected Canva design | Started |
-| Tooling and skill log | Record of useful MCP, plugin, and skill usage | Started |
-| Documentation master prompt pack | Detailed context, phase prompts, tool plans, and remaining-roadmap prompts | Added |
-| Scenario dossiers | SC-01, SC-02, and SC-03 report-safe scenario summaries | Drafted |
-| Student and instructor manuals | User-facing workflow documentation | Drafted |
-| Maintainer operations manual | Installation, readiness, recovery, and evidence guidance | Drafted |
+| Formal report DOCX | University-compliant submission document | ✅ Complete — `parallax-graduation-report.docx` (~9.3 MB, 137 pages) |
+| Formal report PDF | PDF export of above | ✅ Complete — `parallax-graduation-report.pdf` (137 pages, 22 figures, 52 tables) |
+| Canva visual report | Examiner-friendly visual companion | ⏳ Design selected; content replacement pending |
+| Defense deck | Presentation for final defense | ⏳ Outline drafted; new deck pending (old CyberSim artifact removed) |
+| Academic poster | Poster submission and demo-day display | ⏳ Outline drafted; production pending |
+| Technical architecture atlas | Commercial-grade diagram and architecture reference | ✅ Complete (Appendix D) |
+| API reference | Backend route documentation | ✅ Complete (Appendix B) |
+| Database reference | Schema and data lifecycle documentation | ✅ Complete (Appendix C) |
+| Requirements matrix | Requirements, implementation, tests, and evidence mapping | ✅ Complete (Appendix A) |
+| Diagram catalog | Source, export, and caption registry for figures | ✅ Complete — 22 diagrams (PNG + SVG + .mmd sources) |
+| Evidence bundle — screenshots | 10 application screenshots | ⏳ Pending fresh capture (stale images removed 2026-06-01) |
+| Evidence bundle — test output | Command evidence files | ⏳ Pending fresh run |
+| Canva rewrite brief | Page-by-page Parallax replacement plan for selected Canva design | ✅ Complete |
+| Tooling and skill log | Record of useful MCP, plugin, and skill usage | ✅ Complete |
+| Documentation master prompt pack | Detailed context, phase prompts, tool plans, and remaining-roadmap prompts | ✅ Complete |
+| Scenario dossiers | SC-01 (NovaMed), SC-02 (Nexora), SC-03 (Orion) report-safe summaries | ✅ Complete (Appendix F + scenarios/) |
+| Student manual | Student-facing workflow documentation | ✅ Complete (Appendix I) |
+| Instructor manual | Instructor-facing workflow documentation | ✅ Complete (Appendix J) |
+| Maintainer operations manual | Installation, readiness, recovery, and evidence guidance | ✅ Complete (Appendix K) |
+| Security and safety case | STRIDE threat model, sandbox isolation, prompt injection mitigations | ✅ Complete (Appendix E) |
+| Known limitations and future work | Technical limitations and roadmap (SC-04/SC-05, Kubernetes, LMS LTI) | ✅ Complete (Appendix M + Chapter 7) |
+| Accessibility and usability notes | WCAG AA compliance, resizable panels, workspace UX | ✅ Complete (Appendix L) |
+
+## Formal Report — Compiled Deliverables
+
+| File | Location | Pages | Notes |
+| --- | --- | --- | --- |
+| `parallax-graduation-report.docx` | `formal-report/` | 137 | Final edition — KASIT compliant. Compiled 2026-06-01. |
+| `parallax-graduation-report.pdf` | `formal-report/` | 137 | Word COM export. TOC/LOF/LOT updated. |
+
+Reproduce with:
+```powershell
+backend\.venv\Scripts\python.exe scripts\compile_report_v3.py
+```
 
 ## Folder Map
 
 ```text
 docs/final-report/
-+-- README.md
-+-- design-and-canva-direction.md
-+-- report-production-checklist.md
-+-- requirements-traceability-matrix.md
-+-- technical-architecture-atlas.md
-+-- api-reference.md
-+-- database-reference.md
-+-- references.md
-+-- canva-page-rewrite-brief.md
-+-- documentation-master-prompt-pack.md
-+-- tooling-and-skill-usage.md
-+-- evidence/
-+|   +-- README.md
-+|   +-- source-inventory.md
-+|   +-- screenshots/
-+|   +-- test-output/
-+-- chapters/
-|   +-- chapter-01-introduction.md
-|   +-- chapter-03-requirements.md
-|   +-- chapter-04-system-design.md
-|   +-- chapter-05-implementation.md
-|   +-- chapter-06-testing-and-installation.md
-+-- scenarios/
-|   +-- sc-01-novamed-dossier.md
-|   +-- sc-02-nexora-dossier.md
-|   +-- sc-03-orion-dossier.md
-+-- user-manuals/
-|   +-- student-manual.md
-|   +-- instructor-manual.md
-|   +-- maintainer-operations-manual.md
-+-- diagrams/
-    +-- catalog.md
-    +-- mermaid-theme.json
-    +-- source/
-        +-- c4-context.mmd
-        +-- c4-container.mmd
-        +-- dfd-level-0.mmd
-        +-- erd-core-schema.mmd
-        +-- docker-topology.mmd
-        +-- red-blue-event-sequence.mmd
-    +-- export/
-        +-- svg/
-        +-- png/
+├── README.md
+├── CHANGELOG-DOCS.md
+├── report-production-checklist.md
+├── design-and-canva-direction.md
+├── canva-page-rewrite-brief.md
+├── documentation-master-prompt-pack.md
+├── tooling-and-skill-usage.md
+├── requirements-traceability-matrix.md
+├── technical-architecture-atlas.md
+├── api-reference.md
+├── database-reference.md
+├── references.md
+├── security-and-safety-case.md
+├── deployment-and-operations-manual.md
+├── scenario-design-dossier.md
+├── testing-and-verification-evidence.md
+├── known-limitations-and-future-work.md
+├── accessibility-and-usability-notes.md
+├── examiner-qa-sheet.md
+├── defense-deck-outline.md
+├── academic-poster-outline.md
+├── next-phase-proposal.md
+├── chapters/
+│   ├── chapter-01-introduction.md
+│   ├── chapter-02-related-existing-systems.md
+│   ├── chapter-03-requirements.md
+│   ├── chapter-04-system-design.md
+│   ├── chapter-05-implementation.md
+│   ├── chapter-06-testing-and-installation.md
+│   └── chapter-07-conclusions-and-future-work.md
+├── formal-report/
+│   ├── parallax-graduation-report.docx   ← final compiled DOCX
+│   ├── parallax-graduation-report.pdf    ← final compiled PDF
+│   └── render-verification.md
+├── scenarios/
+│   ├── sc01-walkthrough.md
+│   ├── sc02-walkthrough.md
+│   └── sc03-walkthrough.md
+├── diagrams/
+│   ├── catalog.md
+│   ├── mermaid-theme.json
+│   ├── source/   ← .mmd source files
+│   └── export/
+│       ├── svg/
+│       └── png/  ← 22 embedded figures
+├── presentation/
+│   ├── defense-deck-outline.md    ← outline only; deck pending
+│   └── academic-poster-outline.md
+└── evidence/
+    ├── screenshots/
+    │   └── README.md   ← 10 captures pending (stale removed 2026-06-01)
+    └── test-output/
+        └── README.md   ← fresh evidence run pending
 ```
 
 ## Formal Report Rule
 
-The formal report should remain conservative and handbook-compliant:
+The formal report remains conservative and handbook-compliant:
 
 - A4 page size.
 - Times New Roman.

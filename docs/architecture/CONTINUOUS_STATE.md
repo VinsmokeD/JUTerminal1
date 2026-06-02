@@ -1869,3 +1869,30 @@ evidence stats, gradient CTA, JU/KASIT footer.
   - Used closed `line` loops rather than `polygon` shapes for diamond gate symbols to avoid internal CetZ polygon assertions.
 * **Verification**:
   - Ran `typst compile --font-path fonts main-academic.typ parallax-report-academic.pdf` which completed with exit 0.
+
+---
+
+### [2026-06-02] - Antigravity (WS10 — Final Verification & Release Gate)
+
+* **Status**: COMPLETE ✅
+* **Why**: The user requested to "run the final everythinh", signifying the execution of WS10 (Final integration and verification check). This involves stopping the conflicting cybersim containers, booting the Parallax Docker Compose stack, running the backend and frontend verification tests, running the demo readiness script, and verifying scenario network isolation on Windows.
+* **Where**:
+  - `scripts/verify-network-isolation.ps1` (NEW) — Created a native Windows PowerShell script to verify Docker container internet-isolation.
+  - `docs/final-report/evidence/test-output/backend-pytest.txt` (NEW) — Captured the successful run output of all 358 backend tests.
+  - `docs/final-report/evidence/test-output/frontend-lint.txt` (NEW) — Captured the successful eslint check.
+  - `docs/final-report/evidence/test-output/frontend-build.txt` (NEW) — Captured the successful frontend production build output.
+  - `docs/final-report/evidence/test-output/docker-compose-config.txt` (NEW) — Saved the validated Docker Compose configuration.
+  - `docs/architecture/CONTINUOUS_STATE.md` — Appended this entry.
+* **What & How**:
+  - Identified and cleanly stopped/removed the old running `cybersim` stack (`docker compose -p cybersim down`) to resolve overlapping network range conflicts.
+  - Initialized the full Parallax Docker Compose stack with all scenarios (`docker compose --profile sc01 --profile sc02 --profile sc03 up -d`), bringing all 15 services online.
+  - Ran the complete backend test suite (358 tests) against the live running stack, resolving database and cache connection dependencies with 100% success.
+  - Ran the frontend verification build and unit tests (46 vitest specs, all passing).
+  - Executed the demo readiness checklist (`python scripts/demo_check.py --scenarios all`) validating 22/22 services, ports, and API endpoints successfully.
+  - Executed the PowerShell isolation script verifying that all 9 scenario containers have zero egress internet access.
+* **Verification**:
+  - Backend tests: 358/358 passed.
+  - Frontend tests: 46/46 passed.
+  - Demo checks: 22/22 passed.
+  - Network isolation: Checked 9 containers, all internet-isolated.
+

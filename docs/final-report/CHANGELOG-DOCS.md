@@ -4,6 +4,45 @@ This document tracks all additions, modifications, and synchronization passes pe
 
 ---
 
+## [2026-06-01] - Final Cleanup, Report Compilation & Full Verification
+
+### Compiled
+* `scripts/compile_report_v3.py` — new final-edition compiler. Produces `docs/final-report/formal-report/parallax-graduation-report.docx` (~9.3 MB) and `.pdf` (137 pages). Includes: cover, declaration, acknowledgments, abstract, TOC/LOF/LOT (Word COM updated), abbreviations, 7 body chapters, references, appendices A–M. 22 figures, 52 tables.
+* Old `cybersim-graduation-report.*` artifacts (stale project name) permanently removed.
+
+### Updated — Chapters
+* `chapter-03-requirements.md` — added Fig 3.1 (UML use-case) reference after functional-requirements table.
+* `chapter-04-system-design.md` — new §4.12 "Supplementary Design Models" with Figs 4.7–4.11; renumbered §§4.12–4.15 → 4.13–4.16.
+* `chapter-05-implementation.md` — new §5.12 "Implementation Process Models" with Figs 5.1–5.6; summary renumbered §5.13.
+* `chapter-06-testing-and-installation.md` — new §6.12 "Scenario Lab Topologies and Attack-Defense Flow" with Figs 6.1–6.4; summary renumbered §6.13.
+
+### Verified — Full App Routes (2026-06-01)
+* npm run build: 971 modules, all page chunks — GREEN.
+* Live smoke test of every route: Landing (Loop scroll pin holds, completes cleanly), Auth, Onboarding, Dashboard (live data), Settings, Profile, Instructor (student role-redirect), Red workspace (RoE → terminal/PTES/notebook/AI/SIEM), Blue workspace (SIEM/SOC checklist/IR notebook/AI), Debrief (100/100, 6 tabs). Zero console errors.
+
+### Added — Branding
+* `frontend/public/brand/` — 7 SVG logo variants + PNG icon. Real Parallax logo replaces all CSS placeholder squares across the app.
+* `frontend/public/og-image.svg` — 1200×630 social card.
+* `frontend/public/favicon.svg` — Parallax icon mark.
+
+### Removed — Stale Artifacts (2026-06-01)
+* All 14 screenshot PNGs from `docs/final-report/evidence/screenshots/` (stale 2026-05-23 Playwright captures — fresh capture required before defense).
+* `docs/final-report/evidence/test-output/documentation-phase-04-verification.md` — stale.
+* `docs/final-report/evidence/test-output/documentation-phase-05-verification.md` — stale.
+* `docs/final-report/evidence/lighthouse-landing-v2.json` — stale Lighthouse audit.
+* `docs/final-report/presentation/_poster_preview.png` — placeholder artifact.
+* `docs/final-report/presentation/cybersim-defense-deck.pptx` — old CyberSim-branded deck.
+* `docs/testing_results/loadtest_*.csv` (8 files) — stale load-test run data.
+
+### Updated — Documentation Index Files
+* `docs/final-report/README.md` — deliverables status table updated; formal report marked Complete; stale evidence noted as pending.
+* `docs/final-report/report-production-checklist.md` — Phase 2/3/4 fully checked; Phase 5 deck/screenshots pending; Phase 6 DOCX/PDF/QA gates marked complete.
+* `docs/final-report/evidence/screenshots/README.md` — all statuses reset to ⏳ Pending new capture.
+* `docs/final-report/evidence/test-output/README.md` — fresh evidence run required; known build pass noted.
+* `docs/final-report/formal-report/render-verification.md` — rewritten for v3 (22-figure table, QA gates, reproduce steps).
+
+---
+
 ## [2026-05-26] - Documentation Completion & Technical Appendices
 
 ### Added

@@ -1,0 +1,9 @@
+> parallax-frontend@0.1.0 lint
+> eslint src
+
+
+C:\Users\mmjal\Documents\JUTerminal1\frontend\src\pages\Landing.jsx
+  1:39  warning  'lazy' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  1:45  warning  'Suspense' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+✖ 2 problems (0 errors, 2 warnings)
