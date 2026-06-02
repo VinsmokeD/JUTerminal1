@@ -79,12 +79,22 @@ def test_final_score_does_not_resubtract_hint_penalties():
     assert final_score(40, [{"level": 3}, {"level": 3}, {"level": 3}], START, None) == 40
 
 
-def test_final_score_adds_time_bonus_to_base():
-    assert final_score(60, [], START, _done(THRESHOLD / 2)) == 70  # 60 + 10
-    assert final_score(70, [], START, _done(0)) == 90  # 70 + 20
+def test_final_score_does_not_add_time_bonus():
+    # The time bonus is no longer folded into the headline score (it used to be
+    # added then clamped to 100, masking penalties on fast runs). The final score
+    # is just the clamped base regardless of completion time.
+    assert final_score(60, [], START, _done(THRESHOLD / 2)) == 60
+    assert final_score(70, [], START, _done(0)) == 70
+    assert final_score(90, [], START, _done(0)) == 90
+
+
+def test_penalized_fast_run_is_not_masked_to_100():
+    # Regression for the "100/100 despite deductions" report bug: a penalized
+    # run completed instantly must NOT be inflated back to a perfect score.
+    assert final_score(85, [], START, _done(0)) == 85
 
 
 def test_final_score_clamps_to_0_100():
-    assert final_score(100, [], START, _done(0)) == 100  # 100 + 20 clamped
+    assert final_score(120, [], START, _done(0)) == 100  # flag bonuses over 100 clamp
     assert final_score(0, ["L3_phase3"], START, None) == 0
     assert final_score(-50, [], START, None) == 0

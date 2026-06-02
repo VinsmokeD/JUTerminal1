@@ -212,18 +212,14 @@ async def end_session(
 
     if not already_completed:
         session.completed_at = datetime.now(timezone.utc)
-        # Persist the final score (including time bonus) so the stored value and
-        # the instructor dashboard reflect the completed run, not just the base.
+        # session.score is the live running score (penalties + flag bonuses already
+        # applied). Clamp it to the displayable [0, 100] range — but do NOT add a
+        # time bonus here: folding the bonus in and clamping to 100 used to erase
+        # any deduction up to +20 on a fast run (the "100/100 despite penalties"
+        # bug). The speed bonus is surfaced separately in the report breakdown.
         try:
-            from src.scoring.engine import final_score
-
-            session.score = final_score(
-                base=session.score,
-                hints_used=session.hints_used or [],
-                started_at=session.started_at,
-                completed_at=session.completed_at,
-            )
-        except Exception:
+            session.score = max(0, min(100, int(session.score)))
+        except (TypeError, ValueError):
             pass  # never block teardown on score math
         await record_activity(
             db, current_user.id, "scenario_complete", session.id, {"final_score": session.score}

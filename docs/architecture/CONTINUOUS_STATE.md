@@ -13,6 +13,18 @@
 
 ## Recent entries (rolling tail â€” see archive for older history)
 
+### [2026-06-02] - Claude Opus 4.8 (Fix "100/100 despite deductions" final-score bug)
+
+* **Status**: COMPLETE — report now reflects deductions; verified live (deduct -> end -> report shows 80/100, not 100); 193 backend tests pass.
+* **Why**: User purposely deducted score, ended the mission, and the report still showed 100/100.
+* **Root cause(s)**: (1) the completion-time bonus (up to +20) was added to the base and clamped to 100 — on a fast run that mathematically erased any deduction <= 20, so a penalized run still showed a perfect 100. (2) `end_session` OVERWROTE `session.score` with `final_score(base + bonus)`, corrupting the stored base; the report then re-applied `final_score` on the already-bonused value (double bonus) and the breakdown reconstructed penalties from the corrupted base.
+* **Where / What**:
+  - `backend/src/scoring/engine.py`: `final_score()` now returns `clamp(base, 0, 100)` — the headline score is the live running base (penalties + flag bonuses already applied). The time bonus is NO LONGER folded into the headline (it can't mask penalties). `compute_time_bonus` kept for informational use.
+  - `backend/src/sessions/routes.py` `end_session`: no longer overwrites `session.score` with a bonused value — just clamps it to [0,100]. Stored score stays the true base, so the instructor dashboard / breakdown decompose correctly.
+  - `backend/src/reports/routes.py`: `computed_score` = clamped base; added `completion_seconds` (informational); `score_breakdown.time_bonus` set to 0 (kept for shape) so the breakdown reconciles `100 - hint - gate (+flag) = final`. Dropped the now-unused `compute_time_bonus` import.
+  - Tests: `test_scoring_engine.py` (+`test_penalized_fast_run_is_not_masked_to_100`) and `test_coverage_gaps.py` updated to the corrected model.
+* **Verification (live)**: hints L2+L3 + a gate block -> live score 100->95->85->80; POST /sessions/{id}/end (fast completion) -> GET /reports/{id}/report returns base_score=80, final_score=80, breakdown {starting 100, hint 10, gate 10, time_bonus 0, final 80}. Frontend Debrief needs no change (reads final_score; time_bonus 0 hides the bonus line). black-clean.
+
 ### [2026-06-02] - Claude Opus 4.8 (SIEM capture+live fix, no-repeat hints, phase auto-advance, Red layout presets)
 
 * **Status**: COMPLETE — root-caused and fixed 4 reported issues against the live stack; 298 backend tests pass; frontend build/lint clean; redeployed.

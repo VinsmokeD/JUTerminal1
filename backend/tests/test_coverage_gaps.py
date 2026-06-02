@@ -149,17 +149,19 @@ def _event(**overrides) -> SiemEvent:
     return SiemEvent(**data)
 
 
-def test_scoring_applies_hint_deductions_and_time_bonus():
+def test_scoring_components_and_clamped_base():
     started = datetime(2026, 5, 20, 9, 0, tzinfo=timezone.utc)
     completed = started + timedelta(minutes=30)
 
+    # compute_time_bonus / compute_hint_penalty are unchanged helpers.
     assert compute_time_bonus(started, completed) == 15
     assert compute_hint_penalty([{"level": 1}, {"level": 2}, {"level": 3}, {"level": 99}]) == 40
-    # final_score must NOT re-subtract hint penalties (they are already deducted
-    # from `base` live during the session); it only adds the time bonus + clamps.
-    assert final_score(90, [{"level": 1}, {"level": 3}], started, completed) == 100  # 90 + 15
-    assert final_score(4, [{"level": 3}], started, None) == 4  # base unchanged, no bonus
-    assert final_score(99, [], started, completed) == 100
+    # final_score is the clamped running base — it must NOT re-subtract hint
+    # penalties (already in `base`) and must NOT add the time bonus (which used to
+    # mask penalties on fast runs and showed a perfect 100 despite deductions).
+    assert final_score(90, [{"level": 1}, {"level": 3}], started, completed) == 90
+    assert final_score(4, [{"level": 3}], started, None) == 4
+    assert final_score(99, [], started, completed) == 99
 
 
 @pytest.mark.asyncio
@@ -173,7 +175,9 @@ async def test_score_route_returns_deducted_final_score_and_completion_state():
     assert payload["base_score"] == 90
     assert payload["hints_used"] == 2
     assert payload["completed"] is True
-    assert payload["final_score"] == 100  # 90 + 10 bonus; hint penalties already in base
+    # final_score is the clamped base; the time bonus is no longer folded in, so
+    # the deducted score (90) is reported as-is rather than inflated to 100.
+    assert payload["final_score"] == 90
 
 
 @pytest.mark.asyncio
@@ -254,7 +258,8 @@ async def test_reports_consolidated_endpoint_returns_session_fields(monkeypatch)
 
     assert report["session"]["id"] == "sess-1"
     assert report["session"]["scenario_id"] == "SC-01"
-    assert report["score"]["final_score"] == 95  # 85 + 10 bonus; hint penalties already in base
+    # final_score is the clamped base (85); the time bonus is no longer added.
+    assert report["score"]["final_score"] == 85
     assert report["notes"][0]["content"] == "Found exposed admin path"
     assert report["commands"][0]["command"].startswith("nmap")
     assert report["siem_events"][0]["mitre_technique"] == "T1190"

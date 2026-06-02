@@ -38,14 +38,21 @@ def compute_hint_penalty(hints_used: list) -> int:
 def final_score(
     base: int, hints_used: list, started_at: datetime, completed_at: datetime | None
 ) -> int:
-    """Final score = the running score (`base`) plus a completion-time bonus,
-    clamped to [0, 100].
+    """Final score = the running score (`base`), clamped to [0, 100].
 
-    IMPORTANT: `base` is `session.score`, which ALREADY has every penalty
-    applied live during the session — hint penalties (ws/routes._send_hint and
-    scenarios/hint_engine) and gate/scope penalties. `hints_used` is accepted
-    for signature stability but is intentionally NOT re-penalised here: doing so
-    double-counted penalties already deducted from `base`.
+    `base` is `session.score`, which ALREADY has every score change applied live
+    during the session — hint penalties (ws/routes._send_hint and
+    scenarios/hint_engine), gate/scope penalties, and flag bonuses. So the
+    headline score is just the clamped base.
+
+    The completion-time bonus is deliberately NOT folded in here. It used to be
+    added and then clamped to 100, which mathematically ERASED any deduction up
+    to +20 on a fast run — so a student who lost points still saw a perfect
+    100/100. The time/speed bonus is now surfaced separately (see
+    ``compute_time_bonus`` and the report breakdown) so it can never mask
+    penalties in the headline score.
+
+    `hints_used`, `started_at`, `completed_at` are accepted for signature
+    stability (callers and the report breakdown still pass them).
     """
-    bonus = compute_time_bonus(started_at, completed_at)
-    return max(0, min(100, base + bonus))
+    return max(0, min(100, base))
