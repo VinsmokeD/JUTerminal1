@@ -1,0 +1,38 @@
+name: report
+
+# Compile the PARALLAX Typst report on every change so it can never silently
+# break on master. Uses the vendored fonts in docs/report/fonts so CI output
+# matches local builds.
+on:
+  pull_request:
+    paths:
+      - "docs/report/**"
+      - ".github/workflows/report.yml"
+  push:
+    branches: [master]
+    paths:
+      - "docs/report/**"
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Typst
+        uses: typst-community/setup-typst@v3
+        with:
+          typst-version: "0.14.2"
+
+      - name: Compile report
+        run: >-
+          typst compile
+          --font-path docs/report/fonts
+          docs/report/main.typ
+          docs/report/parallax-report.pdf
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parallax-report
+          path: docs/report/parallax-report.pdf

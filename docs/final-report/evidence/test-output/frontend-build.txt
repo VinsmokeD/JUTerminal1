@@ -1,0 +1,38 @@
+> parallax-frontend@0.1.0 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 971 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                2.49 kB │ gzip:   0.89 kB
+dist/assets/ErrorBoundary-LcAfv9l9.css         4.35 kB │ gzip:   1.68 kB
+dist/assets/index-s3VGubTX.css                90.15 kB │ gzip:  17.65 kB
+dist/assets/EmptyState-DZbgdHEU.js             0.39 kB │ gzip:   0.22 kB
+dist/assets/Stat-uyPCP-_n.js                   0.45 kB │ gzip:   0.27 kB
+dist/assets/Badge-BJQADBQ8.js                  0.52 kB │ gzip:   0.35 kB
+dist/assets/Button-CjxoioBl.js                 0.71 kB │ gzip:   0.45 kB
+dist/assets/useTilt-CWMPKl2V.js                0.74 kB │ gzip:   0.43 kB
+dist/assets/ParallaxNav-D9nETrwb.js            2.26 kB │ gzip:   0.96 kB
+dist/assets/Settings-gjbmBVWD.js               5.52 kB │ gzip:   1.98 kB
+dist/assets/KillChainView-CcIHpPdZ.js          7.45 kB │ gzip:   2.85 kB
+dist/assets/Onboarding-DjEeZc64.js             8.02 kB │ gzip:   3.23 kB
+dist/assets/Profile-qFWRiRzx.js                8.54 kB │ gzip:   2.42 kB
+dist/assets/RedWorkspace-BDsxm-IP.js          11.59 kB │ gzip:   4.30 kB
+dist/assets/lenis-CtBykRLH.js                 18.83 kB │ gzip:   5.36 kB
+dist/assets/Dashboard-B-2X0sEg.js             23.22 kB │ gzip:   7.59 kB
+dist/assets/purify.es-CLGrRn1w.js             25.32 kB │ gzip:   9.62 kB
+dist/assets/InstructorDashboard-Cvi1dSCF.js   28.90 kB │ gzip:   7.22 kB
+dist/assets/Debrief-2q2FV3Gt.js               42.05 kB │ gzip:  11.84 kB
+dist/assets/vendor-ui-DQ_rTDiH.js             42.16 kB │ gzip:  16.78 kB
+dist/assets/BlueWorkspace-D83nzN34.js         53.40 kB │ gzip:  17.18 kB
+dist/assets/ErrorBoundary-DSxTXT5Q.js         96.85 kB │ gzip:  30.66 kB
+dist/assets/index.es-Df-pgTeV.js             150.80 kB │ gzip:  51.61 kB
+dist/assets/vendor-react-DLKkGc6X.js         160.25 kB │ gzip:  52.34 kB
+dist/assets/html2canvas.esm-CBrSDip1.js      201.42 kB │ gzip:  48.03 kB
+dist/assets/index--hjQHoVL.js                231.87 kB │ gzip:  73.70 kB
+dist/assets/vendor-xterm-DWX2dM_j.js         286.27 kB │ gzip:  71.49 kB
+dist/assets/jspdf.es.min-v9n-PvdY.js         390.31 kB │ gzip: 128.75 kB
+dist/assets/HeroScene3D-DAkZairV.js          486.66 kB │ gzip: 122.78 kB
+✓ built in 10.17s

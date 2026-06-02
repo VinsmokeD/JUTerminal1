@@ -209,7 +209,51 @@ Figure 4.6: Red-to-Blue event sequence.
 
 This sequence is why Parallax is a dual-perspective platform instead of a standard vulnerable-machine lab. Students do not only perform actions. They also see how those actions appear to defenders.
 
-## 4.12 AI Guidance Design
+## 4.12 Supplementary Design Models
+
+The core context, container, data-flow, database, topology, and event diagrams above are complemented by a set of behavioral and deployment models. These models document the parts of the system that are stateful or sequence-sensitive: authentication, session lifecycle, scenario phase progression, the physical Docker deployment, and the runtime component interaction map.
+
+### 4.12.1 Authentication Sequence
+
+Authentication is the entry point to every protected workflow. Registration and login are handled by `backend/src/auth/routes.py`, which issues a signed JWT that the frontend attaches to subsequent REST and WebSocket calls. The sequence in Figure 4.7 shows registration, login, token issuance, and authenticated access, including the role check that gates instructor-only routes.
+
+![Figure 4.7 Authentication Sequence](../diagrams/export/png/auth-sequence.png)
+
+Figure 4.7: Authentication sequence.
+
+### 4.12.2 Session Lifecycle
+
+A session is the unit of student work in one scenario and one role. Figure 4.8 models the session lifecycle as a state machine: from creation and Rules of Engagement acknowledgement, through readiness and active work, to completion and debrief. Durable state lives in PostgreSQL while volatile realtime state (terminal history, cooldowns) lives in Redis.
+
+![Figure 4.8 Session Lifecycle State Machine](../diagrams/export/png/session-lifecycle-state.png)
+
+Figure 4.8: Session lifecycle state machine.
+
+### 4.12.3 Scenario Phase Progression
+
+Scenario methodology is gated. Figure 4.9 shows the scenario phase state machine that the scenario engine enforces, advancing a student through ordered methodology phases only when the gate conditions for the current phase are met. This prevents premature or out-of-scope activity and reinforces structured methodology.
+
+![Figure 4.9 Scenario Phase State Machine](../diagrams/export/png/scenario-phase-state-machine.png)
+
+Figure 4.9: Scenario phase state machine.
+
+### 4.12.4 Deployment Architecture
+
+Figure 4.10 shows the physical deployment view: the single-node Docker Compose host, the shared internal application network, the per-scenario internal networks, and the volumes that persist service data. This view complements the logical container architecture in Figure 4.2 by showing how services and networks are actually provisioned on one host.
+
+![Figure 4.10 Deployment Architecture](../diagrams/export/png/deployment-architecture.png)
+
+Figure 4.10: Parallax deployment architecture.
+
+### 4.12.5 Component Interaction Map
+
+Figure 4.11 consolidates the runtime relationships between the frontend, backend domains, data stores, telemetry path, AI provider, and scenario targets into a single interaction map. It is intended as a one-page orientation diagram for examiners and new maintainers.
+
+![Figure 4.11 System Component Interaction](../diagrams/export/png/system-component-interaction.png)
+
+Figure 4.11: System component interaction map.
+
+## 4.13 AI Guidance Design
 
 The AI monitor is designed as a safety-bounded learning assistant. It should help a student think, not solve the scenario for them. The design rules are:
 
@@ -222,7 +266,7 @@ The AI monitor is designed as a safety-bounded learning assistant. It should hel
 
 This design supports learning while reducing the chance that the AI becomes a solution generator. The AI path should be documented alongside rate limits, redaction, fallback behavior, and instructor visibility.
 
-## 4.13 Security and Safety Design
+## 4.14 Security and Safety Design
 
 Parallax handles cybersecurity training content, so safety is part of the design rather than a final checklist. The main safety controls are:
 
@@ -239,7 +283,7 @@ Parallax handles cybersecurity training content, so safety is part of the design
 
 The final security section should map these controls to OWASP WSTG, MITRE ATT&CK learning mappings, NIST CSF functions, and the platform's own sandbox rules.
 
-## 4.14 Scalability and Maintainability Design
+## 4.15 Scalability and Maintainability Design
 
 The current deployment is intentionally local and single-node. This is appropriate for a graduation project, classroom demonstration, and defense environment. However, the design keeps future scalability in mind:
 
@@ -252,7 +296,7 @@ The current deployment is intentionally local and single-node. This is appropria
 
 Future scaling should only be considered after the university version is stable. A larger deployment could separate the data services, introduce worker queues for heavier report generation, isolate Docker workers per class, or move to orchestrated infrastructure. Those changes are future work, not part of the current MVP.
 
-## 4.15 Figure Integration Notes
+## 4.16 Figure Integration Notes
 
 The following figures are part of the Chapter 4 figure set:
 
@@ -264,6 +308,11 @@ The following figures are part of the Chapter 4 figure set:
 | 4.4 | `diagrams/export/svg/erd-core-schema.svg` and `diagrams/export/png/erd-core-schema.png` | Database design | Page 11 data and reports |
 | 4.5 | `diagrams/export/svg/docker-topology.svg` and `diagrams/export/png/docker-topology.png` | Deployment and isolation | Page 12 Docker isolation |
 | 4.6 | `diagrams/export/svg/red-blue-event-sequence.svg` and `diagrams/export/png/red-blue-event-sequence.png` | Event behavior | Page 2 or page 14 |
+| 4.7 | `diagrams/export/png/auth-sequence.png` | Authentication sequence | Security appendix |
+| 4.8 | `diagrams/export/png/session-lifecycle-state.png` | Session lifecycle | Architecture appendix |
+| 4.9 | `diagrams/export/png/scenario-phase-state-machine.png` | Methodology gating | Scenario pages |
+| 4.10 | `diagrams/export/png/deployment-architecture.png` | Physical deployment | Page 12 Docker isolation |
+| 4.11 | `diagrams/export/png/system-component-interaction.png` | Component interaction | Architecture overview |
 
-In the formal report, captions must appear below figures. In Canva, labels can be integrated into the layout, but the page notes should still map each visual to its source figure and evidence.
+The use case model (Figure 3.1) is referenced in Chapter 3. In the formal report, captions must appear below figures. In Canva, labels can be integrated into the layout, but the page notes should still map each visual to its source figure and evidence.
 

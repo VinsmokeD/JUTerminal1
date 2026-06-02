@@ -1,0 +1,43 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-8.4.2, pluggy-1.6.0
+rootdir: C:\Users\mmjal\Documents\JUTerminal1\backend
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.13.0, asyncio-1.4.0, cov-5.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=session
+collected 358 items
+
+tests\ai\test_credential_redaction.py ...                                [  0%]
+tests\ai\test_response_sanitization.py ...............                   [  5%]
+tests\integration_test.py ..........................................     [ 16%]
+tests\scenarios\test_gatekeeper.py ........                              [ 18%]
+tests\scenarios\test_phase_advancement_sc01.py .                         [ 19%]
+tests\scenarios\test_scope_enforcer.py .................                 [ 24%]
+tests\test_command_siem_bridge.py ...................................... [ 34%]
+...........                                                              [ 37%]
+tests\test_config.py ..                                                  [ 38%]
+tests\test_coverage_gaps.py ..................                           [ 43%]
+tests\test_debrief_coach.py ...                                          [ 44%]
+tests\test_degradation.py .....                                          [ 45%]
+tests\test_instructor_analytics.py ............                          [ 48%]
+tests\test_level_classifier.py ......................................... [ 60%]
+...                                                                      [ 61%]
+tests\test_output_pattern_phase_gating.py ....                           [ 62%]
+tests\test_output_patterns.py .............                              [ 65%]
+tests\test_scenario_randomizer.py ......................                 [ 72%]
+tests\test_scoring_engine.py ...........                                 [ 75%]
+tests\test_session_lifecycle.py ..........                               [ 77%]
+tests\test_session_readiness.py ......                                   [ 79%]
+tests\test_siem_dedup.py ...                                             [ 80%]
+tests\test_siem_rule_engine.py ...............                           [ 84%]
+tests\test_ws_integration.py ...............                             [ 88%]
+tests\unit_test_scenarios.py ........................................    [100%]
+
+============================== warnings summary ===============================
+tests/integration_test.py: 25 warnings
+tests/test_ws_integration.py: 3 warnings
+  C:\Users\mmjal\AppData\Local\Programs\Python\Python312\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+====================== 358 passed, 28 warnings in 13.82s ======================

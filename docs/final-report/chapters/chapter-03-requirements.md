@@ -62,6 +62,12 @@ The requirements were derived from:
 | FR-READY-01 | The platform shall provide readiness checks for demo and session startup. |
 | FR-FORENSICS-01 | The platform shall provide simulated Blue Team forensics and containment workflows. |
 
+The functional scope above is summarized as a use case model in Figure 3.1. The model groups the platform behavior around four primary actors (Red Team student, Blue Team student, instructor, and administrator) and the bounded AI provider, and it shows how the same session is shared between the offensive and defensive use cases.
+
+![Figure 3.1 Parallax Use Case Model](../diagrams/export/png/uml-use-case.png)
+
+Figure 3.1: Parallax use case model.
+
 ## 3.5 Non-Functional Requirements
 
 | ID | Requirement | Rationale |

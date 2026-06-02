@@ -140,6 +140,42 @@ Security checks before final export:
 - Confirm AI prompt and AI validation preserve Socratic guidance.
 - Confirm public-facing documentation says Parallax is lab-only.
 
-## 6.12 Chapter Summary
+## 6.12 Scenario Lab Topologies and Attack-Defense Flow
+
+The readiness and smoke procedures above are exercised against three isolated scenario environments. Each environment is a self-contained set of Docker services on an internal-only network. The topologies below document the lab targets that an operator verifies during readiness checks; they intentionally omit solution chains and lab-only credentials.
+
+### 6.12.1 SC-01 NovaMed Topology
+
+SC-01 (NovaMed Healthcare) is the web application security scenario. Figure 6.1 shows its target chain of a web front end, a web application firewall, and a backing database service on the `sc01-net` internal network.
+
+![Figure 6.1 SC-01 NovaMed Topology](../diagrams/export/png/sc01-topology.png)
+
+Figure 6.1: SC-01 (NovaMed) scenario topology.
+
+### 6.12.2 SC-02 Nexora Topology
+
+SC-02 (Nexora Financial) is the directory-service compromise scenario. Figure 6.2 shows its domain controller and file server targets on the `sc02-net` internal network, which produce authentication and access telemetry for the Blue Team.
+
+![Figure 6.2 SC-02 Nexora Topology](../diagrams/export/png/sc02-topology.png)
+
+Figure 6.2: SC-02 (Nexora) scenario topology.
+
+### 6.12.3 SC-03 Orion Topology
+
+SC-03 (Orion Logistics) is the phishing and initial-access scenario. Figure 6.3 shows its phishing platform, mail relay, and victim simulator on the `sc03-net` internal network.
+
+![Figure 6.3 SC-03 Orion Topology](../diagrams/export/png/sc03-topology.png)
+
+Figure 6.3: SC-03 (Orion) scenario topology.
+
+### 6.12.4 SC-01 Attack-Defense Correlation
+
+Figure 6.4 illustrates the end-to-end attack-and-defense correlation for SC-01: how a Red Team action against the NovaMed targets produces telemetry that surfaces as a Blue Team SIEM event and, ultimately, debrief evidence. It is the verification-time view of the Red-to-Blue loop described in Chapter 4.
+
+![Figure 6.4 SC-01 Attack-Defense Flow](../diagrams/export/png/scenario-sc01-flow.png)
+
+Figure 6.4: SC-01 NovaMed attack and defense correlation.
+
+## 6.13 Chapter Summary
 
 Parallax is installed and operated through repeatable Docker Compose commands, scenario profiles, readiness scripts, and browser smoke tests. The testing approach combines automated checks with manual UX verification so that the final defense package can show both technical correctness and operational readiness.

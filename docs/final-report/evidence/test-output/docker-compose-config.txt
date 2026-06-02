@@ -1,0 +1,333 @@
+name: parallax
+services:
+  backend:
+    build:
+      context: C:\Users\mmjal\Documents\JUTerminal1\backend
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: true
+      redis:
+        condition: service_healthy
+        required: true
+    deploy:
+      resources:
+        limits:
+          cpus: 2
+          memory: "536870912"
+    environment:
+      AI_CALL_COOLDOWN_SECONDS: "10"
+      CONTAINER_CPU_LIMIT: "1.0"
+      CONTAINER_MEMORY_LIMIT: 512m
+      CORS_ORIGINS: http://localhost:3000,http://localhost
+      DOCKER_SOCKET: /var/run/docker.sock
+      ENVIRONMENT: development
+      JWT_SECRET: REDACTED_LOCAL_JWT_SECRET
+      KALI_IMAGE: parallax-kali:latest
+      MAX_CONCURRENT_SESSIONS: "10"
+      OPENROUTER_API_KEY: sk-or-v1-REDACTED_API_KEY_FOR_SAFETY
+      OPENROUTER_MAX_TOKENS: "500"
+      OPENROUTER_MODEL: google/gemini-2.0-flash-001
+      POSTGRES_URL: postgresql+asyncpg://parallax:parallax@postgres:5432/parallax
+      REDIS_URL: redis://redis:6379/0
+    group_add:
+      - "0"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)"
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 40s
+    labels:
+      com.parallax.project: JUTerminal1
+      com.parallax.protect: "true"
+    networks:
+      internal: null
+    ports:
+      - mode: ingress
+        target: 8000
+        published: "8001"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1
+        target: /project
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\backend\src
+        target: /app/src
+        bind: {}
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\backend\alembic.ini
+        target: /app/alembic.ini
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\backend\migrations
+        target: /app/migrations
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\ai-monitor
+        target: /app/ai-monitor
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\docs\scenarios
+        target: /app/scenarios
+        read_only: true
+        bind: {}
+  elasticsearch:
+    deploy:
+      resources:
+        limits:
+          memory: "2147483648"
+    environment:
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.security.http.ssl.enabled: "false"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -s http://localhost:9200 >/dev/null || exit 1
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2
+    labels:
+      com.parallax.project: JUTerminal1
+      com.parallax.protect: "true"
+    networks:
+      internal: null
+    ports:
+      - mode: ingress
+        target: 9200
+        published: "9200"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: elastic_data
+        target: /usr/share/elasticsearch/data
+        volume: {}
+  filebeat:
+    command:
+      - filebeat
+      - -e
+      - --strict.perms=false
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+        required: true
+    deploy:
+      resources:
+        limits:
+          cpus: 0.3
+          memory: "268435456"
+    environment:
+      setup.kibana.host: kibana:5601
+    image: docker.elastic.co/beats/filebeat:8.13.2
+    labels:
+      com.parallax.project: JUTerminal1
+      com.parallax.protect: "true"
+    networks:
+      internal: null
+    restart: unless-stopped
+    user: root
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+        bind: {}
+      - type: bind
+        source: /var/lib/docker/containers
+        target: /var/lib/docker/containers
+        read_only: true
+        bind: {}
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\infrastructure\docker\siem\filebeat.yml
+        target: /usr/share/filebeat/filebeat.yml
+        read_only: true
+        bind: {}
+      - type: volume
+        source: sc01_waf_logs
+        target: /waf-logs
+        read_only: true
+        volume: {}
+      - type: volume
+        source: sc02_samba_logs
+        target: /samba-logs
+        read_only: true
+        volume: {}
+  frontend:
+    build:
+      context: C:\Users\mmjal\Documents\JUTerminal1\frontend
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: development
+        VITE_API_URL: /api
+        VITE_WS_URL: ""
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: "536870912"
+    environment:
+      VITE_API_URL: /api
+      VITE_WS_URL: ""
+    labels:
+      com.parallax.project: JUTerminal1
+      com.parallax.protect: "true"
+    networks:
+      internal: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "3000"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\frontend\src
+        target: /app/src
+        bind: {}
+  nginx:
+    depends_on:
+      backend:
+        condition: service_healthy
+        required: true
+      frontend:
+        condition: service_started
+        required: true
+    deploy:
+      resources:
+        limits:
+          memory: "134217728"
+    image: nginx:alpine
+    labels:
+      com.parallax.project: JUTerminal1
+      com.parallax.protect: "true"
+    networks:
+      internal: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "80"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\infrastructure\nginx\nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+        bind: {}
+  postgres:
+    deploy:
+      resources:
+        limits:
+          memory: "536870912"
+    environment:
+      POSTGRES_DB: parallax
+      POSTGRES_PASSWORD: parallax
+      POSTGRES_USER: parallax
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U parallax
+      timeout: 5s
+      interval: 5s
+      retries: 5
+    image: postgres:15-alpine
+    labels:
+      com.parallax.project: JUTerminal1
+      com.parallax.protect: "true"
+    networks:
+      internal: null
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 5432
+        published: "5432"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+        volume: {}
+      - type: bind
+        source: C:\Users\mmjal\Documents\JUTerminal1\infrastructure\postgres\init.sql
+        target: /docker-entrypoint-initdb.d/init.sql
+        bind: {}
+  redis:
+    command:
+      - redis-server
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+    deploy:
+      resources:
+        limits:
+          memory: "268435456"
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      timeout: 3s
+      interval: 5s
+      retries: 5
+    image: redis:7-alpine
+    labels:
+      com.parallax.project: JUTerminal1
+      com.parallax.protect: "true"
+    networks:
+      internal: null
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 6379
+        published: "6379"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: redis_data
+        target: /data
+        volume: {}
+networks:
+  internal:
+    name: parallax_internal
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.254
+volumes:
+  elastic_data:
+    name: parallax_elastic_data
+  postgres_data:
+    name: parallax_postgres_data
+  redis_data:
+    name: parallax_redis_data
+  sc01_waf_logs:
+    name: parallax_sc01_waf_logs
+  sc02_samba_logs:
+    name: parallax_sc02_samba_logs
+x-parallax-defaults:
+  labels:
+    com.parallax.project: JUTerminal1
+    com.parallax.protect: "true"
