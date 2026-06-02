@@ -351,6 +351,12 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
     # ── Load discoveries from Redis ─────────────────────────────────────
     discoveries = await get_discoveries(session_id)
 
+    # ── Hints already delivered (so the tutor never repeats guidance) ───
+    raw_prior_hints = await lrange(f"ai:{session_id}:hints_given", 0, 7)
+    prior_hints = [
+        (h.decode() if isinstance(h, bytes) else str(h))[:240] for h in (raw_prior_hints or []) if h
+    ]
+
     # ── Load command history from Redis (last 10 commands) ──────────────
     raw_commands = await lrange(f"session:{session_id}:commands", 0, 9)
     command_history = (
@@ -498,7 +504,14 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
     # ── SIEM events recent ──────────────────────────────────────────────
     siem_count = len(recent_siem_events)
     top_severity = "INFO"
-    severity_rank = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "MED": 2, "LOW": 1, "INFO": 0}
+    severity_rank = {
+        "CRITICAL": 4,
+        "HIGH": 3,
+        "MEDIUM": 2,
+        "MED": 2,
+        "LOW": 1,
+        "INFO": 0,
+    }
     for ev in recent_siem_events:
         sev = (ev.severity or "INFO").upper()
         if severity_rank.get(sev, 0) > severity_rank.get(top_severity, 0):
@@ -553,6 +566,7 @@ async def build_ai_context(session_id: str, student_question: str | None = None)
         "notes_summary": notes_summary,
         "flags_captured": flags_captured,
         "pending_flag_candidates": pending_candidates,
+        "prior_hints_given": prior_hints,
         "minutes_since_last_progress": minutes_since_last_progress,
         "siem_events_recent": siem_events_recent,
         # Internal metadata keys (needed by monitor.py and other parts)

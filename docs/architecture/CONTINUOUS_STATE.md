@@ -13,6 +13,35 @@
 
 ## Recent entries (rolling tail â€” see archive for older history)
 
+### [2026-06-02] - Claude Opus 4.8 (SIEM capture+live fix, no-repeat hints, phase auto-advance, Red layout presets)
+
+* **Status**: COMPLETE — root-caused and fixed 4 reported issues against the live stack; 298 backend tests pass; frontend build/lint clean; redeployed.
+* **Why**: User reported (1) AI hints repeating the same text on each request, (2) layout presets (Focus/Balanced/Debug) looking identical, (3) SIEM feed showing 0 logs / not live until refresh, (4) phases not auto-advancing.
+* **Diagnosis (empirical, live DB+WS)**:
+  - SIEM 0 logs: the real session (`373694bc…`) logged ZERO terminal commands despite commands executing. Root cause: the browser `terminal_command` path relies on fragile xterm screen-buffer scraping that can silently yield nothing; raw keystrokes (PTY exec) always flow, so commands ran but never reached `_handle_terminal_command` → no SIEM/AI/discovery/phase signals.
+  - SIEM not live: `_redis_to_ws` used `async for pubsub.listen()`, but the Redis client has `socket_timeout=5`; after 5s idle the read times out, the exception killed the listener task → only the FIRST event per session delivered live, rest only via DB (i.e. on refresh/poll). Proven: 5 events published, 1 delivered live; logs showed repeated `[WS SIEM] PubSub listener error: Timeout reading from redis`.
+  - Phases: `try_advance_phase` runs only after a processed command → never ran because of the capture gap.
+  - Layout: `RedWorkspace` used a hand-rolled `terminalWidth` drag and ignored the layout store; only `BlueWorkspace` used preset-aware `ResizableSplit`.
+* **Where / What**:
+  - `backend/src/ws/routes.py`:
+    - NEW `_extract_commands_from_raw(state, data)` — deterministic server-side command reconstruction from the raw PTY stream (handles backspace, Ctrl-C/-U/-W, ANSI escape seqs; Tab-completed lines tainted+skipped so the browser screen-scrape covers them).
+    - NEW `_enqueue_command()` — both the browser `terminal_command` frame and the raw accumulator route through here; a 3s `cmddedup:{sid}:{sha1}` window collapses the near-simultaneous double-capture so each command processes exactly once.
+    - `terminal_raw` branch now feeds the accumulator → `_enqueue_command`; `terminal_command` branch delegates to `_enqueue_command`.
+    - Readiness stickiness: new latched `input_unlocked` (true once a real container has been ready) replaces the per-message `readiness_status != "ready"` gate, so transient target-probe flaps never silently drop keystrokes/commands.
+    - `_redis_to_ws` rewritten to poll `pubsub.get_message(timeout=1.0)` in a resilient loop (idle timeouts ignored, errors re-subscribe) → listener survives the whole session; every SIEM event delivered live.
+    - `_send_hint` rewritten: builds an escalating candidate pool (static L1→L3 interleaved with branch hints), tracks delivered texts in `ai:{sid}:hints_given` (Redis), and returns the first UNSEEN hint each request → repeated requests always give the NEXT help (verified 3 distinct). Falls back to AI (with prior-hints context) when the pool is exhausted. tutor_question answers also recorded.
+  - `backend/src/ai/context_builder.py`: adds `prior_hints_given` (from `ai:{sid}:hints_given`) to the AI context envelope.
+  - `backend/src/ai/monitor.py`: includes `prior_hints_given` in the prompt envelope + a DO-NOT-REPEAT system-prompt instruction so the AI tutor advances rather than echoing.
+  - `frontend/src/pages/RedWorkspace.jsx`: replaced the hardcoded two-column layout with preset-aware `ResizableSplit` (slots: Kali Terminal / Pentest Notebook / AI Tutor / SIEM Feed) so Focus/Balanced/Debug are now visibly distinct (same engine as Blue); removed dead `terminalWidth`/drag code. Welcome "Try this first" now suggests a passive Phase-1 command (`whatweb …`) for SC-01 instead of `nmap` (which is methodology-gated to Phase 2) — removes the welcome-vs-gate contradiction.
+  - `backend/tests/test_raw_command_capture.py`: NEW — 13 unit tests pinning the raw accumulator (line editing, escape seqs, tab taint, multi-command, CRLF).
+* **Verification (live stack, no mocks)**:
+  - Server-side capture: typing raw keystrokes only (no `terminal_command`) → SIEM events created for `whoami`/`nmap`/`whatweb` in DB.
+  - Live SIEM: 5 commands → 5 live `siem_event` frames (was 1/5 before the listener fix); real-frontend sim (raw + `terminal_command`, >5s gaps) → 4 cmds = exactly 4 live events (dedup, no doubles).
+  - No-repeat hints: 3× L1 request → 3 distinct hint texts (L1→L2→L3 escalation).
+  - Phase auto-advance: whatweb + curl + `#finding` note → next command emitted `phase_update {phase:2}`; session phase=2.
+  - Tests: 298 backend pass (103 affected+related, 182 broad, 13 new), black-clean; frontend eslint clean + `npm run build` green.
+  - Deployed: backend restarted (volume-mounted code), frontend image rebuilt + recreated; full stack healthy, /health 200.
+
 ### [2026-06-01] - Claude Opus 4.8 (Full-app verification + finalize to master)
 
 * **Status**: COMPLETE - all routes verified vs live backend; tree cleaned; finalized to master.

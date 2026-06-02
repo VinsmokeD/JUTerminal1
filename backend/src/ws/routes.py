@@ -120,6 +120,73 @@ def _bump_block_streak(session_state: dict[str, Any]) -> int:
     return streak
 
 
+def _extract_commands_from_raw(state: dict[str, Any], data: str) -> list[str]:
+    """Reconstruct completed command lines from a raw PTY keystroke stream.
+
+    The browser also sends a high-level ``terminal_command`` frame, but that path
+    depends on fragile xterm screen-buffer scraping that can silently yield
+    nothing — leaving the SIEM feed, AI tutor, discovery tracker and phase
+    advancement with no signal. This server-side accumulator makes command
+    capture deterministic: every Enter on a real keystroke stream produces the
+    typed command, regardless of what the browser extracted.
+
+    Handles backspace, Ctrl-C/-U/-W line editing and ANSI escape sequences
+    (arrow keys etc.). Commands completed via Tab-completion are *tainted* and
+    skipped here, because the resolved text only exists in the PTY echo, not the
+    input stream — the browser screen-scrape path captures those accurately and
+    the dedup window collapses any overlap.
+    """
+    out: list[str] = []
+    buf: str = state.get("buf", "")
+    esc: int = state.get("esc", 0)
+    tainted: bool = state.get("tainted", False)
+
+    for ch in data:
+        o = ord(ch)
+        if esc == 1:  # char right after ESC
+            esc = 2 if ch in ("[", "O") else 0  # CSI/SS3 vs. 2-char escape
+            continue
+        if esc == 2:  # inside CSI/SS3 — consume until final byte
+            if 0x40 <= o <= 0x7E:
+                esc = 0
+            continue
+        if ch == "\x1b":
+            esc = 1
+            continue
+        if ch in ("\r", "\n"):
+            cmd = buf.strip()
+            if cmd and not tainted:
+                out.append(cmd)
+            buf = ""
+            tainted = False
+            continue
+        if ch in ("\x7f", "\x08"):  # DEL / Backspace
+            buf = buf[:-1]
+            continue
+        if ch == "\x03":  # Ctrl-C — command aborted
+            buf = ""
+            tainted = False
+            continue
+        if ch == "\x15":  # Ctrl-U — clear line
+            buf = ""
+            continue
+        if ch == "\x17":  # Ctrl-W — delete previous word
+            stripped = buf.rstrip()
+            buf = stripped[: stripped.rfind(" ") + 1] if " " in stripped else ""
+            continue
+        if ch == "\t":  # Tab completion can't be resolved from input alone
+            tainted = True
+            continue
+        if o >= 0x20:  # printable
+            buf += ch
+        # other control chars ignored
+
+    state["buf"] = buf[-4096:]
+    state["esc"] = esc
+    state["tainted"] = tainted
+    return out
+
+
 async def _proactive_activity_nudge(
     session_id: str, session_state: dict[str, Any], signal: str, send_json
 ) -> None:
@@ -153,7 +220,10 @@ async def _proactive_activity_nudge(
     else:
         return
     await send_json(
-        {"type": "ai_hint", "data": {"text": text, "level": 0, "source": "activity_monitor"}}
+        {
+            "type": "ai_hint",
+            "data": {"text": text, "level": 0, "source": "activity_monitor"},
+        }
     )
 
 
@@ -223,7 +293,11 @@ async def _handle_terminal_command(
                 session_state["user_id"],
                 "scope_block",
                 session_id,
-                {"command": command, "phase": current_phase, "target": scope_result.target},
+                {
+                    "command": command,
+                    "phase": current_phase,
+                    "target": scope_result.target,
+                },
             )
             await db.commit()
         warn = (
@@ -573,6 +647,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     await pubsub.subscribe(f"siem:{session_id}:feed")
     send_lock = asyncio.Lock()
     command_queue: asyncio.Queue[str] = asyncio.Queue(maxsize=50)
+    # Per-connection accumulator for server-side command reconstruction from the
+    # raw PTY keystroke stream (authoritative, browser-extraction independent).
+    raw_cmd_state: dict[str, Any] = {"buf": "", "esc": 0, "tainted": False}
 
     # If a real Kali container is already attached, unblock terminal input immediately.
     # The full readiness_checker still runs in background and updates the frontend overlay
@@ -582,9 +659,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         "ready" if (container_id and not container_id.startswith("mock-")) else "initializing"
     )
     force_unlocked = False
+    # Once a session has been ready (real container attached), keep input
+    # unlocked. Transient target-port probe failures must never silently drop
+    # the student's keystrokes/commands after they've started working.
+    input_unlocked = readiness_status == "ready"
 
     async def _readiness_checker() -> None:
-        nonlocal readiness_status, force_unlocked
+        nonlocal readiness_status, force_unlocked, input_unlocked
         from src.sandbox.readiness import get_session_readiness
 
         while True:
@@ -599,6 +680,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
                 if force_unlocked:
                     readiness_status = "ready"
+                    input_unlocked = True
                     await _send_json(
                         {
                             "type": "readiness_update",
@@ -611,6 +693,8 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                 else:
                     res = await get_session_readiness(session_id, session_state["scenario_id"])
                     readiness_status = res["status"]
+                    if res["status"] == "ready":
+                        input_unlocked = True  # latch — never re-lock after first ready
                     await _send_json(
                         {
                             "type": "readiness_update",
@@ -628,28 +712,79 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
         async with send_lock:
             await websocket.send_json(payload)
 
-    async def _redis_to_ws() -> None:
+    async def _enqueue_command(command: str) -> None:
+        """Queue a command for processing, collapsing the browser + server-side
+        double-capture of the same Enter.
+
+        Both the browser ``terminal_command`` frame and the server-side raw
+        accumulator route through here. A short per-command Redis window dedups
+        the near-simultaneous pair so each command is processed exactly once,
+        while genuine re-runs seconds apart still flow through.
+        """
+        cmd = command.strip()
+        if not cmd:
+            return
+        import hashlib
+
+        digest = hashlib.sha1(cmd.encode("utf-8", "ignore")).hexdigest()[:16]
         try:
-            async for message in pubsub.listen():
-                if message["type"] != "message":
-                    continue
-                try:
-                    data = message["data"]
-                    if isinstance(data, bytes):
-                        data = data.decode("utf-8")
+            fresh = await cache_set_if_absent(f"cmddedup:{session_id}:{digest}", "1", ttl=3)
+        except Exception:
+            fresh = True  # never drop a command because the dedup cache hiccuped
+        if not fresh:
+            return
+        try:
+            command_queue.put_nowait(cmd)
+        except asyncio.QueueFull:
+            await _send_json(
+                {
+                    "type": "terminal_output",
+                    "data": {
+                        "data": "\r\n\x1b[31m[terminal busy] Command queue is full. Wait for the current command to finish.\x1b[0m\r\n",
+                    },
+                }
+            )
 
-                    # Handle double-encoded JSON if it somehow happens, or raw dict-as-string
-                    payload = json.loads(data)
-                    if isinstance(payload, str):
-                        payload = json.loads(payload)
-
-                    await _send_json({"type": "siem_event", "data": payload})
-                except Exception as e:
-                    logging.getLogger("src.ws.routes").error(
-                        f"[WS SIEM] Error processing message: {e}"
+    async def _redis_to_ws() -> None:
+        # IMPORTANT: the Redis client uses socket_timeout=5, so a blocking
+        # ``pubsub.listen()`` raises a read-timeout after ~5s of silence and the
+        # listener task would die — after which NO live SIEM event reaches the
+        # browser until a full page refresh. Poll with a short per-call timeout
+        # instead and treat idle timeouts as normal, so the listener stays alive
+        # for the entire session and every event is delivered live.
+        channel = f"siem:{session_id}:feed"
+        while True:
+            try:
+                message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                # Idle read-timeouts are expected; anything else: re-subscribe and
+                # keep going rather than silently dropping the live feed.
+                msg = str(exc).lower()
+                if "timeout" not in msg:
+                    logging.getLogger("src.ws.routes").warning(
+                        f"[WS SIEM] listener recovering ({type(exc).__name__}: {exc})"
                     )
-        except Exception as e:
-            logging.getLogger("src.ws.routes").error(f"[WS SIEM] PubSub listener error: {e}")
+                    try:
+                        await pubsub.subscribe(channel)
+                    except Exception:
+                        pass
+                    await asyncio.sleep(0.5)
+                continue
+            if not message or message.get("type") != "message":
+                continue
+            try:
+                data = message["data"]
+                if isinstance(data, bytes):
+                    data = data.decode("utf-8")
+                # Handle double-encoded JSON if it somehow happens.
+                payload = json.loads(data)
+                if isinstance(payload, str):
+                    payload = json.loads(payload)
+                await _send_json({"type": "siem_event", "data": payload})
+            except Exception as e:
+                logging.getLogger("src.ws.routes").error(f"[WS SIEM] Error processing message: {e}")
 
     async def _terminal_output_to_ws() -> None:
         def _get_frame() -> str | None:
@@ -731,37 +866,61 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
     async def _send_hint(level: int) -> None:
         hint_text = None
         hint_steps = None
+        phase = session_state.get("phase", 1)
+        role = session_state.get("role", "red")
+        scenario = session_state["scenario_id"]
         active_branch = session_state.get("active_branch") or await get_active_branch(session_id)
+        branch_id = active_branch.get("id") if active_branch else None
 
-        hints_data = _load_hints(session_state["scenario_id"])
-        sc_hints = hints_data.get(session_state["scenario_id"], {})
-        role_hints = sc_hints.get(session_state.get("role", "red"), {})
-        phase_hints = role_hints.get(str(session_state.get("phase", 1)), {})
-        static_hint = phase_hints.get(f"L{level}")
+        # Hints already delivered this session, so repeated requests escalate to
+        # the NEXT piece of guidance instead of replaying the same text.
+        try:
+            given_raw = await lrange(f"ai:{session_id}:hints_given", 0, 24)
+        except Exception:
+            given_raw = []
+        given = {str(g).strip() for g in given_raw if g}
 
-        if isinstance(static_hint, list):
-            hint_text = "\n".join(static_hint)
-            hint_steps = static_hint
-        elif static_hint:
-            hint_text = static_hint
-            hint_steps = [static_hint]
+        hints_data = _load_hints(scenario)
+        sc_hints = hints_data.get(scenario, {})
+        role_hints = sc_hints.get(role, {})
+        phase_hints = role_hints.get(str(phase), {})
 
-        branch_steps = get_branch_hint(
-            session_state["scenario_id"],
-            session_state.get("role", "red"),
-            session_state.get("phase", 1),
-            active_branch.get("id") if active_branch else None,
-            level,
-        )
-        if branch_steps and (not hint_steps or len(branch_steps) > len(hint_steps)):
-            hint_text = "\n".join(branch_steps)
-            hint_steps = branch_steps
+        def _as_text(value) -> str:
+            return "\n".join(value) if isinstance(value, list) else (value or "")
 
+        # Escalating candidate pool: static L1â†’L3 interleaved with branch hints.
+        candidates: list[tuple[str, list[str]]] = []
+        for lvl in (1, 2, 3):
+            static_hint = phase_hints.get(f"L{lvl}")
+            if static_hint:
+                steps = static_hint if isinstance(static_hint, list) else [static_hint]
+                candidates.append((_as_text(static_hint).strip(), steps))
+            branch_steps = get_branch_hint(scenario, role, phase, branch_id, lvl)
+            if branch_steps:
+                candidates.append(("\n".join(branch_steps).strip(), branch_steps))
+
+        # Deliver the first candidate the student hasn't seen yet.
+        for text, steps in candidates:
+            if text and text not in given:
+                hint_text = text
+                hint_steps = steps
+                break
+
+        # Static/branch pool exhausted (or empty) â†’ ask the AI for a fresh,
+        # non-repeating hint. build_ai_context feeds it the prior hints so it
+        # advances the guidance rather than echoing it.
         if not hint_text:
             ai_hint = await get_ai_hint(session_id, session_state, None, level)
-            if ai_hint:
+            if ai_hint and not ai_hint.lower().startswith("ai tutor is processing"):
                 hint_text = ai_hint
                 hint_steps = [ai_hint]
+
+        # Record what we delivered so the next request advances.
+        if hint_text:
+            try:
+                await lpush_capped(f"ai:{session_id}:hints_given", hint_text, max_len=24)
+            except Exception:
+                pass
 
         # â”€â”€ Log hint request + apply score penalty â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         skill = session_state.get("skill_level", "beginner")
@@ -861,14 +1020,20 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
 
             if msg_type == "terminal_raw":
                 # â”€â”€ Raw PTY passthrough: every keystroke â†’ Docker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                if readiness_status != "ready" and not force_unlocked:
+                if not input_unlocked and not force_unlocked:
                     continue
                 raw_data = msg.get("data", "")
                 if raw_data:
                     await send_terminal_input(session_id, raw_data)
+                    # Authoritative server-side command capture: reconstruct
+                    # completed commands straight from the keystroke stream so
+                    # SIEM/AI/discovery/phase signals never depend on fragile
+                    # browser-side extraction.
+                    for captured in _extract_commands_from_raw(raw_cmd_state, raw_data):
+                        await _enqueue_command(captured)
 
             elif msg_type == "terminal_command":
-                if readiness_status != "ready" and not force_unlocked:
+                if not input_unlocked and not force_unlocked:
                     await _send_json(
                         {
                             "type": "terminal_output",
@@ -880,17 +1045,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     continue
                 command = msg.get("data", "")
                 if command.strip():
-                    try:
-                        command_queue.put_nowait(command)
-                    except asyncio.QueueFull:
-                        await _send_json(
-                            {
-                                "type": "terminal_output",
-                                "data": {
-                                    "data": "\r\n\x1b[31m[terminal busy] Command queue is full. Wait for the current command to finish.\x1b[0m\r\n",
-                                },
-                            }
-                        )
+                    await _enqueue_command(command)
 
             elif msg_type == "tutor_question":
                 try:
@@ -937,6 +1092,17 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                         hint_level=1,
                         question=question_text,
                     )
+                    if response_text and not response_text.lower().startswith(
+                        ("ai tutor is processing", "[offline tutor]")
+                    ):
+                        try:
+                            await lpush_capped(
+                                f"ai:{session_id}:hints_given",
+                                response_text,
+                                max_len=24,
+                            )
+                        except Exception:
+                            pass
                     await _send_json(
                         {
                             "type": "ai_hint",
@@ -968,7 +1134,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str) -> None:
                     )
             elif msg_type == "terminal_input":
                 # â”€â”€ Legacy: line-buffered input (mock terminal fallback) â”€â”€â”€â”€
-                if readiness_status != "ready" and not force_unlocked:
+                if not input_unlocked and not force_unlocked:
                     continue
                 command = msg.get("data", "")
                 if command:
